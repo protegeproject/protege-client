@@ -1,0 +1,14 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<?eclipse version="3.0"?>
+<plugin>
+   <extension
+         point="org.protege.editor.core.application.OntologyLoader">
+      <class
+            value="org.protege.editor.owl.client.ClientOntologyBuilder">
+      </class>
+      <editorKit
+            value="org.protege.editor.owl.OWLEditorKitFactory">
+      </editorKit>
+   </extension>
+
+</plugin>

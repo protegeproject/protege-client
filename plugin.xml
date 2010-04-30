@@ -1,14 +1,35 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <?eclipse version="3.0"?>
 <plugin>
-   <extension
-         point="org.protege.editor.core.application.OntologyLoader">
-      <class
-            value="org.protege.editor.owl.client.ClientOntologyBuilder">
-      </class>
-      <editorKit
-            value="org.protege.editor.owl.OWLEditorKitFactory">
-      </editorKit>
+   <extension id="WelcomeConnect"
+              point="org.protege.editor.core.application.OntologyLoader">
+      <class value="org.protege.editor.owl.client.ClientOntologyBuilder"/>
+      <editorKit value="org.protege.editor.owl.OWLEditorKitFactory"/>
+   </extension>
+   <extension id="Server"
+              name="Top Level Server Menu"
+              point="org.protege.editor.core.application.EditorKitMenuAction">
+      <name value="Server"/>
+      <path value="/SlotG"/>
+      <editorKitId value="OWLEditorKit"/>
+   </extension>
+   <extension id="AutoCommit"
+              name="Auto Commit Menu"
+              point="org.protege.editor.core.application.EditorKitMenuAction">
+      <name value="Auto-Commit"/>
+      <path value="org.protege.editor.owl.client.Server/SlotA"/>
+      <editorKitId value="OWLEditorKit"/>
+      <class value="org.protege.editor.owl.client.AutoCommitAction"/>
+      <checkbox value="true"/>
    </extension>
 
+   <extension id="Test"
+              point="org.protege.editor.core.application.ViewAction">
+      <name value="Auto-Commit"/>
+      <path value="org.protege.editor.owl.client.Server/SlotA"/>
+      <editorKitId value="OWLEditorKit"/>
+      <class value="org.protege.editor.owl.client.AutoCommitAction"/>
+      <group value="A"/>
+      <groupIndex value="A"/>
+   </extension>
 </plugin>

@@ -2,7 +2,8 @@
 <?eclipse version="3.0"?>
 <plugin>
    <extension id="WelcomeConnect"
-              point="org.protege.editor.core.application.OntologyLoader">
+              point="org.protege.editor.core.application.OntologyLoader"
+              name="Connect To Server">
       <class value="org.protege.editor.owl.client.ClientOntologyBuilder"/>
       <editorKit value="org.protege.editor.owl.OWLEditorKitFactory"/>
    </extension>

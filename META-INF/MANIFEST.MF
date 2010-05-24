@@ -5,7 +5,28 @@ Bundle-SymbolicName: org.protege.editor.owl.client;singleton:=true
 Bundle-Version: 1.0.0
 Bundle-Vendor: The Protege Development Team
 Bundle-RequiredExecutionEnvironment: JavaSE-1.6
+Import-Package:  javax.swing,
+ javax.swing.border,
+ javax.swing.colorchooser,
+ javax.swing.event,
+ javax.swing.filechooser,
+ javax.swing.plaf,
+ javax.swing.plaf.basic,
+ javax.swing.plaf.metal,
+ javax.swing.plaf.multi,
+ javax.swing.plaf.synth,
+ javax.swing.table,
+ javax.swing.text,
+ javax.swing.text.html,
+ javax.swing.text.html.parser,
+ javax.swing.text.rtf,
+ javax.swing.tree,
+ javax.swing.undo,
+ javax.xml.transform,
+ javax.xml.transform.dom,
+ javax.xml.transform.stream
 Require-Bundle: org.protege.common;bundle-version="4.1.0",
  org.protege.editor.core.application;bundle-version="4.1.0",
  org.protege.editor.owl;bundle-version="4.1.0",
- org.semanticweb.owl.owlapi;bundle-version="3.0.0"
+ org.semanticweb.owl.owlapi;bundle-version="3.0.0",
+ org.protege.owl.server;bundle-version="1.0.0"

@@ -29,7 +29,6 @@ public class ClientOntologyBuilder implements OntologyBuilder {
     public static final String ID = ClientOntologyBuilder.class.getCanonicalName();
     public static final int AUTO_UPDATE_INTERVAL = 5000;
     private Logger logger = Logger.getLogger(getClass());
-    private boolean updating = false;    
     private boolean loaded = false;
 
     public ClientOntologyBuilder() {
@@ -78,7 +77,7 @@ public class ClientOntologyBuilder implements OntologyBuilder {
             @Override
             public void ontologiesChanged(List<? extends OWLOntologyChange> changes) throws OWLException {
                 try {
-                    if (!isUpdating()) {
+                    if (!connection.isUpdateFromServer()) {
                         connection.commit(Collections.singleton(ontology));
                     }
                 }
@@ -94,14 +93,10 @@ public class ClientOntologyBuilder implements OntologyBuilder {
                 sleepABit();
                 while (true) {
                     try {
-                        setUpdating(true);
                         connection.update(ontology, null);
                     }
                     catch (Throwable t) {
                         ProtegeApplication.getErrorLog().logError(t);
-                    }
-                    finally {
-                        setUpdating(false);
                     }
                     sleepABit();
                 }
@@ -128,14 +123,6 @@ public class ClientOntologyBuilder implements OntologyBuilder {
 
     @Override
     public void dispose() throws Exception {
-    }
-    
-    private synchronized void setUpdating(boolean updating) {
-        this.updating = updating;
-    }
-    
-    private synchronized boolean isUpdating() {
-        return updating;
     }
 
 }

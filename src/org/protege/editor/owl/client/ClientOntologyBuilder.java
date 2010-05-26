@@ -30,6 +30,7 @@ public class ClientOntologyBuilder implements OntologyBuilder {
     public static final int AUTO_UPDATE_INTERVAL = 5000;
     private Logger logger = Logger.getLogger(getClass());
     private boolean loaded = false;
+    private boolean disposed = false;
 
     public ClientOntologyBuilder() {
     }
@@ -78,7 +79,17 @@ public class ClientOntologyBuilder implements OntologyBuilder {
             public void ontologiesChanged(List<? extends OWLOntologyChange> changes) throws OWLException {
                 try {
                     if (!connection.isUpdateFromServer()) {
-                        connection.commit(Collections.singleton(ontology));
+                        SwingUtilities.invokeLater(new Runnable() {
+                           @Override
+                            public void run() {
+                               try {
+                                   connection.commit(Collections.singleton(ontology));
+                               }
+                               catch (Throwable t) {
+                                   ProtegeApplication.getErrorLog().logError(t);
+                               }
+                            } 
+                        });
                     }
                 }
                 catch (Exception e) {
@@ -92,22 +103,26 @@ public class ClientOntologyBuilder implements OntologyBuilder {
             public void run() {
                 sleepABit();
                 while (true) {
+                    if (disposed) {
+                        return;
+                    }
                     try {
-                        connection.update(ontology, null);
+                        SwingUtilities.invokeAndWait(new Runnable() {
+                            @Override
+                            public void run() {
+                                try {
+                                    connection.update(ontology, null);
+                                }
+                                catch (Throwable t) {
+                                    ProtegeApplication.getErrorLog().logError(t);
+                                }
+                            }
+                        });
                     }
                     catch (Throwable t) {
                         ProtegeApplication.getErrorLog().logError(t);
                     }
                     sleepABit();
-                }
-            }
-            
-            private void sleepABit() {
-                try {
-                    Thread.sleep(AUTO_UPDATE_INTERVAL);
-                }
-                catch (InterruptedException e) {
-                    logger.error("Ouch! Why did you do that?", e);
                 }
             }
             
@@ -123,6 +138,21 @@ public class ClientOntologyBuilder implements OntologyBuilder {
 
     @Override
     public void dispose() throws Exception {
+        disposed=true;
+        synchronized (this) {
+            notifyAll();
+        }
+    }
+    
+    private void sleepABit() {
+        try {
+            synchronized (this) {
+                wait(AUTO_UPDATE_INTERVAL);
+            }
+        }
+        catch (InterruptedException e) {
+            logger.error("Ouch! Why did you do that?", e);
+        }
     }
 
 }

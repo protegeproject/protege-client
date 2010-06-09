@@ -1,6 +1,7 @@
 package org.protege.editor.owl.client;
 
 import java.awt.BorderLayout;
+import java.awt.Dimension;
 import java.awt.FlowLayout;
 import java.awt.Window;
 import java.awt.event.ActionEvent;
@@ -13,11 +14,15 @@ import java.util.Map;
 import javax.swing.JButton;
 import javax.swing.JComponent;
 import javax.swing.JDialog;
+import javax.swing.JLabel;
 import javax.swing.JPanel;
+import javax.swing.JScrollBar;
+import javax.swing.JScrollPane;
 import javax.swing.JTable;
 import javax.swing.JTextField;
 import javax.swing.ListSelectionModel;
 import javax.swing.table.AbstractTableModel;
+import javax.swing.table.TableColumnModel;
 
 import org.apache.log4j.Logger;
 import org.protege.owl.server.api.ClientConnection;
@@ -44,7 +49,10 @@ public class ServerConnectionDialog extends JDialog {
         this.manager = manager;
         setModal(true);
         setLayout(new BorderLayout());
-        add(getConnectionResults(), BorderLayout.CENTER);
+        
+        JScrollPane content = new JScrollPane(getConnectionResults());
+        content.setVerticalScrollBar(new JScrollBar());
+        add(content, BorderLayout.CENTER);
         add(getConnectionInfoPanel(), BorderLayout.SOUTH);
         pack();
     }
@@ -54,6 +62,11 @@ public class ServerConnectionDialog extends JDialog {
             connectionResults = new JTable();
             connectionResults.setModel(new ConnectionResultsTableModel());
             connectionResults.setSelectionMode(ListSelectionModel.SINGLE_SELECTION);
+            TableColumnModel columnModel = connectionResults.getColumnModel();
+            Dimension sampleShortNameSize = new JLabel("NCIThesaurusXXX").getPreferredSize();
+            Dimension sampleOntologyIRISize = new JLabel("http://www.co-ode.org/ontologies/amino-acid/2006/05/18/amino-acid.owl").getPreferredSize();
+            columnModel.getColumn(Column.SHORT_NAME.ordinal()).setPreferredWidth((int) sampleShortNameSize.getWidth());
+            columnModel.getColumn(Column.ONTOLOGY_NAME.ordinal()).setPreferredWidth((int) sampleOntologyIRISize.getWidth());
         }
         return connectionResults;      
     }
@@ -151,6 +164,18 @@ public class ServerConnectionDialog extends JDialog {
         @Override
         public int getColumnCount() {
             return Column.values().length;
+        }
+        
+        @Override
+        public String getColumnName(int column) {
+            switch (Column.values()[column]) {
+            case SHORT_NAME:
+                return "Short Name";
+            case ONTOLOGY_NAME:
+                return "Ontology IRI";
+            default:
+                return "";
+            }
         }
 
         @Override

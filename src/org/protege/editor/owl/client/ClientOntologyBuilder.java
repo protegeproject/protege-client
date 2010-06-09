@@ -4,7 +4,9 @@ import java.awt.Window;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.util.Collections;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 import javax.swing.JButton;
 import javax.swing.SwingUtilities;
@@ -28,20 +30,44 @@ import org.semanticweb.owlapi.model.OWLOntologyManager;
 public class ClientOntologyBuilder implements OntologyBuilder {
     public static final String ID = ClientOntologyBuilder.class.getCanonicalName();
     public static final int AUTO_UPDATE_INTERVAL = 5000;
+    private static final Map<OWLEditorKit, ClientOntologyBuilder> builderMap = new HashMap<OWLEditorKit, ClientOntologyBuilder>();
+    private OWLEditorKit owlEditorKit;
+    private ServerPreferences preferences = new ServerPreferences();
+    private ClientConnection connection;
     private Logger logger = Logger.getLogger(getClass());
     private boolean loaded = false;
     private boolean disposed = false;
 
     public ClientOntologyBuilder() {
     }
+    
+    public static ServerPreferences getServerPreferences(OWLEditorKit editorKit) {
+        ClientOntologyBuilder builder = builderMap.get(editorKit);
+        return builder != null ? builder.preferences : null;
+    }
+    
+    public static void update(OWLEditorKit editorKit) {
+        ClientOntologyBuilder builder = builderMap.get(editorKit);
+        if (builder != null) {
+            builder.update(editorKit.getModelManager().getActiveOntology());
+        }
+    }
+    
+    public static void commit(OWLEditorKit editorKit) {
+        ClientOntologyBuilder builder = builderMap.get(editorKit);
+        if (builder != null) {
+            builder.commit(editorKit.getModelManager().getActiveOntology());
+        }
+    }
 
     @Override
     public boolean loadOntology(EditorKit editorKit) {
         if (editorKit instanceof OWLEditorKit) {
-            OWLEditorKit kit = (OWLEditorKit) editorKit;
-            final OWLModelManager p4Manager = kit.getModelManager();
+            owlEditorKit = (OWLEditorKit) editorKit;
+            builderMap.put(owlEditorKit, this);
+            final OWLModelManager p4Manager = owlEditorKit.getModelManager();
             OWLOntologyManager manager = p4Manager.getOWLOntologyManager();
-            Window parent = (Window) SwingUtilities.getAncestorOfClass(Window.class, kit.getOWLWorkspace());
+            Window parent = (Window) SwingUtilities.getAncestorOfClass(Window.class, owlEditorKit.getOWLWorkspace());
             final ServerConnectionDialog dialog = new ServerConnectionDialog(parent, manager);
             JButton open = new JButton("Open in Protege");
             dialog.getConnectionInfoPanel().add(open);
@@ -51,7 +77,7 @@ public class ClientOntologyBuilder implements OntologyBuilder {
                     ServerOntologyInfo info = dialog.getSelectedOntology();
                     if (info != null) {
                         try {
-                            ClientConnection connection = dialog.getClientConnection();
+                            connection = dialog.getClientConnection();
                             loadOntology(p4Manager, connection, info);
                             dialog.dispose();
                             loaded = true;
@@ -82,11 +108,8 @@ public class ClientOntologyBuilder implements OntologyBuilder {
                         SwingUtilities.invokeLater(new Runnable() {
                            @Override
                             public void run() {
-                               try {
-                                   connection.commit(Collections.singleton(ontology));
-                               }
-                               catch (Throwable t) {
-                                   ProtegeApplication.getErrorLog().logError(t);
+                               if (preferences.isAutoCommit()) {
+                                   commit(ontology);
                                }
                             } 
                         });
@@ -110,11 +133,8 @@ public class ClientOntologyBuilder implements OntologyBuilder {
                         SwingUtilities.invokeAndWait(new Runnable() {
                             @Override
                             public void run() {
-                                try {
-                                    connection.update(ontology, null);
-                                }
-                                catch (Throwable t) {
-                                    ProtegeApplication.getErrorLog().logError(t);
+                                if (preferences.isAutoUpdate()) {
+                                    update(ontology);
                                 }
                             }
                         });
@@ -139,6 +159,7 @@ public class ClientOntologyBuilder implements OntologyBuilder {
     @Override
     public void dispose() throws Exception {
         disposed=true;
+        builderMap.remove(owlEditorKit);
         synchronized (this) {
             notifyAll();
         }
@@ -152,6 +173,24 @@ public class ClientOntologyBuilder implements OntologyBuilder {
         }
         catch (InterruptedException e) {
             logger.error("Ouch! Why did you do that?", e);
+        }
+    }
+
+    private void commit(OWLOntology ontology) {
+        try {
+            connection.commit(Collections.singleton(ontology));
+        }
+        catch (Throwable t) {
+            ProtegeApplication.getErrorLog().logError(t);
+        }
+    }
+
+    private void update(OWLOntology ontology) {
+        try {
+            connection.update(ontology, null);
+        }
+        catch (Throwable t) {
+            ProtegeApplication.getErrorLog().logError(t);
         }
     }
 

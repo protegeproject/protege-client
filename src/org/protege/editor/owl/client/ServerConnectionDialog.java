@@ -29,13 +29,13 @@ import org.protege.owl.server.api.ClientConnection;
 import org.protege.owl.server.api.ServerOntologyInfo;
 import org.protege.owl.server.connection.servlet.ServletClientConnection;
 import org.protege.owl.server.exception.RemoteQueryException;
-import org.semanticweb.owlapi.model.OWLOntologyManager;
+import org.protege.owlapi.model.ProtegeOWLOntologyManager;
 
 public class ServerConnectionDialog extends JDialog {
     private static final long serialVersionUID = -1055466094886319846L;
     private static Logger logger = Logger.getLogger(ServerConnectionDialog.class);
 
-    private OWLOntologyManager manager;
+    private ProtegeOWLOntologyManager manager;
     private JTextField host;
     private ClientConnection connection;
     
@@ -44,7 +44,7 @@ public class ServerConnectionDialog extends JDialog {
     private ServerOntologyInfo[] info = new ServerOntologyInfo[0];
     
     
-    public ServerConnectionDialog(Window owner, OWLOntologyManager manager) {
+    public ServerConnectionDialog(Window owner, ProtegeOWLOntologyManager manager) {
         super(owner);
         this.manager = manager;
         setModal(true);

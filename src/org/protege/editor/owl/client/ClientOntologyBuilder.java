@@ -7,6 +7,10 @@ import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.concurrent.Executors;
+import java.util.concurrent.ScheduledExecutorService;
+import java.util.concurrent.ThreadFactory;
+import java.util.concurrent.TimeUnit;
 
 import javax.swing.JButton;
 import javax.swing.SwingUtilities;
@@ -20,6 +24,7 @@ import org.protege.editor.owl.model.OWLModelManager;
 import org.protege.owl.server.api.ClientConnection;
 import org.protege.owl.server.api.ServerOntologyInfo;
 import org.protege.owl.server.exception.RemoteQueryException;
+import org.protege.owlapi.model.ProtegeOWLOntologyManager;
 import org.semanticweb.owlapi.model.OWLException;
 import org.semanticweb.owlapi.model.OWLOntology;
 import org.semanticweb.owlapi.model.OWLOntologyChange;
@@ -36,7 +41,14 @@ public class ClientOntologyBuilder implements OntologyBuilder {
     private ClientConnection connection;
     private Logger logger = Logger.getLogger(getClass());
     private boolean loaded = false;
-    private boolean disposed = false;
+    private ScheduledExecutorService executor = Executors.newScheduledThreadPool(1, new ThreadFactory() {
+       @Override
+        public Thread newThread(Runnable r) {
+           Thread th = new Thread(r, "Ontology Update & Commit Thread");
+           th.setDaemon(true);
+           return th;
+        } 
+    });
 
     public ClientOntologyBuilder() {
     }
@@ -66,7 +78,7 @@ public class ClientOntologyBuilder implements OntologyBuilder {
             owlEditorKit = (OWLEditorKit) editorKit;
             builderMap.put(owlEditorKit, this);
             final OWLModelManager p4Manager = owlEditorKit.getModelManager();
-            OWLOntologyManager manager = p4Manager.getOWLOntologyManager();
+            ProtegeOWLOntologyManager manager = (ProtegeOWLOntologyManager) p4Manager.getOWLOntologyManager();
             Window parent = (Window) SwingUtilities.getAncestorOfClass(Window.class, owlEditorKit.getOWLWorkspace());
             final ServerConnectionDialog dialog = new ServerConnectionDialog(parent, manager);
             JButton open = new JButton("Open in Protege");
@@ -100,18 +112,21 @@ public class ClientOntologyBuilder implements OntologyBuilder {
         final OWLOntology ontology = connection.pull(info.getOntologyName(), null);
         p4Manager.setActiveOntology(ontology);
         manager.addOntologyChangeListener(new OWLOntologyChangeListener() {
-            
+
             @Override
             public void ontologiesChanged(List<? extends OWLOntologyChange> changes) throws OWLException {
                 try {
-                    if (!connection.isUpdateFromServer()) {
-                        SwingUtilities.invokeLater(new Runnable() {
-                           @Override
+                    if (!connection.isUpdateFromServer() && preferences.isAutoCommit()) {
+                        executor.submit(new Runnable() {
+                            @Override
                             public void run() {
-                               if (preferences.isAutoCommit()) {
-                                   commit(ontology);
-                               }
-                            } 
+                                try {
+                                    commit(ontology);
+                                }
+                                catch (Throwable t) {
+                                    ProtegeApplication.getErrorLog().logError(t);
+                                }
+                            }
                         });
                     }
                 }
@@ -121,34 +136,19 @@ public class ClientOntologyBuilder implements OntologyBuilder {
             }
         });
 
-        Thread thread = new Thread(new Runnable() {
+        executor.scheduleWithFixedDelay(new Runnable() {
             @Override
             public void run() {
-                sleepABit();
-                while (true) {
-                    if (disposed) {
-                        return;
+                try {
+                    if (preferences.isAutoUpdate()) {
+                        update(ontology);
                     }
-                    try {
-                        SwingUtilities.invokeAndWait(new Runnable() {
-                            @Override
-                            public void run() {
-                                if (preferences.isAutoUpdate()) {
-                                    update(ontology);
-                                }
-                            }
-                        });
-                    }
-                    catch (Throwable t) {
-                        ProtegeApplication.getErrorLog().logError(t);
-                    }
-                    sleepABit();
+                }
+                catch (Throwable t) {
+                    ProtegeApplication.getErrorLog().logError(t);
                 }
             }
-            
-        }, "Ontology Auto-Update Thread for " + info.getShortName());
-        thread.setDaemon(false);
-        thread.start();
+        }, AUTO_UPDATE_INTERVAL, AUTO_UPDATE_INTERVAL, TimeUnit.MILLISECONDS);
     }
 
     @Override
@@ -158,21 +158,10 @@ public class ClientOntologyBuilder implements OntologyBuilder {
 
     @Override
     public void dispose() throws Exception {
-        disposed=true;
+        executor.shutdown();
         builderMap.remove(owlEditorKit);
         synchronized (this) {
             notifyAll();
-        }
-    }
-    
-    private void sleepABit() {
-        try {
-            synchronized (this) {
-                wait(AUTO_UPDATE_INTERVAL);
-            }
-        }
-        catch (InterruptedException e) {
-            logger.error("Ouch! Why did you do that?", e);
         }
     }
 

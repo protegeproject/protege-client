@@ -21,6 +21,7 @@ import org.protege.editor.core.ProtegeApplication;
 import org.protege.editor.core.editorkit.EditorKit;
 import org.protege.editor.owl.OWLEditorKit;
 import org.protege.editor.owl.model.OWLModelManager;
+import org.protege.editor.owl.model.OWLWorkspace;
 import org.protege.owl.server.api.ClientConnection;
 import org.protege.owl.server.api.ServerOntologyInfo;
 import org.protege.owl.server.exception.RemoteQueryException;
@@ -35,12 +36,16 @@ import org.semanticweb.owlapi.model.OWLOntologyManager;
 public class ClientOntologyBuilder implements OntologyBuilder {
     public static final String ID = ClientOntologyBuilder.class.getCanonicalName();
     public static final int AUTO_UPDATE_INTERVAL = 5000;
+    public static final Logger LOGGER = Logger.getLogger(ClientOntologyBuilder.class);
+    
     private static final Map<OWLEditorKit, ClientOntologyBuilder> builderMap = new HashMap<OWLEditorKit, ClientOntologyBuilder>();
+    
     private OWLEditorKit owlEditorKit;
     private ServerPreferences preferences = new ServerPreferences();
     private ClientConnection connection;
-    private Logger logger = Logger.getLogger(getClass());
+
     private boolean loaded = false;
+    
     private ScheduledExecutorService executor = Executors.newScheduledThreadPool(1, new ThreadFactory() {
        @Override
         public Thread newThread(Runnable r) {
@@ -111,6 +116,7 @@ public class ClientOntologyBuilder implements OntologyBuilder {
         OWLOntologyManager manager = p4Manager.getOWLOntologyManager();
         final OWLOntology ontology = connection.pull(info.getOntologyName(), null);
         p4Manager.setActiveOntology(ontology);
+        updateTitle();
         manager.addOntologyChangeListener(new OWLOntologyChangeListener() {
 
             @Override
@@ -122,6 +128,7 @@ public class ClientOntologyBuilder implements OntologyBuilder {
                             public void run() {
                                 try {
                                     commit(ontology);
+                                    updateTitle();
                                 }
                                 catch (Throwable t) {
                                     ProtegeApplication.getErrorLog().logError(t);
@@ -129,6 +136,9 @@ public class ClientOntologyBuilder implements OntologyBuilder {
                             }
                         });
                     }
+                    else {
+                        updateTitle();
+                    }   
                 }
                 catch (Exception e) {
                     ProtegeApplication.getErrorLog().logError(e);
@@ -142,6 +152,7 @@ public class ClientOntologyBuilder implements OntologyBuilder {
                 try {
                     if (preferences.isAutoUpdate()) {
                         update(ontology);
+                        updateTitle();
                     }
                 }
                 catch (Throwable t) {
@@ -149,6 +160,24 @@ public class ClientOntologyBuilder implements OntologyBuilder {
                 }
             }
         }, AUTO_UPDATE_INTERVAL, AUTO_UPDATE_INTERVAL, TimeUnit.MILLISECONDS);
+    }
+    
+    
+    private void updateTitle() {
+        OWLWorkspace workspace = owlEditorKit.getOWLWorkspace();
+        OWLOntology activeOntology = owlEditorKit.getModelManager().getActiveOntology();
+        if (connection.getOntologies().contains(activeOntology)) {
+            StringBuffer title = new StringBuffer("Server Ontology: ");
+            title.append(activeOntology.getOntologyID().getOntologyIRI());
+            title.append(" -- Uncommitted Changes = ");
+            title.append(connection.getUncommittedChanges(activeOntology).size());
+            title.append(" Revision: ");
+            title.append(connection.getRevision(activeOntology));
+            workspace.setTitle(title.toString());
+        }
+        else {
+            workspace.setTitle(null);
+        }
     }
 
     @Override

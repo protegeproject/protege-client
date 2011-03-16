@@ -16,6 +16,9 @@ import javax.swing.JButton;
 import javax.swing.SwingUtilities;
 
 import org.apache.log4j.Logger;
+import org.protege.editor.core.ModelManagerEvent;
+import org.protege.editor.core.ModelManagerEvent.EventType;
+import org.protege.editor.core.ModelManagerListener;
 import org.protege.editor.core.OntologyBuilder;
 import org.protege.editor.core.ProtegeApplication;
 import org.protege.editor.core.editorkit.EditorKit;
@@ -54,6 +57,16 @@ public class ClientOntologyBuilder implements OntologyBuilder {
            return th;
         } 
     });
+    
+    private ModelManagerListener modelManagerListener = new ModelManagerListener() {
+        
+        @Override
+        public void handleEvent(ModelManagerEvent event) {
+            if (event.getEventType() == EventType.ActiveOntologyChanged) {
+                updateTitle();
+            }
+        }
+    };
 
     public ClientOntologyBuilder() {
     }
@@ -118,30 +131,14 @@ public class ClientOntologyBuilder implements OntologyBuilder {
         p4Manager.setActiveOntology(ontology);
         updateTitle();
         manager.addOntologyChangeListener(new OWLOntologyChangeListener() {
-
+            
             @Override
             public void ontologiesChanged(List<? extends OWLOntologyChange> changes) throws OWLException {
                 try {
-                    if (!connection.isUpdateFromServer() && preferences.isAutoCommit()) {
-                        executor.submit(new Runnable() {
-                            @Override
-                            public void run() {
-                                try {
-                                    commit(ontology);
-                                    updateTitle();
-                                }
-                                catch (Throwable t) {
-                                    ProtegeApplication.getErrorLog().logError(t);
-                                }
-                            }
-                        });
-                    }
-                    else {
-                        updateTitle();
-                    }   
+                    updateTitle();
                 }
-                catch (Exception e) {
-                    ProtegeApplication.getErrorLog().logError(e);
+                catch (Throwable t) {
+                    ProtegeApplication.getErrorLog().logError(t);
                 }
             }
         });
@@ -150,6 +147,15 @@ public class ClientOntologyBuilder implements OntologyBuilder {
             @Override
             public void run() {
                 try {
+                    if (!connection.isUpdateFromServer() 
+                            && !connection.getUncommittedChanges(ontology).isEmpty() 
+                            && preferences.isAutoCommit()) {
+                        if (LOGGER.isDebugEnabled()) {
+                            LOGGER.debug("Auto-committing changes for ontology " + ontology);
+                        }
+                        commit(ontology);
+                        updateTitle();
+                    }
                     if (preferences.isAutoUpdate()) {
                         update(ontology);
                         updateTitle();
@@ -160,6 +166,7 @@ public class ClientOntologyBuilder implements OntologyBuilder {
                 }
             }
         }, AUTO_UPDATE_INTERVAL, AUTO_UPDATE_INTERVAL, TimeUnit.MILLISECONDS);
+        owlEditorKit.getModelManager().addModelManagerListener(modelManagerListener);
     }
     
     
@@ -187,6 +194,7 @@ public class ClientOntologyBuilder implements OntologyBuilder {
 
     @Override
     public void dispose() throws Exception {
+        owlEditorKit.getModelManager().removeModelManagerListener(modelManagerListener);
         executor.shutdown();
         builderMap.remove(owlEditorKit);
         synchronized (this) {

@@ -16,15 +16,15 @@ import javax.swing.JButton;
 import javax.swing.SwingUtilities;
 
 import org.apache.log4j.Logger;
-import org.protege.editor.core.ModelManagerEvent;
-import org.protege.editor.core.ModelManagerEvent.EventType;
-import org.protege.editor.core.ModelManagerListener;
 import org.protege.editor.core.OntologyBuilder;
 import org.protege.editor.core.ProtegeApplication;
 import org.protege.editor.core.editorkit.EditorKit;
 import org.protege.editor.owl.OWLEditorKit;
 import org.protege.editor.owl.model.OWLModelManager;
 import org.protege.editor.owl.model.OWLWorkspace;
+import org.protege.editor.owl.model.event.EventType;
+import org.protege.editor.owl.model.event.OWLModelManagerChangeEvent;
+import org.protege.editor.owl.model.event.OWLModelManagerListener;
 import org.protege.owl.server.api.ClientConnection;
 import org.protege.owl.server.api.ServerOntologyInfo;
 import org.protege.owl.server.exception.RemoteQueryException;
@@ -58,14 +58,14 @@ public class ClientOntologyBuilder implements OntologyBuilder {
         } 
     });
     
-    private ModelManagerListener modelManagerListener = new ModelManagerListener() {
+    private OWLModelManagerListener modelManagerListener = new OWLModelManagerListener() {
         
-        @Override
-        public void handleEvent(ModelManagerEvent event) {
-            if (event.getEventType() == EventType.ActiveOntologyChanged) {
+        public void handleChange(OWLModelManagerChangeEvent event) {
+            if (event.getType() == EventType.ACTIVE_ONTOLOGY_CHANGED) {
                 updateTitle();
             }
         }
+ 
     };
 
     public ClientOntologyBuilder() {
@@ -166,7 +166,7 @@ public class ClientOntologyBuilder implements OntologyBuilder {
                 }
             }
         }, AUTO_UPDATE_INTERVAL, AUTO_UPDATE_INTERVAL, TimeUnit.MILLISECONDS);
-        owlEditorKit.getModelManager().addModelManagerListener(modelManagerListener);
+        owlEditorKit.getOWLModelManager().addListener(modelManagerListener);
     }
     
     
@@ -194,7 +194,7 @@ public class ClientOntologyBuilder implements OntologyBuilder {
 
     @Override
     public void dispose() throws Exception {
-        owlEditorKit.getModelManager().removeModelManagerListener(modelManagerListener);
+        owlEditorKit.getModelManager().removeListener(modelManagerListener);
         executor.shutdown();
         builderMap.remove(owlEditorKit);
         synchronized (this) {

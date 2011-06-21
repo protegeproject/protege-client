@@ -179,7 +179,7 @@ public class ClientOntologyBuilder implements OntologyBuilder {
             title.append(" -- Uncommitted Changes = ");
             title.append(connection.getUncommittedChanges(activeOntology).size());
             title.append(" Revision: ");
-            title.append(connection.getRevision(activeOntology));
+            title.append(connection.getClientRevision(activeOntology));
             workspace.setTitle(title.toString());
         }
         else {

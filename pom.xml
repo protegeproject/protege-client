@@ -68,7 +68,7 @@
         <dependency>
             <groupId>protege4</groupId>
             <artifactId>org.protege.owl.server</artifactId>
-            <version>1.0.0.2011_03_23_1159</version>
+            <version>1.0.0.2011_06_22_0641</version>
         </dependency>
 		<dependency>
 			<groupId>org.testng</groupId>

@@ -1,12 +1,16 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <?eclipse version="3.0"?>
 <plugin>
-   <extension id="WelcomeConnect"
-              point="org.protege.editor.core.application.OntologyLoader"
-              name="Connect To Server">
+   <extension id="Connect"
+              point="org.protege.editor.core.application.EditorKitMenuAction">
+      <name value="Connect to server"/>
       <class value="org.protege.editor.owl.client.ClientOntologyBuilder"/>
-      <editorKit value="org.protege.editor.owl.OWLEditorKitFactory"/>
+      <toolTip value="Connect to Server and open a project"/>
+      <path value="org.protege.editor.core.application.menu.FileMenu/SlotAA-Y"/>
+      <editorKitId value="OWLEditorKit"/>
    </extension>
+   
+   
    <extension id="Server"
               name="Top Level Server Menu"
               point="org.protege.editor.core.application.EditorKitMenuAction">

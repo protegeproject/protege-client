@@ -16,9 +16,8 @@ import javax.swing.JButton;
 import javax.swing.SwingUtilities;
 
 import org.apache.log4j.Logger;
-import org.protege.editor.core.OntologyBuilder;
 import org.protege.editor.core.ProtegeApplication;
-import org.protege.editor.core.editorkit.EditorKit;
+import org.protege.editor.core.ui.action.ProtegeAction;
 import org.protege.editor.owl.OWLEditorKit;
 import org.protege.editor.owl.model.OWLModelManager;
 import org.protege.editor.owl.model.OWLWorkspace;
@@ -36,7 +35,7 @@ import org.semanticweb.owlapi.model.OWLOntologyChangeListener;
 import org.semanticweb.owlapi.model.OWLOntologyCreationException;
 import org.semanticweb.owlapi.model.OWLOntologyManager;
 
-public class ClientOntologyBuilder implements OntologyBuilder {
+public class ClientOntologyBuilder extends ProtegeAction {
     public static final String ID = ClientOntologyBuilder.class.getCanonicalName();
     public static final int AUTO_UPDATE_INTERVAL = 5000;
     public static final Logger LOGGER = Logger.getLogger(ClientOntologyBuilder.class);
@@ -91,36 +90,34 @@ public class ClientOntologyBuilder implements OntologyBuilder {
     }
 
     @Override
-    public boolean loadOntology(EditorKit editorKit) {
-        if (editorKit instanceof OWLEditorKit) {
-            owlEditorKit = (OWLEditorKit) editorKit;
-            builderMap.put(owlEditorKit, this);
-            final OWLModelManager p4Manager = owlEditorKit.getModelManager();
-            ProtegeOWLOntologyManager manager = (ProtegeOWLOntologyManager) p4Manager.getOWLOntologyManager();
-            Window parent = (Window) SwingUtilities.getAncestorOfClass(Window.class, owlEditorKit.getOWLWorkspace());
-            final ServerConnectionDialog dialog = new ServerConnectionDialog(parent, manager);
-            JButton open = new JButton("Open in Protege");
-            dialog.getConnectionInfoPanel().add(open);
-            open.addActionListener(new ActionListener() {
-                @Override
-                public void actionPerformed(ActionEvent e) {
-                    ServerOntologyInfo info = dialog.getSelectedOntology();
-                    if (info != null) {
-                        try {
-                            connection = dialog.getClientConnection();
-                            loadOntology(p4Manager, connection, info);
-                            dialog.dispose();
-                            loaded = true;
-                        }
-                        catch (Exception ex) {
-                            ProtegeApplication.getErrorLog().logError(ex);
-                        }
-                    }
-                }
-            });
-            dialog.setVisible(true);
-        }
-        return loaded;
+    public void actionPerformed(ActionEvent e) {
+    	OWLEditorKit editorKit = (OWLEditorKit) getEditorKit();
+    	owlEditorKit = (OWLEditorKit) editorKit;
+    	builderMap.put(owlEditorKit, this);
+    	final OWLModelManager p4Manager = owlEditorKit.getModelManager();
+    	ProtegeOWLOntologyManager manager = (ProtegeOWLOntologyManager) p4Manager.getOWLOntologyManager();
+    	Window parent = (Window) SwingUtilities.getAncestorOfClass(Window.class, owlEditorKit.getOWLWorkspace());
+    	final ServerConnectionDialog dialog = new ServerConnectionDialog(parent, manager);
+    	JButton open = new JButton("Open in Protege");
+    	dialog.getConnectionInfoPanel().add(open);
+    	open.addActionListener(new ActionListener() {
+    		@Override
+    		public void actionPerformed(ActionEvent e) {
+    			ServerOntologyInfo info = dialog.getSelectedOntology();
+    			if (info != null) {
+    				try {
+    					connection = dialog.getClientConnection();
+    					loadOntology(p4Manager, connection, info);
+    					dialog.dispose();
+    					loaded = true;
+    				}
+    				catch (Exception ex) {
+    					ProtegeApplication.getErrorLog().logError(ex);
+    				}
+    			}
+    		}
+    	});
+    	dialog.setVisible(true);
     }
     
     private void loadOntology(OWLModelManager p4Manager, 

@@ -1,0 +1,58 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<?eclipse version="3.0"?>
+<plugin>
+   <extension id="Connect"
+              point="org.protege.editor.core.application.EditorKitMenuAction">
+      <name value="Connect to server"/>
+      <class value="org.protege.editor.owl.client.ClientOntologyBuilder"/>
+      <toolTip value="Connect to Server and open a project"/>
+      <path value="org.protege.editor.core.application.menu.FileMenu/SlotAA-Y"/>
+      <editorKitId value="OWLEditorKit"/>
+   </extension>
+   
+   
+   <extension id="Server"
+              name="Top Level Server Menu"
+              point="org.protege.editor.core.application.EditorKitMenuAction">
+      <name value="Server"/>
+      <path value="/SlotG"/>
+      <editorKitId value="OWLEditorKit"/>
+   </extension>
+   <extension id="EnableAutoCommit"
+              name="Auto Commit Menu"
+              point="org.protege.editor.core.application.EditorKitMenuAction">
+      <name value="Auto-Commit"/>
+      <path value="org.protege.editor.owl.client.Server/SlotA-A"/>
+      <editorKitId value="OWLEditorKit"/>
+      <class value="org.protege.editor.owl.client.EnableAutoCommitAction"/>
+      <checkbox value="true"/>
+   </extension>
+   
+   <extension id="EnableAutoUpdate"
+              name="Auto Update Menu"
+              point="org.protege.editor.core.application.EditorKitMenuAction">
+      <name value="Auto-Update"/>
+      <path value="org.protege.editor.owl.client.Server/SlotA-B"/>
+      <editorKitId value="OWLEditorKit"/>
+      <class value="org.protege.editor.owl.client.EnableAutoUpdateAction"/>
+      <checkbox value="true"/>
+   </extension>
+
+   <extension id="Commit"
+              name="Commit Menu"
+              point="org.protege.editor.core.application.EditorKitMenuAction">
+      <name value="Commit"/>
+      <path value="org.protege.editor.owl.client.Server/SlotB-C"/>
+      <editorKitId value="OWLEditorKit"/>
+      <class value="org.protege.editor.owl.client.CommitAction"/>
+   </extension>
+   
+      <extension id="Update"
+              name="Update Menu"
+              point="org.protege.editor.core.application.EditorKitMenuAction">
+      <name value="Update"/>
+      <path value="org.protege.editor.owl.client.Server/SlotB-D"/>
+      <editorKitId value="OWLEditorKit"/>
+      <class value="org.protege.editor.owl.client.UpdateAction"/>
+   </extension>
+</plugin>

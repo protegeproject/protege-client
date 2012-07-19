@@ -1,0 +1,10 @@
+Manifest-Version: 1.0
+Bundle-ManifestVersion: 2
+Bundle-Name: Protege OWL Client
+Bundle-SymbolicName: org.protege.editor.owl.client
+Bundle-Version: 2.0.0
+Bundle-RequiredExecutionEnvironment: JavaSE-1.6
+Require-Bundle: org.protege.common;bundle-version="4.2.0",
+ org.protege.editor.core.application;bundle-version="4.2.0",
+ org.protege.editor.owl;bundle-version="4.2.0",
+ org.protege.owl.server;bundle-version="2.0.0"

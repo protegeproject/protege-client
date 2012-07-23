@@ -7,4 +7,5 @@ Bundle-RequiredExecutionEnvironment: JavaSE-1.6
 Require-Bundle: org.protege.common;bundle-version="4.2.0",
  org.protege.editor.core.application;bundle-version="4.2.0",
  org.protege.editor.owl;bundle-version="4.2.0",
- org.protege.owl.server;bundle-version="2.0.0"
+ org.protege.owl.server;bundle-version="2.0.0",
+ org.semanticweb.owl.owlapi;bundle-version="3.2.5"

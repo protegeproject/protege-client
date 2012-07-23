@@ -1,10 +1,14 @@
 package org.protege.editor.owl.client;
 
+import java.awt.Frame;
 import java.awt.event.ActionEvent;
 
-import org.protege.editor.core.ui.action.ProtegeAction;
+import javax.swing.SwingUtilities;
 
-public class ClientOntologyBuilder extends ProtegeAction {
+import org.protege.editor.owl.model.OWLWorkspace;
+import org.protege.editor.owl.ui.action.ProtegeOWLAction;
+
+public class ClientOntologyBuilder extends ProtegeOWLAction {
 
 	public ClientOntologyBuilder() {
 		// TODO Auto-generated constructor stub
@@ -24,8 +28,10 @@ public class ClientOntologyBuilder extends ProtegeAction {
 
 	@Override
 	public void actionPerformed(ActionEvent arg0) {
-		// TODO Auto-generated method stub
-
+		OWLWorkspace workspace = getOWLWorkspace();
+		Frame frame = (Frame) SwingUtilities.getAncestorOfClass(Frame.class, workspace);
+		ServerConnectionDialog dialog = new ServerConnectionDialog(frame);
+		dialog.setVisible(true);
 	}
 
 }

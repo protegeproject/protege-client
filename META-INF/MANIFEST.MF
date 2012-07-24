@@ -1,11 +1,18 @@
 Manifest-Version: 1.0
-Bundle-ManifestVersion: 2
+Export-Package: org.protege.editor.owl.client;version="2.0.1.2012_07_2
+ 4_1236";uses:="javax.swing,org.protege.editor.core.ui.action,org.prot
+ ege.editor.owl.ui.action,org.protege.owl.server.api"
+Bundle-Vendor: The Protege Development Team
+Built-By: tredmond
+Bundle-Version: 2.0.1.2012_07_24_1236
+Tool: Bundlor 1.1.0.M04
 Bundle-Name: Protege OWL Client
-Bundle-SymbolicName: org.protege.editor.owl.client;singleton:=true
-Bundle-Version: 2.0.0
+Bundle-ManifestVersion: 2
+Bundle-SymbolicName: org.protege.editor.owl.client;singleton:="true"
+Import-Package: javax.swing,org.protege.editor.core.ui.action;version=
+ "4.2.0",org.protege.editor.owl.model;version="4.2.0",org.protege.edit
+ or.owl.ui.action;version="4.2.0",org.protege.owl.server.api;version="
+ 2.0.0",org.protege.owl.server.connect.rmi;version="2.0.0",org.semanti
+ cweb.owlapi.model;version="3.0.0"
 Bundle-RequiredExecutionEnvironment: JavaSE-1.6
-Require-Bundle: org.protege.common;bundle-version="4.2.0",
- org.protege.editor.core.application;bundle-version="4.2.0",
- org.protege.editor.owl;bundle-version="4.2.0",
- org.protege.owl.server;bundle-version="2.0.0",
- org.semanticweb.owl.owlapi;bundle-version="3.2.5"
+

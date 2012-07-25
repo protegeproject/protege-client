@@ -15,9 +15,9 @@
    <property name = "bundlor.home"      location="${env.BUNDLOR_HOME}"/>
 
    <property file="version.properties"/>
-   <property name="major.version" value="1"/>
+   <property name="major.version" value="2"/>
    <property name="minor.version" value="0"/>
-   <property name="micro.version" value="0"/>
+   <property name="micro.version" value="1"/>
 
    <property name = "plugin"          value = "org.protege.editor.owl.client"/>
 
@@ -76,6 +76,9 @@
 
   <target name="checkProtegeLibsAndReport">
     <check.dependencies>
+      <property
+      	  name="common.lib"
+    	  location="${protege.common}/org.protege.common.jar"/>
       <property 
           name="protege.lib" 
           location="${protege.common}/org.protege.editor.core.application.jar"/>
@@ -87,14 +90,13 @@
           location="${protege.plugins}/org.protege.editor.owl.jar"/>
       <property
           name="server.lib"
-          location="${protege.plugins}/org.protege.owl.server"/>
+          location="${protege.plugins}/org.protege.owl.server.jar"/>
     </check.dependencies>
     <path id = "project.classpath">    
       <pathelement location="${protege.lib}"/>
       <pathelement location="${owl.lib}"/>
       <pathelement location="${owl.editor.jar}"/>
       <pathelement location="${server.lib}"/>
-      <fileset dir="${lib}"/>
       <fileset dir="${genlib}"/>
     </path>
   </target>
@@ -127,7 +129,7 @@
      </copy>
    </target>
 
-   <target name = "compile" depends = "buildlibs, checkProtegeLibsAndReport">
+   <target name = "compile" depends = "init, buildlibs, checkProtegeLibsAndReport">
      <javac srcdir = "${src}"
             destdir = "${classes}" 
             debug="on"

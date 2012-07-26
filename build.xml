@@ -188,7 +188,7 @@
         <java fork = "true" dir = "${protege.home}" 
               classname = "org.protege.osgi.framework.Launcher">
             <jvmarg value = "-Dlog4j.configuration=file:log4j.xml"/>
-            <jvmarg value = "-Xmx1500M"/>
+            <jvmarg value = "-Xmx2500M"/>
             <jvmarg value = "-Dorg.protege.launch.config=${run.config}"/>
             <classpath>
               <pathelement path="${protege.osgi}"/>
@@ -205,7 +205,7 @@
               classname = "org.protege.osgi.framework.Launcher">
             <jvmarg value = "-Dlog4j.configuration=file:log4j.xml"/>
             <jvmarg value = "-agentlib:jdwp=transport=dt_socket,address=8500,server=y,suspend=y"/>
-            <jvmarg value = "-Xmx1500M"/>
+            <jvmarg value = "-Xmx2500M"/>
             <jvmarg value = "-Dorg.protege.launch.config=${run.config}"/>
             <classpath>
               <pathelement path="${protege.osgi}"/>

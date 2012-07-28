@@ -6,8 +6,10 @@ import java.awt.FlowLayout;
 import java.awt.Frame;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
+import java.awt.event.MouseAdapter;
+import java.awt.event.MouseEvent;
 import java.io.File;
-import java.rmi.registry.Registry;
+import java.util.logging.Logger;
 
 import javax.swing.JButton;
 import javax.swing.JDialog;
@@ -23,6 +25,8 @@ import org.protege.editor.owl.ui.UIHelper;
 import org.protege.owl.server.api.Client;
 import org.protege.owl.server.api.RemoteOntologyDocument;
 import org.protege.owl.server.api.ServerDirectory;
+import org.protege.owl.server.api.ServerDocument;
+import org.protege.owl.server.api.VersionedOWLOntology;
 import org.protege.owl.server.connect.rmi.RMIClient;
 import org.protege.owl.server.util.ClientUtilities;
 import org.semanticweb.owlapi.apibinding.OWLManager;
@@ -33,6 +37,7 @@ import org.semanticweb.owlapi.model.OWLOntologyManager;
 // ToDo - this only barely works - add error checking...
 public class ServerConnectionDialog extends JDialog {
 	private static final long serialVersionUID = 720048610707964509L;
+	private Logger logger = Logger.getLogger(ServerConnectionDialog.class.getCanonicalName());
 	private OWLEditorKit editorKit;
 	private Client client;
 	private ServerDirectory currentDirectory;
@@ -67,7 +72,7 @@ public class ServerConnectionDialog extends JDialog {
 	
 	private JPanel getNorth() {
 		JPanel panel = new JPanel(new FlowLayout(FlowLayout.CENTER));
-		urlField = new JTextField(RMIClient.SCHEME + "://localhost:" + Registry.REGISTRY_PORT + "/");
+		urlField = new JTextField(RMIClient.SCHEME + "://localhost:" +  "5100/");  // Registry.REGISTRY_PORT + "/");
 		panel.add(urlField);
 		return panel;
 	}
@@ -75,6 +80,7 @@ public class ServerConnectionDialog extends JDialog {
 	private JScrollPane getCenter() {
 		tableModel = new ServerTableModel();
 		JTable table = new JTable(tableModel);
+		table.addMouseListener(new ClientTableMouseAdapter(table));
 		JScrollPane pane = new JScrollPane(table);		
 		pane.setSize(new Dimension(800, 600));
 		return pane;
@@ -88,11 +94,43 @@ public class ServerConnectionDialog extends JDialog {
 		panel.add(connect);
 		uploadButton = new JButton("Upload");
 		uploadButton.addActionListener(new UploadActionListener());
+		uploadButton.setEnabled(false);
 		panel.add(uploadButton);
 		newDirectoryButton = new JButton("New Server Directory");
 		newDirectoryButton.addActionListener(new NewDirectoryListener());
+		newDirectoryButton.setEnabled(false);
 		panel.add(newDirectoryButton);
 		return panel;
+	}
+	
+	private class ClientTableMouseAdapter extends MouseAdapter {
+		private JTable table;
+
+		public ClientTableMouseAdapter(JTable table)	 {
+			this.table = table;
+		}
+
+		@Override
+		public void mouseClicked(MouseEvent e) {
+			try {
+				if (e.getClickCount() == 2) {
+					int row = table.getSelectedRow();
+					ServerDocument doc = tableModel.getValueAt(row);
+					if (doc instanceof RemoteOntologyDocument) {
+						RemoteOntologyDocument remoteOntology = (RemoteOntologyDocument) doc;
+						ServerConnectionManager connectionManager = ServerConnectionManager.get(editorKit);
+						ClientUtilities clientUtilities = new ClientUtilities(client);
+						VersionedOWLOntology vont = clientUtilities.loadOntology(editorKit.getOWLModelManager().getOWLOntologyManager(), remoteOntology);
+						editorKit.getOWLModelManager().setActiveOntology(vont.getOntology());
+						connectionManager.addVersionedOntology(client, vont);
+					}
+					logger.info("double click on jtable row = " + row);
+				}
+			}
+			catch (Exception ex) {
+				ProtegeApplication.getErrorLog().logError(ex);
+			}
+		}
 	}
 
 	private class ConnectActionListener implements ActionListener {
@@ -144,10 +182,8 @@ public class ServerConnectionDialog extends JDialog {
 
 	private class NewDirectoryListener implements ActionListener {
 		@Override
-		public void actionPerformed(ActionEvent arg0) {
-			if (client != null) {
-				
-			}
+		public void actionPerformed(ActionEvent event) {
+
 		}
 	}
 

@@ -67,5 +67,9 @@ public class ServerTableModel extends AbstractTableModel {
 			throw new IllegalStateException("Programmer missed a case");
 		}
 	}
+	
+	public ServerDocument getValueAt(int row) {
+		return serverDocuments.get(row);
+	}
 
 }

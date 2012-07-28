@@ -6,7 +6,8 @@ Built-By: ${user.name}
 Bundle-SymbolicName: ${plugin};singleton:=true
 Bundle-RequiredExecutionEnvironment: JavaSE-1.6
 Bundle-Vendor: The Protege Development Team
-Import-Template: org.osgi.framework;version="1.0.0",
+Import-Template: javax.*;version="0.0.0",
+ org.osgi.framework;version="1.0.0",
  org.semanticweb.owlapi.*;version="3.0.0",
  org.protege.owl.server.*;version="2.0.0",
  org.protege.editor.owl.*;version="4.2.0",

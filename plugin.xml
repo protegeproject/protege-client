@@ -55,4 +55,11 @@
       <editorKitId value="OWLEditorKit"/>
       <class value="org.protege.editor.owl.client.UpdateAction"/>
    </extension>
+      <extension
+            id="ServerConnectionManager"
+            name="Server Connection Manager"
+            point="org.protege.editor.core.application.EditorKitHook">
+         <class value="org.protege.editor.owl.client.ServerConnectionManager"/>
+         <editorKitId value="OWLEditorKit"/>
+      </extension>
 </plugin>

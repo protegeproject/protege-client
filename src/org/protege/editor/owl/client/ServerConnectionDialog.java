@@ -22,6 +22,7 @@ import javax.swing.JTextField;
 import org.protege.editor.core.ProtegeApplication;
 import org.protege.editor.owl.OWLEditorKit;
 import org.protege.editor.owl.ui.UIHelper;
+import org.protege.owl.server.api.ChangeMetaData;
 import org.protege.owl.server.api.Client;
 import org.protege.owl.server.api.RemoteOntologyDocument;
 import org.protege.owl.server.api.ServerDirectory;
@@ -169,7 +170,7 @@ public class ServerConnectionDialog extends JDialog {
 					OWLOntology ontology = manager.loadOntologyFromOntologyDocument(input);
 					String name = (String) JOptionPane.showInputDialog(getOwner(), "Name of upload: ");
 					ClientUtilities util = new ClientUtilities(client);
-					util.createServerOntology(IRI.create(urlField.getText() + "/" + name + ".history"), "Uploaded from file " + input, ontology);
+					util.createServerOntology(IRI.create(urlField.getText() + "/" + name + ".history"), new ChangeMetaData("Uploaded from file " + input), ontology);
 					tableModel.loadServerData(client, currentDirectory);
 					JOptionPane.showMessageDialog(getOwner(), "Uploaded!");
 				}

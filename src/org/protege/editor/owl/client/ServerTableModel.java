@@ -62,7 +62,17 @@ public class ServerTableModel extends AbstractTableModel {
 		ServerDocument doc = serverDocuments.get(row);
 		switch (column) {
 		case SERVER_DOCUMENT_LOCATION:
-			return doc.getServerLocation().getFragment();
+			String fragment = doc.getServerLocation().getFragment();
+			if (fragment == null || fragment.isEmpty()) {
+			    String path = doc.getServerLocation().toURI().getPath();
+			    int end;
+			    if (path.endsWith("/")) {
+			        path = path.substring(0, path.length() - 1);
+			    }
+			    int start = path.lastIndexOf('/');
+			    return path.substring(start + 1);
+			}
+			else return fragment;
 		default:
 			throw new IllegalStateException("Programmer missed a case");
 		}

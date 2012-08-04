@@ -9,6 +9,8 @@ import java.awt.event.ActionListener;
 import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
 import java.io.File;
+import java.io.IOException;
+import java.net.URI;
 import java.util.logging.Logger;
 
 import javax.swing.JButton;
@@ -75,6 +77,7 @@ public class ServerConnectionDialog extends JDialog {
 		JPanel panel = new JPanel(new FlowLayout(FlowLayout.CENTER));
 		urlField = new JTextField(RMIClient.SCHEME + "://localhost:" +  "5100/");  // Registry.REGISTRY_PORT + "/");
 		panel.add(urlField);
+		urlField.addActionListener(new ConnectActionListener());
 		return panel;
 	}
 	
@@ -104,6 +107,12 @@ public class ServerConnectionDialog extends JDialog {
 		return panel;
 	}
 	
+	public void setDirectory(ServerDirectory dir) throws IOException {
+	    urlField.setText(dir.getServerLocation().toString());
+	    tableModel.loadServerData(client, dir);
+	    currentDirectory = dir;
+	}
+	
 	private class ClientTableMouseAdapter extends MouseAdapter {
 		private JTable table;
 
@@ -124,8 +133,11 @@ public class ServerConnectionDialog extends JDialog {
 						VersionedOWLOntology vont = clientUtilities.loadOntology(editorKit.getOWLModelManager().getOWLOntologyManager(), remoteOntology);
 						editorKit.getOWLModelManager().setActiveOntology(vont.getOntology());
 						connectionManager.addVersionedOntology(client, vont);
+						ServerConnectionDialog.this.setVisible(false);
 					}
-					logger.info("double click on jtable row = " + row);
+					else if (doc instanceof ServerDirectory) {
+					    setDirectory((ServerDirectory) doc);
+					}
 				}
 			}
 			catch (Exception ex) {
@@ -144,7 +156,6 @@ public class ServerConnectionDialog extends JDialog {
 				currentDirectory = (ServerDirectory) client.getServerDocument(IRI.create(urlField.getText()));
 				tableModel.loadServerData(client, currentDirectory);
 				success = true;
-				JOptionPane.showMessageDialog(getOwner(), "Connection Successful!");
 			}
 			catch (Exception ex) {
 				ProtegeApplication.getErrorLog().logError(ex);
@@ -182,10 +193,18 @@ public class ServerConnectionDialog extends JDialog {
 	}
 
 	private class NewDirectoryListener implements ActionListener {
-		@Override
-		public void actionPerformed(ActionEvent event) {
-
-		}
+	    @Override
+	    public void actionPerformed(ActionEvent event) {
+	        try {
+	            String dirName = (String) JOptionPane.showInputDialog(getOwner(), "Enter the directory name: ", "Create Server Directory", JOptionPane.PLAIN_MESSAGE);
+	            URI dir = URI.create(urlField.getText()).resolve(dirName);
+	            client.createRemoteDirectory(IRI.create(dir));
+	            setDirectory(currentDirectory);
+	        }
+	        catch (IOException ioe) {
+	            throw new RuntimeException(ioe);
+	        }
+	    }
 	}
 
 }

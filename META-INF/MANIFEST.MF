@@ -1,32 +1,28 @@
 Manifest-Version: 1.0
-Bundle-ManifestVersion: 2
-Bundle-Name: Protege OWL Client
-Bundle-SymbolicName: org.protege.editor.owl.client;singleton:=true
-Bundle-Version: 1.0.0
+Export-Package: org.protege.editor.owl.client;version="2.0.1.2012_07_2
+ 7_0659";uses:="javax.swing,javax.swing.table,org.protege.editor.core.
+ editorkit,org.protege.editor.core.editorkit.plugin,org.protege.editor
+ .core.ui.action,org.protege.editor.owl,org.protege.editor.owl.model,o
+ rg.protege.editor.owl.model.io,org.protege.editor.owl.ui.action,org.p
+ rotege.owl.server.api,org.semanticweb.owlapi.model"
 Bundle-Vendor: The Protege Development Team
+Built-By: redmond
+Bundle-Version: 2.0.1.2012_07_27_0659
+Tool: Bundlor 1.1.0.M05
+Bundle-Name: Protege OWL Client
+Bundle-ManifestVersion: 2
+Bundle-SymbolicName: org.protege.editor.owl.client;singleton:="true"
+Import-Package: javax.swing;version="0.0.0",javax.swing.table;version=
+ "0.0.0",org.protege.editor.core;version="4.2.0",org.protege.editor.co
+ re.editorkit;version="4.2.0",org.protege.editor.core.editorkit.plugin
+ ;version="4.2.0",org.protege.editor.core.ui.action;version="4.2.0",or
+ g.protege.editor.core.ui.error;version="4.2.0",org.protege.editor.owl
+ ;version="4.2.0",org.protege.editor.owl.model;version="4.2.0",org.pro
+ tege.editor.owl.model.io;version="4.2.0",org.protege.editor.owl.ui;ve
+ rsion="4.2.0",org.protege.editor.owl.ui.action;version="4.2.0",org.pr
+ otege.owl.server.api;version="2.0.0",org.protege.owl.server.connect.r
+ mi;version="2.0.0",org.protege.owl.server.util;version="2.0.0",org.se
+ manticweb.owlapi.apibinding;version="3.0.0",org.semanticweb.owlapi.mo
+ del;version="3.0.0"
 Bundle-RequiredExecutionEnvironment: JavaSE-1.6
-Import-Package:  javax.swing,
- javax.swing.border,
- javax.swing.colorchooser,
- javax.swing.event,
- javax.swing.filechooser,
- javax.swing.plaf,
- javax.swing.plaf.basic,
- javax.swing.plaf.metal,
- javax.swing.plaf.multi,
- javax.swing.plaf.synth,
- javax.swing.table,
- javax.swing.text,
- javax.swing.text.html,
- javax.swing.text.html.parser,
- javax.swing.text.rtf,
- javax.swing.tree,
- javax.swing.undo,
- javax.xml.transform,
- javax.xml.transform.dom,
- javax.xml.transform.stream
-Require-Bundle: org.protege.common;bundle-version="4.1.0",
- org.protege.editor.core.application;bundle-version="4.1.0",
- org.protege.editor.owl;bundle-version="4.1.0",
- org.semanticweb.owl.owlapi;bundle-version="3.0.0",
- org.protege.owl.server;bundle-version="1.0.0"
+

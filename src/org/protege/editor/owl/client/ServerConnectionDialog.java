@@ -9,7 +9,6 @@ import java.awt.event.ActionListener;
 import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
 import java.io.File;
-import java.io.IOException;
 import java.net.URI;
 import java.util.logging.Logger;
 
@@ -29,9 +28,11 @@ import org.protege.owl.server.api.Client;
 import org.protege.owl.server.api.RemoteOntologyDocument;
 import org.protege.owl.server.api.ServerDirectory;
 import org.protege.owl.server.api.ServerDocument;
+import org.protege.owl.server.api.User;
 import org.protege.owl.server.api.VersionedOWLOntology;
 import org.protege.owl.server.api.exception.OWLServerException;
 import org.protege.owl.server.connect.rmi.RMIClient;
+import org.protege.owl.server.policy.RMILoginUtility;
 import org.protege.owl.server.util.ClientUtilities;
 import org.semanticweb.owlapi.apibinding.OWLManager;
 import org.semanticweb.owlapi.model.IRI;
@@ -147,32 +148,40 @@ public class ServerConnectionDialog extends JDialog {
 		}
 	}
 
+	/*
+	 * ToDo -- This is really messed up but I wanted to see it work...
+	 */
 	private class ConnectActionListener implements ActionListener {
-		@Override
-		public void actionPerformed(ActionEvent e) {
-			client = new RMIClient(null, IRI.create(urlField.getText()));
-			boolean success = false;
-			try {
-				((RMIClient) client).initialise();
-				currentDirectory = (ServerDirectory) client.getServerDocument(IRI.create(urlField.getText()));
-				tableModel.loadServerData(client, currentDirectory);
-				success = true;
-			}
-			catch (Exception ex) {
-				ProtegeApplication.getErrorLog().logError(ex);
-			}
-			finally {
-				if (!success) {
-					client = null;
-					JOptionPane.showMessageDialog(getOwner(), "Connection Failed");
-				}
-				else {
-				    JOptionPane.showMessageDialog(getOwner(), "Connection succeeded");
-				}
-				uploadButton.setEnabled(success);
-				newDirectoryButton.setEnabled(success);
-			}
-		}
+	    @Override
+	    public void actionPerformed(ActionEvent e) {
+	        LoginDialog login = new LoginDialog(null, "Login");
+	        if (login.showDialog()) {
+                boolean success = false;
+	            try {
+	                IRI serverLocation = IRI.create(urlField.getText());
+	                User authenticatedUser = RMILoginUtility.login(serverLocation, login.getName(), login.getPass());
+	                client = new RMIClient(authenticatedUser, IRI.create(urlField.getText()));
+	                ((RMIClient) client).initialise();
+	                currentDirectory = (ServerDirectory) client.getServerDocument(serverLocation);
+	                tableModel.loadServerData(client, currentDirectory);
+	                success = true;
+	            }
+	            catch (Exception ex) {
+	                ProtegeApplication.getErrorLog().logError(ex);
+	            }
+	            finally {
+	                if (!success) {
+	                    client = null;
+	                    JOptionPane.showMessageDialog(getOwner(), "Connection Failed");
+	                }
+	                else {
+	                    JOptionPane.showMessageDialog(getOwner(), "Connection succeeded");
+	                }
+	                uploadButton.setEnabled(success);
+	                newDirectoryButton.setEnabled(success);
+	            }
+	        }
+	    }
 	}
 	
 	private class UploadActionListener implements ActionListener {

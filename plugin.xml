@@ -14,7 +14,7 @@
       <name value="Connect to server"/>
       <class value="org.protege.editor.owl.client.ClientOntologyBuilder"/>
       <toolTip value="Connect to Server and open a project"/>
-      <path value="org.protege.editor.owl.client.Server/SlotA-A"/>
+      <path value="org.protege.editor.owl.client.Server/SlotZ-A"/>
       <editorKitId value="OWLEditorKit"/>
    </extension>
    
@@ -28,17 +28,18 @@
       <class value="org.protege.editor.owl.client.EnableAutoCommitAction"/>
       <checkbox value="true"/>
    </extension>
+    -->
    
    <extension id="EnableAutoUpdate"
               name="Auto Update Menu"
               point="org.protege.editor.core.application.EditorKitMenuAction">
       <name value="Auto-Update"/>
-      <path value="org.protege.editor.owl.client.Server/SlotA-E"/>
+      <path value="org.protege.editor.owl.client.Server/SlotC-E"/>
       <editorKitId value="OWLEditorKit"/>
       <class value="org.protege.editor.owl.client.EnableAutoUpdateAction"/>
       <checkbox value="true"/>
    </extension>
-	-->
+
 	
    <extension id="Commit"
               name="Commit Menu"

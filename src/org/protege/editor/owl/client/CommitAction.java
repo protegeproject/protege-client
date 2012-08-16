@@ -3,7 +3,6 @@ package org.protege.editor.owl.client;
 import java.awt.Container;
 import java.awt.Frame;
 import java.awt.event.ActionEvent;
-import java.io.IOException;
 
 import javax.swing.JOptionPane;
 import javax.swing.SwingUtilities;
@@ -15,6 +14,7 @@ import org.protege.owl.server.api.Client;
 import org.protege.owl.server.api.VersionedOWLOntology;
 import org.protege.owl.server.util.ClientUtilities;
 import org.semanticweb.owlapi.model.OWLOntology;
+import org.protege.owl.server.api.exception.ServerException;
 
 public class CommitAction extends ProtegeOWLAction {
     private static final long serialVersionUID = 4601012273632698091L;
@@ -47,7 +47,7 @@ public class CommitAction extends ProtegeOWLAction {
         try {
             util.commit(metaData, vont);
         }
-        catch (IOException ioe) {
+        catch (ServerException ioe) {
             ProtegeApplication.getErrorLog().logError(ioe);
         }
     }

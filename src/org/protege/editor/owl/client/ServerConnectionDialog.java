@@ -30,6 +30,7 @@ import org.protege.owl.server.api.RemoteOntologyDocument;
 import org.protege.owl.server.api.ServerDirectory;
 import org.protege.owl.server.api.ServerDocument;
 import org.protege.owl.server.api.VersionedOWLOntology;
+import org.protege.owl.server.api.exception.ServerException;
 import org.protege.owl.server.connect.rmi.RMIClient;
 import org.protege.owl.server.util.ClientUtilities;
 import org.semanticweb.owlapi.apibinding.OWLManager;
@@ -107,7 +108,7 @@ public class ServerConnectionDialog extends JDialog {
 		return panel;
 	}
 	
-	public void setDirectory(ServerDirectory dir) throws IOException {
+	public void setDirectory(ServerDirectory dir) throws ServerException {
 	    urlField.setText(dir.getServerLocation().toString());
 	    tableModel.loadServerData(client, dir);
 	    currentDirectory = dir;
@@ -149,7 +150,7 @@ public class ServerConnectionDialog extends JDialog {
 	private class ConnectActionListener implements ActionListener {
 		@Override
 		public void actionPerformed(ActionEvent e) {
-			client = new RMIClient(IRI.create(urlField.getText()));
+			client = new RMIClient(null, IRI.create(urlField.getText()));
 			boolean success = false;
 			try {
 				((RMIClient) client).initialise();
@@ -164,6 +165,9 @@ public class ServerConnectionDialog extends JDialog {
 				if (!success) {
 					client = null;
 					JOptionPane.showMessageDialog(getOwner(), "Connection Failed");
+				}
+				else {
+				    JOptionPane.showMessageDialog(getOwner(), "Connection succeeded");
 				}
 				uploadButton.setEnabled(success);
 				newDirectoryButton.setEnabled(success);
@@ -201,7 +205,7 @@ public class ServerConnectionDialog extends JDialog {
 	            client.createRemoteDirectory(IRI.create(dir));
 	            setDirectory(currentDirectory);
 	        }
-	        catch (IOException ioe) {
+	        catch (ServerException ioe) {
 	            throw new RuntimeException(ioe);
 	        }
 	    }

@@ -3,7 +3,6 @@ package org.protege.editor.owl.client;
 import java.awt.Container;
 import java.awt.Frame;
 import java.awt.event.ActionEvent;
-import java.io.IOException;
 
 import javax.swing.JOptionPane;
 import javax.swing.SwingUtilities;
@@ -12,6 +11,7 @@ import org.protege.editor.core.ProtegeApplication;
 import org.protege.editor.owl.ui.action.ProtegeOWLAction;
 import org.protege.owl.server.api.Client;
 import org.protege.owl.server.api.VersionedOWLOntology;
+import org.protege.owl.server.api.exception.ServerException;
 import org.protege.owl.server.util.ClientUtilities;
 import org.semanticweb.owlapi.model.OWLOntology;
 
@@ -44,7 +44,7 @@ public class UpdateAction extends ProtegeOWLAction {
 	    try {
 	        util.update(vont);
 	    }
-	    catch (IOException ioe) {
+	    catch (ServerException ioe) {
 	        ProtegeApplication.getErrorLog().logError(ioe);
 	    }
 	}

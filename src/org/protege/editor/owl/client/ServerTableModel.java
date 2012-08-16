@@ -1,6 +1,5 @@
 package org.protege.editor.owl.client;
 
-import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Comparator;
@@ -11,6 +10,8 @@ import javax.swing.table.AbstractTableModel;
 import org.protege.owl.server.api.Client;
 import org.protege.owl.server.api.ServerDirectory;
 import org.protege.owl.server.api.ServerDocument;
+import org.protege.owl.server.api.exception.ServerException;
+
 
 public class ServerTableModel extends AbstractTableModel {
 	private static final long serialVersionUID = -1677982790864801841L;
@@ -23,7 +24,7 @@ public class ServerTableModel extends AbstractTableModel {
 	}
 	private List<ServerDocument> serverDocuments = new ArrayList<ServerDocument>();
 	
-	public void loadServerData(Client client, ServerDirectory dir) throws IOException {
+	public void loadServerData(Client client, ServerDirectory dir) throws ServerException {
 		List<ServerDocument> docs = new ArrayList<ServerDocument>(client.list(dir));
 		Collections.sort(docs, new Comparator<ServerDocument>() {
 			@Override

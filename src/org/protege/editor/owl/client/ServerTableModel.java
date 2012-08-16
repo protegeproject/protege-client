@@ -10,7 +10,7 @@ import javax.swing.table.AbstractTableModel;
 import org.protege.owl.server.api.Client;
 import org.protege.owl.server.api.ServerDirectory;
 import org.protege.owl.server.api.ServerDocument;
-import org.protege.owl.server.api.exception.ServerException;
+import org.protege.owl.server.api.exception.OWLServerException;
 
 
 public class ServerTableModel extends AbstractTableModel {
@@ -24,7 +24,7 @@ public class ServerTableModel extends AbstractTableModel {
 	}
 	private List<ServerDocument> serverDocuments = new ArrayList<ServerDocument>();
 	
-	public void loadServerData(Client client, ServerDirectory dir) throws ServerException {
+	public void loadServerData(Client client, ServerDirectory dir) throws OWLServerException {
 		List<ServerDocument> docs = new ArrayList<ServerDocument>(client.list(dir));
 		Collections.sort(docs, new Comparator<ServerDocument>() {
 			@Override

@@ -30,7 +30,7 @@ import org.protege.owl.server.api.RemoteOntologyDocument;
 import org.protege.owl.server.api.ServerDirectory;
 import org.protege.owl.server.api.ServerDocument;
 import org.protege.owl.server.api.VersionedOWLOntology;
-import org.protege.owl.server.api.exception.ServerException;
+import org.protege.owl.server.api.exception.OWLServerException;
 import org.protege.owl.server.connect.rmi.RMIClient;
 import org.protege.owl.server.util.ClientUtilities;
 import org.semanticweb.owlapi.apibinding.OWLManager;
@@ -108,7 +108,7 @@ public class ServerConnectionDialog extends JDialog {
 		return panel;
 	}
 	
-	public void setDirectory(ServerDirectory dir) throws ServerException {
+	public void setDirectory(ServerDirectory dir) throws OWLServerException {
 	    urlField.setText(dir.getServerLocation().toString());
 	    tableModel.loadServerData(client, dir);
 	    currentDirectory = dir;
@@ -205,7 +205,7 @@ public class ServerConnectionDialog extends JDialog {
 	            client.createRemoteDirectory(IRI.create(dir));
 	            setDirectory(currentDirectory);
 	        }
-	        catch (ServerException ioe) {
+	        catch (OWLServerException ioe) {
 	            throw new RuntimeException(ioe);
 	        }
 	    }

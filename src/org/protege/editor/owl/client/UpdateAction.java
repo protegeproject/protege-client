@@ -11,7 +11,7 @@ import org.protege.editor.core.ProtegeApplication;
 import org.protege.editor.owl.ui.action.ProtegeOWLAction;
 import org.protege.owl.server.api.Client;
 import org.protege.owl.server.api.VersionedOWLOntology;
-import org.protege.owl.server.api.exception.ServerException;
+import org.protege.owl.server.api.exception.OWLServerException;
 import org.protege.owl.server.util.ClientUtilities;
 import org.semanticweb.owlapi.model.OWLOntology;
 
@@ -44,7 +44,7 @@ public class UpdateAction extends ProtegeOWLAction {
 	    try {
 	        util.update(vont);
 	    }
-	    catch (ServerException ioe) {
+	    catch (OWLServerException ioe) {
 	        ProtegeApplication.getErrorLog().logError(ioe);
 	    }
 	}

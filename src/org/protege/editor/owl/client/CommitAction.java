@@ -14,7 +14,7 @@ import org.protege.owl.server.api.Client;
 import org.protege.owl.server.api.VersionedOWLOntology;
 import org.protege.owl.server.util.ClientUtilities;
 import org.semanticweb.owlapi.model.OWLOntology;
-import org.protege.owl.server.api.exception.ServerException;
+import org.protege.owl.server.api.exception.OWLServerException;
 
 public class CommitAction extends ProtegeOWLAction {
     private static final long serialVersionUID = 4601012273632698091L;
@@ -47,7 +47,7 @@ public class CommitAction extends ProtegeOWLAction {
         try {
             util.commit(metaData, vont);
         }
-        catch (ServerException ioe) {
+        catch (OWLServerException ioe) {
             ProtegeApplication.getErrorLog().logError(ioe);
         }
     }

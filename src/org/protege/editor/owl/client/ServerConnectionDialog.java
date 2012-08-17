@@ -154,33 +154,45 @@ public class ServerConnectionDialog extends JDialog {
 	private class ConnectActionListener implements ActionListener {
 	    @Override
 	    public void actionPerformed(ActionEvent e) {
-	        LoginDialog login = new LoginDialog(null, "Login");
-	        if (login.showDialog()) {
-                boolean success = false;
-	            try {
-	                IRI serverLocation = IRI.create(urlField.getText());
-	                User authenticatedUser = RMILoginUtility.login(serverLocation, login.getName(), login.getPass());
-	                client = new RMIClient(authenticatedUser, IRI.create(urlField.getText()));
-	                ((RMIClient) client).initialise();
-	                currentDirectory = (ServerDirectory) client.getServerDocument(serverLocation);
-	                tableModel.loadServerData(client, currentDirectory);
-	                success = true;
-	            }
-	            catch (Exception ex) {
-	                ProtegeApplication.getErrorLog().logError(ex);
-	            }
-	            finally {
-	                if (!success) {
-	                    client = null;
-	                    JOptionPane.showMessageDialog(getOwner(), "Connection Failed");
+            IRI serverLocation = IRI.create(urlField.getText());
+            if (!findExistingClient(serverLocation)) {
+                loginToServer(serverLocation);
+            }
+	    }
+	    
+	    private boolean findExistingClient(IRI serverLocation) {
+	        ServerConnectionManager connectionManager = ServerConnectionManager.get(editorKit);
+	        Client client = connectionManager.hasClient(serverLocation);
+	        return client != null;
+	    }
+	    
+	    private void loginToServer(IRI serverLocation) {
+	           LoginDialog login = new LoginDialog(null, "Login");
+	            if (login.showDialog()) {
+	                boolean success = false;
+	                try {
+	                    User authenticatedUser = RMILoginUtility.login(serverLocation, login.getName(), login.getPass());
+	                    client = new RMIClient(authenticatedUser, IRI.create(urlField.getText()));
+	                    ((RMIClient) client).initialise();
+	                    currentDirectory = (ServerDirectory) client.getServerDocument(serverLocation);
+	                    tableModel.loadServerData(client, currentDirectory);
+	                    success = true;
 	                }
-	                else {
-	                    JOptionPane.showMessageDialog(getOwner(), "Connection succeeded");
+	                catch (Exception ex) {
+	                    ProtegeApplication.getErrorLog().logError(ex);
 	                }
-	                uploadButton.setEnabled(success);
-	                newDirectoryButton.setEnabled(success);
+	                finally {
+	                    if (!success) {
+	                        client = null;
+	                        JOptionPane.showMessageDialog(getOwner(), "Connection Failed");
+	                    }
+	                    else {
+	                        JOptionPane.showMessageDialog(getOwner(), "Connection succeeded");
+	                    }
+	                    uploadButton.setEnabled(success);
+	                    newDirectoryButton.setEnabled(success);
+	                }
 	            }
-	        }
 	    }
 	}
 	

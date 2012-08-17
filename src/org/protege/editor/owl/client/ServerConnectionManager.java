@@ -1,9 +1,14 @@
 package org.protege.editor.owl.client;
 
 import java.io.IOException;
+import java.net.URI;
 import java.util.List;
 import java.util.Map;
+import java.util.Map.Entry;
 import java.util.TreeMap;
+import java.util.concurrent.Executors;
+import java.util.concurrent.ScheduledExecutorService;
+import java.util.concurrent.ThreadFactory;
 
 import org.protege.editor.core.ProtegeApplication;
 import org.protege.editor.core.editorkit.plugin.EditorKitHook;
@@ -33,6 +38,14 @@ public class ServerConnectionManager extends EditorKitHook {
 	private Map<OWLOntologyID, VersionedOWLOntology> ontologyMap = new TreeMap<OWLOntologyID, VersionedOWLOntology>();
 	private Map<OWLOntologyID, Client> clientMap = new TreeMap<OWLOntologyID, Client>();
 	private Map<IRI, Client> serverIRIToClientMap = new TreeMap<IRI, Client>();
+	private ScheduledExecutorService singleThreadExecutorService = Executors.newSingleThreadScheduledExecutor(new ThreadFactory() {
+	   @Override
+	    public Thread newThread(Runnable r) {
+	       Thread th = new Thread(r, "Client-Server Communications");
+	       th.setDaemon(true);
+	       return th;
+	    } 
+	});
 	
 	private IOListener ioListener = new IOListener() {
 		
@@ -113,6 +126,10 @@ public class ServerConnectionManager extends EditorKitHook {
 		getOWLOntologyManager().removeOntologyChangeListener(ontologyIdChangeListener);
 	}
 	
+	public ScheduledExecutorService getSingleThreadExecutorService() {
+        return singleThreadExecutorService;
+    }
+	
 	public VersionedOWLOntology getVersionedOntology(OWLOntology ontology) {
 		return ontologyMap.get(ontology.getOntologyID());
 	}
@@ -134,6 +151,21 @@ public class ServerConnectionManager extends EditorKitHook {
 				connectIfCompatible(client, ontology);
 			}
 		}
+	}
+	
+	public Client hasClient(IRI serverLocation) {
+	    URI serverURI = serverLocation.toURI();
+	    String schema = serverURI.getScheme();
+	    String host   = serverURI.getHost();
+	    int port      = serverURI.getPort();
+	    for (Entry<IRI, Client> entry : serverIRIToClientMap.entrySet()) {
+	        URI clientURI = entry.getKey().toURI();
+	        Client client = entry.getValue();
+	        if (schema.equals(clientURI.getScheme()) && host.equals(clientURI.getHost()) && port == clientURI.getPort()) {
+	            return client;
+	        }
+	    }
+	    return null;
 	}
 	
 	private boolean connectIfCompatible(Client client, OWLOntology ontology) {

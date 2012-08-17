@@ -3,6 +3,7 @@ package org.protege.editor.owl.client;
 import java.awt.Container;
 import java.awt.Frame;
 import java.awt.event.ActionEvent;
+import java.util.concurrent.Future;
 
 import javax.swing.JOptionPane;
 import javax.swing.SwingUtilities;
@@ -39,13 +40,29 @@ public class UpdateAction extends ProtegeOWLAction {
             JOptionPane.showMessageDialog(owner, "Update ignored because the ontology is not associated with a server");
             return;
 	    }
-	    Client client = connectionManager.getClient(ontology);
-	    ClientUtilities util = new ClientUtilities(client);
-	    try {
-	        util.update(vont);
-	    }
-	    catch (OWLServerException ioe) {
-	        ProtegeApplication.getErrorLog().logError(ioe);
+	    @SuppressWarnings("unused")
+        Future<?> ret = connectionManager.getSingleThreadExecutorService().submit(new DoUpdate(vont));
+	    // if you wait here with ret.get(), then Protege will deadlock because he needs the UI thread to modify the ontology.
+	}
+	
+	private class DoUpdate implements Runnable {
+	    private VersionedOWLOntology vont;
+	    
+	    public DoUpdate(VersionedOWLOntology vont) {
+	        this.vont = vont;
+        }
+	    
+	    @Override
+	    public void run() {
+	        OWLOntology ontology = vont.getOntology();
+	        Client client = connectionManager.getClient(ontology);
+	        ClientUtilities util = new ClientUtilities(client);
+	        try {
+	            util.update(vont);
+	        }
+	        catch (OWLServerException ioe) {
+	            ProtegeApplication.getErrorLog().logError(ioe);
+	        }	        
 	    }
 	}
 

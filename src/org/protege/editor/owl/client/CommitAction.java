@@ -3,6 +3,7 @@ package org.protege.editor.owl.client;
 import java.awt.Container;
 import java.awt.Frame;
 import java.awt.event.ActionEvent;
+import java.util.concurrent.Future;
 
 import javax.swing.JOptionPane;
 import javax.swing.SwingUtilities;
@@ -34,24 +35,50 @@ public class CommitAction extends ProtegeOWLAction {
     @Override
     public void actionPerformed(ActionEvent arg0) {
         Container owner = SwingUtilities.getAncestorOfClass(Frame.class,getOWLWorkspace());
-        OWLOntology ontology = getOWLEditorKit().getModelManager().getActiveOntology();
-        VersionedOWLOntology vont = connectionManager.getVersionedOntology(ontology);
+        final OWLOntology ontology = getOWLEditorKit().getModelManager().getActiveOntology();
+        final VersionedOWLOntology vont = connectionManager.getVersionedOntology(ontology);
+        final String commitComment = JOptionPane.showInputDialog(owner, "Commit comment: ", "Commit", JOptionPane.PLAIN_MESSAGE);
         if (vont == null) {
             JOptionPane.showMessageDialog(owner, "Commit ignored because the ontology is not associated with a server");
             return;
         }
-        Client client = connectionManager.getClient(ontology);
-        ClientUtilities util = new ClientUtilities(client);
-        String commitComment = JOptionPane.showInputDialog(owner, "Commit comment: ", "Commit", JOptionPane.PLAIN_MESSAGE);
-        ChangeMetaData metaData = new ChangeMetaData(commitComment);
+        Future<?> future = connectionManager.getSingleThreadExecutorService().submit(new DoCommit(vont, commitComment));
         try {
-            util.commit(metaData, vont);
+            future.get();
         }
-        catch (OWLServerException ioe) {
-            ProtegeApplication.getErrorLog().logError(ioe);
+        catch (Exception e) {
+            ProtegeApplication.getErrorLog().logError(e);
+        }
+
+    }
+    
+    // ToDo modify the synchronization so that this can run in tne background
+    //       even while edits are in progress.
+    //       make this part of the utility? 
+    private class DoCommit implements Runnable {
+        private OWLOntology ontology;
+        private VersionedOWLOntology vont;
+        private String commitcomment;
+        public DoCommit(VersionedOWLOntology vont, String commitComment) {
+            this.vont = vont;
+            this.commitcomment = commitComment;
+            ontology = vont.getOntology(); 
+        }
+        
+        @Override
+        public void run() {
+            Client client = connectionManager.getClient(ontology);
+            ClientUtilities util = new ClientUtilities(client);
+
+            ChangeMetaData metaData = new ChangeMetaData(commitcomment);
+            try {
+                util.commit(metaData, vont);
+            }
+            catch (OWLServerException ioe) {
+                ProtegeApplication.getErrorLog().logError(ioe);
+            }
         }
     }
-
 
 
 }

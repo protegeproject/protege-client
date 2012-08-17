@@ -1,4 +1,4 @@
-package org.protege.editor.owl.client;
+package org.protege.editor.owl.client.panel;
 
 import java.awt.BorderLayout;
 import java.awt.Dimension;
@@ -22,6 +22,7 @@ import javax.swing.JTextField;
 
 import org.protege.editor.core.ProtegeApplication;
 import org.protege.editor.owl.OWLEditorKit;
+import org.protege.editor.owl.client.ServerConnectionManager;
 import org.protege.editor.owl.ui.UIHelper;
 import org.protege.owl.server.api.ChangeMetaData;
 import org.protege.owl.server.api.Client;

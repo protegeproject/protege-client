@@ -1,4 +1,4 @@
-package org.protege.editor.owl.client;
+package org.protege.editor.owl.client.action;
 
 import java.awt.Container;
 import java.awt.Frame;
@@ -9,6 +9,7 @@ import javax.swing.JOptionPane;
 import javax.swing.SwingUtilities;
 
 import org.protege.editor.core.ProtegeApplication;
+import org.protege.editor.owl.client.ServerConnectionManager;
 import org.protege.editor.owl.ui.action.ProtegeOWLAction;
 import org.protege.owl.server.api.Client;
 import org.protege.owl.server.api.VersionedOWLOntology;

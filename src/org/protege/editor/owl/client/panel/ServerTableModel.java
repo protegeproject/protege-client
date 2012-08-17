@@ -1,4 +1,4 @@
-package org.protege.editor.owl.client;
+package org.protege.editor.owl.client.panel;
 
 import java.util.ArrayList;
 import java.util.Collections;

@@ -12,23 +12,13 @@
       <extension id="Connect"
               point="org.protege.editor.core.application.EditorKitMenuAction">
       <name value="Connect to server"/>
-      <class value="org.protege.editor.owl.client.ClientOntologyBuilder"/>
+      <class value="org.protege.editor.owl.client.action.ClientOntologyBuilder"/>
       <toolTip value="Connect to Server and open a project"/>
       <path value="org.protege.editor.owl.client.Server/SlotZ-A"/>
       <editorKitId value="OWLEditorKit"/>
    </extension>
    
-   <!--
-   <extension id="EnableAutoCommit"
-              name="Auto Commit Menu"
-              point="org.protege.editor.core.application.EditorKitMenuAction">
-      <name value="Auto-Commit"/>
-      <path value="org.protege.editor.owl.client.Server/SlotA-C"/>
-      <editorKitId value="OWLEditorKit"/>
-      <class value="org.protege.editor.owl.client.EnableAutoCommitAction"/>
-      <checkbox value="true"/>
-   </extension>
-    -->
+
    
    <extension id="EnableAutoUpdate"
               name="Auto Update Menu"
@@ -36,7 +26,7 @@
       <name value="Auto-Update"/>
       <path value="org.protege.editor.owl.client.Server/SlotC-E"/>
       <editorKitId value="OWLEditorKit"/>
-      <class value="org.protege.editor.owl.client.EnableAutoUpdateAction"/>
+      <class value="org.protege.editor.owl.client.action.EnableAutoUpdateAction"/>
       <checkbox value="true"/>
    </extension>
 
@@ -47,7 +37,7 @@
       <name value="Commit"/>
       <path value="org.protege.editor.owl.client.Server/SlotA-G"/>
       <editorKitId value="OWLEditorKit"/>
-      <class value="org.protege.editor.owl.client.CommitAction"/>
+      <class value="org.protege.editor.owl.client.action.CommitAction"/>
    </extension>
    
       <extension id="Update"
@@ -56,7 +46,7 @@
       <name value="Update"/>
       <path value="org.protege.editor.owl.client.Server/SlotA-I"/>
       <editorKitId value="OWLEditorKit"/>
-      <class value="org.protege.editor.owl.client.UpdateAction"/>
+      <class value="org.protege.editor.owl.client.action.UpdateAction"/>
    </extension>
       <extension
             id="ServerConnectionManager"

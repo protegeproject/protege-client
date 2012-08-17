@@ -1,12 +1,12 @@
-package org.protege.editor.owl.client;
+package org.protege.editor.owl.client.action;
 
 import java.awt.event.ActionEvent;
 
 import org.protege.editor.core.ui.action.ProtegeAction;
 
-public class EnableAutoUpdateAction extends ProtegeAction {
+public class EnableAutoCommitAction extends ProtegeAction {
 
-	public EnableAutoUpdateAction() {
+	public EnableAutoCommitAction() {
 		// TODO Auto-generated constructor stub
 	}
 

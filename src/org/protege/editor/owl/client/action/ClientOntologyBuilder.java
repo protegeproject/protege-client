@@ -1,10 +1,11 @@
-package org.protege.editor.owl.client;
+package org.protege.editor.owl.client.action;
 
 import java.awt.Frame;
 import java.awt.event.ActionEvent;
 
 import javax.swing.SwingUtilities;
 
+import org.protege.editor.owl.client.panel.ServerConnectionDialog;
 import org.protege.editor.owl.model.OWLWorkspace;
 import org.protege.editor.owl.ui.action.ProtegeOWLAction;
 

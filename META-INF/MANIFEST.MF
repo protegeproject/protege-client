@@ -1,6 +1,6 @@
 Manifest-Version: 1.0
 Export-Package: org.protege.editor.owl.client;version="2.0.1.2012_08_1
- 6_1202";uses:="javax.swing,javax.swing.table,org.protege.editor.core.
+ 7_0605";uses:="javax.swing,javax.swing.table,org.protege.editor.core.
  editorkit,org.protege.editor.core.editorkit.plugin,org.protege.editor
  .core.ui.action,org.protege.editor.owl,org.protege.editor.owl.model,o
  rg.protege.editor.owl.model.io,org.protege.editor.owl.ui.action,org.p
@@ -8,7 +8,7 @@ Export-Package: org.protege.editor.owl.client;version="2.0.1.2012_08_1
  icweb.owlapi.model"
 Bundle-Vendor: The Protege Development Team
 Built-By: redmond
-Bundle-Version: 2.0.1.2012_08_16_1202
+Bundle-Version: 2.0.1.2012_08_17_0605
 Tool: Bundlor 1.1.0.M05
 Bundle-Name: Protege OWL Client
 Bundle-ManifestVersion: 2

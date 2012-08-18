@@ -18,7 +18,7 @@ import org.protege.editor.owl.model.io.IOListener;
 import org.protege.editor.owl.model.io.IOListenerEvent;
 import org.protege.owl.server.api.Client;
 import org.protege.owl.server.api.DocumentFactory;
-import org.protege.owl.server.api.VersionedOWLOntology;
+import org.protege.owl.server.api.VersionedOntologyDocument;
 import org.semanticweb.owlapi.model.IRI;
 import org.semanticweb.owlapi.model.OWLException;
 import org.semanticweb.owlapi.model.OWLOntology;
@@ -35,7 +35,7 @@ public class ServerConnectionManager extends EditorKitHook {
 		return (ServerConnectionManager) editorKit.get(ID);
 	}
 	
-	private Map<OWLOntologyID, VersionedOWLOntology> ontologyMap = new TreeMap<OWLOntologyID, VersionedOWLOntology>();
+	private Map<OWLOntologyID, VersionedOntologyDocument> ontologyMap = new TreeMap<OWLOntologyID, VersionedOntologyDocument>();
 	private Map<OWLOntologyID, Client> clientMap = new TreeMap<OWLOntologyID, Client>();
 	private Map<IRI, Client> serverIRIToClientMap = new TreeMap<IRI, Client>();
 	private ScheduledExecutorService singleThreadExecutorService = Executors.newSingleThreadScheduledExecutor(new ThreadFactory() {
@@ -62,7 +62,7 @@ public class ServerConnectionManager extends EditorKitHook {
 		@Override
 		public void afterSave(IOListenerEvent event) {
 			OWLOntologyID id = event.getOntologyID();
-			VersionedOWLOntology vont = ontologyMap.get(id);
+			VersionedOntologyDocument vont = ontologyMap.get(id);
 			if (vont != null) {
 				try {
 					vont.saveMetaData();
@@ -89,7 +89,7 @@ public class ServerConnectionManager extends EditorKitHook {
 				if (change instanceof SetOntologyID) {
 					SetOntologyID idChange = (SetOntologyID) change;
 					OWLOntologyID originalId = idChange.getOriginalOntologyID();
-					VersionedOWLOntology vont = ontologyMap.remove(originalId);
+					VersionedOntologyDocument vont = ontologyMap.remove(originalId);
 					Client client = clientMap.get(originalId);
 					if (vont != null) {
 						OWLOntologyID newId = idChange.getNewOntologyID();
@@ -130,7 +130,7 @@ public class ServerConnectionManager extends EditorKitHook {
         return singleThreadExecutorService;
     }
 	
-	public VersionedOWLOntology getVersionedOntology(OWLOntology ontology) {
+	public VersionedOntologyDocument getVersionedOntology(OWLOntology ontology) {
 		return ontologyMap.get(ontology.getOntologyID());
 	}
 	
@@ -138,7 +138,7 @@ public class ServerConnectionManager extends EditorKitHook {
 		return clientMap.get(ontology.getOntologyID());
 	}
 	
-	public void addVersionedOntology(Client client, VersionedOWLOntology vont) {
+	public void addVersionedOntology(Client client, VersionedOntologyDocument vont) {
 		OWLOntologyID id = vont.getOntology().getOntologyID();
 		ontologyMap.put(id, vont);
 		clientMap.put(id, client);
@@ -173,7 +173,7 @@ public class ServerConnectionManager extends EditorKitHook {
 		OWLOntologyID id = ontology.getOntologyID();
 		if (docFactory.hasServerMetadata(ontology)) {
 			try {
-				VersionedOWLOntology vont = docFactory.createVersionedOntology(ontology);
+				VersionedOntologyDocument vont = docFactory.createVersionedOntology(ontology);
 				if (client.isCompatible(vont)) {
 					ontologyMap.put(id, vont);
 					clientMap.put(id, client);

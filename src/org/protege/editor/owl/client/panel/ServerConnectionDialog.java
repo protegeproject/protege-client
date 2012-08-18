@@ -30,7 +30,7 @@ import org.protege.owl.server.api.RemoteOntologyDocument;
 import org.protege.owl.server.api.ServerDirectory;
 import org.protege.owl.server.api.ServerDocument;
 import org.protege.owl.server.api.User;
-import org.protege.owl.server.api.VersionedOWLOntology;
+import org.protege.owl.server.api.VersionedOntologyDocument;
 import org.protege.owl.server.api.exception.OWLServerException;
 import org.protege.owl.server.connect.rmi.RMIClient;
 import org.protege.owl.server.policy.RMILoginUtility;
@@ -133,7 +133,7 @@ public class ServerConnectionDialog extends JDialog {
 						RemoteOntologyDocument remoteOntology = (RemoteOntologyDocument) doc;
 						ServerConnectionManager connectionManager = ServerConnectionManager.get(editorKit);
 						ClientUtilities clientUtilities = new ClientUtilities(client);
-						VersionedOWLOntology vont = clientUtilities.loadOntology(editorKit.getOWLModelManager().getOWLOntologyManager(), remoteOntology);
+						VersionedOntologyDocument vont = clientUtilities.loadOntology(editorKit.getOWLModelManager().getOWLOntologyManager(), remoteOntology);
 						editorKit.getOWLModelManager().setActiveOntology(vont.getOntology());
 						connectionManager.addVersionedOntology(client, vont);
 						ServerConnectionDialog.this.setVisible(false);

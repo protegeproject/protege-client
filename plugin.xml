@@ -48,7 +48,17 @@
       <editorKitId value="OWLEditorKit"/>
       <class value="org.protege.editor.owl.client.action.UpdateAction"/>
    </extension>
-      <extension
+   
+   <extension id="ShowHistory"
+              name="Show History"
+              point="org.protege.editor.core.application.EditorKitMenuAction">
+       <name value="Show History"/>
+       <path value="org.protege.editor.owl.client.Server/SlotA-W"/>
+       <editorKitId value="OWLEditorKit"/>
+       <class value="org.protege.editor.owl.client.action.ShowHistoryAction"/>
+   </extension>
+   
+   <extension
             id="ServerConnectionManager"
             name="Server Connection Manager"
             point="org.protege.editor.core.application.EditorKitHook">

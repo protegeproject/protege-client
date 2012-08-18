@@ -12,7 +12,7 @@ import org.protege.editor.core.ProtegeApplication;
 import org.protege.editor.owl.client.ServerConnectionManager;
 import org.protege.editor.owl.ui.action.ProtegeOWLAction;
 import org.protege.owl.server.api.Client;
-import org.protege.owl.server.api.VersionedOWLOntology;
+import org.protege.owl.server.api.VersionedOntologyDocument;
 import org.protege.owl.server.api.exception.OWLServerException;
 import org.protege.owl.server.util.ClientUtilities;
 import org.semanticweb.owlapi.model.OWLOntology;
@@ -36,7 +36,7 @@ public class UpdateAction extends ProtegeOWLAction {
 	public void actionPerformed(ActionEvent e) {
         Container owner = SwingUtilities.getAncestorOfClass(Frame.class,getOWLWorkspace());
 	    OWLOntology ontology = getOWLModelManager().getActiveOntology();
-	    VersionedOWLOntology vont = connectionManager.getVersionedOntology(ontology);
+	    VersionedOntologyDocument vont = connectionManager.getVersionedOntology(ontology);
 	    if (vont == null) {
             JOptionPane.showMessageDialog(owner, "Update ignored because the ontology is not associated with a server");
             return;
@@ -47,9 +47,9 @@ public class UpdateAction extends ProtegeOWLAction {
 	}
 	
 	private class DoUpdate implements Runnable {
-	    private VersionedOWLOntology vont;
+	    private VersionedOntologyDocument vont;
 	    
-	    public DoUpdate(VersionedOWLOntology vont) {
+	    public DoUpdate(VersionedOntologyDocument vont) {
 	        this.vont = vont;
         }
 	    

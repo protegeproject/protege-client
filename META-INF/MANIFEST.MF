@@ -1,31 +1,38 @@
 Manifest-Version: 1.0
 Export-Package: org.protege.editor.owl.client;version="2.0.1.2012_08_1
- 7_0605";uses:="javax.swing,javax.swing.table,org.protege.editor.core.
+ 7_0137";uses:="javax.swing,javax.swing.table,org.protege.editor.core.
  editorkit,org.protege.editor.core.editorkit.plugin,org.protege.editor
  .core.ui.action,org.protege.editor.owl,org.protege.editor.owl.model,o
  rg.protege.editor.owl.model.io,org.protege.editor.owl.ui.action,org.p
  rotege.owl.server.api,org.protege.owl.server.api.exception,org.semant
- icweb.owlapi.model"
+ icweb.owlapi.model",org.protege.editor.owl.client.action;version="2.0
+ .1.2012_08_17_0137";uses:="org.protege.editor.core.ui.action,org.prot
+ ege.editor.owl.client,org.protege.editor.owl.ui.action,org.protege.ow
+ l.server.api",org.protege.editor.owl.client.panel;version="2.0.1.2012
+ _08_17_0137";uses:="javax.swing,javax.swing.event,javax.swing.table,o
+ rg.protege.editor.owl,org.protege.owl.server.api,org.protege.owl.serv
+ er.api.exception,org.semanticweb.owlapi.model"
 Bundle-Vendor: The Protege Development Team
-Built-By: redmond
-Bundle-Version: 2.0.1.2012_08_17_0605
-Tool: Bundlor 1.1.0.M05
+Built-By: tredmond
+Bundle-Version: 2.0.1.2012_08_17_0137
+Tool: Bundlor 1.1.0.M04
 Bundle-Name: Protege OWL Client
 Bundle-ManifestVersion: 2
 Bundle-SymbolicName: org.protege.editor.owl.client;singleton:="true"
 Import-Package: javax.swing;version="0.0.0",javax.swing.border;version
- ="0.0.0",javax.swing.table;version="0.0.0",org.protege.editor.core;ve
- rsion="4.2.0",org.protege.editor.core.editorkit;version="4.2.0",org.p
- rotege.editor.core.editorkit.plugin;version="4.2.0",org.protege.edito
- r.core.ui.action;version="4.2.0",org.protege.editor.core.ui.error;ver
- sion="4.2.0",org.protege.editor.owl;version="4.2.0",org.protege.edito
- r.owl.model;version="4.2.0",org.protege.editor.owl.model.io;version="
- 4.2.0",org.protege.editor.owl.ui;version="4.2.0",org.protege.editor.o
- wl.ui.action;version="4.2.0",org.protege.owl.server.api;version="2.0.
- 0",org.protege.owl.server.api.exception;version="2.0.0",org.protege.o
- wl.server.connect.rmi;version="2.0.0",org.protege.owl.server.policy;v
- ersion="2.0.0",org.protege.owl.server.util;version="2.0.0",org.semant
- icweb.owlapi.apibinding;version="3.0.0",org.semanticweb.owlapi.model;
- version="3.0.0"
+ ="0.0.0",javax.swing.event;version="0.0.0",javax.swing.table;version=
+ "0.0.0",org.protege.editor.core;version="4.2.0",org.protege.editor.co
+ re.editorkit;version="4.2.0",org.protege.editor.core.editorkit.plugin
+ ;version="4.2.0",org.protege.editor.core.ui.action;version="4.2.0",or
+ g.protege.editor.core.ui.error;version="4.2.0",org.protege.editor.owl
+ ;version="4.2.0",org.protege.editor.owl.model;version="4.2.0",org.pro
+ tege.editor.owl.model.io;version="4.2.0",org.protege.editor.owl.ui;ve
+ rsion="4.2.0",org.protege.editor.owl.ui.action;version="4.2.0",org.pr
+ otege.editor.owl.ui.renderer;version="4.2.0",org.protege.owl.server.a
+ pi;version="2.0.0",org.protege.owl.server.api.exception;version="2.0.
+ 0",org.protege.owl.server.connect.rmi;version="2.0.0",org.protege.owl
+ .server.policy;version="2.0.0",org.protege.owl.server.util;version="2
+ .0.0",org.semanticweb.owlapi.apibinding;version="3.0.0",org.semanticw
+ eb.owlapi.model;version="3.0.0"
 Bundle-RequiredExecutionEnvironment: JavaSE-1.6
 

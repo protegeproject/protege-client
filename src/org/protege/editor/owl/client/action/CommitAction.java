@@ -13,7 +13,7 @@ import org.protege.editor.owl.client.ServerConnectionManager;
 import org.protege.editor.owl.ui.action.ProtegeOWLAction;
 import org.protege.owl.server.api.ChangeMetaData;
 import org.protege.owl.server.api.Client;
-import org.protege.owl.server.api.VersionedOWLOntology;
+import org.protege.owl.server.api.VersionedOntologyDocument;
 import org.protege.owl.server.util.ClientUtilities;
 import org.semanticweb.owlapi.model.OWLOntology;
 import org.protege.owl.server.api.exception.OWLServerException;
@@ -37,7 +37,7 @@ public class CommitAction extends ProtegeOWLAction {
     public void actionPerformed(ActionEvent arg0) {
         Container owner = SwingUtilities.getAncestorOfClass(Frame.class,getOWLWorkspace());
         final OWLOntology ontology = getOWLEditorKit().getModelManager().getActiveOntology();
-        final VersionedOWLOntology vont = connectionManager.getVersionedOntology(ontology);
+        final VersionedOntologyDocument vont = connectionManager.getVersionedOntology(ontology);
         final String commitComment = JOptionPane.showInputDialog(owner, "Commit comment: ", "Commit", JOptionPane.PLAIN_MESSAGE);
         if (vont == null) {
             JOptionPane.showMessageDialog(owner, "Commit ignored because the ontology is not associated with a server");
@@ -58,9 +58,9 @@ public class CommitAction extends ProtegeOWLAction {
     //       make this part of the utility? 
     private class DoCommit implements Runnable {
         private OWLOntology ontology;
-        private VersionedOWLOntology vont;
+        private VersionedOntologyDocument vont;
         private String commitcomment;
-        public DoCommit(VersionedOWLOntology vont, String commitComment) {
+        public DoCommit(VersionedOntologyDocument vont, String commitComment) {
             this.vont = vont;
             this.commitcomment = commitComment;
             ontology = vont.getOntology(); 

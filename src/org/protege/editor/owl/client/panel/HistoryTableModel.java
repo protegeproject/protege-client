@@ -4,7 +4,7 @@ import java.util.Date;
 
 import javax.swing.table.AbstractTableModel;
 
-import org.protege.owl.server.api.ChangeDocument;
+import org.protege.owl.server.api.ChangeHistory;
 import org.protege.owl.server.api.ChangeMetaData;
 
 public class HistoryTableModel extends AbstractTableModel {
@@ -29,10 +29,8 @@ public class HistoryTableModel extends AbstractTableModel {
         };
         
         private String name;
-        private Class<?> clazz;            @Override
-        public Object getValue(ChangeMetaData metaData) {
-            return metaData.getDate();
-        } 
+        private Class<?> clazz;            
+        
         
         private Column(String name, Class<?> clazz) {
             this.name = name;
@@ -50,7 +48,11 @@ public class HistoryTableModel extends AbstractTableModel {
         public abstract Object getValue(ChangeMetaData metaData);
         
     }
-    private ChangeDocument changes;
+    private ChangeHistory changes;
+    
+    public HistoryTableModel(ChangeHistory changes) {
+        this.changes = changes;
+    }
 
     @Override
     public int getRowCount() {
@@ -76,8 +78,9 @@ public class HistoryTableModel extends AbstractTableModel {
 
     @Override
     public Object getValueAt(int rowIndex, int columnIndex) {
-        // TODO Auto-generated method stub
-        return null;
+        Column col = Column.values()[columnIndex];
+        ChangeMetaData metaData = changes.getMetaData(changes.getStartRevision().add(rowIndex));
+        return col.getValue(metaData);
     }
 
 }

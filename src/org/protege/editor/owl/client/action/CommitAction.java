@@ -9,7 +9,7 @@ import javax.swing.JOptionPane;
 import javax.swing.SwingUtilities;
 
 import org.protege.editor.core.ProtegeApplication;
-import org.protege.editor.owl.client.ServerConnectionManager;
+import org.protege.editor.owl.client.connect.ServerConnectionManager;
 import org.protege.editor.owl.ui.action.ProtegeOWLAction;
 import org.protege.owl.server.api.ChangeMetaData;
 import org.protege.owl.server.api.Client;

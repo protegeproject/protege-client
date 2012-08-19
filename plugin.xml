@@ -62,7 +62,7 @@
             id="ServerConnectionManager"
             name="Server Connection Manager"
             point="org.protege.editor.core.application.EditorKitHook">
-         <class value="org.protege.editor.owl.client.ServerConnectionManager"/>
+         <class value="org.protege.editor.owl.client.connect.ServerConnectionManager"/>
          <editorKitId value="OWLEditorKit"/>
       </extension>
 </plugin>

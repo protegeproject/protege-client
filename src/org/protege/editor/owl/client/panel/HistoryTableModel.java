@@ -18,7 +18,7 @@ public class HistoryTableModel extends AbstractTableModel {
         USER("Committer", String.class) {
             @Override
             public String getValue(ChangeMetaData metaData) {
-                return metaData.getUsername();
+                return metaData.getUserId().getUserName();
             }             
         },
         COMMIT_COMMENT("Description", String.class) {

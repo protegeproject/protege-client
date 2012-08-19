@@ -22,14 +22,16 @@ import javax.swing.JTextField;
 
 import org.protege.editor.core.ProtegeApplication;
 import org.protege.editor.owl.OWLEditorKit;
-import org.protege.editor.owl.client.ServerConnectionManager;
+import org.protege.editor.owl.client.connect.ServerConnectionManager;
 import org.protege.editor.owl.ui.UIHelper;
 import org.protege.owl.server.api.ChangeMetaData;
 import org.protege.owl.server.api.Client;
+import org.protege.owl.server.api.ServerOntologyDocument;
 import org.protege.owl.server.api.RemoteOntologyDocument;
+import org.protege.owl.server.api.RemoteServerDirectory;
+import org.protege.owl.server.api.RemoteServerDocument;
 import org.protege.owl.server.api.ServerDirectory;
-import org.protege.owl.server.api.ServerDocument;
-import org.protege.owl.server.api.User;
+import org.protege.owl.server.api.AuthToken;
 import org.protege.owl.server.api.VersionedOntologyDocument;
 import org.protege.owl.server.api.exception.OWLServerException;
 import org.protege.owl.server.connect.rmi.RMIClient;
@@ -46,7 +48,7 @@ public class ServerConnectionDialog extends JDialog {
 	private Logger logger = Logger.getLogger(ServerConnectionDialog.class.getCanonicalName());
 	private OWLEditorKit editorKit;
 	private Client client;
-	private ServerDirectory currentDirectory;
+	private RemoteServerDirectory currentDirectory;
 	private RemoteOntologyDocument remoteOntology;
 	private ServerTableModel tableModel;
 	private JTextField urlField;
@@ -110,7 +112,7 @@ public class ServerConnectionDialog extends JDialog {
 		return panel;
 	}
 	
-	public void setDirectory(ServerDirectory dir) throws OWLServerException {
+	public void setDirectory(RemoteServerDirectory dir) throws OWLServerException {
 	    urlField.setText(dir.getServerLocation().toString());
 	    tableModel.loadServerData(client, dir);
 	    currentDirectory = dir;
@@ -128,7 +130,7 @@ public class ServerConnectionDialog extends JDialog {
 			try {
 				if (e.getClickCount() == 2) {
 					int row = table.getSelectedRow();
-					ServerDocument doc = tableModel.getValueAt(row);
+					RemoteServerDocument doc = tableModel.getValueAt(row);
 					if (doc instanceof RemoteOntologyDocument) {
 						RemoteOntologyDocument remoteOntology = (RemoteOntologyDocument) doc;
 						ServerConnectionManager connectionManager = ServerConnectionManager.get(editorKit);
@@ -138,8 +140,8 @@ public class ServerConnectionDialog extends JDialog {
 						connectionManager.addVersionedOntology(client, vont);
 						ServerConnectionDialog.this.setVisible(false);
 					}
-					else if (doc instanceof ServerDirectory) {
-					    setDirectory((ServerDirectory) doc);
+					else if (doc instanceof RemoteServerDirectory) {
+					    setDirectory((RemoteServerDirectory) doc);
 					}
 				}
 			}
@@ -172,10 +174,10 @@ public class ServerConnectionDialog extends JDialog {
 	            if (login.showDialog()) {
 	                boolean success = false;
 	                try {
-	                    User authenticatedUser = RMILoginUtility.login(serverLocation, login.getName(), login.getPass());
+	                    AuthToken authenticatedUser = RMILoginUtility.login(serverLocation, login.getName(), login.getPass());
 	                    client = new RMIClient(authenticatedUser, IRI.create(urlField.getText()));
 	                    ((RMIClient) client).initialise();
-	                    currentDirectory = (ServerDirectory) client.getServerDocument(serverLocation);
+	                    currentDirectory = (RemoteServerDirectory) client.getServerDocument(serverLocation);
 	                    tableModel.loadServerData(client, currentDirectory);
 	                    success = true;
 	                }

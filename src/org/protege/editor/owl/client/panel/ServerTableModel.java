@@ -8,7 +8,8 @@ import java.util.List;
 import javax.swing.table.AbstractTableModel;
 
 import org.protege.owl.server.api.Client;
-import org.protege.owl.server.api.ServerDirectory;
+import org.protege.owl.server.api.RemoteServerDirectory;
+import org.protege.owl.server.api.RemoteServerDocument;
 import org.protege.owl.server.api.ServerDocument;
 import org.protege.owl.server.api.exception.OWLServerException;
 
@@ -22,13 +23,13 @@ public class ServerTableModel extends AbstractTableModel {
 	public enum Column {
 		SERVER_DOCUMENT_LOCATION;
 	}
-	private List<ServerDocument> serverDocuments = new ArrayList<ServerDocument>();
+	private List<RemoteServerDocument> serverDocuments = new ArrayList<RemoteServerDocument>();
 	
-	public void loadServerData(Client client, ServerDirectory dir) throws OWLServerException {
-		List<ServerDocument> docs = new ArrayList<ServerDocument>(client.list(dir));
-		Collections.sort(docs, new Comparator<ServerDocument>() {
+	public void loadServerData(Client client, RemoteServerDirectory dir) throws OWLServerException {
+		List<RemoteServerDocument> docs = new ArrayList<RemoteServerDocument>(client.list(dir));
+		Collections.sort(docs, new Comparator<RemoteServerDocument>() {
 			@Override
-			public int compare(ServerDocument doc1, ServerDocument doc2) {
+			public int compare(RemoteServerDocument doc1, RemoteServerDocument doc2) {
 				return doc1.getServerLocation().compareTo(doc2.getServerLocation());
 			}
 		});
@@ -60,7 +61,7 @@ public class ServerTableModel extends AbstractTableModel {
 	@Override
 	public Object getValueAt(int row, int col) {
 		Column column = Column.values()[col];
-		ServerDocument doc = serverDocuments.get(row);
+		RemoteServerDocument doc = serverDocuments.get(row);
 		switch (column) {
 		case SERVER_DOCUMENT_LOCATION:
 			String fragment = doc.getServerLocation().getFragment();
@@ -79,7 +80,7 @@ public class ServerTableModel extends AbstractTableModel {
 		}
 	}
 	
-	public ServerDocument getValueAt(int row) {
+	public RemoteServerDocument getValueAt(int row) {
 		return serverDocuments.get(row);
 	}
 

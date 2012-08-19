@@ -30,7 +30,7 @@ public class ChangeListTableModel extends AbstractTableModel {
         ENTITY("Entity") {
             @Override
             public String getValue(ChangeMetaData metaData) {
-                return metaData.getUsername();
+                return metaData.getUserId().getUserName();
             }             
         };
         

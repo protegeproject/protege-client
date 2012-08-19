@@ -19,6 +19,8 @@ import org.protege.editor.owl.model.io.IOListenerEvent;
 import org.protege.owl.server.api.Client;
 import org.protege.owl.server.api.DocumentFactory;
 import org.protege.owl.server.api.VersionedOntologyDocument;
+import org.protege.owl.server.api.exception.OWLServerException;
+import org.protege.owl.server.util.ClientRegistry;
 import org.semanticweb.owlapi.model.IRI;
 import org.semanticweb.owlapi.model.OWLException;
 import org.semanticweb.owlapi.model.OWLOntology;
@@ -35,9 +37,9 @@ public class ServerConnectionManager extends EditorKitHook {
 		return (ServerConnectionManager) editorKit.get(ID);
 	}
 	
+	private ClientRegistry registry = new ClientRegistry();
 	private Map<OWLOntologyID, VersionedOntologyDocument> ontologyMap = new TreeMap<OWLOntologyID, VersionedOntologyDocument>();
-	private Map<OWLOntologyID, Client> clientMap = new TreeMap<OWLOntologyID, Client>();
-	private Map<IRI, Client> serverIRIToClientMap = new TreeMap<IRI, Client>();
+
 	private ScheduledExecutorService singleThreadExecutorService = Executors.newSingleThreadScheduledExecutor(new ThreadFactory() {
 	   @Override
 	    public Thread newThread(Runnable r) {
@@ -77,9 +79,7 @@ public class ServerConnectionManager extends EditorKitHook {
 		public void afterLoad(IOListenerEvent event) {
 			OWLOntologyID id = event.getOntologyID();
 			OWLOntology ontology = getOWLOntologyManager().getOntology(id);
-			for (Client client : serverIRIToClientMap.values()) {
-				connectIfCompatible(client, ontology);
-			}
+			// ToDo...
 		}
 	};
 	
@@ -90,11 +90,9 @@ public class ServerConnectionManager extends EditorKitHook {
 					SetOntologyID idChange = (SetOntologyID) change;
 					OWLOntologyID originalId = idChange.getOriginalOntologyID();
 					VersionedOntologyDocument vont = ontologyMap.remove(originalId);
-					Client client = clientMap.get(originalId);
 					if (vont != null) {
 						OWLOntologyID newId = idChange.getNewOntologyID();
 						ontologyMap.put(newId, vont);
-						clientMap.put(newId, client);
 					}
 				}
 			}
@@ -116,6 +114,7 @@ public class ServerConnectionManager extends EditorKitHook {
 
 	@Override
 	public void initialise() throws Exception {
+	    registry.addFactory(new RMIClientFactory());
 		getOWLModelManager().addIOListener(ioListener);
 		getOWLOntologyManager().addOntologyChangeListener(ontologyIdChangeListener);
 	}
@@ -134,56 +133,21 @@ public class ServerConnectionManager extends EditorKitHook {
 		return ontologyMap.get(ontology.getOntologyID());
 	}
 	
-	public Client getClient(OWLOntology ontology) {
-		return clientMap.get(ontology.getOntologyID());
-	}
-	
-	public void addVersionedOntology(Client client, VersionedOntologyDocument vont) {
+	public void addVersionedOntology(VersionedOntologyDocument vont) {
 		OWLOntologyID id = vont.getOntology().getOntologyID();
 		ontologyMap.put(id, vont);
-		clientMap.put(id, client);
 	}
 	
-	public void addClient(Client client) {
-		serverIRIToClientMap.put(client.getServerIRI(), client);
-		for (OWLOntology ontology : getOWLOntologyManager().getOntologies()) {
-			if (ontologyMap.get(ontology.getOntologyID()) == null) {
-				connectIfCompatible(client, ontology);
-			}
-		}
-	}
-	
-	public Client hasClient(IRI serverLocation) {
-	    URI serverURI = serverLocation.toURI();
-	    String schema = serverURI.getScheme();
-	    String host   = serverURI.getHost();
-	    int port      = serverURI.getPort();
-	    for (Entry<IRI, Client> entry : serverIRIToClientMap.entrySet()) {
-	        URI clientURI = entry.getKey().toURI();
-	        Client client = entry.getValue();
-	        if (schema.equals(clientURI.getScheme()) && host.equals(clientURI.getHost()) && port == clientURI.getPort()) {
-	            return client;
-	        }
+	public Client createClient(OWLOntology ontology) throws OWLServerException {
+	    VersionedOntologyDocument vont = ontologyMap.get(ontology.getOntologyID());
+	    if (vont != null) {
+	        return registry.createClient(vont.getServerDocument().getServerLocation());
 	    }
 	    return null;
 	}
 	
-	private boolean connectIfCompatible(Client client, OWLOntology ontology) {
-		DocumentFactory docFactory = client.getDocumentFactory();
-		OWLOntologyID id = ontology.getOntologyID();
-		if (docFactory.hasServerMetadata(ontology)) {
-			try {
-				VersionedOntologyDocument vont = docFactory.createVersionedOntology(ontology);
-				if (client.isCompatible(vont)) {
-					ontologyMap.put(id, vont);
-					clientMap.put(id, client);
-					return true;
-				}
-			} catch (IOException e) {
-				ProtegeApplication.getErrorLog().logError(e); // ToDo: until I figure out what to do...
-			}
-		}
-		return false;
+	public Client createClient(IRI serverLocation) throws OWLServerException {
+	    return registry.createClient(serverLocation);
 	}
 
 }

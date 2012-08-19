@@ -137,7 +137,7 @@ public class ServerConnectionDialog extends JDialog {
 						ClientUtilities clientUtilities = new ClientUtilities(client);
 						VersionedOntologyDocument vont = clientUtilities.loadOntology(editorKit.getOWLModelManager().getOWLOntologyManager(), remoteOntology);
 						editorKit.getOWLModelManager().setActiveOntology(vont.getOntology());
-						connectionManager.addVersionedOntology(client, vont);
+						connectionManager.addVersionedOntology(vont);
 						ServerConnectionDialog.this.setVisible(false);
 					}
 					else if (doc instanceof RemoteServerDirectory) {
@@ -157,45 +157,23 @@ public class ServerConnectionDialog extends JDialog {
 	private class ConnectActionListener implements ActionListener {
 	    @Override
 	    public void actionPerformed(ActionEvent e) {
-            IRI serverLocation = IRI.create(urlField.getText());
-            if (!findExistingClient(serverLocation)) {
-                loginToServer(serverLocation);
-            }
-	    }
-	    
-	    private boolean findExistingClient(IRI serverLocation) {
-	        ServerConnectionManager connectionManager = ServerConnectionManager.get(editorKit);
-	        Client client = connectionManager.hasClient(serverLocation);
-	        return client != null;
-	    }
-	    
-	    private void loginToServer(IRI serverLocation) {
-	           LoginDialog login = new LoginDialog(null, "Login");
-	            if (login.showDialog()) {
-	                boolean success = false;
-	                try {
-	                    AuthToken authenticatedUser = RMILoginUtility.login(serverLocation, login.getName(), login.getPass());
-	                    client = new RMIClient(authenticatedUser, IRI.create(urlField.getText()));
-	                    ((RMIClient) client).initialise();
-	                    currentDirectory = (RemoteServerDirectory) client.getServerDocument(serverLocation);
-	                    tableModel.loadServerData(client, currentDirectory);
-	                    success = true;
+	        try {
+	            IRI serverLocation = IRI.create(urlField.getText());
+	            ServerConnectionManager connectionManager = ServerConnectionManager.get(editorKit);
+	            client = connectionManager.createClient(serverLocation);
+	            if (client != null) {
+	                uploadButton.setEnabled(true);
+	                newDirectoryButton.setEnabled(true);
+	                RemoteServerDocument dir = client.getServerDocument(serverLocation);
+	                if (dir instanceof RemoteServerDirectory) {
+	                    setDirectory((RemoteServerDirectory) dir);
 	                }
-	                catch (Exception ex) {
-	                    ProtegeApplication.getErrorLog().logError(ex);
-	                }
-	                finally {
-	                    if (!success) {
-	                        client = null;
-	                        JOptionPane.showMessageDialog(getOwner(), "Connection Failed");
-	                    }
-	                    else {
-	                        JOptionPane.showMessageDialog(getOwner(), "Connection succeeded");
-	                    }
-	                    uploadButton.setEnabled(success);
-	                    newDirectoryButton.setEnabled(success);
-	                }
+	                JOptionPane.showMessageDialog(getOwner(), "Connected!");
 	            }
+	        }
+	        catch (OWLServerException ose) {
+	            ProtegeApplication.getErrorLog().logError(ose);
+	        }
 	    }
 	}
 	

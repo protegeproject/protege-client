@@ -5,7 +5,7 @@ import java.awt.event.ActionEvent;
 import javax.swing.JOptionPane;
 
 import org.protege.editor.core.ProtegeApplication;
-import org.protege.editor.owl.client.ServerConnectionManager;
+import org.protege.editor.owl.client.connect.ServerConnectionManager;
 import org.protege.editor.owl.client.panel.HistoryPanel;
 import org.protege.editor.owl.ui.action.ProtegeOWLAction;
 import org.protege.owl.server.api.ChangeHistory;
@@ -34,7 +34,7 @@ public class ShowHistoryAction extends ProtegeOWLAction {
             ServerConnectionManager connectionManager = ServerConnectionManager.get(getOWLEditorKit());
             OWLOntology ontology = getOWLModelManager().getActiveOntology();
             VersionedOntologyDocument vont = connectionManager.getVersionedOntology(ontology);
-            Client client = connectionManager.getClient(ontology);
+            Client client = connectionManager.createClient(ontology);
             if (vont != null) {
                 ChangeHistory changes = new ClientUtilities(client).getChanges(vont, OntologyDocumentRevision.START_REVISION, null);
                 HistoryPanel historyPanel = new HistoryPanel(getOWLEditorKit(), changes);

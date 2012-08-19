@@ -35,16 +35,17 @@ public class CommitAction extends ProtegeOWLAction {
 
     @Override
     public void actionPerformed(ActionEvent arg0) {
-        Container owner = SwingUtilities.getAncestorOfClass(Frame.class,getOWLWorkspace());
-        final OWLOntology ontology = getOWLEditorKit().getModelManager().getActiveOntology();
-        final VersionedOntologyDocument vont = connectionManager.getVersionedOntology(ontology);
-        final String commitComment = JOptionPane.showInputDialog(owner, "Commit comment: ", "Commit", JOptionPane.PLAIN_MESSAGE);
-        if (vont == null) {
-            JOptionPane.showMessageDialog(owner, "Commit ignored because the ontology is not associated with a server");
-            return;
-        }
-        Future<?> future = connectionManager.getSingleThreadExecutorService().submit(new DoCommit(vont, commitComment));
         try {
+            Container owner = SwingUtilities.getAncestorOfClass(Frame.class,getOWLWorkspace());
+            final OWLOntology ontology = getOWLEditorKit().getModelManager().getActiveOntology();
+            final VersionedOntologyDocument vont = connectionManager.getVersionedOntology(ontology);
+            final String commitComment = JOptionPane.showInputDialog(owner, "Commit comment: ", "Commit", JOptionPane.PLAIN_MESSAGE);
+            if (vont == null) {
+                JOptionPane.showMessageDialog(owner, "Commit ignored because the ontology is not associated with a server");
+                return;
+            }
+            Client client = connectionManager.createClient(ontology);
+            Future<?> future = connectionManager.getSingleThreadExecutorService().submit(new DoCommit(client, vont, commitComment));
             future.get();
         }
         catch (Exception e) {
@@ -57,22 +58,20 @@ public class CommitAction extends ProtegeOWLAction {
     //       even while edits are in progress.
     //       make this part of the utility? 
     private class DoCommit implements Runnable {
-        private OWLOntology ontology;
+        private Client client;
         private VersionedOntologyDocument vont;
         private String commitcomment;
-        public DoCommit(VersionedOntologyDocument vont, String commitComment) {
+        public DoCommit(Client client, VersionedOntologyDocument vont, String commitComment) {
+            this.client = client;
             this.vont = vont;
             this.commitcomment = commitComment;
-            ontology = vont.getOntology(); 
         }
         
         @Override
         public void run() {
-            Client client = connectionManager.getClient(ontology);
-            ClientUtilities util = new ClientUtilities(client);
-
             ChangeMetaData metaData = new ChangeMetaData(commitcomment);
             try {
+                ClientUtilities util = new ClientUtilities(client);
                 util.commit(metaData, vont);
             }
             catch (OWLServerException ioe) {

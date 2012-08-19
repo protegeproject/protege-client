@@ -77,9 +77,17 @@ public class ServerConnectionManager extends EditorKitHook {
 		
 		@Override
 		public void afterLoad(IOListenerEvent event) {
-			OWLOntologyID id = event.getOntologyID();
-			OWLOntology ontology = getOWLOntologyManager().getOntology(id);
-			// ToDo...
+		    try {
+		        OWLOntologyManager manager = getOWLOntologyManager();
+		        OWLOntologyID id = event.getOntologyID();
+		        OWLOntology ontology = manager.getOntology(id);
+		        if (registry.hasSuitableMetaData(ontology)) {
+		            addVersionedOntology(registry.getVersionedOntologyDocument(ontology));
+		        }
+		    }
+		    catch (IOException ioe) {
+		        ProtegeApplication.getErrorLog().logError(ioe);
+		    }
 		}
 	};
 	
@@ -141,13 +149,13 @@ public class ServerConnectionManager extends EditorKitHook {
 	public Client createClient(OWLOntology ontology) throws OWLServerException {
 	    VersionedOntologyDocument vont = ontologyMap.get(ontology.getOntologyID());
 	    if (vont != null) {
-	        return registry.createClient(vont.getServerDocument().getServerLocation());
+	        return registry.connectToServer(vont.getServerDocument().getServerLocation());
 	    }
 	    return null;
 	}
 	
 	public Client createClient(IRI serverLocation) throws OWLServerException {
-	    return registry.createClient(serverLocation);
+	    return registry.connectToServer(serverLocation);
 	}
 
 }

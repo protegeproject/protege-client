@@ -71,8 +71,7 @@ public class CommitAction extends ProtegeOWLAction {
         public void run() {
             ChangeMetaData metaData = new ChangeMetaData(commitcomment);
             try {
-                ClientUtilities util = new ClientUtilities(client);
-                util.commit(metaData, vont);
+                ClientUtilities.commit(client, metaData, vont);
             }
             catch (OWLServerException ioe) {
                 ProtegeApplication.getErrorLog().logError(ioe);

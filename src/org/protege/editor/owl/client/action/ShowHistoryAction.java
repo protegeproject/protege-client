@@ -36,7 +36,7 @@ public class ShowHistoryAction extends ProtegeOWLAction {
             VersionedOntologyDocument vont = connectionManager.getVersionedOntology(ontology);
             Client client = connectionManager.createClient(ontology);
             if (vont != null) {
-                ChangeHistory changes = new ClientUtilities(client).getChanges(vont, OntologyDocumentRevision.START_REVISION, null);
+                ChangeHistory changes = ClientUtilities.getChanges(client, vont, OntologyDocumentRevision.START_REVISION, null);
                 HistoryPanel historyPanel = new HistoryPanel(getOWLEditorKit(), changes);
                 historyPanel.initialise();
                 JOptionPane.showMessageDialog(getOWLWorkspace(), historyPanel);

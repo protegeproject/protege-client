@@ -134,8 +134,7 @@ public class ServerConnectionDialog extends JDialog {
 					if (doc instanceof RemoteOntologyDocument) {
 						RemoteOntologyDocument remoteOntology = (RemoteOntologyDocument) doc;
 						ServerConnectionManager connectionManager = ServerConnectionManager.get(editorKit);
-						ClientUtilities clientUtilities = new ClientUtilities(client);
-						VersionedOntologyDocument vont = clientUtilities.loadOntology(editorKit.getOWLModelManager().getOWLOntologyManager(), remoteOntology);
+						VersionedOntologyDocument vont = ClientUtilities.loadOntology(client, editorKit.getOWLModelManager().getOWLOntologyManager(), remoteOntology);
 						editorKit.getOWLModelManager().setActiveOntology(vont.getOntology());
 						connectionManager.addVersionedOntology(vont);
 						ServerConnectionDialog.this.setVisible(false);
@@ -186,8 +185,7 @@ public class ServerConnectionDialog extends JDialog {
 					OWLOntologyManager manager = OWLManager.createOWLOntologyManager();
 					OWLOntology ontology = manager.loadOntologyFromOntologyDocument(input);
 					String name = (String) JOptionPane.showInputDialog(getOwner(), "Name of upload: ");
-					ClientUtilities util = new ClientUtilities(client);
-					util.createServerOntology(IRI.create(urlField.getText() + "/" + name + ".history"), new ChangeMetaData("Uploaded from file " + input), ontology);
+					ClientUtilities.createServerOntology(client, IRI.create(urlField.getText() + "/" + name + ".history"), new ChangeMetaData("Uploaded from file " + input), ontology);
 					tableModel.loadServerData(client, currentDirectory);
 					JOptionPane.showMessageDialog(getOwner(), "Uploaded!");
 				}

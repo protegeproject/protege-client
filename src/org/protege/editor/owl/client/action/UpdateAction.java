@@ -58,8 +58,7 @@ public class UpdateAction extends ProtegeOWLAction {
 	        try {
 	            OWLOntology ontology = vont.getOntology();
 	            Client client = connectionManager.createClient(ontology);
-	            ClientUtilities util = new ClientUtilities(client);
-	            util.update(vont);
+	            ClientUtilities.update(client, vont);
 	        }
 	        catch (OWLServerException ioe) {
 	            ProtegeApplication.getErrorLog().logError(ioe);

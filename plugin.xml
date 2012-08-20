@@ -9,29 +9,7 @@
       <editorKitId value="OWLEditorKit"/>
    </extension>
    
-      <extension id="Connect"
-              point="org.protege.editor.core.application.EditorKitMenuAction">
-      <name value="Connect to server"/>
-      <class value="org.protege.editor.owl.client.action.ClientOntologyBuilder"/>
-      <toolTip value="Connect to Server and open a project"/>
-      <path value="org.protege.editor.owl.client.Server/SlotZ-A"/>
-      <editorKitId value="OWLEditorKit"/>
-   </extension>
-   
-
-   
-   <extension id="EnableAutoUpdate"
-              name="Auto Update Menu"
-              point="org.protege.editor.core.application.EditorKitMenuAction">
-      <name value="Auto-Update"/>
-      <path value="org.protege.editor.owl.client.Server/SlotC-E"/>
-      <editorKitId value="OWLEditorKit"/>
-      <class value="org.protege.editor.owl.client.action.EnableAutoUpdateAction"/>
-      <checkbox value="true"/>
-   </extension>
-
-	
-   <extension id="Commit"
+      <extension id="Commit"
               name="Commit Menu"
               point="org.protege.editor.core.application.EditorKitMenuAction">
       <name value="Commit"/>
@@ -49,14 +27,43 @@
       <class value="org.protege.editor.owl.client.action.UpdateAction"/>
    </extension>
    
+      <extension id="ShowUncommitted"
+              name="Show Uncommitted Changes"
+              point="org.protege.editor.core.application.EditorKitMenuAction">
+       <name value="Show Uncommitted Changes"/>
+       <path value="org.protege.editor.owl.client.Server/SlotB-W"/>
+       <editorKitId value="OWLEditorKit"/>
+       <class value="org.protege.editor.owl.client.action.ShowUncommittedChangesAction"/>
+   </extension>
+   
    <extension id="ShowHistory"
               name="Show History"
               point="org.protege.editor.core.application.EditorKitMenuAction">
        <name value="Show History"/>
-       <path value="org.protege.editor.owl.client.Server/SlotA-W"/>
+       <path value="org.protege.editor.owl.client.Server/SlotB-W"/>
        <editorKitId value="OWLEditorKit"/>
        <class value="org.protege.editor.owl.client.action.ShowHistoryAction"/>
    </extension>
+      
+   <extension id="EnableAutoUpdate"
+              name="Auto Update Menu"
+              point="org.protege.editor.core.application.EditorKitMenuAction">
+      <name value="Auto-Update"/>
+      <path value="org.protege.editor.owl.client.Server/SlotC-E"/>
+      <editorKitId value="OWLEditorKit"/>
+      <class value="org.protege.editor.owl.client.action.EnableAutoUpdateAction"/>
+      <checkbox value="true"/>
+   </extension>
+   
+      <extension id="Connect"
+              point="org.protege.editor.core.application.EditorKitMenuAction">
+      <name value="Connect to server"/>
+      <class value="org.protege.editor.owl.client.action.ClientOntologyBuilder"/>
+      <toolTip value="Connect to Server and open a project"/>
+      <path value="org.protege.editor.owl.client.Server/SlotZ-A"/>
+      <editorKitId value="OWLEditorKit"/>
+   </extension>
+   
    
    <extension
             id="ServerConnectionManager"

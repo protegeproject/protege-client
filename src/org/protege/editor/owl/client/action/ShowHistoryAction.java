@@ -11,6 +11,7 @@ import org.protege.editor.owl.ui.action.ProtegeOWLAction;
 import org.protege.owl.server.api.ChangeHistory;
 import org.protege.owl.server.api.Client;
 import org.protege.owl.server.api.OntologyDocumentRevision;
+import org.protege.owl.server.api.RevisionPointer;
 import org.protege.owl.server.api.VersionedOntologyDocument;
 import org.protege.owl.server.util.ClientUtilities;
 import org.semanticweb.owlapi.model.OWLOntology;
@@ -36,7 +37,7 @@ public class ShowHistoryAction extends ProtegeOWLAction {
             VersionedOntologyDocument vont = connectionManager.getVersionedOntology(ontology);
             Client client = connectionManager.createClient(ontology);
             if (vont != null) {
-                ChangeHistory changes = ClientUtilities.getChanges(client, vont, OntologyDocumentRevision.START_REVISION, null);
+                ChangeHistory changes = ClientUtilities.getChanges(client, vont, OntologyDocumentRevision.START_REVISION.asPointer(), RevisionPointer.HEAD_REVISION);
                 HistoryPanel historyPanel = new HistoryPanel(getOWLEditorKit(), changes);
                 historyPanel.initialise();
                 JOptionPane.showMessageDialog(getOWLWorkspace(), historyPanel);

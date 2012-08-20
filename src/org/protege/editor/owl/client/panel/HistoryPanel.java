@@ -1,7 +1,6 @@
 package org.protege.editor.owl.client.panel;
 
 import java.awt.Dimension;
-import java.awt.FlowLayout;
 import java.awt.GridLayout;
 import java.util.ArrayList;
 import java.util.List;

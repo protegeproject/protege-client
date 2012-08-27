@@ -56,7 +56,7 @@ public class HistoryTableModel extends AbstractTableModel {
 
     @Override
     public int getRowCount() {
-        return changes.getEndRevision().getRevision() - changes.getStartRevision().getRevision();
+        return changes.getEndRevision().getRevisionDifferenceFrom(changes.getStartRevision());
     }
 
     @Override

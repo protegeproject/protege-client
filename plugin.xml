@@ -30,7 +30,7 @@
       <extension id="ShowUncommitted"
               name="Show Uncommitted Changes"
               point="org.protege.editor.core.application.EditorKitMenuAction">
-       <name value="Show Uncommitted Changes"/>
+       <name value="Show uncommitted changes"/>
        <path value="org.protege.editor.owl.client.Server/SlotB-W"/>
        <editorKitId value="OWLEditorKit"/>
        <class value="org.protege.editor.owl.client.action.ShowUncommittedChangesAction"/>
@@ -39,7 +39,7 @@
    <extension id="ShowHistory"
               name="Show History"
               point="org.protege.editor.core.application.EditorKitMenuAction">
-       <name value="Show History"/>
+       <name value="Show history"/>
        <path value="org.protege.editor.owl.client.Server/SlotB-W"/>
        <editorKitId value="OWLEditorKit"/>
        <class value="org.protege.editor.owl.client.action.ShowHistoryAction"/>
@@ -48,7 +48,7 @@
    <extension id="EnableAutoUpdate"
               name="Auto Update Menu"
               point="org.protege.editor.core.application.EditorKitMenuAction">
-      <name value="Auto-Update"/>
+      <name value="Auto-update"/>
       <path value="org.protege.editor.owl.client.Server/SlotC-E"/>
       <editorKitId value="OWLEditorKit"/>
       <class value="org.protege.editor.owl.client.action.EnableAutoUpdateAction"/>

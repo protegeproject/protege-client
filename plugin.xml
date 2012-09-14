@@ -39,8 +39,8 @@
    <extension id="ShowHistory"
               name="Show History"
               point="org.protege.editor.core.application.EditorKitMenuAction">
-       <name value="Show history"/>
-       <path value="org.protege.editor.owl.client.Server/SlotB-W"/>
+       <name value="Show change history"/>
+       <path value="org.protege.editor.owl.client.Server/SlotB-V"/>
        <editorKitId value="OWLEditorKit"/>
        <class value="org.protege.editor.owl.client.action.ShowHistoryAction"/>
    </extension>

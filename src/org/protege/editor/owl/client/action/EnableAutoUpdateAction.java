@@ -14,7 +14,8 @@ import org.protege.owl.server.util.ClientUtilities;
 import org.semanticweb.owlapi.model.OWLOntology;
 
 public class EnableAutoUpdateAction extends ProtegeOWLAction {
-    private ScheduledFuture<?> autoUpdate;
+	private static final long serialVersionUID = 1098490684799516207L;
+	private ScheduledFuture<?> autoUpdate;
 
 	public EnableAutoUpdateAction() {
 		// TODO Auto-generated constructor stub

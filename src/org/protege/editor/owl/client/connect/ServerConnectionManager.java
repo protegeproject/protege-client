@@ -1,10 +1,8 @@
 package org.protege.editor.owl.client.connect;
 
 import java.io.IOException;
-import java.net.URI;
 import java.util.List;
 import java.util.Map;
-import java.util.Map.Entry;
 import java.util.TreeMap;
 import java.util.concurrent.Executors;
 import java.util.concurrent.ScheduledExecutorService;
@@ -17,7 +15,6 @@ import org.protege.editor.owl.model.OWLModelManager;
 import org.protege.editor.owl.model.io.IOListener;
 import org.protege.editor.owl.model.io.IOListenerEvent;
 import org.protege.owl.server.api.Client;
-import org.protege.owl.server.api.DocumentFactory;
 import org.protege.owl.server.api.VersionedOntologyDocument;
 import org.protege.owl.server.api.exception.OWLServerException;
 import org.protege.owl.server.util.ClientRegistry;

@@ -6,7 +6,7 @@ import javax.swing.JOptionPane;
 
 import org.protege.editor.core.ProtegeApplication;
 import org.protege.editor.owl.client.connect.ServerConnectionManager;
-import org.protege.editor.owl.client.panel.HistoryPanel;
+import org.protege.editor.owl.client.panel.ChangeHistoryPanel;
 import org.protege.editor.owl.ui.action.ProtegeOWLAction;
 import org.protege.owl.server.api.ChangeHistory;
 import org.protege.owl.server.api.Client;
@@ -38,9 +38,9 @@ public class ShowHistoryAction extends ProtegeOWLAction {
             Client client = connectionManager.createClient(ontology);
             if (vont != null) {
                 ChangeHistory changes = ClientUtilities.getChanges(client, vont, OntologyDocumentRevision.START_REVISION.asPointer(), RevisionPointer.HEAD_REVISION);
-                HistoryPanel historyPanel = new HistoryPanel(getOWLEditorKit(), changes);
-                historyPanel.initialise();
-                JOptionPane.showMessageDialog(getOWLWorkspace(), historyPanel);
+                ChangeHistoryPanel changeHistoryPanel = new ChangeHistoryPanel(getOWLEditorKit(), changes);
+                changeHistoryPanel.setLocationRelativeTo(getOWLWorkspace());
+                changeHistoryPanel.setVisible(true);
             }
             else {
                 JOptionPane.showMessageDialog(getOWLWorkspace(), "Active Ontology is not connected to a server.");

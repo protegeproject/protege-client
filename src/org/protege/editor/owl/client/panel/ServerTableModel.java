@@ -10,7 +10,6 @@ import javax.swing.table.AbstractTableModel;
 import org.protege.owl.server.api.Client;
 import org.protege.owl.server.api.RemoteServerDirectory;
 import org.protege.owl.server.api.RemoteServerDocument;
-import org.protege.owl.server.api.ServerDocument;
 import org.protege.owl.server.api.exception.OWLServerException;
 
 

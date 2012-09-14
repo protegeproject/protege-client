@@ -8,7 +8,9 @@ import org.protege.owl.server.api.ChangeHistory;
 import org.protege.owl.server.api.ChangeMetaData;
 
 public class HistoryTableModel extends AbstractTableModel {
-    public enum Column {
+	private static final long serialVersionUID = -1510343786742688724L;
+
+	public enum Column {
         DATE("Date", Date.class) {
             @Override
             public Date getValue(ChangeMetaData metaData) {

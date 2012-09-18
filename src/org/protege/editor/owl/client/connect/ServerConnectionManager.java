@@ -119,7 +119,7 @@ public class ServerConnectionManager extends EditorKitHook {
 
 	@Override
 	public void initialise() throws Exception {
-	    registry.addFactory(new RMIClientFactory());
+	    registry.addFactory(new RMIClientFactory(getEditorKit().getOWLWorkspace()));
 		getOWLModelManager().addIOListener(ioListener);
 		getOWLOntologyManager().addOntologyChangeListener(ontologyIdChangeListener);
 	}

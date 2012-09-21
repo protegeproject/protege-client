@@ -38,14 +38,18 @@ public class ShowUncommittedChangesAction extends ProtegeOWLAction {
             ServerConnectionManager connectionManager = ServerConnectionManager.get(getOWLEditorKit());
             OWLOntology ontology = getOWLModelManager().getActiveOntology();
             VersionedOntologyDocument vont = connectionManager.getVersionedOntology(ontology);
-            Client client = connectionManager.createClient(ontology);
             if (vont != null) {
+                Client client = connectionManager.createClient(ontology);
                 List<OWLOntologyChange> uncommitted = ClientUtilities.getUncommittedChanges(client, vont);
-                ChangeListTableModel tableModel = new ChangeListTableModel(uncommitted);
-                JTable table = new JTable(tableModel);
-                table.setDefaultRenderer(OWLObject.class, new OWLCellRenderer(getOWLEditorKit()));
-                JScrollPane pane = new JScrollPane(table);
-                JOptionPane.showMessageDialog(getOWLWorkspace(), pane);
+                if (uncommitted.isEmpty()) {
+                	JOptionPane.showMessageDialog(getOWLWorkspace(), "No uncommitted changes");
+                } else {
+                    ChangeListTableModel tableModel = new ChangeListTableModel(uncommitted);
+                    JTable table = new JTable(tableModel);
+                    table.setDefaultRenderer(OWLObject.class, new OWLCellRenderer(getOWLEditorKit()));
+                    JScrollPane pane = new JScrollPane(table);
+                    JOptionPane.showMessageDialog(getOWLWorkspace(), pane);
+                }
             }
             else {
                 JOptionPane.showMessageDialog(getOWLWorkspace(), "Active Ontology is not connected to a server.");

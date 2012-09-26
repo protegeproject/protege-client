@@ -13,6 +13,7 @@ import org.protege.owl.server.api.Client;
 import org.protege.owl.server.api.OntologyDocumentRevision;
 import org.protege.owl.server.api.RevisionPointer;
 import org.protege.owl.server.api.VersionedOntologyDocument;
+import org.protege.owl.server.api.exception.UserDeclinedAuthenticationException;
 import org.protege.owl.server.util.ClientUtilities;
 import org.semanticweb.owlapi.model.OWLOntology;
 
@@ -45,6 +46,9 @@ public class ShowHistoryAction extends ProtegeOWLAction {
             else {
                 JOptionPane.showMessageDialog(getOWLWorkspace(), "Active Ontology is not connected to a server.");
             }
+        }
+        catch (UserDeclinedAuthenticationException udae) {
+            ; // ignore this because the user knows that he didn't authenticate
         }
         catch (Exception e) {
             ProtegeApplication.getErrorLog().logError(e);

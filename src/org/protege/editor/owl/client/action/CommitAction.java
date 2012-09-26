@@ -17,6 +17,7 @@ import org.protege.owl.server.api.VersionedOntologyDocument;
 import org.protege.owl.server.util.ClientUtilities;
 import org.semanticweb.owlapi.model.OWLOntology;
 import org.protege.owl.server.api.exception.OWLServerException;
+import org.protege.owl.server.api.exception.UserDeclinedAuthenticationException;
 
 public class CommitAction extends ProtegeOWLAction {
     private static final long serialVersionUID = 4601012273632698091L;
@@ -29,7 +30,6 @@ public class CommitAction extends ProtegeOWLAction {
 
     @Override
     public void dispose() throws Exception {
-        // TODO Auto-generated method stub
         
     }
 
@@ -47,6 +47,9 @@ public class CommitAction extends ProtegeOWLAction {
             Client client = connectionManager.createClient(ontology);
             Future<?> future = connectionManager.getSingleThreadExecutorService().submit(new DoCommit(client, vont, commitComment));
             future.get();
+        }
+        catch (UserDeclinedAuthenticationException udae) {
+            ; // ignore this because the user knows that he didn't want to authenticate
         }
         catch (Exception e) {
             ProtegeApplication.getErrorLog().logError(e);

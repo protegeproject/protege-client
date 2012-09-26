@@ -20,8 +20,12 @@ import javax.swing.JLabel;
 import javax.swing.JPanel;
 import javax.swing.JScrollPane;
 import javax.swing.JTable;
+import javax.swing.RowSorter;
+import javax.swing.SortOrder;
 import javax.swing.event.ListSelectionEvent;
 import javax.swing.event.ListSelectionListener;
+import javax.swing.table.TableModel;
+import javax.swing.table.TableRowSorter;
 
 import org.protege.editor.owl.OWLEditorKit;
 import org.protege.editor.owl.ui.renderer.OWLCellRenderer;
@@ -115,12 +119,22 @@ public class ChangeHistoryPanel extends JDialog {
             public void valueChanged(ListSelectionEvent listSelectionEvent) {
                 List<OWLOntologyChange> changesToDisplay = new ArrayList<OWLOntologyChange>();
                 for (int row : table.getSelectedRows()) {
-                    OntologyDocumentRevision start = changes.getStartRevision().add(row);
+                	OntologyDocumentRevision start = changes.getStartRevision().add(table.convertRowIndexToModel(row));
                     changesToDisplay.addAll(changes.cropChanges(start, start.next()).getChanges(ontology));
                 }
                 changeListTableModel.setChangeList(changesToDisplay);
             }
         });
+        
+        // Allow user to sort
+        TableRowSorter<TableModel> sorter = new TableRowSorter<TableModel>(model);
+        table.setRowSorter(sorter);
+        
+        // Sort initially by the date column in descending order
+        List <RowSorter.SortKey> sortKeys = new ArrayList<RowSorter.SortKey>();
+        sortKeys.add(new RowSorter.SortKey(0, SortOrder.DESCENDING));
+        sorter.setSortKeys(sortKeys);
+        
         JScrollPane scrollPane = new JScrollPane(table);
         scrollPane.setAlignmentX(Component.LEFT_ALIGNMENT);
         return scrollPane;

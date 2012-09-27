@@ -31,6 +31,7 @@ import org.protege.owl.server.api.RemoteServerDirectory;
 import org.protege.owl.server.api.RemoteServerDocument;
 import org.protege.owl.server.api.VersionedOntologyDocument;
 import org.protege.owl.server.api.exception.OWLServerException;
+import org.protege.owl.server.api.exception.UserDeclinedAuthenticationException;
 import org.protege.owl.server.connect.rmi.RMIClient;
 import org.protege.owl.server.util.ClientUtilities;
 import org.semanticweb.owlapi.apibinding.OWLManager;
@@ -165,6 +166,9 @@ public class ServerConnectionDialog extends JDialog {
 	                }
 	                JOptionPane.showMessageDialog(getOwner(), "Connected!");
 	            }
+	        }
+	        catch (UserDeclinedAuthenticationException udae) {
+	            ; // ignore this because the user knows that he stopped the connection attempt.
 	        }
 	        catch (OWLServerException ose) {
 	            ProtegeApplication.getErrorLog().logError(ose);

@@ -7,6 +7,8 @@ import java.util.TreeMap;
 import java.util.concurrent.Executors;
 import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.ThreadFactory;
+import java.util.concurrent.TimeUnit;
+import java.util.logging.Logger;
 
 import org.protege.editor.core.ProtegeApplication;
 import org.protege.editor.core.editorkit.plugin.EditorKitHook;
@@ -29,6 +31,7 @@ import org.semanticweb.owlapi.model.SetOntologyID;
 
 public class ServerConnectionManager extends EditorKitHook {
 	public static String ID = "org.protege.editor.owl.client.ServerConnectionManager";
+	private Logger logger = Logger.getLogger(ServerConnectionManager.class.getCanonicalName());
 	
 	public static ServerConnectionManager get(OWLEditorKit editorKit) {
 		return (ServerConnectionManager) editorKit.get(ID);
@@ -125,9 +128,11 @@ public class ServerConnectionManager extends EditorKitHook {
 	}
 
 	@Override
-	public void dispose() throws Exception {
+	public void dispose() throws InterruptedException {
 		getOWLModelManager().removeIOListener(ioListener);
 		getOWLOntologyManager().removeOntologyChangeListener(ontologyIdChangeListener);
+		singleThreadExecutorService.shutdown();
+		singleThreadExecutorService.awaitTermination(5, TimeUnit.MINUTES);
 	}
 	
 	public ScheduledExecutorService getSingleThreadExecutorService() {
@@ -153,6 +158,39 @@ public class ServerConnectionManager extends EditorKitHook {
 	
 	public Client createClient(IRI serverLocation) throws OWLServerException {
 	    return registry.connectToServer(serverLocation);
+	}
+	
+	public void saveHistoryInBackground(VersionedOntologyDocument vont) {
+	    singleThreadExecutorService.submit(new SaveHistory(vont));
+	}
+	
+	private class SaveHistory implements Runnable {
+	    private VersionedOntologyDocument vont;
+	    
+	    public SaveHistory(VersionedOntologyDocument vont) {
+	        this.vont = vont;
+        }
+	    
+	    @Override
+	    public void run() {
+	        try {
+	            long startTime = System.currentTimeMillis();
+	            vont.saveLocalHistory();
+	            long interval = System.currentTimeMillis() - startTime;
+	            if (interval > 1000) {
+	                logger.info("Save of history file for " + vont.getOntology().getOntologyID() + " took " + (interval / 1000) + " seconds.");
+	            }
+	        }
+	        catch (Error e) {
+	            ProtegeApplication.getErrorLog().logError(e);
+	        }
+	        catch (RuntimeException e) {
+	            ProtegeApplication.getErrorLog().logError(e);
+	        }
+	        catch (IOException ioe) {
+	            ProtegeApplication.getErrorLog().logError(ioe);
+	        }
+	    }
 	}
 
 }

@@ -7,6 +7,7 @@ import java.awt.Font;
 import java.awt.Insets;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
+import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -24,6 +25,8 @@ import javax.swing.RowSorter;
 import javax.swing.SortOrder;
 import javax.swing.event.ListSelectionEvent;
 import javax.swing.event.ListSelectionListener;
+import javax.swing.table.TableCellRenderer;
+import javax.swing.table.TableColumnModel;
 import javax.swing.table.TableModel;
 import javax.swing.table.TableRowSorter;
 
@@ -125,6 +128,11 @@ public class ChangeHistoryPanel extends JDialog {
                 changeListTableModel.setChangeList(changesToDisplay);
             }
         });
+        
+        SimpleDateFormat format = new SimpleDateFormat("MMM dd, yyyy hh:mm a, z");
+        TableCellRenderer renderer = new FormatRenderer(format);
+        TableColumnModel columnModel = table.getColumnModel();
+        columnModel.getColumn(0).setCellRenderer(renderer);
         
         // Allow user to sort
         TableRowSorter<TableModel> sorter = new TableRowSorter<TableModel>(model);

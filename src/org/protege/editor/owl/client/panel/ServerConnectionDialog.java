@@ -42,7 +42,6 @@ import org.semanticweb.owlapi.model.OWLOntologyManager;
 // ToDo - this only barely works - add error checking...
 public class ServerConnectionDialog extends JDialog {
 	private static final long serialVersionUID = 720048610707964509L;
-	private Logger logger = Logger.getLogger(ServerConnectionDialog.class.getCanonicalName());
 	private OWLEditorKit editorKit;
 	private Client client;
 	private RemoteServerDirectory currentDirectory;
@@ -185,7 +184,9 @@ public class ServerConnectionDialog extends JDialog {
 					OWLOntologyManager manager = OWLManager.createOWLOntologyManager();
 					OWLOntology ontology = manager.loadOntologyFromOntologyDocument(input);
 					String name = (String) JOptionPane.showInputDialog(getOwner(), "Name of upload: ");
-					ClientUtilities.createServerOntology(client, IRI.create(urlField.getText() + "/" + name + ".history"), new ChangeMetaData("Uploaded from file " + input), ontology);
+					String urlText = urlField.getText();
+					String urlTextWithEndingSlash = urlText.endsWith("/") ? urlText : (urlText + "/");
+					ClientUtilities.createServerOntology(client, IRI.create(urlTextWithEndingSlash + name + ".history"), new ChangeMetaData("Uploaded from file " + input), ontology);
 					tableModel.loadServerData(client, currentDirectory);
 					JOptionPane.showMessageDialog(getOwner(), "Uploaded!");
 				}

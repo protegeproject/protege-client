@@ -66,7 +66,6 @@ public class ServerTableModel extends AbstractTableModel {
 			String fragment = doc.getServerLocation().getFragment();
 			if (fragment == null || fragment.isEmpty()) {
 			    String path = doc.getServerLocation().toURI().getPath();
-			    int end;
 			    if (path.endsWith("/")) {
 			        path = path.substring(0, path.length() - 1);
 			    }

@@ -4,7 +4,6 @@ import java.awt.Component;
 import java.rmi.NotBoundException;
 import java.rmi.RemoteException;
 
-import org.protege.editor.core.ProtegeApplication;
 import org.protege.editor.owl.client.panel.LoginDialog;
 import org.protege.owl.server.api.AuthToken;
 import org.protege.owl.server.api.exception.AuthenticationFailedException;

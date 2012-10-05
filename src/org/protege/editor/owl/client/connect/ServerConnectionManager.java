@@ -81,7 +81,7 @@ public class ServerConnectionManager extends EditorKitHook {
 		        OWLOntologyManager manager = getOWLOntologyManager();
 		        OWLOntologyID id = event.getOntologyID();
 		        OWLOntology ontology = manager.getOntology(id);
-		        if (registry.hasSuitableMetaData(ontology)) {
+		        if (ontology != null && registry.hasSuitableMetaData(ontology)) {
 		            addVersionedOntology(registry.getVersionedOntologyDocument(ontology));
 		        }
 		    }

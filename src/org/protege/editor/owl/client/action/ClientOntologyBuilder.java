@@ -34,6 +34,7 @@ public class ClientOntologyBuilder extends ProtegeOWLAction {
 		Frame frame = (Frame) SwingUtilities.getAncestorOfClass(Frame.class, workspace);
 		ServerConnectionDialog dialog = new ServerConnectionDialog(frame, getOWLEditorKit());
 		dialog.initialise();
+		dialog.setLocationRelativeTo(workspace);
 		dialog.setVisible(true);
 	}
 

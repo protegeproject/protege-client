@@ -17,13 +17,13 @@ public class HistoryTableModel extends AbstractTableModel {
                 return metaData.getDate();
             } 
         },
-        USER("Committer", String.class) {
+        USER("Author", String.class) {
             @Override
             public String getValue(ChangeMetaData metaData) {
                 return metaData.getUserId().getUserName();
             }             
         },
-        COMMIT_COMMENT("Description", String.class) {
+        COMMIT_COMMENT("Comment", String.class) {
             @Override
             public String getValue(ChangeMetaData metaData) {
                 return metaData.getCommitComment();

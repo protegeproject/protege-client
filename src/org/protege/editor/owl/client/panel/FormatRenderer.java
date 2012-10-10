@@ -7,6 +7,9 @@ import javax.swing.table.DefaultTableCellRenderer;
 
 import org.protege.editor.core.ProtegeApplication;
 
+/*
+ * Code from: http://tips4java.wordpress.com/2008/10/11/table-format-renderers/
+ */
 public class FormatRenderer extends DefaultTableCellRenderer {
 
 	private static final long serialVersionUID = -5210230827997957826L;

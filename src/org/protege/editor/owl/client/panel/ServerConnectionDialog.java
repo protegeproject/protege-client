@@ -51,7 +51,7 @@ public class ServerConnectionDialog extends JDialog {
 	private JButton newDirectoryButton;
 	
 	public ServerConnectionDialog(Frame owner, OWLEditorKit editorKit) {
-		super(owner, "Server Connection Dialog");
+		super(owner, "Connect to Server");
 		this.editorKit = editorKit;
 	}
 
@@ -61,6 +61,7 @@ public class ServerConnectionDialog extends JDialog {
 		panel.add(getCenter(),BorderLayout.CENTER);
 		panel.add(getSouth(), BorderLayout.SOUTH);
 		setContentPane(panel);
+		setPreferredSize(new Dimension(800, 500));
 		pack();
 		validate();
 	}
@@ -180,14 +181,16 @@ public class ServerConnectionDialog extends JDialog {
 			if (client != null) {
 				try {
 					File input = new UIHelper(editorKit).chooseOWLFile("Choose file to upload");
-					OWLOntologyManager manager = OWLManager.createOWLOntologyManager();
-					OWLOntology ontology = manager.loadOntologyFromOntologyDocument(input);
-					String name = (String) JOptionPane.showInputDialog(getOwner(), "Name of upload: ");
-					String urlText = urlField.getText();
-					String urlTextWithEndingSlash = urlText.endsWith("/") ? urlText : (urlText + "/");
-					ClientUtilities.createServerOntology(client, IRI.create(urlTextWithEndingSlash + name + ".history"), new ChangeMetaData("Uploaded from file " + input), ontology);
-					tableModel.loadServerData(client, currentDirectory);
-					JOptionPane.showMessageDialog(getOwner(), "Uploaded!");
+					if (input != null) {
+						OWLOntologyManager manager = OWLManager.createOWLOntologyManager();
+						OWLOntology ontology = manager.loadOntologyFromOntologyDocument(input);
+						String name = (String) JOptionPane.showInputDialog(getOwner(), "Name of upload: ");
+						String urlText = urlField.getText();
+						String urlTextWithEndingSlash = urlText.endsWith("/") ? urlText : (urlText + "/");
+						ClientUtilities.createServerOntology(client, IRI.create(urlTextWithEndingSlash + name + ".history"), new ChangeMetaData("Uploaded from file " + input), ontology);
+						tableModel.loadServerData(client, currentDirectory);
+						JOptionPane.showMessageDialog(getOwner(), "Uploaded!");
+					}
 				}
 				catch (Exception ex) {
 					ProtegeApplication.getErrorLog().logError(ex);
@@ -201,9 +204,11 @@ public class ServerConnectionDialog extends JDialog {
 	    public void actionPerformed(ActionEvent event) {
 	        try {
 	            String dirName = (String) JOptionPane.showInputDialog(getOwner(), "Enter the directory name: ", "Create Server Directory", JOptionPane.PLAIN_MESSAGE);
-	            URI dir = URI.create(urlField.getText()).resolve(dirName);
-	            client.createRemoteDirectory(IRI.create(dir));
-	            setDirectory(currentDirectory);
+	            if ((dirName != null) && (dirName.length() > 0)) {
+	            	URI dir = URI.create(urlField.getText()).resolve(dirName);
+		            client.createRemoteDirectory(IRI.create(dir));
+		            setDirectory(currentDirectory);
+	            }
 	        }
 	        catch (OWLServerException ioe) {
 	            throw new RuntimeException(ioe);

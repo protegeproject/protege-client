@@ -37,6 +37,7 @@ import org.protege.owl.server.api.OntologyDocumentRevision;
 import org.semanticweb.owlapi.model.OWLObject;
 import org.semanticweb.owlapi.model.OWLOntology;
 import org.semanticweb.owlapi.model.OWLOntologyChange;
+import org.semanticweb.owlapi.model.OWLOntologyID;
 
 public class ChangeHistoryPanel extends JDialog {
 
@@ -55,8 +56,15 @@ public class ChangeHistoryPanel extends JDialog {
 	}
 	
 	private void initUI() {
-		String fragment = ontology.getOntologyID().getOntologyIRI().getFragment();
-		setTitle("Change History for " + fragment);
+		String shortOntologyName = "";
+		OWLOntologyID ontologyId = ontology.getOntologyID();
+		if (!ontologyId.isAnonymous()) {
+		    shortOntologyName = ontology.getOntologyID().getOntologyIRI().getFragment();
+		}
+		if (shortOntologyName.isEmpty()) {
+		    shortOntologyName = ontologyId.toString();
+		}
+		setTitle("Change History for " + shortOntologyName);
         setPreferredSize(new Dimension(800, 600));
 		setModal(true);
 		

@@ -159,7 +159,11 @@ public class ServerConnectionManager extends EditorKitHook {
 	public Client createClient(IRI serverLocation) throws OWLServerException {
 	    return registry.connectToServer(serverLocation);
 	}
-	
+
+	public Client createClient(IRI serverLocation, String username, String password) throws OWLServerException {
+        return registry.connectToServer(serverLocation, username, password);
+	}
+
 	public void saveHistoryInBackground(VersionedOntologyDocument vont) {
 	    singleThreadExecutorService.submit(new SaveHistory(vont));
 	}

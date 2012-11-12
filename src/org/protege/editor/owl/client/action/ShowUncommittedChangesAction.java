@@ -42,6 +42,7 @@ public class ShowUncommittedChangesAction extends ProtegeOWLAction {
             if (vont != null) {
                 Client client = connectionManager.createClient(ontology);
                 List<OWLOntologyChange> uncommitted = ClientUtilities.getUncommittedChanges(client, vont);
+                connectionManager.saveHistoryInBackground(vont);
                 if (uncommitted.isEmpty()) {
                 	JOptionPane.showMessageDialog(getOWLWorkspace(), "No uncommitted changes");
                 } else {

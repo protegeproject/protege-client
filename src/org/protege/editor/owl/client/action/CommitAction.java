@@ -47,6 +47,7 @@ public class CommitAction extends ProtegeOWLAction {
             Client client = connectionManager.createClient(ontology);
             Future<?> future = connectionManager.getSingleThreadExecutorService().submit(new DoCommit(client, vont, commitComment));
             future.get();
+            connectionManager.saveHistoryInBackground(vont);
         }
         catch (UserDeclinedAuthenticationException udae) {
             ; // ignore this because the user knows that he didn't want to authenticate

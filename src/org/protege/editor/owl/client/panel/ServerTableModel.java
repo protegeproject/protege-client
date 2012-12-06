@@ -3,6 +3,7 @@ package org.protege.editor.owl.client.panel;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Comparator;
+import java.util.Iterator;
 import java.util.List;
 
 import javax.swing.table.AbstractTableModel;
@@ -26,6 +27,19 @@ public class ServerTableModel extends AbstractTableModel {
 	
 	public void loadServerData(Client client, RemoteServerDirectory dir) throws OWLServerException {
 		List<RemoteServerDocument> docs = new ArrayList<RemoteServerDocument>(client.list(dir));
+		
+		/*
+		 * Tim and Jenn decided that for the first release, there shouldn't be any server directories 
+		 * exposed to the user - only a list of ontology documents.  Server folder structure will come later.
+		 */
+		Iterator<RemoteServerDocument> iterator = docs.iterator();
+		while (iterator.hasNext()) {
+			RemoteServerDocument doc = iterator.next();
+			if (doc instanceof RemoteServerDirectory) {
+				iterator.remove();
+			}
+		}
+		
 		Collections.sort(docs, new Comparator<RemoteServerDocument>() {
 			@Override
 			public int compare(RemoteServerDocument doc1, RemoteServerDocument doc2) {
@@ -46,7 +60,7 @@ public class ServerTableModel extends AbstractTableModel {
 		Column column = Column.values()[col];
 		switch (column) {
 		case SERVER_DOCUMENT_LOCATION:
-			return "Document";
+			return "Ontology Documents";
 		default:
 			throw new IllegalStateException("Programmer missed a case");
 		}

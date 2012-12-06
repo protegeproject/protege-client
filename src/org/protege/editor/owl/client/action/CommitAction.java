@@ -10,29 +10,49 @@ import javax.swing.SwingUtilities;
 
 import org.protege.editor.core.ProtegeApplication;
 import org.protege.editor.owl.client.connect.ServerConnectionManager;
+import org.protege.editor.owl.model.event.OWLModelManagerChangeEvent;
+import org.protege.editor.owl.model.event.OWLModelManagerListener;
 import org.protege.editor.owl.ui.action.ProtegeOWLAction;
 import org.protege.owl.server.api.ChangeMetaData;
 import org.protege.owl.server.api.Client;
 import org.protege.owl.server.api.VersionedOntologyDocument;
-import org.protege.owl.server.util.ClientUtilities;
-import org.semanticweb.owlapi.model.OWLOntology;
 import org.protege.owl.server.api.exception.OWLServerException;
 import org.protege.owl.server.api.exception.UserDeclinedAuthenticationException;
+import org.protege.owl.server.util.ClientUtilities;
+import org.semanticweb.owlapi.model.OWLOntology;
 
 public class CommitAction extends ProtegeOWLAction {
     private static final long serialVersionUID = 4601012273632698091L;
     private ServerConnectionManager connectionManager;
+    private OWLModelManagerListener listener = new OWLModelManagerListener() {
+		@Override
+		public void handleChange(OWLModelManagerChangeEvent event) {
+			updateEnabled();
+		}
+	};
 
     @Override
     public void initialise() throws Exception {
+    	updateEnabled();
+    	getOWLModelManager().addListener(listener);
+    }
+    
+    private void updateEnabled() {
         connectionManager = ServerConnectionManager.get(getOWLEditorKit());
+        OWLOntology ontology = getOWLEditorKit().getModelManager().getActiveOntology();
+        VersionedOntologyDocument vont = connectionManager.getVersionedOntology(ontology);
+        if (vont == null) {
+        	setEnabled(false);
+        } else {
+        	setEnabled(true);
+        }
     }
 
     @Override
     public void dispose() throws Exception {
-        
+        getOWLModelManager().removeListener(listener);
     }
-
+    
     @Override
     public void actionPerformed(ActionEvent arg0) {
         try {
@@ -47,7 +67,6 @@ public class CommitAction extends ProtegeOWLAction {
             Client client = connectionManager.createClient(ontology);
             Future<?> future = connectionManager.getSingleThreadExecutorService().submit(new DoCommit(client, vont, commitComment));
             future.get();
-            connectionManager.saveHistoryInBackground(vont);
         }
         catch (UserDeclinedAuthenticationException udae) {
             ; // ignore this because the user knows that he didn't want to authenticate
@@ -58,7 +77,7 @@ public class CommitAction extends ProtegeOWLAction {
 
     }
     
-    // ToDo modify the synchronization so that this can run in tne background
+    // ToDo modify the synchronization so that this can run in the background
     //       even while edits are in progress.
     //       make this part of the utility? 
     private class DoCommit implements Runnable {
@@ -82,6 +101,4 @@ public class CommitAction extends ProtegeOWLAction {
             }
         }
     }
-
-
 }

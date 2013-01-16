@@ -90,7 +90,7 @@
           location="${protege.plugins}/org.protege.editor.owl.jar"/>
       <property
           name="server.lib"
-          location="${protege.plugins}/org.protege.owl.server.jar"/>
+          location="./lib/org.protege.owl.server.jar"/>
     </check.dependencies>
     <path id = "project.classpath">    
       <pathelement location="${protege.lib}"/>
@@ -173,10 +173,10 @@
    </target>
 
    <target name = "install" depends = "jar">
-     <!-- flush cache -->
-     <delete dir = "${protege.home}/configuration/org.eclipse.core.runtime"/>
-     <delete dir = "${protege.home}/configuration/org.eclipse.osgi"/>
      <copy file="${build}/${plugin}.jar" 
+           todir = "${protege.plugins}"
+           overwrite = "true"/>
+     <copy file="${server.lib}"
            todir = "${protege.plugins}"
            overwrite = "true"/>
    </target>

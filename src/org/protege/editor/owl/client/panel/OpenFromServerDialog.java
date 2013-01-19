@@ -179,7 +179,7 @@ public class OpenFromServerDialog extends JDialog {
 		ArrayList<String> serverLocations = new ArrayList<String>(prefs.getServerLocations());
 
 		if (serverLocations.isEmpty()) {
-			serverLocationsList.addItem(new String(RMIClient.SCHEME + "://localhost:5100/"));
+			serverLocationsList.addItem(new String(RMIClient.SCHEME + "://localhost:4875/"));
 			serverLocationsList.setSelectedIndex(0);
 		} else {
 			Collections.sort(serverLocations);

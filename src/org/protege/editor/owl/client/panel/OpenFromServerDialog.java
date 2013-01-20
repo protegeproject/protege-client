@@ -304,6 +304,8 @@ public class OpenFromServerDialog extends JDialog {
 				}
 			} catch (OWLServerException ose) {
 				ProtegeApplication.getErrorLog().logError(ose);
+				UIHelper ui = new UIHelper(editorKit);
+				ui.showDialog("Error connecting to server", new JLabel("Connection failed - " + ose.getMessage()));
 			}
 		}
 	}

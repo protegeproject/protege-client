@@ -5,6 +5,7 @@ import java.awt.Frame;
 import java.awt.event.ActionEvent;
 import java.util.concurrent.Future;
 
+import javax.swing.JLabel;
 import javax.swing.JOptionPane;
 import javax.swing.SwingUtilities;
 
@@ -12,6 +13,7 @@ import org.protege.editor.core.ProtegeApplication;
 import org.protege.editor.owl.client.connect.ServerConnectionManager;
 import org.protege.editor.owl.model.event.OWLModelManagerChangeEvent;
 import org.protege.editor.owl.model.event.OWLModelManagerListener;
+import org.protege.editor.owl.ui.UIHelper;
 import org.protege.editor.owl.ui.action.ProtegeOWLAction;
 import org.protege.owl.server.api.ChangeMetaData;
 import org.protege.owl.server.api.Client;
@@ -71,7 +73,7 @@ public class CommitAction extends ProtegeOWLAction {
             ; // ignore this because the user knows that he didn't want to authenticate
         }
         catch (Exception e) {
-            ProtegeApplication.getErrorLog().logError(e);
+        	handleError(e);
         }
 
     }
@@ -95,9 +97,21 @@ public class CommitAction extends ProtegeOWLAction {
             try {
                 ClientUtilities.commit(client, metaData, vont);
             }
-            catch (OWLServerException ioe) {
-                ProtegeApplication.getErrorLog().logError(ioe);
+            catch (OWLServerException ose) {
+            	handleError(ose);
+            }
+            catch (Error e) {
+            	handleError(e);
+            }
+            catch (RuntimeException re) {
+            	handleError(re);
             }
         }
+    }
+    
+    private void handleError(Throwable t) {
+        ProtegeApplication.getErrorLog().logError(t);
+		UIHelper ui = new UIHelper(getOWLEditorKit());
+		ui.showDialog("Error connecting to server", new JLabel("Commit failed - " + t.getMessage()));
     }
 }

@@ -5,9 +5,9 @@ import java.util.List;
 import javax.swing.table.AbstractTableModel;
 
 import org.protege.editor.owl.client.panel.ChangeListTableModel.Column;
-import org.protege.owl.server.api.Client;
 import org.protege.owl.server.api.RevisionPointer;
-import org.protege.owl.server.api.VersionedOntologyDocument;
+import org.protege.owl.server.api.client.Client;
+import org.protege.owl.server.api.client.VersionedOntologyDocument;
 import org.protege.owl.server.api.exception.OWLServerException;
 import org.protege.owl.server.util.ClientUtilities;
 import org.semanticweb.owlapi.model.OWLOntologyChange;

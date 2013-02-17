@@ -8,9 +8,9 @@ import java.util.List;
 
 import javax.swing.table.AbstractTableModel;
 
-import org.protege.owl.server.api.Client;
-import org.protege.owl.server.api.RemoteServerDirectory;
-import org.protege.owl.server.api.RemoteServerDocument;
+import org.protege.owl.server.api.client.Client;
+import org.protege.owl.server.api.client.RemoteServerDirectory;
+import org.protege.owl.server.api.client.RemoteServerDocument;
 import org.protege.owl.server.api.exception.OWLServerException;
 
 

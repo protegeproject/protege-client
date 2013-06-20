@@ -25,6 +25,12 @@
 	<dependencies>
         <dependency>
 			<groupId>edu.stanford.protege</groupId>
+			<artifactId>org.protege.editor.core.application</artifactId>
+			<version>${project.parent.version}</version>
+        </dependency>
+	
+        <dependency>
+			<groupId>edu.stanford.protege</groupId>
             <artifactId>org.protege.editor.owl</artifactId>
 			<version>${project.parent.version}</version>
         </dependency>
@@ -46,8 +52,9 @@
 				<configuration>
 					<instructions>
 						<Bundle-ClassPath>.</Bundle-ClassPath>
-						<Bundle-SymbolicName>org.protege.editor.owl.client</Bundle-SymbolicName>
+						<Bundle-SymbolicName>${project.artifactId}</Bundle-SymbolicName>
 						<Bundle-Vendor>The Protege Development Team</Bundle-Vendor>
+						<Export-Package>${project.artifactId}*;version=${project.version}</Export-Package>
 					</instructions>
 					<executions>
 						<execution>

@@ -1,117 +1,126 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/maven-v4_0_0.xsd">
-	<modelVersion>4.0.0</modelVersion>
-	
-	<parent>
-		<groupId>org.sonatype.oss</groupId>
-		<artifactId>oss-parent</artifactId>
-		<version>7</version>
-	</parent>
-	
-	<groupId>edu.stanford.protege</groupId>
-	<artifactId>org.protege.editor.owl.client</artifactId>
-	<version>2.0.1-SNAPSHOT</version>
-	<packaging>bundle</packaging>
+    <modelVersion>4.0.0</modelVersion>
+    
+    <parent>
+        <groupId>org.sonatype.oss</groupId>
+        <artifactId>oss-parent</artifactId>
+        <version>7</version>
+    </parent>
+    
+    <groupId>edu.stanford.protege</groupId>
+    <artifactId>org.protege.editor.owl.client</artifactId>
+    <version>2.0.1-SNAPSHOT</version>
+    <packaging>bundle</packaging>
 
-	<name>Protege Desktop Client</name>
-	<description>Provides client functionality for the Protege Desktop application to connect to a Protege OWL Server, and collaboratively edit collections of OWL ontologies.</description>
-	<url>http://protegewiki.stanford.edu/wiki/Protege4ClientServer</url>
-	<organization>
-		<name>Stanford Center for Biomedical Informatics Research</name>
-		<url>http://bmir.stanford.edu/</url>
-	</organization>
-	<licenses>
-		<license>
-			<name>GNU Lesser General Public License</name>
-			<url>http://www.gnu.org/copyleft/lesser.html</url>
-		</license>
-	</licenses>
-	
-	<developers>
-		<developer>
-			<name>Timothy Redmond</name>
-			<email>tredmond@stanford.edu</email>
-		</developer>
-	</developers>
+    <name>Protege Desktop Client</name>
+    <description>Provides client functionality for the Protege Desktop application to connect to a Protege OWL Server, and collaboratively edit collections of OWL ontologies.</description>
+    <url>http://protegewiki.stanford.edu/wiki/Protege4ClientServer</url>
+    <organization>
+        <name>Stanford Center for Biomedical Informatics Research</name>
+        <url>http://bmir.stanford.edu/</url>
+    </organization>
+    <licenses>
+        <license>
+            <name>GNU Lesser General Public License</name>
+            <url>http://www.gnu.org/copyleft/lesser.html</url>
+        </license>
+    </licenses>
+    
+    <developers>
+        <developer>
+            <name>Timothy Redmond</name>
+            <email>tredmond@stanford.edu</email>
+        </developer>
+    </developers>
 
-	<mailingLists>
-		<mailingList>
-			<name>p4-feedback</name>
-			<subscribe>http://mailman.stanford.edu/mailman/listinfo/p4-feedback</subscribe>
-			<unsubscribe>http://mailman.stanford.edu/mailman/listinfo/p4-feedback</unsubscribe>
-			<post>p4-feedback@lists.stanford.edu</post>
-			<archive>https://mailman.stanford.edu/pipermail/p4-feedback/</archive>
-			<otherArchives>
-				<otherArchive>http://protege-ontology-editor-knowledge-acquisition-system.136.n4.nabble.com/Protege-OWL-4-x-Support-f21363.html</otherArchive>
-			</otherArchives>
-		</mailingList>
-	</mailingLists>
-			
-	<scm>
-		<connection>scm:svn:http://smi-protege.stanford.edu/repos/protege/protege4/plugins/org.protege.editor.owl.client/trunk/</connection>
-		<developerConnection>scm:svn:https://smi-protege.stanford.edu/repos/protege/protege4/plugins/org.protege.editor.owl.client/trunk/</developerConnection>
-		<url>http://smi-protege.stanford.edu/svn/protege4/plugins/org.protege.editor.owl.client/</url>
-	</scm>
+    <mailingLists>
+        <mailingList>
+            <name>p4-feedback</name>
+            <subscribe>http://mailman.stanford.edu/mailman/listinfo/p4-feedback</subscribe>
+            <unsubscribe>http://mailman.stanford.edu/mailman/listinfo/p4-feedback</unsubscribe>
+            <post>p4-feedback@lists.stanford.edu</post>
+            <archive>https://mailman.stanford.edu/pipermail/p4-feedback/</archive>
+            <otherArchives>
+                <otherArchive>http://protege-ontology-editor-knowledge-acquisition-system.136.n4.nabble.com/Protege-OWL-4-x-Support-f21363.html</otherArchive>
+            </otherArchives>
+        </mailingList>
+    </mailingLists>
+            
+    <scm>
+        <connection>scm:svn:http://smi-protege.stanford.edu/repos/protege/protege4/plugins/org.protege.editor.owl.client/trunk/</connection>
+        <developerConnection>scm:svn:https://smi-protege.stanford.edu/repos/protege/protege4/plugins/org.protege.editor.owl.client/trunk/</developerConnection>
+        <url>http://smi-protege.stanford.edu/svn/protege4/plugins/org.protege.editor.owl.client/</url>
+    </scm>
 
-	<dependencies>
+    <dependencies>
         <dependency>
-			<groupId>edu.stanford.protege</groupId>
-			<artifactId>org.protege.editor.core.application</artifactId>
-			<version>4.3.0</version>
+            <groupId>edu.stanford.protege</groupId>
+            <artifactId>org.protege.editor.core.application</artifactId>
+            <version>4.3.0</version>
         </dependency>
-	
+    
         <dependency>
-			<groupId>edu.stanford.protege</groupId>
+            <groupId>edu.stanford.protege</groupId>
             <artifactId>org.protege.editor.owl</artifactId>
-			<version>4.3.0</version>
+            <version>4.3.0</version>
         </dependency>
 
         <dependency>
-			<groupId>edu.stanford.protege</groupId>
+            <groupId>edu.stanford.protege</groupId>
             <artifactId>org.protege.owl.server</artifactId>
-			<version>2.0.1-SNAPSHOT</version>
+            <version>2.0.1-SNAPSHOT</version>
         </dependency>
-	</dependencies>
+    </dependencies>
 
-	<build>
-		<plugins>
+    <build>
+        <plugins>
             <plugin>
-				<groupId>org.apache.felix</groupId>
-				<artifactId>maven-bundle-plugin</artifactId>
-				<version>2.3.7</version>
-				<extensions>true</extensions>
-				<configuration>
-					<instructions>
-						<Bundle-ClassPath>.</Bundle-ClassPath>
-						<Bundle-SymbolicName>${project.artifactId};singleton:=true</Bundle-SymbolicName>
-						<Bundle-Vendor>The Protege Development Team</Bundle-Vendor>
-						<Export-Package>${project.artifactId}*;version=${project.version}</Export-Package>
-						<Import-Package>
-							org.protege.editor.core.*;version="4.3", <!-- equivalent to [4.3,infinity) -->
-							org.protege.editor.owl.*;version="4.3",
-							*
-						</Import-Package>
-						<Include-Resource>plugin.xml, {maven-resources}</Include-Resource>
-					</instructions>
-					<executions>
-						<execution>
-							<id>bundle-manifest</id>
-							<phase>install</phase>
-							<goals>    
-								<goal>manifest</goal>
-							</goals>   
-						</execution>
-					</executions>
-				</configuration>
+              <groupId>org.apache.maven.plugins</groupId>
+              <artifactId>maven-compiler-plugin</artifactId>
+              <version>3.0</version>
+              <configuration>
+                <source>1.6</source>
+                <target>1.6</target>
+              </configuration>
+            </plugin>
+            <plugin>
+                <groupId>org.apache.felix</groupId>
+                <artifactId>maven-bundle-plugin</artifactId>
+                <version>2.3.7</version>
+                <extensions>true</extensions>
+                <configuration>
+                    <instructions>
+                        <Bundle-ClassPath>.</Bundle-ClassPath>
+                        <Bundle-SymbolicName>${project.artifactId};singleton:=true</Bundle-SymbolicName>
+                        <Bundle-Vendor>The Protege Development Team</Bundle-Vendor>
+                        <Export-Package>${project.artifactId}*;version=${project.version}</Export-Package>
+                        <Import-Package>
+                            org.protege.editor.core.*;version="4.3", <!-- equivalent to [4.3,infinity) -->
+                            org.protege.editor.owl.*;version="4.3",
+                            *
+                        </Import-Package>
+                        <Include-Resource>plugin.xml, {maven-resources}</Include-Resource>
+                    </instructions>
+                    <executions>
+                        <execution>
+                            <id>bundle-manifest</id>
+                            <phase>install</phase>
+                            <goals>    
+                                <goal>manifest</goal>
+                            </goals>   
+                        </execution>
+                    </executions>
+                </configuration>
             </plugin>
             
-			<plugin>
-				<artifactId>maven-eclipse-plugin</artifactId>
-				<version>2.9</version>
-				<configuration>
-					<pde>true</pde>
-				</configuration>
-			</plugin>
-		</plugins>
-	</build>
+            <plugin>
+                <artifactId>maven-eclipse-plugin</artifactId>
+                <version>2.9</version>
+                <configuration>
+                    <pde>true</pde>
+                </configuration>
+            </plugin>
+        </plugins>
+    </build>
 </project>

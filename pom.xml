@@ -48,9 +48,9 @@
     </mailingLists>
             
     <scm>
-        <connection>scm:svn:http://smi-protege.stanford.edu/repos/protege/protege4/plugins/org.protege.editor.owl.client/trunk/</connection>
-        <developerConnection>scm:svn:https://smi-protege.stanford.edu/repos/protege/protege4/plugins/org.protege.editor.owl.client/trunk/</developerConnection>
-        <url>http://smi-protege.stanford.edu/svn/protege4/plugins/org.protege.editor.owl.client/</url>
+        <connection>scm:git:git@github.com:protegeproject/org.protege.editor.owl.client.git</connection>
+        <developerConnection>scm:git:git@github.com:protegeproject/org.protege.editor.owl.client.git</developerConnection>
+        <url>https://github.com/protegeproject/org.protege.editor.owl.client</url>
     </scm>
 
     <dependencies>

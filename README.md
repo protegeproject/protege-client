@@ -1,7 +1,7 @@
 Protege Desktop Client
 ======================
 
-Provides client functionality for the Protege Desktop application to connect to an [OWL Ontology Server][], and collaboratively edit collections of OWL ontologies.
+Provides client functionality for the Protege Desktop application to connect to an [OWL Ontology Server][], allowing end users to collaboratively edit collections of OWL ontologies.
 
   [OWL Ontology Server]: http://github.com/protegeproject/org.protege.owl.server
   

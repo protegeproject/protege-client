@@ -97,7 +97,7 @@ public class OpenFromServerDialog extends JDialog {
 		GridBagConstraints c = new GridBagConstraints(0, 0, 1, 1, 0, 0, GridBagConstraints.LINE_START, GridBagConstraints.NONE, new Insets(12, 12, 0, 11), 0, 0);
 		JLabel serverIRILabel = new JLabel("Server address:");
 		mainPanel.add(serverIRILabel, c);
-		
+
 		c.gridx = 1;
 		c.weightx = 1.0;
 		c.fill = GridBagConstraints.HORIZONTAL;
@@ -283,12 +283,13 @@ public class OpenFromServerDialog extends JDialog {
 		public void actionPerformed(ActionEvent e) {
 			String serverIRI = (String) serverLocationsList.getSelectedItem();
 			IRI serverLocation = IRI.create(serverIRI);
-			ServerConnectionManager connectionManager = ServerConnectionManager.get(editorKit); 
-
+			ServerConnectionManager connectionManager = ServerConnectionManager.get(editorKit);
+			UIHelper ui = new UIHelper(editorKit);
 			try {
 				client = connectionManager.createClient(serverLocation, username.getText(), new String(password.getPassword()));
 				if (client != null) {
-					
+					JOptionPane.showMessageDialog(mainPanel, "Connected to server.");
+
 					/*
 					 * After a successful connection, save server location to the preferences so that users
 					 * don't have to retype this information.
@@ -304,7 +305,6 @@ public class OpenFromServerDialog extends JDialog {
 				}
 			} catch (OWLServerException ose) {
 				ProtegeApplication.getErrorLog().logError(ose);
-				UIHelper ui = new UIHelper(editorKit);
 				ui.showDialog("Error connecting to server", new JLabel("Connection failed - " + ose.getMessage()));
 			}
 		}
@@ -320,14 +320,19 @@ public class OpenFromServerDialog extends JDialog {
 	protected void openOntologyDocument() {
 		try {
 			int row = serverContentTable.getSelectedRow();
-			RemoteServerDocument doc = tableModel.getValueAt(row);
-			if (doc instanceof RemoteOntologyDocument) {
-				RemoteOntologyDocument remoteOntology = (RemoteOntologyDocument) doc;
-				ServerConnectionManager connectionManager = ServerConnectionManager.get(editorKit);
-				VersionedOntologyDocument vont = ClientUtilities.loadOntology(client, editorKit.getOWLModelManager().getOWLOntologyManager(), remoteOntology);
-				connectionManager.addVersionedOntology(vont);
-				editorKit.getOWLModelManager().setActiveOntology(vont.getOntology());
-				OpenFromServerDialog.this.setVisible(false);
+			if(row != -1) {
+				RemoteServerDocument doc = tableModel.getValueAt(row);
+				if (doc instanceof RemoteOntologyDocument) {
+					RemoteOntologyDocument remoteOntology = (RemoteOntologyDocument) doc;
+					ServerConnectionManager connectionManager = ServerConnectionManager.get(editorKit);
+					VersionedOntologyDocument vont = ClientUtilities.loadOntology(client, editorKit.getOWLModelManager().getOWLOntologyManager(), remoteOntology);
+					connectionManager.addVersionedOntology(vont);
+					editorKit.getOWLModelManager().setActiveOntology(vont.getOntology());
+					OpenFromServerDialog.this.setVisible(false);
+				}
+			}
+			else {
+				JOptionPane.showMessageDialog(mainPanel, "Select a document from the 'Ontology Documents' list to open.", "Error", JOptionPane.ERROR_MESSAGE);
 			}
 		} catch (Exception ex) {
 			ProtegeApplication.getErrorLog().logError(ex);

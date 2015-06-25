@@ -284,7 +284,6 @@ public class OpenFromServerDialog extends JDialog {
 			String serverIRI = (String) serverLocationsList.getSelectedItem();
 			IRI serverLocation = IRI.create(serverIRI);
 			ServerConnectionManager connectionManager = ServerConnectionManager.get(editorKit);
-			UIHelper ui = new UIHelper(editorKit);
 			try {
 				client = connectionManager.createClient(serverLocation, username.getText(), new String(password.getPassword()));
 				if (client != null) {
@@ -305,6 +304,7 @@ public class OpenFromServerDialog extends JDialog {
 				}
 			} catch (OWLServerException ose) {
 				ProtegeApplication.getErrorLog().logError(ose);
+				UIHelper ui = new UIHelper(editorKit);
 				ui.showDialog("Error connecting to server", new JLabel("Connection failed - " + ose.getMessage()));
 			}
 		}

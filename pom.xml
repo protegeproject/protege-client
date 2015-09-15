@@ -113,16 +113,7 @@
                         </goals>
                     </execution>
                 </executions>
-            </plugin>
-
-            <plugin>
-                <groupId>org.apache.maven.plugins</groupId>
-                <artifactId>maven-eclipse-plugin</artifactId>
-                <version>2.9</version>
-                <configuration>
-                    <pde>true</pde>
-                </configuration>
-            </plugin>
+            </plugin>            
         </plugins>
     </build>
 </project>

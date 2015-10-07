@@ -48,7 +48,7 @@ public class EnableAutoUpdateAction extends ProtegeOWLAction {
 	    }
 	    else {
 	        ScheduledExecutorService executor = connectionManager.getSingleThreadExecutorService();
-	        autoUpdate = executor.scheduleWithFixedDelay(new AutoUpdate(), 15, 15, TimeUnit.SECONDS);
+	        autoUpdate = executor.scheduleWithFixedDelay(new AutoUpdate(), 15, 15, TimeUnit.SECONDS); // TODO: change this so that the sync delay value is fetched from the (new APIs) client configuration
 	    }
 	}
 	

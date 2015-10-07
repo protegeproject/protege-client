@@ -14,12 +14,14 @@
     <packaging>bundle</packaging>
 
     <name>Protege Desktop Client</name>
-    <description>Provides client functionality for the Protege Desktop application to connect to an OWL Ontology Server, allowing end users to collaboratively edit collections of OWL ontologies.</description>
+    <description>Provides client functionality for Protege 5 to connect to a Protege Server, allowing end users to collaboratively edit collections of OWL ontologies.</description>
     <url>http://protegewiki.stanford.edu/wiki/Protege4ClientServer</url>
+
     <organization>
         <name>Stanford Center for Biomedical Informatics Research</name>
         <url>http://bmir.stanford.edu/</url>
     </organization>
+
     <licenses>
         <license>
             <name>GNU Lesser General Public License</name>
@@ -34,42 +36,35 @@
         </developer>
     </developers>
 
-    <mailingLists>
-        <mailingList>
-            <name>p4-feedback</name>
-            <subscribe>http://mailman.stanford.edu/mailman/listinfo/p4-feedback</subscribe>
-            <unsubscribe>http://mailman.stanford.edu/mailman/listinfo/p4-feedback</unsubscribe>
-            <post>p4-feedback@lists.stanford.edu</post>
-            <archive>https://mailman.stanford.edu/pipermail/p4-feedback/</archive>
-            <otherArchives>
-                <otherArchive>http://protege-ontology-editor-knowledge-acquisition-system.136.n4.nabble.com/Protege-OWL-4-x-Support-f21363.html</otherArchive>
-            </otherArchives>
-        </mailingList>
-    </mailingLists>
-
     <scm>
-        <connection>scm:git:git@github.com:protegeproject/org.protege.editor.owl.client.git</connection>
-        <developerConnection>scm:git:git@github.com:protegeproject/org.protege.editor.owl.client.git</developerConnection>
-        <url>https://github.com/protegeproject/org.protege.editor.owl.client</url>
+        <connection>scm:git:git@github.com:protegeproject/protege-ontology-client.git</connection>
+        <developerConnection>scm:git:git@github.com:protegeproject/protege-ontology-client.git</developerConnection>
+        <url>https://github.com/protegeproject/protege-ontology-client</url>
     </scm>
+
+    <properties>
+        <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
+        <protege.version>5.0.0-beta-15</protege.version>
+        <protege-server.version>2.0.6-SNAPSHOT</protege-server.version>
+    </properties>
 
     <dependencies>
         <dependency>
             <groupId>edu.stanford.protege</groupId>
             <artifactId>org.protege.editor.core.application</artifactId>
-            <version>5.0.0-beta-15</version>
+            <version>${protege.version}</version>
         </dependency>
 
         <dependency>
             <groupId>edu.stanford.protege</groupId>
             <artifactId>org.protege.editor.owl</artifactId>
-            <version>5.0.0-beta-15</version>
+            <version>${protege.version}</version>
         </dependency>
 
         <dependency>
             <groupId>edu.stanford.protege</groupId>
             <artifactId>org.protege.owl.server</artifactId>
-            <version>2.0.6-SNAPSHOT</version>
+            <version>${protege-server.version}</version>
         </dependency>
     </dependencies>
 
@@ -101,7 +96,7 @@
                             org.protege.editor.owl.*;version="5.0",
                             *
                         </Import-Package>
-                        <Include-Resource>plugin.xml, {maven-resources}</Include-Resource>
+                        <Include-Resource>{maven-resources}</Include-Resource>
                     </instructions>
                 </configuration>
                 <executions>

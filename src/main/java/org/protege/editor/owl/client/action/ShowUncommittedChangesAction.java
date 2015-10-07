@@ -55,7 +55,7 @@ public class ShowUncommittedChangesAction extends ProtegeOWLAction {
                 }
             }
             else {
-                JOptionPane.showMessageDialog(getOWLWorkspace(), "Active Ontology is not connected to a server.");
+                JOptionPane.showMessageDialog(getOWLWorkspace(), "Active ontology is not connected to a server.");
             }
         }
         catch (UserDeclinedAuthenticationException udae) {

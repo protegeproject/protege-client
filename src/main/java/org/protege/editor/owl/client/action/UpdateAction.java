@@ -38,7 +38,7 @@ public class UpdateAction extends ProtegeOWLAction {
 	    OWLOntology ontology = getOWLModelManager().getActiveOntology();
 	    VersionedOntologyDocument vont = connectionManager.getVersionedOntology(ontology);
 	    if (vont == null) {
-            JOptionPane.showMessageDialog(owner, "Update ignored because the ontology is not associated with a server");
+            JOptionPane.showMessageDialog(owner, "Update ignored because the ontology is not associated with a server.");
             return;
 	    }
 	    @SuppressWarnings("unused")

@@ -165,7 +165,8 @@ public class OpenFromServerDialog extends JDialog {
 		c.fill = GridBagConstraints.HORIZONTAL;
 		c.weighty = 0;
 		mainPanel.add(getButtonPanel(), c);
-		
+
+		getRootPane().setDefaultButton(connectButton);
 		pack();
 		getContentPane().add(mainPanel);
 	}
@@ -287,7 +288,6 @@ public class OpenFromServerDialog extends JDialog {
 			try {
 				client = connectionManager.createClient(serverLocation, username.getText(), new String(password.getPassword()));
 				if (client != null) {
-					JOptionPane.showMessageDialog(mainPanel, "Connected to server.");
 
 					/*
 					 * After a successful connection, save server location to the preferences so that users

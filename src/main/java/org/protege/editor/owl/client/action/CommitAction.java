@@ -67,7 +67,9 @@ public class CommitAction extends ProtegeOWLAction {
                 return;
             }
             Client client = connectionManager.createClient(ontology);
-            connectionManager.getSingleThreadExecutorService().submit(new DoCommit(client, vont, commitComment));
+
+            // TODO MetaData should not accept null commit comment..
+            connectionManager.getSingleThreadExecutorService().submit(new DoCommit(client, vont, (commitComment != null ? commitComment : "")));
         }
         catch (UserDeclinedAuthenticationException udae) {
             ; // ignore this because the user knows that he didn't want to authenticate

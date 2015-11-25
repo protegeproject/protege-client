@@ -21,22 +21,22 @@ public class ReviewPanel extends JPanel implements Disposable {
 
     public ReviewPanel(OWLModelManager modelManager, OWLEditorKit editorKit) {
         diffManager = LogDiffManager.get(modelManager, editorKit);
-        reviewManager = new ReviewManager();
+        reviewManager = diffManager.getReviewManager();
         setLayout(new FlowLayout(FlowLayout.CENTER));
         addButtons();
     }
 
     private void addButtons() {
-        rejectBtn = getButton("review-rejected.png", rejectBtnListener, 22, 22);
+        rejectBtn = getButton(GuiUtils.REVIEW_REJECTED_ICON_FILENAME, rejectBtnListener, 22, 22);
         rejectBtn.setToolTipText("Reject selected change(s); rejected changes are undone");
 
-        clearBtn = getButton("review-clear.png", clearBtnListener, 22, 22);
-        clearBtn.setToolTipText("Modify selected change(s) to 'review-pending' status");
+        clearBtn = getButton(GuiUtils.REVIEW_CLEAR_ICON_FILENAME, clearBtnListener, 22, 22);
+        clearBtn.setToolTipText("Modify selected change(s) to review-pending status");
 
-        acceptBtn = getButton("review-accepted.png", acceptBtnListener, 22, 22);
+        acceptBtn = getButton(GuiUtils.REVIEW_ACCEPTED_ICON_FILENAME, acceptBtnListener, 22, 22);
         acceptBtn.setToolTipText("Accept selected change(s)");
 
-        commitBtn = getButton("review-commit.png", commitBtnListener, 26, 26);
+        commitBtn = getButton(GuiUtils.REVIEW_COMMIT_ICON_FILENAME, commitBtnListener, 26, 26);
         commitBtn.setToolTipText("Commit all change reviews");
 
         JSeparator separator = new JSeparator(SwingConstants.HORIZONTAL);
@@ -72,7 +72,7 @@ public class ReviewPanel extends JPanel implements Disposable {
         @Override
         public void actionPerformed(ActionEvent e) {
             for(Change c : diffManager.getSelectedChanges()) {
-                reviewManager.addReview(c, ChangeReviewStatus.REJECTED);
+                reviewManager.addReview(c, ReviewStatus.REJECTED);
             }
             diffManager.statusChanged(LogDiffEvent.CHANGE_REVIEWED);
         }
@@ -82,7 +82,7 @@ public class ReviewPanel extends JPanel implements Disposable {
         @Override
         public void actionPerformed(ActionEvent e) {
             for(Change c : diffManager.getSelectedChanges()) {
-                reviewManager.addReview(c, ChangeReviewStatus.ACCEPTED);
+                reviewManager.addReview(c, ReviewStatus.ACCEPTED);
             }
             diffManager.statusChanged(LogDiffEvent.CHANGE_REVIEWED);
         }
@@ -92,7 +92,7 @@ public class ReviewPanel extends JPanel implements Disposable {
         @Override
         public void actionPerformed(ActionEvent e) {
             for(Change c : diffManager.getSelectedChanges()) {
-                reviewManager.addReview(c, ChangeReviewStatus.PENDING);
+                reviewManager.addReview(c, ReviewStatus.PENDING);
             }
             diffManager.statusChanged(LogDiffEvent.CHANGE_REVIEWED);
         }

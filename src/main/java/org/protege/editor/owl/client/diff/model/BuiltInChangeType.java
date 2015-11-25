@@ -18,7 +18,6 @@ public enum BuiltInChangeType implements ChangeType {
     ONTOLOGY_IRI("Ontology IRI");
 
     private String type;
-    private Color color;
 
     BuiltInChangeType(String type) {
         this.type = checkNotNull(type);
@@ -40,17 +39,7 @@ public enum BuiltInChangeType implements ChangeType {
     }
 
     @Override
-    public Optional<BuiltInChangeType> getBuiltInType() {
-        return Optional.of(valueOf(type));
-    }
-
-    @Override
     public Optional<Color> getDisplayColor() {
-        return Optional.ofNullable(color);
-    }
-
-    @Override
-    public void setDisplayColor(Color color) {
-        this.color = checkNotNull(color);
+        return Optional.empty();
     }
 }

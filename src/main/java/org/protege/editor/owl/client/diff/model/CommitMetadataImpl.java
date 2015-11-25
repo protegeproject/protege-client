@@ -11,7 +11,7 @@ import static com.google.common.base.Preconditions.checkNotNull;
  * @author Rafael Gonçalves <br>
  * Stanford Center for Biomedical Informatics Research
  */
-public final class CommitImpl implements Commit {
+public final class CommitMetadataImpl implements CommitMetadata {
     private final UserId userId;
     private final Date date;
     private final String comment;
@@ -25,7 +25,7 @@ public final class CommitImpl implements Commit {
      * @param comment   Commit comment
      * @param hashcode  Commit hashcode
      */
-    public CommitImpl(UserId userId, Date date, String comment, int hashcode) {
+    public CommitMetadataImpl(UserId userId, Date date, String comment, int hashcode) {
         this.userId = checkNotNull(userId);
         this.date = checkNotNull(date);
         this.comment = checkNotNull(comment);
@@ -33,7 +33,7 @@ public final class CommitImpl implements Commit {
     }
 
     @Override
-    public UserId getUserId() {
+    public UserId getAuthor() {
         return userId;
     }
 
@@ -56,7 +56,7 @@ public final class CommitImpl implements Commit {
     public boolean equals(Object o) {
         if (this == o) return true;
         if (o == null || getClass() != o.getClass()) return false;
-        CommitImpl commit = (CommitImpl) o;
+        CommitMetadataImpl commit = (CommitMetadataImpl) o;
         return Objects.equal(hashcode, commit.hashcode) &&
                 Objects.equal(userId, commit.userId) &&
                 Objects.equal(date, commit.date) &&
@@ -79,7 +79,7 @@ public final class CommitImpl implements Commit {
     }
 
     @Override
-    public int compareTo(Commit that) {
+    public int compareTo(CommitMetadata that) {
         return that.getDate().compareTo(this.date); // compare w.r.t. date only
     }
 }

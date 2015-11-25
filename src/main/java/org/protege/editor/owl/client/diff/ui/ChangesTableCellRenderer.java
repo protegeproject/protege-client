@@ -2,26 +2,18 @@ package org.protege.editor.owl.client.diff.ui;
 
 import org.protege.editor.owl.OWLEditorKit;
 import org.protege.editor.owl.client.diff.model.ChangeMode;
-import org.protege.editor.owl.client.diff.model.ChangeReview;
 import org.protege.editor.owl.client.diff.model.ChangeType;
+import org.protege.editor.owl.client.diff.model.Review;
 import org.semanticweb.owlapi.model.OWLObject;
 
 import javax.swing.*;
-import javax.swing.border.EmptyBorder;
-import javax.swing.table.TableCellRenderer;
 import java.awt.*;
-import java.awt.image.BufferedImage;
-import java.io.Serializable;
-
-import static com.google.common.base.Preconditions.checkNotNull;
 
 /**
  * @author Rafael Gonçalves <br>
  * Stanford Center for Biomedical Informatics Research
  */
-public class ChangesTableCellRenderer extends JTextArea implements TableCellRenderer, Serializable {
-    private static final long serialVersionUID = 17448042406257048L;
-    private TableCellRenderer owlCellRenderer;
+public class ChangesTableCellRenderer extends LogDiffCellRenderer {
 
     /**
      * Constructor
@@ -29,13 +21,7 @@ public class ChangesTableCellRenderer extends JTextArea implements TableCellRend
      * @param editorKit OWL editor kit
      */
     public ChangesTableCellRenderer(OWLEditorKit editorKit) {
-        super();
-        owlCellRenderer = new OwlCellRenderer(checkNotNull(editorKit));
-        setLineWrap(true);
-        setWrapStyleWord(true);
-        setOpaque(true);
-        setBorder(new EmptyBorder(1, 2, 1, 2));
-        setAlignmentY(CENTER_ALIGNMENT);
+        super(editorKit);
     }
 
     @Override
@@ -51,19 +37,18 @@ public class ChangesTableCellRenderer extends JTextArea implements TableCellRend
         }
         if(value instanceof Boolean) {
             if((Boolean)value) {
-                return getIconLabel(table, type, mode, "warning.png", isSelected, true);
+                return getIconLabel(table, type, mode, GuiUtils.WARNING_ICON_FILENAME, isSelected, true);
             } else {
                 value = null;
             }
         }
-        if(value != null && value instanceof ChangeReview) {
-            ChangeReview review = (ChangeReview) value;
-            boolean committed = review.getAuthor().isPresent();
+        if(value != null && value instanceof Review) {
+            Review review = (Review) value;
             switch(review.getStatus()) {
                 case ACCEPTED:
-                    return getIconLabel(table, type, mode, "review-accepted.png", isSelected, committed);
+                    return getIconLabel(table, type, mode, GuiUtils.REVIEW_ACCEPTED_ICON_FILENAME, isSelected, review.isCommitted());
                 case REJECTED:
-                    return getIconLabel(table, type, mode, "review-rejected.png", isSelected, committed);
+                    return getIconLabel(table, type, mode, GuiUtils.REVIEW_REJECTED_ICON_FILENAME, isSelected, review.isCommitted());
                 case PENDING:
                 default:
                     value = "";
@@ -85,31 +70,23 @@ public class ChangesTableCellRenderer extends JTextArea implements TableCellRend
             c.setForeground(GuiUtils.UNSELECTED_FOREGROUND);
         }
         else {
-            if (mode.equals(ChangeMode.ADDITION)) {
-                c.setBackground(GuiUtils.ADDITION_COLOR);
-            } else if (mode.equals(ChangeMode.REMOVAL)) {
-                c.setBackground(GuiUtils.REMOVAL_COLOR);
-            } else if (mode.equals(ChangeMode.ONTOLOGY_IRI)) {
-                c.setBackground(GuiUtils.DEFAULT_CHANGE_COLOR);
-            }
+            GuiUtils.setComponentBackground(c, mode);
             c.setForeground(GuiUtils.UNSELECTED_FOREGROUND);
         }
     }
 
     private JLabel getIconLabel(JTable table, ChangeType type, ChangeMode mode, String iconFilename, boolean isSelected, boolean committed) {
-        Icon icon;
-        if(committed) {
-            icon = GuiUtils.getUserIcon(iconFilename, 30, 30);
-        }
-        else {
-            ImageIcon base = (ImageIcon)GuiUtils.getUserIcon(iconFilename, 30, 30);
-            ImageIcon badge = (ImageIcon) GuiUtils.getUserIcon("review-new.png", 13, 13);
-            BufferedImage img = new BufferedImage(30, 30, AlphaComposite.SRC_OVER);
-            Graphics g = img.getGraphics();
-            g.drawImage(base.getImage(), 0, 0, null);
-            g.drawImage(badge.getImage(), 17, 0, null);
-            icon = new ImageIcon(img);
-        }
+        Icon icon = GuiUtils.getUserIcon(iconFilename, 30, 30);
+        // rpc
+//        if(!committed) {
+//            ImageIcon base = (ImageIcon)GuiUtils.getUserIcon(iconFilename, 30, 30);
+//            ImageIcon badge = (ImageIcon) GuiUtils.getUserIcon(GuiUtils.NEW_REVIEW_ICON_FILENAME, 13, 13);
+//            BufferedImage img = new BufferedImage(30, 30, AlphaComposite.SRC_OVER);
+//            Graphics g = img.getGraphics();
+//            g.drawImage(base.getImage(), 0, 0, null);
+//            g.drawImage(badge.getImage(), 17, 0, null);
+//            icon = new ImageIcon(img);
+//        }
         JLabel lbl = new JLabel("", icon, JLabel.CENTER);
         lbl.setOpaque(true);
         setBackground(table, type, mode, lbl, isSelected);

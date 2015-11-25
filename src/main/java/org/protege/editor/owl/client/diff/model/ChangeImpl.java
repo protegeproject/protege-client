@@ -2,12 +2,9 @@ package org.protege.editor.owl.client.diff.model;
 
 import com.google.common.base.Objects;
 import com.google.common.collect.ComparisonChain;
-import org.protege.owl.server.api.UserId;
-import org.semanticweb.owlapi.model.OWLAxiom;
 import org.semanticweb.owlapi.model.OWLObject;
 import org.semanticweb.owlapi.model.OWLOntologyChange;
 
-import java.util.Date;
 import java.util.HashSet;
 import java.util.Optional;
 import java.util.Set;
@@ -20,42 +17,38 @@ import static com.google.common.base.Preconditions.checkNotNull;
  */
 public class ChangeImpl implements Change {
     private final OWLObject subject, property;
-    private final String commitComment, newValue;
-    private final Date date;
-    private final UserId author;
-    private ChangeMode changeMode;
-    private ChangeType type;
-    private Set<OWLOntologyChange> changes;
-    private Set<OWLAxiom> axioms;
+    private final String newValue;
+    private final RevisionTag revisionTag;
+    private final CommitMetadata commitMetadata;
+    private final ChangeMode changeMode;
+    private final Set<OWLOntologyChange> changes;
     private Set<Change> conflictingChanges = new HashSet<>();
-    private String oldValue;
-    private ChangeReview review;
     private OWLOntologyChange baselineChange;
+    private ChangeType type;
+    private Review review;
 
     /**
      * Constructor
      *
      * @param changes    Set of changes
+     * @param revisionTag   Revision tag
+     * @param commitMetadata    Commit metadata
      * @param changeMode  Change mode
-     * @param date  Commit date
-     * @param author    Commit author
      * @param subject   Change subject
      * @param type  Change type
      * @param property  Property
      * @param newValue  New value
-     * @param commitComment Commit comment
      */
-    public ChangeImpl(Set<OWLOntologyChange> changes, ChangeMode changeMode, Date date, UserId author, OWLObject subject, ChangeType type,
-                      Optional<OWLObject> property, Optional<String> newValue, String commitComment) {
+    public ChangeImpl(Set<OWLOntologyChange> changes, RevisionTag revisionTag, CommitMetadata commitMetadata, ChangeMode changeMode, OWLObject subject, ChangeType type,
+                      Optional<OWLObject> property, Optional<String> newValue) {
         this.changes = checkNotNull(changes);
+        this.revisionTag = checkNotNull(revisionTag);
+        this.commitMetadata = checkNotNull(commitMetadata);
         this.changeMode = checkNotNull(changeMode);
-        this.date = checkNotNull(date);
-        this.author = checkNotNull(author);
         this.subject = checkNotNull(subject);
         this.type = checkNotNull(type);
         this.property = (property.isPresent() ? checkNotNull(property.get()) : null);
         this.newValue = (newValue.isPresent() ? checkNotNull(newValue.get()) : null);
-        this.commitComment = checkNotNull(commitComment);
     }
 
     @Override
@@ -64,36 +57,18 @@ public class ChangeImpl implements Change {
     }
 
     @Override
-    public Set<OWLAxiom> getChangeAxioms() {
-        if(axioms == null) {
-            axioms = new HashSet<>();
-            for (OWLOntologyChange c : changes) {
-                if (c.isAxiomChange() && c.getAxiom() != null) {
-                    axioms.add(c.getAxiom());
-                }
-            }
-        }
-        return axioms;
+    public RevisionTag getRevisionTag() {
+        return revisionTag;
+    }
+
+    @Override
+    public CommitMetadata getCommitMetadata() {
+        return commitMetadata;
     }
 
     @Override
     public ChangeMode getChangeMode() {
         return changeMode;
-    }
-
-    @Override
-    public void setChangeMode(ChangeMode changeMode) {
-        this.changeMode = checkNotNull(changeMode);
-    }
-
-    @Override
-    public Date getDate() {
-        return date;
-    }
-
-    @Override
-    public UserId getAuthor() {
-        return author;
     }
 
     @Override
@@ -117,38 +92,15 @@ public class ChangeImpl implements Change {
     }
 
     @Override
-    public Optional<OWLObject> getAnnotationProperty() {
+    public Optional<OWLObject> getProperty() {
         return Optional.ofNullable(property);
     }
 
     @Override
-    public Optional<String> getPriorValue() {
-        return Optional.ofNullable(oldValue);
-    }
-
-    @Override
-    public Optional<String> getValue() {
-        return Optional.ofNullable(newValue);
-    }
-
-    @Override
-    public String getCommitComment() {
-        return commitComment;
-    }
-
-    @Override
-    public void setPriorValue(String previousValue) {
-        this.oldValue = checkNotNull(previousValue);
-    }
-
-    @Override
     public void addConflictingChanges(Set<Change> conflictingChanges) {
-        conflictingChanges.forEach(this::addConflictingChange);
-    }
-
-    @Override
-    public void addConflictingChange(Change change) {
-        conflictingChanges.add(checkNotNull(change));
+        for(Change c : conflictingChanges) {
+            this.conflictingChanges.add(checkNotNull(c));
+        }
     }
 
     @Override
@@ -162,19 +114,14 @@ public class ChangeImpl implements Change {
     }
 
     @Override
-    public void setReviewStatus(ChangeReviewStatus reviewStatus) {
-        if(review == null) {
-            review = new ChangeReview(reviewStatus, Optional.empty(), Optional.empty(), Optional.empty());
-        }
-        else {
-            review.setStatus(reviewStatus);
-        }
+    public void setReviewStatus(ReviewStatus reviewStatus) {
+        review = new ReviewImpl(reviewStatus, Optional.empty(), Optional.empty(), Optional.empty(), false);
     }
 
     @Override
-    public ChangeReviewStatus getReviewStatus() {
+    public ReviewStatus getReviewStatus() {
         if(review == null) {
-            return ChangeReviewStatus.PENDING;
+            return ReviewStatus.PENDING;
         }
         else {
             return review.getStatus();
@@ -182,12 +129,12 @@ public class ChangeImpl implements Change {
     }
 
     @Override
-    public ChangeReview getReview() {
+    public Review getReview() {
         return review;
     }
 
     @Override
-    public void setReview(ChangeReview review) {
+    public void setReview(Review review) {
         this.review = checkNotNull(review);
     }
 
@@ -207,17 +154,21 @@ public class ChangeImpl implements Change {
         if (o == null || getClass() != o.getClass()) return false;
         ChangeImpl change = (ChangeImpl) o;
         return Objects.equal(subject, change.subject) &&
-                Objects.equal(commitComment, change.commitComment) &&
+                Objects.equal(property, change.property) &&
+                Objects.equal(newValue, change.newValue) &&
+                Objects.equal(revisionTag, change.revisionTag) &&
+                Objects.equal(commitMetadata, change.commitMetadata) &&
+                changeMode == change.changeMode &&
                 Objects.equal(type, change.type) &&
-                Objects.equal(date, change.date) &&
-                Objects.equal(author, change.author) &&
-                Objects.equal(changeMode, change.changeMode) &&
-                Objects.equal(changes, change.changes);
+                Objects.equal(changes, change.changes) &&
+                Objects.equal(conflictingChanges, change.conflictingChanges) &&
+                Objects.equal(review, change.review) &&
+                Objects.equal(baselineChange, change.baselineChange);
     }
 
     @Override
     public int hashCode() {
-        return Objects.hashCode(subject, commitComment, type, date, author, changeMode, changes);
+        return Objects.hashCode(subject, revisionTag, commitMetadata, changeMode, type, changes);
     }
 
     @Override
@@ -226,12 +177,14 @@ public class ChangeImpl implements Change {
                 .add("subject", subject)
                 .add("property", property)
                 .add("newValue", newValue)
-                .add("commitComment", commitComment)
-                .add("type", type)
-                .add("date", date)
-                .add("author", author)
+                .add("revisionTag", revisionTag)
+                .add("commitMetadata", commitMetadata)
                 .add("changeMode", changeMode)
+                .add("type", type)
                 .add("changes", changes)
+                .add("conflictingChanges", conflictingChanges)
+                .add("review", review)
+                .add("baselineChange", baselineChange)
                 .toString();
     }
 

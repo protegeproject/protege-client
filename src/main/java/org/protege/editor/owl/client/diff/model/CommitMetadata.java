@@ -8,14 +8,14 @@ import java.util.Date;
  * @author Rafael Gonçalves <br>
  * Stanford Center for Biomedical Informatics Research
  */
-public interface Commit extends Comparable<Commit> {
+public interface CommitMetadata extends Comparable<CommitMetadata> {
 
     /**
      * Get the user identifier of the commit author
      *
      * @return User identifier of commit author
      */
-    UserId getUserId();
+    UserId getAuthor();
 
     /**
      * Get the commit date

@@ -12,15 +12,15 @@ import static com.google.common.base.Preconditions.checkNotNull;
  * Stanford Center for Biomedical Informatics Research
  */
 public class ReviewManager {
-    private Map<Change,ChangeReviewStatus> newReviewMap = new HashMap<>();
-    private Map<Change,ChangeReviewStatus> initialReviewMap = new HashMap<>();
+    private Map<Change,ReviewStatus> newReviewMap = new HashMap<>();
+    private Map<Change,ReviewStatus> initialReviewMap = new HashMap<>();
 
     /**
      * No-args constructor
      */
     public ReviewManager() { }
 
-    public void addReview(Change c, ChangeReviewStatus status) {
+    public void addReview(Change c, ReviewStatus status) {
         checkNotNull(c); checkNotNull(status);
 
         // gather initial status of the newly reviewed change

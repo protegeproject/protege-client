@@ -8,19 +8,19 @@ import java.awt.*;
  * @author Rafael Gonçalves <br>
  * Stanford Center for Biomedical Informatics Research
  */
-public class ChangeDetailsView extends AbstractOWLViewComponent {
-    private static final long serialVersionUID = 4203564449172661511L;
-    private ChangeDetailsPanel detailsPanel;
+public class ConflictsView extends AbstractOWLViewComponent {
+    private static final long serialVersionUID = -4033667243827397396L;
+    private ConflictsPanel conflictsPanel;
 
     @Override
     protected void initialiseOWLView() throws Exception {
         setLayout(new BorderLayout());
-        detailsPanel = new ChangeDetailsPanel(getOWLModelManager(), getOWLEditorKit());
-        add(detailsPanel, BorderLayout.CENTER);
+        conflictsPanel = new ConflictsPanel(getOWLModelManager(), getOWLEditorKit());
+        add(conflictsPanel, BorderLayout.CENTER);
     }
 
     @Override
     protected void disposeOWLView() {
-        detailsPanel.dispose();
+        conflictsPanel.dispose();
     }
 }

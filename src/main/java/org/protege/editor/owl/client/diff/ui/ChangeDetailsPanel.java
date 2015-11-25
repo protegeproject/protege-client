@@ -4,14 +4,14 @@ import org.protege.editor.core.Disposable;
 import org.protege.editor.owl.OWLEditorKit;
 import org.protege.editor.owl.client.diff.model.*;
 import org.protege.editor.owl.model.OWLModelManager;
-import org.semanticweb.owlapi.model.OWLAxiom;
-import org.semanticweb.owlapi.model.OWLObject;
 
 import javax.swing.*;
+import javax.swing.border.EmptyBorder;
 import java.awt.*;
-import java.util.HashSet;
-import java.util.Optional;
-import java.util.Set;
+import java.text.SimpleDateFormat;
+import java.util.Date;
+
+import static com.google.common.base.Preconditions.checkNotNull;
 
 /**
  * @author Rafael Gonçalves <br>
@@ -20,7 +20,6 @@ import java.util.Set;
 public class ChangeDetailsPanel extends JPanel implements Disposable {
     private OWLEditorKit editorKit;
     private LogDiffManager diffManager;
-    private Change change;
 
     /**
      * Constructor
@@ -29,16 +28,16 @@ public class ChangeDetailsPanel extends JPanel implements Disposable {
      * @param editorKit    OWL editor kit
      */
     public ChangeDetailsPanel(OWLModelManager modelManager, OWLEditorKit editorKit) {
-        this.editorKit = editorKit;
+        this.editorKit = checkNotNull(editorKit);
 
         diffManager = LogDiffManager.get(modelManager, editorKit);
         diffManager.addListener(diffListener);
 
-        setLayout(new BoxLayout(this, BoxLayout.PAGE_AXIS));
+        setLayout(new BorderLayout());
         setBorder(GuiUtils.MATTE_BORDER);
-
         setBackground(GuiUtils.WHITE_BACKGROUND);
-        setAlignmentX(LEFT_ALIGNMENT);
+
+        createContents();
     }
 
     private LogDiffListener diffListener = new LogDiffListener() {
@@ -46,132 +45,91 @@ public class ChangeDetailsPanel extends JPanel implements Disposable {
         public void statusChanged(LogDiffEvent event) {
             if (event.equals(LogDiffEvent.CHANGE_SELECTION_CHANGED)) {
                 if(!diffManager.getSelectedChanges().isEmpty()) {
-                    change = diffManager.getFirstSelectedChange();
-                    removeAll(); repaint();
-                    listDiffDetails();
+                    removeAll();
+                    createContents();
                 }
             }
             else if(event.equals(LogDiffEvent.AUTHOR_SELECTION_CHANGED) || event.equals(LogDiffEvent.COMMIT_SELECTION_CHANGED) || event.equals(LogDiffEvent.ONTOLOGY_UPDATED)) {
-                removeAll(); repaint();
+                removeAll();
+                repaint();
             }
+            // rpc: when review view is active and a change is reviewed, recreate the review panel
         }
     };
 
-    private void listDiffDetails() {
-        if (change != null) {
-            boolean hasCompBefore = false;
-            if (change.getChangeAxioms() != null && !change.getChangeAxioms().isEmpty()) {
-                hasCompBefore = true;
-                add(new ChangeDetailLabel("Change(s)"));
-                OwlObjectList objectList = new OwlObjectList(editorKit);
-                objectList.setAlignmentX(LEFT_ALIGNMENT);
-                objectList.setObjects(change.getChangeAxioms());
-                add(objectList);
-            }
-            // the following only exist / should be shown for annotation property value or ontology IRI changes
-            if(change.getAnnotationProperty().isPresent()) {
-                Set<OWLObject> set = new HashSet<>();
-                set.add(change.getAnnotationProperty().get());
-                addChangeDetail("Property", set, hasCompBefore, Optional.empty());
-                hasCompBefore = true;
-            }
-            if(change.getValue().isPresent() && !change.getType().equals(BuiltInChangeType.LOGICAL)) {
-                Set<String> set = new HashSet<>();
-                String newValue = change.getValue().get();
-                set.add(newValue);
-                addChangeDetail("Value", set, hasCompBefore, Optional.empty());
-                hasCompBefore = true;
-            }
-            if(change.getPriorValue().isPresent()) {
-                Set<String> set = new HashSet<>();
-                set.add(change.getPriorValue().get());
-                addChangeDetail("Prior Value", set, hasCompBefore, Optional.empty());
-            }
-            if(change.getBaselineChange().isPresent()) {
-                Set<OWLAxiom> axioms = new HashSet<>();
-                axioms.add(change.getBaselineChange().get().getAxiom());
-                addChangeDetail("Baseline Change", axioms, hasCompBefore, Optional.empty());
-            }
-            addConflictDetails(change.getConflictingChanges());
-        }
-    }
-
-    private void addConflictDetails(Set<Change> changes) {
-        if(!changes.isEmpty()) {
-            int counter = 1;
-            for (Change change : changes) {
-                String verb = "";
-                switch(change.getChangeMode()) {
-                    case ADDITION:
-                        verb = "added"; break;
-                    case REMOVAL:
-                        verb = "removed"; break;
-                    case ONTOLOGY_IRI:
-                        verb = "modified IRI"; break;
-                }
-                addChangeDetail("Conflicting Change Set " + counter + " (" + change.getDate() + "). " + change.getAuthor() + " " + verb + ":", getObjectsToDisplay(change), true, Optional.of("warning.png"));
-                counter++;
+    private void createContents() {
+        if(!diffManager.getSelectedChanges().isEmpty()) {
+            Change change = diffManager.getFirstSelectedChange();
+            if (change != null) {
+                addDetailsTable(change);
+                revalidate();
             }
         }
     }
 
-    private Set<?> getObjectsToDisplay(Change c) {
-        if(!c.getChangeAxioms().isEmpty()) {
-            return c.getChangeAxioms();
-        }
-        else if(c.getValue().isPresent()) {
-            Set<String> valueSet = new HashSet<>();
-            valueSet.add(c.getValue().get());
-            return valueSet;
+    private void addDetailsTable(Change change) {
+        ChangeDetailsTableModel tableModel;
+        if(change.getBaselineChange().isPresent()) {
+            tableModel = new MatchingChangeDetailsTableModel();
         }
         else {
-            throw new IllegalStateException("Tried to display objects from a change that contains none (" + c.toString() + ")");
+            tableModel = new MultipleChangeDetailsTableModel();
         }
+        tableModel.setChange(change);
+        ChangeDetailsTable table = new ChangeDetailsTable(tableModel, editorKit);
+
+        JScrollPane scrollPane = new JScrollPane(table);
+        scrollPane.setBorder(GuiUtils.EMPTY_BORDER);
+        add(scrollPane, BorderLayout.CENTER);
     }
 
-    private void addChangeDetail(String labelText, Set<?> objects, boolean includeSeparation, Optional<String> iconFileName) {
-        OwlObjectList objectList = new OwlObjectList(editorKit);
-        if(objects != null) {
-            objectList.setObjects(objects);
+    @SuppressWarnings("unused") // rpc
+    private void addReview(Change change) {
+        JPanel reviewPanel = new JPanel(new BorderLayout());
+        JLabel reviewLbl = new JLabel();
+        Icon icon = null;
+        String statusStr = "";
+        ReviewStatus status = change.getReviewStatus();
+        switch(status) {
+            case ACCEPTED:
+                icon = GuiUtils.getUserIcon(GuiUtils.REVIEW_ACCEPTED_ICON_FILENAME, 40, 40);
+                statusStr = "Accepted"; break;
+            case REJECTED:
+                icon = GuiUtils.getUserIcon(GuiUtils.REVIEW_REJECTED_ICON_FILENAME, 40, 40);
+                statusStr = "Rejected"; break;
+            case PENDING:
+                icon = GuiUtils.getUserIcon(GuiUtils.REVIEW_PENDING_ICON_FILENAME, 40, 40);
+                statusStr = "Pending Review"; break;
         }
-        objectList.setAlignmentX(LEFT_ALIGNMENT);
-
-        if(includeSeparation) {
-            Component box = Box.createRigidArea(new Dimension(0, 20));
-            add(box);
-            toggleVisibility(objectList, box);
+        if(icon != null) {
+            reviewLbl.setIcon(icon);
+            reviewLbl.setIconTextGap(10);
         }
-
-        JLabel label = new ChangeDetailLabel(labelText);
-        if(iconFileName.isPresent()) {
-            label.setIcon(GuiUtils.getUserIcon(iconFileName.get(), 24, 24));
-            label.setIconTextGap(8);
-        }
-
-        add(label);
-        add(objectList);
-        toggleVisibility(objectList, label, objectList);
+        reviewLbl.setBorder(new EmptyBorder(10, 13, 10, 1));
+        reviewLbl.setText(getReviewText(change.getReview(), statusStr));
+        reviewPanel.add(reviewLbl);
+        add(reviewPanel, BorderLayout.SOUTH);
     }
 
-    private void toggleVisibility(Object obj, Component... components) {
-        if(obj == null) {
-            makeInvisible(components);
+    private String getReviewText(Review review, String statusStr) {
+        String dateStr = "", author = "", comment = "";
+        if(review != null) {
+            if (review.getDate().isPresent()) {
+                Date date = review.getDate().get();
+                dateStr = new SimpleDateFormat("MM/dd/yyyy HH:mm").format(date);
+            }
+            author = (review.getAuthor().isPresent() ? review.getAuthor().get().getUserName() : "");
+            comment = (review.getComment().isPresent() ? review.getComment().get() : "");
         }
-        else {
-            makeVisible(components);
+        String reviewText = "<html><p style=\"font-size:14\"><strong><i><u>" + statusStr + "</u></i></strong></p>";
+        if(!author.isEmpty() && !dateStr.isEmpty()) {
+            reviewText += "<p style=\"padding-top:7px\">Reviewed by <strong>" + author + "</strong> on <strong>" + dateStr + "</strong></p>";
         }
-    }
-
-    private void makeVisible(Component... components) {
-        for(Component c : components) {
-            c.setVisible(true);
+        if(!comment.isEmpty()) {
+            reviewText += "<p style=\"padding-top:4px\">Comment: \"" + comment + "\"</p>";
         }
-    }
-
-    private void makeInvisible(Component... components) {
-        for(Component c : components) {
-            c.setVisible(false);
-        }
+        reviewText += "</html>";
+        return reviewText;
     }
 
     @Override

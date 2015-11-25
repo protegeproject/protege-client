@@ -97,7 +97,7 @@ public class ChangesPanel extends JPanel implements Disposable {
 
         // create diff table
         table = new ChangesTable(diffTableModel, editorKit);
-        setColumnsWidth(table, 3, 19, 15, 15, 10, 30, 4, 4);
+        setColumnsWidth(table, 3, 18, 13, 15, 10, 10, 21, 5, 5);
 
         JScrollPane scrollPane = new JScrollPane(table);
         scrollPane.setBorder(GuiUtils.EMPTY_BORDER);

@@ -71,7 +71,6 @@ public class OntologyChangeVisitor implements OWLAxiomVisitor {
 
     @Override
     public void visit(OWLDisjointClassesAxiom axiom) {
-        log.info("Incomplete visitor data for this axiom (of type: " + axiom.getAxiomType() + "): " + axiom); // TODO
         subject = getChangeSubjectFromNaryAxiom(axiom);
         changeType = getChangeType(axiom);
     }
@@ -92,13 +91,7 @@ public class OntologyChangeVisitor implements OWLAxiomVisitor {
     public void visit(OWLEquivalentObjectPropertiesAxiom axiom) {
         Set<OWLSubObjectPropertyOfAxiom> subOpAxs = axiom.asSubObjectPropertyOfAxioms();
         OWLSubObjectPropertyOfAxiom subOp = subOpAxs.iterator().next();
-        if (!subOp.getSubProperty().isAnonymous()) {
-            subject = subOp.getSubProperty();
-        } else if (!subOp.getSuperProperty().isAnonymous()) {
-            subject = subOp.getSuperProperty();
-        } else { // no subsumption contains atomic LHS or RHS, so just pick one
-            subject = subOp.getSubProperty();
-        }
+        setChangeSubjectForPropertyAxiom(subOp);
         changeType = getChangeType(axiom);
     }
 
@@ -111,8 +104,7 @@ public class OntologyChangeVisitor implements OWLAxiomVisitor {
 
     @Override
     public void visit(OWLDifferentIndividualsAxiom axiom) {
-        log.info("Incomplete visitor data for this axiom (of type: " + axiom.getAxiomType() + "): " + axiom); // TODO
-        subject = getChangeSubjectFromNaryAxiom(axiom);
+        subject = axiom.getIndividualsAsList().get(0);
         changeType = getChangeType(axiom);
     }
 
@@ -156,7 +148,6 @@ public class OntologyChangeVisitor implements OWLAxiomVisitor {
     @Override
     public void visit(OWLDisjointUnionAxiom axiom) {
         subject = axiom.getOWLClass();
-        log.info("Incomplete visitor data for this axiom (of type: " + axiom.getAxiomType() + "): " + axiom); // TODO
         changeType = getChangeType(axiom);
     }
 
@@ -182,13 +173,7 @@ public class OntologyChangeVisitor implements OWLAxiomVisitor {
     public void visit(OWLEquivalentDataPropertiesAxiom axiom) {
         Set<OWLSubDataPropertyOfAxiom> subDpAxs = axiom.asSubDataPropertyOfAxioms();
         OWLSubDataPropertyOfAxiom subDp = subDpAxs.iterator().next();
-        if (!subDp.getSubProperty().isAnonymous()) {
-            subject = subDp.getSubProperty();
-        } else if (!subDp.getSuperProperty().isAnonymous()) {
-            subject = subDp.getSuperProperty();
-        } else { // no subsumption contains atomic LHS or RHS, so just pick one
-            subject = subDp.getSubProperty();
-        }
+        setChangeSubjectForPropertyAxiom(subDp);
         changeType = getChangeType(axiom);
     }
 
@@ -244,14 +229,13 @@ public class OntologyChangeVisitor implements OWLAxiomVisitor {
 
     @Override
     public void visit(OWLSameIndividualAxiom axiom) {
-        log.info("Incomplete visitor data for this axiom (of type: " + axiom.getAxiomType() + "): " + axiom); // TODO
-        subject = getChangeSubjectFromNaryAxiom(axiom);
+        subject = axiom.getIndividualsAsList().get(0);
         changeType = getChangeType(axiom);
     }
 
     @Override
     public void visit(OWLSubPropertyChainOfAxiom axiom) {
-        log.info("Incomplete visitor data for this axiom (of type: " + axiom.getAxiomType() + "): " + axiom); // TODO
+        subject = axiom.getSuperProperty();
         changeType = getChangeType(axiom);
     }
 
@@ -264,7 +248,6 @@ public class OntologyChangeVisitor implements OWLAxiomVisitor {
     @Override
     public void visit(OWLHasKeyAxiom axiom) {
         subject = axiom.getClassExpression();
-        log.info("Incomplete visitor data for this axiom (of type: " + axiom.getAxiomType() + "): " + axiom); // TODO
         changeType = getChangeType(axiom);
     }
 
@@ -321,6 +304,16 @@ public class OntologyChangeVisitor implements OWLAxiomVisitor {
         else {
             log.warn("Axiom category could not be determined for axiom: " + axiom);
             return null;
+        }
+    }
+
+    private void setChangeSubjectForPropertyAxiom(OWLSubPropertyAxiom axiom) {
+        if (!axiom.getSubProperty().isAnonymous()) {
+            subject = axiom.getSubProperty();
+        } else if (!axiom.getSuperProperty().isAnonymous()) {
+            subject = axiom.getSuperProperty();
+        } else { // no subsumption contains atomic LHS or RHS, so just pick one
+            subject = axiom.getSubProperty();
         }
     }
 

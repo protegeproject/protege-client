@@ -23,7 +23,7 @@ import java.util.List;
 public class CommitPanel extends JPanel implements Disposable {
     private static final long serialVersionUID = 982230736000168376L;
     private LogDiffManager diffManager;
-    private JList<Commit> commitList = new JList<>();
+    private JList<CommitMetadata> commitList = new JList<>();
 
     /**
      * Constructor
@@ -45,7 +45,7 @@ public class CommitPanel extends JPanel implements Disposable {
     }
 
     private ListSelectionListener listSelectionListener = e -> {
-        Commit selection = commitList.getSelectedValue();
+        CommitMetadata selection = commitList.getSelectedValue();
         if (selection != null && !e.getValueIsAdjusting()) {
             diffManager.setSelectedCommit(selection);
         }
@@ -71,14 +71,14 @@ public class CommitPanel extends JPanel implements Disposable {
         if(diffManager.getVersionedOntologyDocument().isPresent()) {
             VersionedOntologyDocument vont = diffManager.getVersionedOntologyDocument().get();
             ChangeHistory changes = vont.getLocalHistory();
-            List<Commit> commits = new ArrayList<>();
+            List<CommitMetadata> commits = new ArrayList<>();
             OntologyDocumentRevision rev = changes.getStartRevision();
             while (changes.getMetaData(rev) != null) {
                 ChangeMetaData metaData = changes.getMetaData(rev);
                 if (event.equals(LogDiffEvent.AUTHOR_SELECTION_CHANGED) && diffManager.getSelectedAuthor() != null &&
                         (metaData.getUserId().equals(diffManager.getSelectedAuthor()) || diffManager.getSelectedAuthor().equals(LogDiffManager.ALL_AUTHORS)) ||
                         event.equals(LogDiffEvent.ONTOLOGY_UPDATED)) {
-                    Commit c = new CommitImpl(metaData.getUserId(), metaData.getDate(), metaData.getCommitComment(), metaData.hashCode());
+                    CommitMetadata c = new CommitMetadataImpl(metaData.getUserId(), metaData.getDate(), metaData.getCommitComment(), metaData.hashCode());
                     if (!commits.contains(c)) {
                         commits.add(c);
                     }
@@ -86,10 +86,10 @@ public class CommitPanel extends JPanel implements Disposable {
                 rev = rev.next();
             }
             Collections.sort(commits);
-            commitList.setListData(commits.toArray(new Commit[commits.size()]));
+            commitList.setListData(commits.toArray(new CommitMetadata[commits.size()]));
         }
         else {
-            commitList.setListData(new Commit[0]);
+            commitList.setListData(new CommitMetadata[0]);
         }
     }
 

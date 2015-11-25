@@ -118,14 +118,14 @@ public class LogDiff {
 
     private List<Change> getChangeListFromHistory(List<OWLOntologyChange> ontChanges, ChangeMetaData metaData) {
         List<Change> changeList = new ArrayList<>();
-        UserId author = metaData.getUserId();
-        Date date = metaData.getDate();
         String comment = metaData.getCommitComment();
         if(comment == null) {
             comment = "";
         }
+        CommitMetadata commitMetadata = new CommitMetadataImpl(metaData.getUserId(), metaData.getDate(), comment, metaData.hashCode());
+        RevisionTag revisionTag = new RevisionTagImpl(metaData.hashCode() + "");
         for(OWLOntologyChange ontChange : ontChanges) {
-            Change change = getChangeObject(ontChange, date, author, comment);
+            Change change = getChangeObject(ontChange, commitMetadata, revisionTag);
             if (change != null && !changeList.contains(change)) {
                 changeList.add(change);
             }
@@ -133,7 +133,7 @@ public class LogDiff {
         return changeList;
     }
 
-    private Change getChangeObject(OWLOntologyChange ontChange, Date date, UserId author, String comment) {
+    private Change getChangeObject(OWLOntologyChange ontChange, CommitMetadata commitMetadata, RevisionTag revisionTag) {
         Set<OWLOntologyChange> changeAxiomSet = new HashSet<>();
         changeAxiomSet.add(ontChange);
         Change change = null;
@@ -146,27 +146,27 @@ public class LogDiff {
             axiom.accept(visitor);
             OWLObject ce = visitor.getChangeSubject();
             if(ce != null) {
-                change = new ChangeImpl(changeAxiomSet, getChangeMode(ontChange), date, author, visitor.getChangeSubject(), visitor.getChangeType(),
-                        visitor.getProperty(), visitor.getChangeObject(), comment);
+                change = new ChangeImpl(changeAxiomSet, revisionTag, commitMetadata, getChangeMode(ontChange), visitor.getChangeSubject(), visitor.getChangeType(),
+                        visitor.getProperty(), visitor.getChangeObject());
             }
         }
         else if(ontChange.isImportChange()) {
             ImportChange importChange = (ImportChange) ontChange;
             OWLImportsDeclaration importDecl = importChange.getImportDeclaration();
-            change = new ChangeImpl(changeAxiomSet, getChangeMode(ontChange), date, author, ontChange.getOntology().getOntologyID().getOntologyIRI(),
-                    BuiltInChangeType.IMPORT, Optional.empty(), Optional.of(getQuotedIri(importDecl.getIRI())), comment);
+            change = new ChangeImpl(changeAxiomSet, revisionTag, commitMetadata, getChangeMode(ontChange), ontChange.getOntology().getOntologyID().getOntologyIRI(),
+                    BuiltInChangeType.IMPORT, Optional.empty(), Optional.of(getQuotedIri(importDecl.getIRI())));
         }
         else if(ontChange instanceof AnnotationChange) { // possible OWLOntologyChange type not covered by OWLOntologyChange.isXXX() methods
             AnnotationChange annotationChange = (AnnotationChange) ontChange;
             OWLAnnotation annotation = annotationChange.getAnnotation();
-            change = new ChangeImpl(changeAxiomSet, getChangeMode(ontChange), date, author, ontChange.getOntology().getOntologyID().getOntologyIRI(),
-                    BuiltInChangeType.ONTOLOGY_ANNOTATION, Optional.of(annotation.getProperty()), Optional.of(annotation.getValue().toString()), comment);
+            change = new ChangeImpl(changeAxiomSet, revisionTag, commitMetadata, getChangeMode(ontChange), ontChange.getOntology().getOntologyID().getOntologyIRI(),
+                    BuiltInChangeType.ONTOLOGY_ANNOTATION, Optional.of(annotation.getProperty()), Optional.of(annotation.getValue().toString()));
         }
         else if(ontChange instanceof SetOntologyID) { // another possible OWLOntologyChange not covered by OWLOntologyChange.isXXX() methods
             SetOntologyID setOntologyID = (SetOntologyID) ontChange;
             IRI newIri = setOntologyID.getNewOntologyID().getOntologyIRI();
-            change = new ChangeImpl(changeAxiomSet, ChangeMode.ONTOLOGY_IRI, date, author, setOntologyID.getNewOntologyID().getOntologyIRI(),
-                    BuiltInChangeType.ONTOLOGY_IRI, Optional.empty(), Optional.of(getQuotedIri(newIri)), comment);
+            change = new ChangeImpl(changeAxiomSet, revisionTag, commitMetadata, ChangeMode.ONTOLOGY_IRI, setOntologyID.getNewOntologyID().getOntologyIRI(),
+                    BuiltInChangeType.ONTOLOGY_IRI, Optional.empty(), Optional.of(getQuotedIri(newIri)));
         }
         else {
             log.error("Unhandled ontology change type for change: " + ontChange);
@@ -175,7 +175,7 @@ public class LogDiff {
     }
 
     private void findConflits(List<Change> changes) {
-        ConflictDetector conflictDetector = new ConflictDetector(changes);
+        ConflictDetector conflictDetector = new SimpleConflictDetector(changes);
         for (Change change : changes) {
             Set<Change> conflicting = conflictDetector.getConflictingChanges(change);
             change.addConflictingChanges(conflicting);
@@ -190,15 +190,11 @@ public class LogDiff {
                 Set<Change> matches = findMatchingChanges(c);
                 if (matches.size() == 1) {
                     Change c2 = matches.iterator().next();
-                    if ((c.isOfType(BuiltInChangeType.ANNOTATION) || c.isOfType(BuiltInChangeType.ONTOLOGY_ANNOTATION)) &&
-                            c2.getAnnotationProperty().get().equals(c.getAnnotationProperty().get()) && axiomTypesMatch(c, c2)) {
-                        c.setPriorValue(c2.getValue().get());
-                        toRemove.add(c2);
-                        c.setType(new ChangeTypeImpl(c.getType().getDisplayName(), Optional.of(GuiUtils.DEFAULT_CHANGE_COLOR)));
-                    } else if (c.isOfType(BuiltInChangeType.LOGICAL) && axiomTypesMatch(c, c2)) {
+                    if (((c.isOfType(BuiltInChangeType.ANNOTATION) || c.isOfType(BuiltInChangeType.ONTOLOGY_ANNOTATION)) && c2.getProperty().get().equals(c.getProperty().get())) ||
+                            c.isOfType(BuiltInChangeType.LOGICAL)) {
                         c.setBaselineChange(c2.getChanges().iterator().next());
                         toRemove.add(c2);
-                        c.setType(new ChangeTypeImpl(c.getType().getDisplayName(), Optional.of(GuiUtils.DEFAULT_CHANGE_COLOR)));
+                        c.setType(new CustomChangeType(c.getType().getDisplayName(), Optional.of(GuiUtils.DEFAULT_CHANGE_COLOR)));
                     }
                 }
             }
@@ -226,14 +222,21 @@ public class LogDiff {
 
     private Set<Change> findMatchingChanges(Change c) {
         Set<Change> matches = new HashSet<>();
-        UserId author = c.getAuthor();
-        Date date = c.getDate();
+        UserId author = c.getCommitMetadata().getAuthor();
+        Date date = c.getCommitMetadata().getDate();
         OWLObject subject = c.getSubject();
         ChangeType type = c.getType();
         for (Change c2 : allChanges) {
-            if (!c.equals(c2) && c2.getAuthor().equals(author) && c2.getDate().equals(date) && c2.getSubject().equals(subject) && c2.getType().equals(type)) {
+            if (!c.equals(c2) && c2.getCommitMetadata().getAuthor().equals(author) && c2.getCommitMetadata().getDate().equals(date) && c2.getSubject().equals(subject) && c2.getType().equals(type) && axiomTypesMatch(c, c2)) {
                 // TODO: match RHS expression types for axioms that can be reduced to SubClassOf axioms
-                matches.add(c2);
+                if(c.getProperty().isPresent() && c2.getProperty().isPresent()) {
+                    if(c.getProperty().get().equals(c2.getProperty().get())) {
+                        matches.add(c2);
+                    }
+                }
+                else {
+                    matches.add(c2);
+                }
             }
         }
         return matches;
@@ -243,15 +246,19 @@ public class LogDiff {
         return "\"" + iri.toString() + "\"";
     }
 
-    private ChangeMode getChangeMode(OWLOntologyChange change) {
-        ChangeMode mode = null;
+    public static ChangeMode getChangeMode(OWLOntologyChange change) {
         if(change instanceof AddOntologyAnnotation || change instanceof AddImport || change instanceof AddAxiom) {
-            mode = ChangeMode.ADDITION;
+            return ChangeMode.ADDITION;
         }
         else if(change instanceof RemoveOntologyAnnotation || change instanceof RemoveImport || change instanceof RemoveAxiom) {
-            mode = ChangeMode.REMOVAL;
+            return ChangeMode.REMOVAL;
         }
-        return mode;
+        else if(change instanceof SetOntologyID) {
+            return ChangeMode.ONTOLOGY_IRI;
+        }
+        else {
+            return ChangeMode.CUSTOM;
+        }
     }
 
     public List<Change> getChanges() {

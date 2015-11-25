@@ -24,22 +24,10 @@ public interface ChangeType {
     boolean isBuiltInType();
 
     /**
-     * Get built-in type enumeration field
-     *
-     * @return Built-in type
-     */
-    Optional<BuiltInChangeType> getBuiltInType();
-
-    /**
      * Get the change color for this change type
      *
      * @return Color
      */
     Optional<Color> getDisplayColor();
-
-    /**
-     * Set the desired display color for this change type
-     */
-    void setDisplayColor(Color color);
 
 }

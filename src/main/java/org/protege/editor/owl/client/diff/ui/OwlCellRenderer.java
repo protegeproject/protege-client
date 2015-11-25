@@ -36,12 +36,12 @@ public class OwlCellRenderer extends OWLCellRenderer {
                 return new OWLAnnotationPropertyIcon();
             }
             else { // IRI of ontology
-                return OWLIcons.getIcon("ontology.png");
+                return OWLIcons.getIcon(GuiUtils.ONTOLOGY_ICON_FILENAME);
             }
         }
         else if(object instanceof String) {
             setHighlightKeywords(false);
-            return GuiUtils.getUserIcon("string.png", 13, 13);
+            return GuiUtils.getUserIcon(GuiUtils.STRING_ICON_FILENAME, 13, 13);
         }
         else {
             return editorKit.getWorkspace().getOWLIconProvider().getIcon((OWLObject) object);

@@ -66,10 +66,13 @@ public class CommitAction extends ProtegeOWLAction {
                 JOptionPane.showMessageDialog(owner, "Commit ignored because the ontology is not associated with a server");
                 return;
             }
+            if(commitComment == null) {
+                return; // user pressed cancel
+            }
             Client client = connectionManager.createClient(ontology);
 
             // TODO MetaData should not accept null commit comment..
-            connectionManager.getSingleThreadExecutorService().submit(new DoCommit(client, vont, (commitComment != null ? commitComment : "")));
+            connectionManager.getSingleThreadExecutorService().submit(new DoCommit(client, vont, (!commitComment.isEmpty() ? commitComment : "")));
         }
         catch (UserDeclinedAuthenticationException udae) {
             ; // ignore this because the user knows that he didn't want to authenticate

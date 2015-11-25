@@ -16,7 +16,7 @@ import static com.google.common.base.Preconditions.checkNotNull;
  * Stanford Center for Biomedical Informatics Research
  */
 public class ChangesTableModel extends AbstractTableModel {
-    private static final long serialVersionUID = -1584544532122408048L;
+    private static final long serialVersionUID = -2515070763652227164L;
     private List<Change> changes = new ArrayList<>();
 
     /**
@@ -46,15 +46,17 @@ public class ChangesTableModel extends AbstractTableModel {
             case MODE:
                 return change.getChangeMode();
             case DATE:
-                return change.getDate();
+                return change.getCommitMetadata().getDate();
             case AUTHOR:
-                return change.getAuthor();
+                return change.getCommitMetadata().getAuthor();
             case CHANGE_SUBJECT:
                 return change.getSubject();
             case CHANGE_TYPE:
                 return change.getType();
+            case REVISION_TAG:
+                return change.getRevisionTag().getTag();
             case COMMENT:
-                return change.getCommitComment();
+                return change.getCommitMetadata().getComment();
             case CONFLICT:
                 return change.isConflicting();
             case REVIEW:
@@ -87,7 +89,9 @@ public class ChangesTableModel extends AbstractTableModel {
             case CONFLICT:
                 return Boolean.class;
             case REVIEW:
-                return ChangeReview.class;
+                return Review.class;
+            case REVISION_TAG:
+                return String.class;
             default:
                 throw new IllegalStateException("Programmer Error: a case was missed");
         }
@@ -107,6 +111,7 @@ public class ChangesTableModel extends AbstractTableModel {
         AUTHOR("Author"),
         CHANGE_SUBJECT("Change Subject"),
         CHANGE_TYPE("Type"),
+        REVISION_TAG("Revision Tag"),
         COMMENT("Comment"),
         CONFLICT("Conflict"),
         REVIEW("Review");

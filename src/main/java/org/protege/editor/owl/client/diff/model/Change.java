@@ -1,11 +1,8 @@
 package org.protege.editor.owl.client.diff.model;
 
-import org.protege.owl.server.api.UserId;
-import org.semanticweb.owlapi.model.OWLAxiom;
 import org.semanticweb.owlapi.model.OWLObject;
 import org.semanticweb.owlapi.model.OWLOntologyChange;
 
-import java.util.Date;
 import java.util.Optional;
 import java.util.Set;
 
@@ -23,11 +20,18 @@ public interface Change extends Comparable<Change> {
     Set<OWLOntologyChange> getChanges();
 
     /**
-     * Convenience method to get axiom changes as axioms (which excludes import changes)
+     * Get the revision tag for this change
      *
-     * @return Set of axioms
+     * @return Revision tag
      */
-    Set<OWLAxiom> getChangeAxioms();
+    RevisionTag getRevisionTag();
+
+    /**
+     * Get the commit metadata, such as author, date and comment
+     *
+     * @return Commit metadata
+     */
+    CommitMetadata getCommitMetadata();
 
     /**
      * Get the change mode, i.e., addition, removal or ontology IRI change
@@ -35,32 +39,6 @@ public interface Change extends Comparable<Change> {
      * @return Change mode
      */
     ChangeMode getChangeMode();
-
-    /**
-     * Set the mode of this change
-     */
-    void setChangeMode(ChangeMode changeMode);
-
-    /**
-     * Get the change date
-     *
-     * @return Date
-     */
-    Date getDate();
-
-    /**
-     * Get the user that authored the change
-     *
-     * @return User
-     */
-    UserId getAuthor();
-
-    /**
-     * Get the comment used in the commit
-     *
-     * @return Commit comment
-     */
-    String getCommitComment();
 
     /**
      * Get the change subject, that is (for most axioms), the left-hand side of the axiom. For example,
@@ -98,28 +76,7 @@ public interface Change extends Comparable<Change> {
      *
      * @return Annotation property changed
      */
-    Optional<OWLObject> getAnnotationProperty();
-
-    /**
-     * Get the value of the annotation property or ontology IRI as it was right before this change
-     *
-     * @return Value of the annotation property or ontology IRI prior to this change
-     */
-    Optional<String> getPriorValue();
-
-    /**
-     * Get the value of the annotation property or ontology IRI introduced by this change
-     *
-     * @return New value
-     */
-    Optional<String> getValue();
-
-    /**
-     * Set the old value of the annotation property or ontology IRI
-     *
-     * @param previousValue   Previous value
-     */
-    void setPriorValue(String previousValue);
+    Optional<OWLObject> getProperty();
 
     /**
      * Add a set of changes that are in conflict with this one
@@ -127,13 +84,6 @@ public interface Change extends Comparable<Change> {
      * @param conflictingChanges    Set of conflicting changes
      */
     void addConflictingChanges(Set<Change> conflictingChanges);
-
-    /**
-     * Add a change that is in conflict with this one
-     *
-     * @param change    Change
-     */
-    void addConflictingChange(Change change);
 
     /**
      * Get the set of changes that conflict with this one
@@ -155,21 +105,21 @@ public interface Change extends Comparable<Change> {
      *
      * @return Review
      */
-    ChangeReview getReview();
+    Review getReview();
 
     /**
      * Set the review for this change
      *
      * @param review    Review
      */
-    void setReview(ChangeReview review);
+    void setReview(Review review);
 
     /**
      * Convenience method to set the review status of the change's review
      *
      * @param status    Review status
      */
-    void setReviewStatus(ChangeReviewStatus status);
+    void setReviewStatus(ReviewStatus status);
 
     /**
      * Get the review status of this change, i.e., whether review is pending,
@@ -177,7 +127,7 @@ public interface Change extends Comparable<Change> {
      *
      * @return Change review status
      */
-    ChangeReviewStatus getReviewStatus();
+    ReviewStatus getReviewStatus();
 
     /**
      * Get the baseline ontology change for this change, if one exists

@@ -11,9 +11,9 @@ import static com.google.common.base.Preconditions.checkNotNull;
  * @author Rafael Gonçalves <br>
  * Stanford Center for Biomedical Informatics Research
  */
-public final class ChangeTypeImpl implements ChangeType {
+public final class CustomChangeType implements ChangeType {
     private final String displayName;
-    private Color color;
+    private final Color color;
 
     /**
      * Constructor
@@ -21,7 +21,7 @@ public final class ChangeTypeImpl implements ChangeType {
      * @param displayName   Change type display name
      * @param color Change type display color
      */
-    public ChangeTypeImpl(String displayName, Optional<Color> color) {
+    public CustomChangeType(String displayName, Optional<Color> color) {
         this.displayName = checkNotNull(displayName);
         this.color = (color.isPresent() ? checkNotNull(color.get()) : null);
     }
@@ -37,25 +37,16 @@ public final class ChangeTypeImpl implements ChangeType {
     }
 
     @Override
-    public Optional<BuiltInChangeType> getBuiltInType() {
-        return Optional.empty();
-    }
-
-    @Override
     public Optional<Color> getDisplayColor() {
         return Optional.ofNullable(color);
     }
 
-    @Override
-    public void setDisplayColor(Color color) {
-        this.color = checkNotNull(color);
-    }
 
     @Override
     public boolean equals(Object o) {
         if (this == o) return true;
         if (o == null || getClass() != o.getClass()) return false;
-        ChangeTypeImpl that = (ChangeTypeImpl) o;
+        CustomChangeType that = (CustomChangeType) o;
         return Objects.equal(displayName, that.displayName) &&
                 Objects.equal(color, that.color);
     }

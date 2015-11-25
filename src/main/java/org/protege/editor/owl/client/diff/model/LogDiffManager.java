@@ -24,9 +24,11 @@ public class LogDiffManager implements Disposable {
     private Set<LogDiffListener> listeners = new HashSet<>();
     private List<Change> selectedChanges = new ArrayList<>();
     private OWLModelManager modelManager;
+    private ReviewManager reviewManager;
     private OWLEditorKit editorKit;
+
     private UserId selectedAuthor;
-    private Commit selectedCommit;
+    private CommitMetadata selectedCommit;
     private LogDiff diff;
 
     public static LogDiffManager get(OWLModelManager modelManager, OWLEditorKit editorKit) {
@@ -44,6 +46,7 @@ public class LogDiffManager implements Disposable {
     private LogDiffManager(OWLModelManager modelManager, OWLEditorKit editorKit) {
         this.modelManager = checkNotNull(modelManager);
         this.editorKit = checkNotNull(editorKit);
+        this.reviewManager = new ReviewManager();
     }
 
     public Optional<VersionedOntologyDocument> getVersionedOntologyDocument() {
@@ -94,11 +97,11 @@ public class LogDiffManager implements Disposable {
         statusChanged(LogDiffEvent.AUTHOR_SELECTION_CHANGED);
     }
 
-    public Commit getSelectedCommit() {
+    public CommitMetadata getSelectedCommit() {
         return selectedCommit;
     }
 
-    public void setSelectedCommit(Commit selectedCommit) {
+    public void setSelectedCommit(CommitMetadata selectedCommit) {
         this.selectedCommit = selectedCommit;
         statusChanged(LogDiffEvent.COMMIT_SELECTION_CHANGED);
     }
@@ -114,10 +117,6 @@ public class LogDiffManager implements Disposable {
             diff = new LogDiff(this, modelManager);
         }
         return diff;
-    }
-
-    public void setDiffEngine(LogDiff diff) {
-        this.diff = checkNotNull(diff);
     }
 
     public void addListener(LogDiffListener listener) {
@@ -137,6 +136,10 @@ public class LogDiffManager implements Disposable {
                 ProtegeApplication.getErrorLog().logError(e);
             }
         }
+    }
+
+    public ReviewManager getReviewManager() {
+        return reviewManager;
     }
 
     public UserId getAllAuthorsUserId() {

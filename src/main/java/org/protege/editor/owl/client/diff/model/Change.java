@@ -64,6 +64,13 @@ public interface Change extends Comparable<Change> {
     void setType(ChangeType type);
 
     /**
+     * Set the change mode
+     *
+     * @param mode  Change mode
+     */
+    void setMode(ChangeMode mode);
+
+    /**
      * Check whether this change is of the specified type
      *
      * @param type  Change type

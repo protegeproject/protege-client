@@ -20,10 +20,10 @@ public class ChangeImpl implements Change {
     private final String newValue;
     private final RevisionTag revisionTag;
     private final CommitMetadata commitMetadata;
-    private final ChangeMode changeMode;
     private final Set<OWLOntologyChange> changes;
     private Set<Change> conflictingChanges = new HashSet<>();
     private OWLOntologyChange baselineChange;
+    private ChangeMode mode;
     private ChangeType type;
     private Review review;
 
@@ -33,18 +33,18 @@ public class ChangeImpl implements Change {
      * @param changes    Set of changes
      * @param revisionTag   Revision tag
      * @param commitMetadata    Commit metadata
-     * @param changeMode  Change mode
+     * @param mode  Change mode
      * @param subject   Change subject
      * @param type  Change type
      * @param property  Property
      * @param newValue  New value
      */
-    public ChangeImpl(Set<OWLOntologyChange> changes, RevisionTag revisionTag, CommitMetadata commitMetadata, ChangeMode changeMode, OWLObject subject, ChangeType type,
+    public ChangeImpl(Set<OWLOntologyChange> changes, RevisionTag revisionTag, CommitMetadata commitMetadata, ChangeMode mode, OWLObject subject, ChangeType type,
                       Optional<OWLObject> property, Optional<String> newValue) {
         this.changes = checkNotNull(changes);
         this.revisionTag = checkNotNull(revisionTag);
         this.commitMetadata = checkNotNull(commitMetadata);
-        this.changeMode = checkNotNull(changeMode);
+        this.mode = checkNotNull(mode);
         this.subject = checkNotNull(subject);
         this.type = checkNotNull(type);
         this.property = (property.isPresent() ? checkNotNull(property.get()) : null);
@@ -68,7 +68,7 @@ public class ChangeImpl implements Change {
 
     @Override
     public ChangeMode getChangeMode() {
-        return changeMode;
+        return mode;
     }
 
     @Override
@@ -84,6 +84,11 @@ public class ChangeImpl implements Change {
     @Override
     public void setType(ChangeType type) {
         this.type = checkNotNull(type);
+    }
+
+    @Override
+    public void setMode(ChangeMode mode) {
+        this.mode = checkNotNull(mode);
     }
 
     @Override
@@ -158,7 +163,7 @@ public class ChangeImpl implements Change {
                 Objects.equal(newValue, change.newValue) &&
                 Objects.equal(revisionTag, change.revisionTag) &&
                 Objects.equal(commitMetadata, change.commitMetadata) &&
-                changeMode == change.changeMode &&
+                mode == change.mode &&
                 Objects.equal(type, change.type) &&
                 Objects.equal(changes, change.changes) &&
                 Objects.equal(conflictingChanges, change.conflictingChanges) &&
@@ -168,7 +173,7 @@ public class ChangeImpl implements Change {
 
     @Override
     public int hashCode() {
-        return Objects.hashCode(subject, revisionTag, commitMetadata, changeMode, type, changes);
+        return Objects.hashCode(subject, revisionTag, commitMetadata, mode, type, changes);
     }
 
     @Override
@@ -179,7 +184,7 @@ public class ChangeImpl implements Change {
                 .add("newValue", newValue)
                 .add("revisionTag", revisionTag)
                 .add("commitMetadata", commitMetadata)
-                .add("changeMode", changeMode)
+                .add("mode", mode)
                 .add("type", type)
                 .add("changes", changes)
                 .add("conflictingChanges", conflictingChanges)

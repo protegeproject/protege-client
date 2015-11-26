@@ -194,6 +194,7 @@ public class LogDiff {
                             c.isOfType(BuiltInChangeType.LOGICAL)) {
                         c.setBaselineChange(c2.getChanges().iterator().next());
                         toRemove.add(c2);
+                        c.setMode(ChangeMode.ALIGNED);
                         c.setType(new CustomChangeType(c.getType().getDisplayName(), Optional.of(GuiUtils.DEFAULT_CHANGE_COLOR)));
                     }
                 }

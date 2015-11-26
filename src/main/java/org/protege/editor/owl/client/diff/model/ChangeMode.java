@@ -9,6 +9,7 @@ import static com.google.common.base.Preconditions.checkNotNull;
 public enum ChangeMode {
     ADDITION("+"),
     REMOVAL("-"),
+    ALIGNED("±"),
     ONTOLOGY_IRI("@"),
     CUSTOM("*");
 

@@ -15,12 +15,18 @@ public enum BuiltInChangeType implements ChangeType {
     ANNOTATION("Annotation"),
     IMPORT("Import"),
     ONTOLOGY_ANNOTATION("Ontology Annotation"),
-    ONTOLOGY_IRI("Ontology IRI");
+    ONTOLOGY_IRI("Ontology IRI", new Color(242, 248, 255));
 
     private String type;
+    private Color color;
 
     BuiltInChangeType(String type) {
         this.type = checkNotNull(type);
+    }
+
+    BuiltInChangeType(String type, Color color) {
+        this.type = checkNotNull(type);
+        this.color = checkNotNull(color);
     }
 
     @Override
@@ -40,6 +46,6 @@ public enum BuiltInChangeType implements ChangeType {
 
     @Override
     public Optional<Color> getDisplayColor() {
-        return Optional.empty();
+        return Optional.ofNullable(color);
     }
 }

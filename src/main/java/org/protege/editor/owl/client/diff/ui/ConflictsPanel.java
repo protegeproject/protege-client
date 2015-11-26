@@ -86,15 +86,15 @@ public class ConflictsPanel extends JPanel implements Disposable {
                     }
                 }
                 GridBagConstraints bpc = createGridBagConstraints(), apc = createGridBagConstraints();
-                String priorConflictsPanelHeader = "Prior conflicts:", subsequentConflictsPanelHeader = "Subsequent conflicts:";
+                String priorConflictsPanelHeader = "Prior commits:", subsequentConflictsPanelHeader = "Subsequent commits:";
                 if (!before.isEmpty() && !after.isEmpty()) {
                     JScrollPane beforePnlScrollPane = getConflictsScrollPane(before, bpc, priorConflictsPanelHeader);
                     JScrollPane afterPnlScrollPane = getConflictsScrollPane(after, apc, subsequentConflictsPanelHeader);
                     JSplitPane splitPane = new JSplitPane(JSplitPane.HORIZONTAL_SPLIT, beforePnlScrollPane, afterPnlScrollPane);
                     splitPane.setBorder(GuiUtils.EMPTY_BORDER);
-                    splitPane.setDividerLocation(0.5);
                     add(splitPane);
-                    setSplitPanePosition(splitPane);
+                    splitPane.setDividerLocation(0.5);
+                    splitPane.setResizeWeight(0.5);
                 } else if (!before.isEmpty()) {
                     add(getConflictsScrollPane(before, bpc, priorConflictsPanelHeader), BorderLayout.CENTER);
                 } else if (!after.isEmpty()) {
@@ -106,10 +106,6 @@ public class ConflictsPanel extends JPanel implements Disposable {
             }
             repaint();
         }
-    }
-
-    private void setSplitPanePosition(JSplitPane splitPane) {
-        SwingUtilities.invokeLater(() -> splitPane.setDividerLocation(splitPane.getSize().width/2));
     }
 
     private JScrollPane getConflictsScrollPane(Set<Change> changes, GridBagConstraints constraints, String panelHeader) {

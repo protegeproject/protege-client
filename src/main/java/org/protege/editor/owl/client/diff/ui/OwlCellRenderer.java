@@ -41,7 +41,7 @@ public class OwlCellRenderer extends OWLCellRenderer {
         }
         else if(object instanceof String) {
             setHighlightKeywords(false);
-            return GuiUtils.getUserIcon(GuiUtils.STRING_ICON_FILENAME, 13, 13);
+            return GuiUtils.getIcon(GuiUtils.STRING_ICON_FILENAME, 13, 13);
         }
         else {
             return editorKit.getWorkspace().getOWLIconProvider().getIcon((OWLObject) object);

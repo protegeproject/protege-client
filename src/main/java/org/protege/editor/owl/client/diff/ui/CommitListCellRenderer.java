@@ -18,7 +18,7 @@ public class CommitListCellRenderer extends DefaultListCellRenderer {
     public Component getListCellRendererComponent(JList list, Object value, int index, boolean isSelected, boolean cellHasFocus) {
         JLabel label = (JLabel) super.getListCellRendererComponent(list, value, index, isSelected, cellHasFocus);
         label.setBorder(new EmptyBorder(7, 7, 7, 3));
-        label.setIcon(GuiUtils.getUserIcon(GuiUtils.COMMIT_ICON_FILENAME, 17, 17));
+        label.setIcon(GuiUtils.getIcon(GuiUtils.COMMIT_ICON_FILENAME, 17, 17));
         label.setIconTextGap(9);
 
         CommitMetadata c = (CommitMetadata) value;

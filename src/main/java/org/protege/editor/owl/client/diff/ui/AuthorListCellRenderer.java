@@ -18,10 +18,10 @@ public class AuthorListCellRenderer extends DefaultListCellRenderer {
         JLabel label = (JLabel) super.getListCellRendererComponent(list, value, index, isSelected, cellHasFocus);
         UserId user = (UserId)value;
         if(user.equals(LogDiffManager.ALL_AUTHORS)) {
-            label.setIcon(GuiUtils.getUserIcon(GuiUtils.USERS_ICON_FILENAME, 20, 20));
+            label.setIcon(GuiUtils.getIcon(GuiUtils.USERS_ICON_FILENAME, 20, 20));
         }
         else {
-            label.setIcon(GuiUtils.getUserIcon(GuiUtils.USER_ICON_FILENAME, 20, 20));
+            label.setIcon(GuiUtils.getIcon(GuiUtils.USER_ICON_FILENAME, 20, 20));
         }
         label.setBorder(new EmptyBorder(0, 7, 0, 0));
         label.setIconTextGap(7);

@@ -22,9 +22,9 @@ public class GuiUtils {
     /* constants */
 
     public static final Color
-            ADDITION_COLOR = new Color(219, 255, 219),
-            REMOVAL_COLOR = new Color(255, 236, 236),
-            DEFAULT_CHANGE_COLOR = new Color(255, 251, 237),
+            ADDITION_COLOR = new Color(219, 253, 217),
+            REMOVAL_COLOR = new Color(255, 221, 220),
+            DEFAULT_CHANGE_COLOR = new Color(252, 249, 232),
             WHITE_BACKGROUND = Color.WHITE,
             UNSELECTED_FOREGROUND = Color.BLACK,
             BORDER_COLOR = new Color(220, 220, 220);
@@ -53,7 +53,7 @@ public class GuiUtils {
 
     /* methods */
 
-    public static Icon getUserIcon(String filename, int width, int height) {
+    public static Icon getIcon(String filename, int width, int height) {
         BufferedImage icon = null;
         ClassLoader classLoader = GuiUtils.class.getClassLoader();
         try {

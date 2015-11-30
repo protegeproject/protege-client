@@ -103,7 +103,7 @@ public class ReviewPanel extends JPanel implements Disposable {
     private JButton getButton(String iconFileName, ActionListener listener, int iconWidth, int iconHeight) {
         JButton button = new JButton();
         button.setPreferredSize(new Dimension(75, 35));
-        button.setIcon(GuiUtils.getUserIcon(iconFileName, iconWidth, iconHeight));
+        button.setIcon(GuiUtils.getIcon(iconFileName, iconWidth, iconHeight));
         button.setFocusable(false);
         button.addActionListener(listener);
         button.setEnabled(false);

@@ -19,7 +19,7 @@ import static com.google.common.base.Preconditions.checkNotNull;
  */
 public final class SimpleConflictDetector implements ConflictDetector {
     private static final Logger log = Logger.getLogger(SimpleConflictDetector.class);
-    private final Strategy DEFAULT_STRATEGY = Strategy.SAME_CATEGORIES_AND_ANNOTATION_PROPERTIES;
+    private final Strategy DEFAULT_STRATEGY = Strategy.SAME_TYPE_AND_ANNOTATION_PROPERTY;
     private final List<Change> changes;
 
     /**
@@ -41,13 +41,12 @@ public final class SimpleConflictDetector implements ConflictDetector {
         OWLObject changeSubject = seed.getSubject();
         Set<Change> conflictingChanges = new HashSet<>();
         for(Change change : changes) {
-            // same change subject but different author
             if(changeSubject.equals(change.getSubject()) && !(change.getCommitMetadata().getAuthor().equals(userId))) {
-                if((strategy.equals(Strategy.LOOSE) || (strategy.equals(Strategy.SAME_CATEGORIES) && seed.getType().equals(change.getType())))
+                if((strategy.equals(Strategy.LOOSE) || (strategy.equals(Strategy.SAME_TYPE) && seed.getType().equals(change.getType()) && axiomTypesMatch(seed, change)))
                         && axiomTypesMatch(seed, change)) {
                     conflictingChanges.add(change);
                 }
-                else if(strategy.equals(Strategy.SAME_CATEGORIES_AND_ANNOTATION_PROPERTIES)) {
+                else if(strategy.equals(Strategy.SAME_TYPE_AND_ANNOTATION_PROPERTY)) {
                     if(seed.getType().equals(change.getType()) && axiomTypesMatch(seed, change)) {
                         if(seed.getType().equals(BuiltInChangeType.ANNOTATION) || seed.getType().equals(BuiltInChangeType.ONTOLOGY_ANNOTATION)) {
                             if(seed.getProperty().isPresent() && change.getProperty().isPresent()) {
@@ -102,6 +101,6 @@ public final class SimpleConflictDetector implements ConflictDetector {
     }
 
     public enum Strategy {
-        LOOSE, SAME_CATEGORIES, SAME_CATEGORIES_AND_ANNOTATION_PROPERTIES;
+        LOOSE, SAME_TYPE, SAME_TYPE_AND_ANNOTATION_PROPERTY
     }
 }

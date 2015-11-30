@@ -52,7 +52,7 @@ public class ConflictingCommitPanel extends JPanel {
         String headerText = "<html>Conflicting commit " + conflictNr + " by <strong>" + commitAuthor.getUserName() + "</strong> on <strong>" + dateStr + "</strong><br>" +
                 "<p style=\"padding-top:3;color:gray;font-size:" + (fontSize-1) + ";\"><nobr>" + commitComment + "</nobr></p></html>";
 
-        JLabel headerLbl = new JLabel(headerText, GuiUtils.getUserIcon(GuiUtils.WARNING_ICON_FILENAME, 33, 33), SwingConstants.LEFT);
+        JLabel headerLbl = new JLabel(headerText, GuiUtils.getIcon(GuiUtils.WARNING_ICON_FILENAME, 33, 33), SwingConstants.LEFT);
         headerLbl.setBorder(new EmptyBorder(0, 0, 8, 0));
         headerLbl.setIconTextGap(8);
         add(headerLbl, BorderLayout.NORTH);

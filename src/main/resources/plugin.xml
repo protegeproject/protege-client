@@ -20,7 +20,7 @@
 		<label value="Changes"/>
 		<name value="Changes"/>
 		<class value="org.protege.editor.owl.client.diff.ui.ChangesView"/>
-		<headerColor value="@org.protege.classcolor"/>
+		<headerColor value="@org.protege.ontologycolor"/>
 		<category value="@org.protege.differencecategory"/>
 	</extension>
 
@@ -29,7 +29,7 @@
 		<label value="Details"/>
 		<name value="Details"/>
 		<class value="org.protege.editor.owl.client.diff.ui.ChangeDetailsView"/>
-		<headerColor value="@org.protege.classcolor"/>
+		<headerColor value="@org.protege.ontologycolor"/>
 		<category value="@org.protege.differencecategory"/>
 	</extension>
 
@@ -38,7 +38,7 @@
 		<label value="Conflicts"/>
 		<name value="Conflicts"/>
 		<class value="org.protege.editor.owl.client.diff.ui.ConflictsView"/>
-		<headerColor value="@org.protege.classcolor"/>
+		<headerColor value="@org.protege.ontologycolor"/>
 		<category value="@org.protege.differencecategory"/>
 	</extension>
 

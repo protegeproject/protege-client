@@ -42,27 +42,28 @@ public final class SimpleConflictDetector implements ConflictDetector {
         Set<Change> conflictingChanges = new HashSet<>();
         for(Change change : changes) {
             if(changeSubject.equals(change.getSubject()) && !(change.getCommitMetadata().getAuthor().equals(userId))) {
-                if((strategy.equals(Strategy.LOOSE) || (strategy.equals(Strategy.SAME_TYPE) && seed.getType().equals(change.getType()) && axiomTypesMatch(seed, change)))
-                        && axiomTypesMatch(seed, change)) {
+                if(strategy.equals(Strategy.LOOSE) || (strategy.equals(Strategy.SAME_TYPE) && isSameType(seed, change))) {
                     conflictingChanges.add(change);
                 }
-                else if(strategy.equals(Strategy.SAME_TYPE_AND_ANNOTATION_PROPERTY)) {
-                    if(seed.getType().equals(change.getType()) && axiomTypesMatch(seed, change)) {
-                        if(seed.getType().equals(BuiltInChangeType.ANNOTATION) || seed.getType().equals(BuiltInChangeType.ONTOLOGY_ANNOTATION)) {
-                            if(seed.getProperty().isPresent() && change.getProperty().isPresent()) {
-                                if (seed.getProperty().get().equals(change.getProperty().get())) {
-                                    conflictingChanges.add(change);
-                                }
+                else if (strategy.equals(Strategy.SAME_TYPE_AND_ANNOTATION_PROPERTY) && isSameType(seed, change)) {
+                    if (seed.getType().equals(BuiltInChangeType.ANNOTATION) || seed.getType().equals(BuiltInChangeType.ONTOLOGY_ANNOTATION)) {
+                        if (seed.getProperty().isPresent() && change.getProperty().isPresent()) {
+                            if (seed.getProperty().get().equals(change.getProperty().get())) {
+                                conflictingChanges.add(change);
                             }
                         }
-                        else {
-                            conflictingChanges.add(change);
-                        }
+                    }
+                    else {
+                        conflictingChanges.add(change);
                     }
                 }
             }
         }
         return conflictingChanges;
+    }
+
+    private boolean isSameType(Change c1, Change c2) {
+        return c1.getType().equals(c2.getType()) && axiomTypesMatch(c1, c2);
     }
 
     private boolean axiomTypesMatch(Change c1, Change c2) {

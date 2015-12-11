@@ -11,20 +11,20 @@ import java.awt.*;
 public class ChangesView extends AbstractOWLViewComponent {
     private static final long serialVersionUID = 8062695577507306066L;
     private ChangesPanel changesPanel;
-    private ReviewPanel reviewPanel;
+    private ReviewButtonsPanel reviewButtonsPanel;
 
     @Override
     protected void initialiseOWLView() throws Exception {
         setLayout(new BorderLayout());
         changesPanel = new ChangesPanel(getOWLModelManager(), getOWLEditorKit());
-        reviewPanel = new ReviewPanel(getOWLModelManager(), getOWLEditorKit());
+        reviewButtonsPanel = new ReviewButtonsPanel(getOWLModelManager(), getOWLEditorKit());
         add(changesPanel, BorderLayout.CENTER);
-        add(reviewPanel, BorderLayout.SOUTH);
+        add(reviewButtonsPanel, BorderLayout.SOUTH);
     }
 
     @Override
     protected void disposeOWLView() {
         changesPanel.dispose();
-        reviewPanel.dispose();
+        reviewButtonsPanel.dispose();
     }
 }

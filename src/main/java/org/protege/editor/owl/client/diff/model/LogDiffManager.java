@@ -5,11 +5,15 @@ import org.protege.editor.core.ProtegeApplication;
 import org.protege.editor.owl.OWLEditorKit;
 import org.protege.editor.owl.client.connect.ServerConnectionManager;
 import org.protege.editor.owl.model.OWLModelManager;
+import org.protege.owl.server.api.ChangeHistory;
+import org.protege.owl.server.api.ChangeMetaData;
+import org.protege.owl.server.api.OntologyDocumentRevision;
 import org.protege.owl.server.api.UserId;
 import org.protege.owl.server.api.client.Client;
 import org.protege.owl.server.api.client.VersionedOntologyDocument;
 import org.protege.owl.server.api.exception.OWLServerException;
 import org.semanticweb.owlapi.model.OWLOntology;
+import org.semanticweb.owlapi.model.OWLOntologyChange;
 
 import java.util.*;
 
@@ -23,10 +27,10 @@ public class LogDiffManager implements Disposable {
     public static final UserId ALL_AUTHORS = new UserId("All authors");
     private Set<LogDiffListener> listeners = new HashSet<>();
     private List<Change> selectedChanges = new ArrayList<>();
+    private List<CommitMetadata> commits = new ArrayList<>();
+    private ReviewManager reviewManager = new ReviewManagerImpl();
     private OWLModelManager modelManager;
-    private ReviewManager reviewManager;
     private OWLEditorKit editorKit;
-
     private UserId selectedAuthor;
     private CommitMetadata selectedCommit;
     private LogDiff diff;
@@ -46,7 +50,6 @@ public class LogDiffManager implements Disposable {
     private LogDiffManager(OWLModelManager modelManager, OWLEditorKit editorKit) {
         this.modelManager = checkNotNull(modelManager);
         this.editorKit = checkNotNull(editorKit);
-        this.reviewManager = new ReviewManager();
     }
 
     public Optional<VersionedOntologyDocument> getVersionedOntologyDocument() {
@@ -106,6 +109,30 @@ public class LogDiffManager implements Disposable {
         statusChanged(LogDiffEvent.COMMIT_SELECTION_CHANGED);
     }
 
+    public void setSelectedCommitToLatest() {
+        setSelectedCommit(commits.get(0));
+    }
+
+    public List<CommitMetadata> getCommits(LogDiffEvent event) {
+        VersionedOntologyDocument vont = getVersionedOntologyDocument().get();
+        ChangeHistory changes = vont.getLocalHistory();
+        OntologyDocumentRevision rev = changes.getStartRevision();
+        while (changes.getMetaData(rev) != null) {
+            ChangeMetaData metaData = changes.getMetaData(rev);
+            if (event.equals(LogDiffEvent.AUTHOR_SELECTION_CHANGED) && getSelectedAuthor() != null &&
+                    (metaData.getUserId().equals(getSelectedAuthor()) || getSelectedAuthor().equals(LogDiffManager.ALL_AUTHORS)) ||
+                    event.equals(LogDiffEvent.ONTOLOGY_UPDATED)) {
+                CommitMetadata c = new CommitMetadataImpl(metaData.getUserId(), metaData.getDate(), metaData.getCommitComment(), metaData.hashCode());
+                if (!commits.contains(c)) {
+                    commits.add(c);
+                }
+            }
+            rev = rev.next();
+        }
+        Collections.sort(commits);
+        return commits;
+    }
+
     public void clearSelections() {
         selectedAuthor = null;
         selectedCommit = null;
@@ -144,6 +171,10 @@ public class LogDiffManager implements Disposable {
 
     public UserId getAllAuthorsUserId() {
         return ALL_AUTHORS;
+    }
+
+    public void commitChanges(List<OWLOntologyChange> changes) {
+        modelManager.applyChanges(changes);
     }
 
     @Override

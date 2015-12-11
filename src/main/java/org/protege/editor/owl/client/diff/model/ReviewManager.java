@@ -1,74 +1,48 @@
 package org.protege.editor.owl.client.diff.model;
 
-import com.google.common.base.Objects;
+import org.semanticweb.owlapi.model.OWLOntologyChange;
 
-import java.util.HashMap;
-import java.util.Map;
-
-import static com.google.common.base.Preconditions.checkNotNull;
+import java.util.List;
 
 /**
  * @author Rafael Gonçalves <br>
  * Stanford Center for Biomedical Informatics Research
  */
-public class ReviewManager {
-    private Map<Change,ReviewStatus> newReviewMap = new HashMap<>();
-    private Map<Change,ReviewStatus> initialReviewMap = new HashMap<>();
+public interface ReviewManager {
 
     /**
-     * No-args constructor
+     * Set the specified review status for the given change
+     *
+     * @param c Change
+     * @param status    Review status
      */
-    public ReviewManager() { }
+    void setReviewStatus(Change c, ReviewStatus status);
 
-    public void addReview(Change c, ReviewStatus status) {
-        checkNotNull(c); checkNotNull(status);
+    /**
+     * Check whether the review of the specified change has changed since its initial state
+     *
+     * @param c Change
+     * @return true if change review has changed since its initial state, false otherwise
+     */
+    boolean reviewChanged(Change c);
 
-        // gather initial status of the newly reviewed change
-        if(!newReviewMap.containsKey(c)) {
-            initialReviewMap.put(c, c.getReviewStatus());
-        }
+    /**
+     * Check whether there are change reviews that have not been uncommitted
+     *
+     * @return true if there are uncommitted reviews, false otherwise
+     */
+    boolean hasUncommittedReviews();
 
-        // if new review does not differ from initial state, no real review change occurred
-        if(initialReviewMap.get(c).equals(status)) {
-            newReviewMap.remove(c);
-        } else {
-            newReviewMap.put(c, status);
-        }
-        c.setReviewStatus(status);
-    }
+    /**
+     * Get the list of ontology changes derived from the uncommitted reviews
+     *
+     * @return List of OWL ontology changes derived from uncommitted reviews
+     */
+    List<OWLOntologyChange> getReviewOntologyChanges();
 
-    public boolean reviewChanged(Change c) {
-        if(initialReviewMap.get(c) != null && newReviewMap.get(c) != null) {
-            if (!initialReviewMap.get(c).equals(newReviewMap.get(c))) {
-                return true;
-            }
-        }
-        return false;
-    }
+    /**
+     * Clear any uncommitted reviews (and set their review status to pending)
+     */
+    void clearUncommittedReviews();
 
-    public boolean hasUncommittedReviews() {
-        return !newReviewMap.isEmpty();
-    }
-
-    @Override
-    public boolean equals(Object o) {
-        if (this == o) return true;
-        if (o == null || getClass() != o.getClass()) return false;
-        ReviewManager that = (ReviewManager) o;
-        return Objects.equal(newReviewMap, that.newReviewMap) &&
-                Objects.equal(initialReviewMap, that.initialReviewMap);
-    }
-
-    @Override
-    public int hashCode() {
-        return Objects.hashCode(newReviewMap, initialReviewMap);
-    }
-
-    @Override
-    public String toString() {
-        return Objects.toStringHelper(this)
-                .add("newReviewMap", newReviewMap)
-                .add("initialReviewMap", initialReviewMap)
-                .toString();
-    }
 }

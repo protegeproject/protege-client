@@ -8,8 +8,6 @@ import org.protege.editor.owl.model.OWLModelManager;
 import javax.swing.*;
 import javax.swing.border.EmptyBorder;
 import java.awt.*;
-import java.text.SimpleDateFormat;
-import java.util.Date;
 
 import static com.google.common.base.Preconditions.checkNotNull;
 
@@ -115,8 +113,7 @@ public class ChangeDetailsPanel extends JPanel implements Disposable {
         String dateStr = "", author = "", comment = "";
         if(review != null) {
             if (review.getDate().isPresent()) {
-                Date date = review.getDate().get();
-                dateStr = new SimpleDateFormat("MM/dd/yyyy HH:mm").format(date);
+                dateStr = GuiUtils.getShortenedFormattedDate(review.getDate().get());
             }
             author = (review.getAuthor().isPresent() ? review.getAuthor().get().getUserName() : "");
             comment = (review.getComment().isPresent() ? review.getComment().get() : "");

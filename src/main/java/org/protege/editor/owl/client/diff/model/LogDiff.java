@@ -10,6 +10,8 @@ import org.protege.owl.server.api.UserId;
 import org.protege.owl.server.api.client.VersionedOntologyDocument;
 import org.semanticweb.owlapi.model.*;
 
+import java.security.MessageDigest;
+import java.security.NoSuchAlgorithmException;
 import java.util.*;
 
 import static com.google.common.base.Preconditions.checkNotNull;
@@ -81,7 +83,7 @@ public class LogDiff {
                 if ((event.equals(LogDiffEvent.AUTHOR_SELECTION_CHANGED) && isCommitBySelectedAuthor(metaData)) ||
                         (event.equals(LogDiffEvent.COMMIT_SELECTION_CHANGED) && isCommitSelected(metaData)) || event.equals(LogDiffEvent.ONTOLOGY_UPDATED)) {
                     ChangeHistory hist = changes.cropChanges(rev, rev.next());
-                    changesToDisplay.addAll(getChangeList(hist.getChanges(ontology)));
+                    changesToDisplay.addAll(getChangeList(metaData, hist.getChanges(ontology)));
                 }
                 rev = rev.next();
                 if(rev.equals(end)) {
@@ -101,11 +103,11 @@ public class LogDiff {
         return (diffManager.getSelectedCommit() != null) && (metaData.hashCode() == diffManager.getSelectedCommit().getHashcode());
     }
 
-    private List<Change> getChangeList(List<OWLOntologyChange> ontologyChanges) {
+    private List<Change> getChangeList(ChangeMetaData metaData, List<OWLOntologyChange> ontologyChanges) {
         List<Change> changes = new ArrayList<>();
         for(OWLOntologyChange change : ontologyChanges) {
             for (Change parsedChange : allChanges) {
-                if (parsedChange.getChanges().contains(change)) {
+                if (parsedChange.getChanges().contains(change) && sameCommit(metaData, parsedChange.getCommitMetadata())) {
                     if(!changes.contains(parsedChange)) {
                         changes.add(parsedChange);
                     }
@@ -116,6 +118,10 @@ public class LogDiff {
         return changes;
     }
 
+    private boolean sameCommit(ChangeMetaData metaData, CommitMetadata commitMetadata) {
+        return metaData.getUserId().equals(commitMetadata.getAuthor()) && metaData.getDate().equals(commitMetadata.getDate()) && metaData.getCommitComment().equals(commitMetadata.getComment());
+    }
+
     private List<Change> getChangeListFromHistory(List<OWLOntologyChange> ontChanges, ChangeMetaData metaData) {
         List<Change> changeList = new ArrayList<>();
         String comment = metaData.getCommitComment();
@@ -123,7 +129,7 @@ public class LogDiff {
             comment = "";
         }
         CommitMetadata commitMetadata = new CommitMetadataImpl(metaData.getUserId(), metaData.getDate(), comment, metaData.hashCode());
-        RevisionTag revisionTag = new RevisionTagImpl(metaData.hashCode() + "");
+        RevisionTag revisionTag = getRevisionTag(metaData.hashCode() + "");
         for(OWLOntologyChange ontChange : ontChanges) {
             Change change = getChangeObject(ontChange, commitMetadata, revisionTag);
             if (change != null && !changeList.contains(change)) {
@@ -131,6 +137,22 @@ public class LogDiff {
             }
         }
         return changeList;
+    }
+
+    private RevisionTag getRevisionTag(String string) {
+        MessageDigest md = null;
+        try {
+            md = MessageDigest.getInstance("MD5");
+        } catch (NoSuchAlgorithmException e) {
+            e.printStackTrace();
+        }
+        md.update(string.getBytes());
+        byte[] digestBytes = md.digest();
+        StringBuilder sb = new StringBuilder();
+        for (byte b : digestBytes) {
+            sb.append(String.format("%02x", b & 0xff));
+        }
+        return new RevisionTagImpl(sb.toString().substring(0,8));
     }
 
     private Change getChangeObject(OWLOntologyChange ontChange, CommitMetadata commitMetadata, RevisionTag revisionTag) {

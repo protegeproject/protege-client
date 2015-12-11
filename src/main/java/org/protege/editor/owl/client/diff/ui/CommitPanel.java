@@ -2,18 +2,15 @@ package org.protege.editor.owl.client.diff.ui;
 
 import org.protege.editor.core.Disposable;
 import org.protege.editor.owl.OWLEditorKit;
-import org.protege.editor.owl.client.diff.model.*;
+import org.protege.editor.owl.client.diff.model.CommitMetadata;
+import org.protege.editor.owl.client.diff.model.LogDiffEvent;
+import org.protege.editor.owl.client.diff.model.LogDiffListener;
+import org.protege.editor.owl.client.diff.model.LogDiffManager;
 import org.protege.editor.owl.model.OWLModelManager;
-import org.protege.owl.server.api.ChangeHistory;
-import org.protege.owl.server.api.ChangeMetaData;
-import org.protege.owl.server.api.OntologyDocumentRevision;
-import org.protege.owl.server.api.client.VersionedOntologyDocument;
 
 import javax.swing.*;
 import javax.swing.event.ListSelectionListener;
 import java.awt.*;
-import java.util.ArrayList;
-import java.util.Collections;
 import java.util.List;
 
 /**
@@ -69,23 +66,7 @@ public class CommitPanel extends JPanel implements Disposable {
 
     private void listCommits(LogDiffEvent event) {
         if(diffManager.getVersionedOntologyDocument().isPresent()) {
-            VersionedOntologyDocument vont = diffManager.getVersionedOntologyDocument().get();
-            ChangeHistory changes = vont.getLocalHistory();
-            List<CommitMetadata> commits = new ArrayList<>();
-            OntologyDocumentRevision rev = changes.getStartRevision();
-            while (changes.getMetaData(rev) != null) {
-                ChangeMetaData metaData = changes.getMetaData(rev);
-                if (event.equals(LogDiffEvent.AUTHOR_SELECTION_CHANGED) && diffManager.getSelectedAuthor() != null &&
-                        (metaData.getUserId().equals(diffManager.getSelectedAuthor()) || diffManager.getSelectedAuthor().equals(LogDiffManager.ALL_AUTHORS)) ||
-                        event.equals(LogDiffEvent.ONTOLOGY_UPDATED)) {
-                    CommitMetadata c = new CommitMetadataImpl(metaData.getUserId(), metaData.getDate(), metaData.getCommitComment(), metaData.hashCode());
-                    if (!commits.contains(c)) {
-                        commits.add(c);
-                    }
-                }
-                rev = rev.next();
-            }
-            Collections.sort(commits);
+            List<CommitMetadata> commits = diffManager.getCommits(event);
             commitList.setListData(commits.toArray(new CommitMetadata[commits.size()]));
         }
         else {

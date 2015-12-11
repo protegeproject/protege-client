@@ -8,6 +8,7 @@ import org.semanticweb.owlapi.model.OWLObject;
 
 import javax.swing.*;
 import java.awt.*;
+import java.util.Date;
 
 /**
  * @author Rafael Gonçalves <br>
@@ -54,9 +55,14 @@ public class ChangesTableCellRenderer extends LogDiffCellRenderer {
                     value = "";
             }
         }
+        if(value instanceof Date) {
+            setText(GuiUtils.getFormattedDate((Date)value));
+        }
+        else {
+            setText(value != null ? value.toString() : "");
+        }
         setBackground(table, type, mode, this, isSelected);
         setFont(table.getFont());
-        setText(value != null ? value.toString() : "");
         return this;
     }
 
@@ -76,7 +82,7 @@ public class ChangesTableCellRenderer extends LogDiffCellRenderer {
     }
 
     private JLabel getIconLabel(JTable table, ChangeType type, ChangeMode mode, String iconFilename, boolean isSelected, boolean committed) {
-        Icon icon = GuiUtils.getIcon(iconFilename, 30, 30);
+        Icon icon = GuiUtils.getIcon(iconFilename, 25, 25);
         // rpc
 //        if(!committed) {
 //            ImageIcon base = (ImageIcon)GuiUtils.getIcon(iconFilename, 30, 30);

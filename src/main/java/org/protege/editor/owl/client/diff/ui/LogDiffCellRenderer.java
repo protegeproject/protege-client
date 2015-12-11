@@ -5,7 +5,6 @@ import org.protege.editor.owl.OWLEditorKit;
 import javax.swing.*;
 import javax.swing.border.EmptyBorder;
 import javax.swing.table.TableCellRenderer;
-import java.io.Serializable;
 
 import static com.google.common.base.Preconditions.checkNotNull;
 

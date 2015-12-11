@@ -1,5 +1,6 @@
 package org.protege.editor.owl.client.diff.ui;
 
+import org.protege.editor.owl.client.diff.model.BuiltInChangeType;
 import org.protege.editor.owl.client.diff.model.ChangeMode;
 
 import javax.imageio.ImageIO;
@@ -10,6 +11,8 @@ import javax.swing.border.MatteBorder;
 import java.awt.*;
 import java.awt.image.BufferedImage;
 import java.io.IOException;
+import java.text.SimpleDateFormat;
+import java.util.Date;
 
 import static com.google.common.base.Preconditions.checkNotNull;
 
@@ -71,7 +74,15 @@ public class GuiUtils {
         } else if (mode.equals(ChangeMode.REMOVAL)) {
             c.setBackground(GuiUtils.REMOVAL_COLOR);
         } else if (mode.equals(ChangeMode.ONTOLOGY_IRI)) {
-            c.setBackground(GuiUtils.DEFAULT_CHANGE_COLOR);
+            c.setBackground(BuiltInChangeType.ONTOLOGY_IRI.getDisplayColor().get());
         }
+    }
+
+    public static String getFormattedDate(Date date) {
+        return new SimpleDateFormat("EEE, MMM d yyyy HH:mm").format(date);
+    }
+
+    public static String getShortenedFormattedDate(Date date) {
+        return new SimpleDateFormat("MMM d yyyy HH:mm").format(date);
     }
 }

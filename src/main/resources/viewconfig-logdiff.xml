@@ -23,8 +23,11 @@
                 <Component label="Details">
                     <Property id="pluginId" value="org.protege.editor.owl.client.diff.ui.ChangeDetailsView"/>
                 </Component>
-                <Component label="Conflicts">
-                    <Property id="pluginId" value="org.protege.editor.owl.client.diff.ui.ConflictsView"/>
+                <Component label="Conflicts (list)">
+                    <Property id="pluginId" value="org.protege.editor.owl.client.diff.ui.ConflictsListView"/>
+                </Component>
+                <Component label="Conflicts (grid)">
+                    <Property id="pluginId" value="org.protege.editor.owl.client.diff.ui.ConflictsGridView"/>
                 </Component>
             </CNode>
         </HSNode>

@@ -51,6 +51,10 @@ public class ChangeImpl implements Change {
         this.newValue = (newValue.isPresent() ? checkNotNull(newValue.get()) : null);
     }
 
+    public ChangeImpl(Set<OWLOntologyChange> changes, ChangeDetails details, CommitMetadata commitMetadata) {
+        this(changes, details.getRevisionTag(), commitMetadata, details.getChangeMode(), details.getChangeSubject(), details.getChangeType(), details.getProperty(), details.getNewValue());
+    }
+
     @Override
     public Set<OWLOntologyChange> getChanges() {
         return changes;

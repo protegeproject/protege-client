@@ -1,6 +1,5 @@
 package org.protege.editor.owl.client.diff.ui;
 
-import org.protege.editor.owl.client.diff.model.BuiltInChangeType;
 import org.protege.editor.owl.client.diff.model.ChangeMode;
 
 import javax.imageio.ImageIO;
@@ -27,6 +26,7 @@ public class GuiUtils {
     public static final Color
             ADDITION_COLOR = new Color(219, 253, 217),
             REMOVAL_COLOR = new Color(255, 221, 220),
+            ONTOLOGY_IRI_COLOR = new Color(242, 248, 255),
             DEFAULT_CHANGE_COLOR = new Color(252, 249, 232),
             WHITE_BACKGROUND = Color.WHITE,
             UNSELECTED_FOREGROUND = Color.BLACK,
@@ -35,9 +35,6 @@ public class GuiUtils {
     public static final Border
             MATTE_BORDER = new MatteBorder(1, 1, 1, 1, BORDER_COLOR),
             EMPTY_BORDER = new EmptyBorder(0,0,0,0);
-
-    public static final Font
-            DEFAULT_FONT = new Font("SansSerif", Font.PLAIN, 12);
 
     public static final String
             USER_ICON_FILENAME = "user.png",
@@ -69,12 +66,17 @@ public class GuiUtils {
     }
 
     public static void setComponentBackground(Component c, ChangeMode mode) {
-        if (mode.equals(ChangeMode.ADDITION)) {
-            c.setBackground(GuiUtils.ADDITION_COLOR);
-        } else if (mode.equals(ChangeMode.REMOVAL)) {
-            c.setBackground(GuiUtils.REMOVAL_COLOR);
-        } else if (mode.equals(ChangeMode.ONTOLOGY_IRI)) {
-            c.setBackground(BuiltInChangeType.ONTOLOGY_IRI.getDisplayColor().get());
+        switch(mode) {
+            case ADDITION:
+                c.setBackground(ADDITION_COLOR); break;
+            case REMOVAL:
+                c.setBackground(REMOVAL_COLOR); break;
+            case ONTOLOGY_IRI:
+                c.setBackground(ONTOLOGY_IRI_COLOR); break;
+            case ALIGNED:
+            case CUSTOM:
+            default:
+                c.setBackground(DEFAULT_CHANGE_COLOR); break;
         }
     }
 

@@ -4,6 +4,7 @@ import com.google.common.base.Objects;
 import org.apache.log4j.Logger;
 import org.semanticweb.owlapi.apibinding.OWLManager;
 import org.semanticweb.owlapi.model.*;
+import org.semanticweb.owlapi.vocab.OWL2Datatype;
 
 import java.util.*;
 
@@ -16,33 +17,33 @@ import static com.google.common.base.Preconditions.checkNotNull;
 public final class AxiomChangeAnnotator implements OwlOntologyChangeAnnotator {
     private static final Logger log = Logger.getLogger(AxiomChangeAnnotator.class);
     public static final IRI PROPERTY_IRI = IRI.create("http://protege.stanford.edu/ontology/hasChangeType");
-    private final String separator = "|:|";
-    private final OWLAnnotationProperty property;
+    public static final String SEPARATOR = "|:|", ALT_SEPARATOR = "]:[";
     private final OWLDataFactory df = OWLManager.getOWLDataFactory();
 
     /**
      * Constructor
      */
-    public AxiomChangeAnnotator() {
-        this.property = df.getOWLAnnotationProperty(PROPERTY_IRI);
-    }
+    public AxiomChangeAnnotator() { }
 
     @Override
     public List<OWLOntologyChange> getAnnotatedChange(List<OWLOntologyChange> changes, RevisionTag revisionTag, OWLEntity changeSubject, ChangeType changeType, Optional<OWLEntity> p, Optional<String> newValue) {
         checkNotNull(changes);
+        checkNotNull(revisionTag);
         checkNotNull(changeSubject);
         checkNotNull(changeType);
         List<OWLOntologyChange> annotatedChanges = new ArrayList<>();
+        OWLAnnotationProperty property = df.getOWLAnnotationProperty(PROPERTY_IRI);
         for(OWLOntologyChange change : changes) {
             if(change.isAxiomChange()) {
                 OWLAxiom axiom = change.getAxiom();
                 OWLAnnotation annotation = df.getOWLAnnotation(property,
                         df.getOWLLiteral(
-                                revisionTag.getTag() + separator +
-                                changeSubject.getIRI().toString() + separator +
-                                changeType.getDisplayName() + separator +
-                                        (p.isPresent() ? p.get().getIRI() : "") + separator +
-                                        (newValue.isPresent() ? newValue.get() : "")
+                                revisionTag.getTag() + SEPARATOR +
+                                        changeSubject.getIRI().toString() + SEPARATOR +
+                                        changeType.getDisplayName() + (changeType.getDisplayColor().isPresent() ? ALT_SEPARATOR + changeType.getDisplayColor().get().getRGB() : "") + SEPARATOR +
+                                        (p.isPresent() ? p.get().getIRI() : "") + SEPARATOR +
+                                        (newValue.isPresent() ? newValue.get() : ""),
+                                OWL2Datatype.XSD_STRING
                         ));
                 Set<OWLAnnotation> annotations = new HashSet<>();
                 annotations.add(annotation);
@@ -63,12 +64,12 @@ public final class AxiomChangeAnnotator implements OwlOntologyChangeAnnotator {
         return annotatedChanges;
     }
 
-    public String getSeparator() {
-        return separator;
+    public static String getSeparatorRegex() {
+        return SEPARATOR.replaceAll("\\|", "\\\\|");
     }
 
-    public OWLAnnotationProperty getAnnotationProperty() {
-        return property;
+    public static String getAltSeparatorRegex() {
+        return ALT_SEPARATOR.replaceAll("\\[", "\\\\[");
     }
 
     @Override
@@ -76,20 +77,18 @@ public final class AxiomChangeAnnotator implements OwlOntologyChangeAnnotator {
         if (this == o) return true;
         if (o == null || getClass() != o.getClass()) return false;
         AxiomChangeAnnotator that = (AxiomChangeAnnotator) o;
-        return Objects.equal(separator, that.separator) &&
-                Objects.equal(property, that.property);
+        return Objects.equal(df, that.df);
     }
 
     @Override
     public int hashCode() {
-        return Objects.hashCode(separator, property, df);
+        return Objects.hashCode(df);
     }
 
     @Override
     public String toString() {
         return Objects.toStringHelper(this)
-                .add("separator", separator)
-                .add("property", property)
+                .add("df", df)
                 .toString();
     }
 }

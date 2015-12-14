@@ -8,14 +8,14 @@ import java.awt.*;
  * @author Rafael Gonçalves <br>
  * Stanford Center for Biomedical Informatics Research
  */
-public class ConflictsView extends AbstractOWLViewComponent {
-    private static final long serialVersionUID = -4033667243827397396L;
-    private ConflictsPanel conflictsPanel;
+public class ConflictsGridView extends AbstractOWLViewComponent {
+    private static final long serialVersionUID = -108220117637124754L;
+    private ConflictsGridPanel conflictsPanel;
 
     @Override
     protected void initialiseOWLView() throws Exception {
         setLayout(new BorderLayout());
-        conflictsPanel = new ConflictsPanel(getOWLModelManager(), getOWLEditorKit());
+        conflictsPanel = new ConflictsGridPanel(getOWLModelManager(), getOWLEditorKit());
         add(conflictsPanel, BorderLayout.CENTER);
     }
 

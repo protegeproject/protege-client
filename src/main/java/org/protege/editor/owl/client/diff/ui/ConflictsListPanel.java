@@ -18,7 +18,7 @@ import static com.google.common.base.Preconditions.checkNotNull;
  * @author Rafael Gonçalves <br>
  * Stanford Center for Biomedical Informatics Research
  */
-public class ConflictsPanel extends JPanel implements Disposable {
+public class ConflictsListPanel extends JPanel implements Disposable {
     private OWLEditorKit editorKit;
     private LogDiffManager diffManager;
     private Change change;
@@ -29,7 +29,7 @@ public class ConflictsPanel extends JPanel implements Disposable {
      * @param modelManager OWL model manager
      * @param editorKit    OWL editor kit
      */
-    public ConflictsPanel(OWLModelManager modelManager, OWLEditorKit editorKit) {
+    public ConflictsListPanel(OWLModelManager modelManager, OWLEditorKit editorKit) {
         this.editorKit = checkNotNull(editorKit);
         diffManager = LogDiffManager.get(modelManager, editorKit);
         diffManager.addListener(diffListener);
@@ -77,31 +77,9 @@ public class ConflictsPanel extends JPanel implements Disposable {
         if (change != null) {
             Set<Change> changes = change.getConflictingChanges();
             if (!changes.isEmpty()) {
-                Set<Change> before = new HashSet<>(), after = new HashSet<>();
-                for (Change change : changes) {
-                    if (change.getCommitMetadata().getDate().before(this.change.getCommitMetadata().getDate())) {
-                        before.add(change);
-                    } else {
-                        after.add(change);
-                    }
-                }
-                GridBagConstraints bpc = createGridBagConstraints(), apc = createGridBagConstraints();
-                String priorConflictsPanelHeader = "Prior commits:", subsequentConflictsPanelHeader = "Subsequent commits:";
-                if (!before.isEmpty() && !after.isEmpty()) {
-                    JScrollPane beforePnlScrollPane = getConflictsScrollPane(before, bpc, priorConflictsPanelHeader);
-                    JScrollPane afterPnlScrollPane = getConflictsScrollPane(after, apc, subsequentConflictsPanelHeader);
-                    JSplitPane splitPane = new JSplitPane(JSplitPane.HORIZONTAL_SPLIT, beforePnlScrollPane, afterPnlScrollPane);
-                    splitPane.setBorder(GuiUtils.EMPTY_BORDER);
-                    add(splitPane);
-                    splitPane.setDividerLocation(0.5);
-                    splitPane.setResizeWeight(0.5);
-                } else if (!before.isEmpty()) {
-                    add(getConflictsScrollPane(before, bpc, priorConflictsPanelHeader), BorderLayout.CENTER);
-                } else if (!after.isEmpty()) {
-                    add(getConflictsScrollPane(after, apc, subsequentConflictsPanelHeader), BorderLayout.CENTER);
-                }
-            }
-            else {
+                GridBagConstraints bpc = createGridBagConstraints();
+                add(getConflictsScrollPane(changes, bpc, ""), BorderLayout.CENTER);
+            } else {
                 add(createHeaderLabel("No conflicts", Optional.of(new EmptyBorder(5, 6, 0, 0))), BorderLayout.NORTH);
             }
             repaint();

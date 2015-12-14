@@ -1,7 +1,8 @@
 package org.protege.editor.owl.client.diff.model;
 
+import com.google.common.collect.HashMultimap;
+import com.google.common.collect.Multimap;
 import org.apache.log4j.Logger;
-import org.protege.editor.owl.client.diff.ui.GuiUtils;
 import org.protege.editor.owl.model.OWLModelManager;
 import org.protege.owl.server.api.ChangeHistory;
 import org.protege.owl.server.api.ChangeMetaData;
@@ -10,9 +11,11 @@ import org.protege.owl.server.api.UserId;
 import org.protege.owl.server.api.client.VersionedOntologyDocument;
 import org.semanticweb.owlapi.model.*;
 
+import java.awt.*;
 import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
 import java.util.*;
+import java.util.List;
 
 import static com.google.common.base.Preconditions.checkNotNull;
 
@@ -24,6 +27,7 @@ public class LogDiff {
     private static final Logger log = Logger.getLogger(LogDiff.class);
     private final LogDiffManager diffManager;
     private final OWLModelManager modelManager;
+    private final OWLDataFactory df;
     private List<Change> allChanges = new ArrayList<>();
 
     /**
@@ -35,6 +39,7 @@ public class LogDiff {
     public LogDiff(LogDiffManager diffManager, OWLModelManager modelManager) {
         this.diffManager = checkNotNull(diffManager);
         this.modelManager = checkNotNull(modelManager);
+        this.df = modelManager.getOWLDataFactory();
     }
 
     public void initDiff() {
@@ -129,14 +134,44 @@ public class LogDiff {
             comment = "";
         }
         CommitMetadata commitMetadata = new CommitMetadataImpl(metaData.getUserId(), metaData.getDate(), comment, metaData.hashCode());
-        RevisionTag revisionTag = getRevisionTag(metaData.hashCode() + "");
+        Multimap<ChangeDetails,OWLOntologyChange> multimap = HashMultimap.create();
         for(OWLOntologyChange ontChange : ontChanges) {
-            Change change = getChangeObject(ontChange, commitMetadata, revisionTag);
-            if (change != null && !changeList.contains(change)) {
-                changeList.add(change);
+            if(isAnnotated(ontChange)) {
+                ChangeDetails details = getChangeDetailsFromAnnotatedAxiom(ontChange.getAxiom());
+                multimap.put(details, ontChange);
+            }
+            else {
+                RevisionTag revisionTag = getRevisionTag(metaData.hashCode() + "");
+                Change change = getChangeObject(ontChange, commitMetadata, revisionTag);
+                if (change != null && !changeList.contains(change)) {
+                    changeList.add(change);
+                }
             }
         }
+        List<Change> customChanges = getCustomChanges(multimap, commitMetadata);
+        changeList.addAll(customChanges);
         return changeList;
+    }
+
+    private List<Change> getCustomChanges(Multimap<ChangeDetails,OWLOntologyChange> map, CommitMetadata commitMetadata) {
+        List<Change> changes = new ArrayList<>();
+        for(ChangeDetails details : map.keySet()) {
+            Set<OWLOntologyChange> changeList = (Set<OWLOntologyChange>) map.get(details);
+            Change c = new ChangeImpl(changeList, details, commitMetadata);
+            changes.add(c);
+        }
+        return changes;
+    }
+
+    private boolean isAnnotated(OWLOntologyChange change) {
+        if(change.isAxiomChange() && change.getAxiom().isAnnotated()) {
+            for(OWLAnnotation annotation : change.getAxiom().getAnnotations()) {
+                if (annotation.getProperty().getIRI().equals(AxiomChangeAnnotator.PROPERTY_IRI)) {
+                    return true;
+                }
+            }
+        }
+        return false;
     }
 
     private RevisionTag getRevisionTag(String string) {
@@ -161,9 +196,6 @@ public class LogDiff {
         Change change = null;
         if(ontChange.isAxiomChange()) {
             OWLAxiom axiom = ontChange.getAxiom();
-            if(axiom.isAnnotated()) {
-                // TODO: Look for annotations that are known to cast one or more axioms as a composite change, such as a split or merge
-            }
             OntologyChangeVisitor visitor = new OntologyChangeVisitor();
             axiom.accept(visitor);
             OWLObject ce = visitor.getChangeSubject();
@@ -196,6 +228,58 @@ public class LogDiff {
         return change;
     }
 
+    private ChangeDetails getChangeDetailsFromAnnotatedAxiom(OWLAxiom axiom) {
+        ChangeDetails details = null;
+        for(OWLAnnotation annotation : axiom.getAnnotations()) {
+            if(annotation.getProperty().getIRI().equals(AxiomChangeAnnotator.PROPERTY_IRI)) {
+                if(annotation.getValue() instanceof OWLLiteral) {
+                    String value = ((OWLLiteral) annotation.getValue()).getLiteral();
+                    String[] tokens = value.split(AxiomChangeAnnotator.getSeparatorRegex());
+                    RevisionTag tag = new RevisionTagImpl(tokens[0]);
+                    OWLEntity changeSubject = getEntityFromIri(IRI.create(tokens[1]));
+
+                    String changeType = tokens[2];
+                    Color color = null;
+                    if (changeType.contains(AxiomChangeAnnotator.ALT_SEPARATOR)) {
+                        String[] typeTokens = changeType.split(AxiomChangeAnnotator.getAltSeparatorRegex());
+                        changeType = typeTokens[0];
+                        color = new Color(Integer.parseInt(typeTokens[1]));
+                    }
+                    ChangeType type = new CustomChangeType(changeType, Optional.ofNullable(color));
+                    OWLEntity property = null;
+                    if(tokens.length > 2) {
+                        IRI iri = null;
+                        try {
+                            iri = IRI.create(tokens[3]);
+                        } catch(Exception ignored) {
+                            // ignore
+                        }
+                        property = (iri != null ? getEntityFromIri(iri) : null);
+                    }
+                    String newValue = (tokens.length > 3 ? tokens[4] : null);
+                    details = new ChangeDetails(tag, changeSubject, type, ChangeMode.CUSTOM, Optional.ofNullable(property), Optional.ofNullable(newValue));
+                    break; // expecting only a single custom annotation per axiom
+                }
+            }
+        }
+        return details;
+    }
+
+    private OWLEntity getEntityFromIri(IRI iri) {
+        OWLEntity entity = null;
+        Set<OWLEntity> sig = modelManager.getActiveOntology().getSignature();
+        for(OWLEntity e : sig) {
+            if(e.getIRI().equals(iri)) {
+                entity = e;
+                break;
+            }
+        }
+        if(entity == null) {
+            log.error("The given IRI does not exist in active ontology (" + iri.toString() + ")");
+        }
+        return entity;
+    }
+
     private void findConflits(List<Change> changes) {
         ConflictDetector conflictDetector = new SimpleConflictDetector(changes);
         for (Change change : changes) {
@@ -217,7 +301,6 @@ public class LogDiff {
                         c.setBaselineChange(c2.getChanges().iterator().next());
                         toRemove.add(c2);
                         c.setMode(ChangeMode.ALIGNED);
-                        c.setType(new CustomChangeType(c.getType().getDisplayName(), Optional.of(GuiUtils.DEFAULT_CHANGE_COLOR)));
                     }
                 }
             }

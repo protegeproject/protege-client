@@ -50,7 +50,6 @@
 	<extension id="AuthorView"
 			   point="org.protege.editor.core.application.ViewComponent">
 		<label value="Authors"/>
-		<name value="Authors"/>
 		<class value="org.protege.editor.owl.client.diff.ui.AuthorView"/>
 		<headerColor value="@org.protege.ontologycolor"/>
 		<category value="@org.protege.differencecategory"/>

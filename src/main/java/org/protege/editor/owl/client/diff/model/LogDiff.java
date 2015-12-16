@@ -136,11 +136,11 @@ public class LogDiff {
         CommitMetadata commitMetadata = new CommitMetadataImpl(metaData.getUserId(), metaData.getDate(), comment, metaData.hashCode());
         Multimap<ChangeDetails,OWLOntologyChange> multimap = HashMultimap.create();
         for(OWLOntologyChange ontChange : ontChanges) {
-            if(isAnnotated(ontChange)) {
+            if(isAnnotated(ontChange) && !isCustomPropertyDeclaration(ontChange)) {
                 ChangeDetails details = getChangeDetailsFromAnnotatedAxiom(ontChange.getAxiom());
                 multimap.put(details, ontChange);
             }
-            else {
+            else if (!isCustomPropertyDeclaration(ontChange)) {
                 RevisionTag revisionTag = getRevisionTag(metaData.hashCode() + "");
                 Change change = getChangeObject(ontChange, commitMetadata, revisionTag);
                 if (change != null && !changeList.contains(change)) {
@@ -151,6 +151,15 @@ public class LogDiff {
         List<Change> customChanges = getCustomChanges(multimap, commitMetadata);
         changeList.addAll(customChanges);
         return changeList;
+    }
+
+    private boolean isCustomPropertyDeclaration(OWLOntologyChange change) {
+        if(change.isAxiomChange() && change.getAxiom().isOfType(AxiomType.DECLARATION)) {
+            if (((OWLDeclarationAxiom) change.getAxiom()).getEntity().getIRI().equals(AxiomChangeAnnotator.PROPERTY_IRI)) {
+                return true;
+            }
+        }
+        return false;
     }
 
     private List<Change> getCustomChanges(Multimap<ChangeDetails,OWLOntologyChange> map, CommitMetadata commitMetadata) {

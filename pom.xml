@@ -11,13 +11,12 @@
     </parent>
 
     <groupId>edu.stanford.protege</groupId>
-    <artifactId>org.protege.editor.owl.client</artifactId>
+    <artifactId>protege-client</artifactId>
     <version>2.0.6-SNAPSHOT</version>
     <packaging>bundle</packaging>
 
     <name>Protege Desktop Client</name>
     <description>Provides client functionality for Protege 5 to connect to a Protege Server, allowing end users to collaboratively edit collections of OWL ontologies.</description>
-    <url>http://protegewiki.stanford.edu/wiki/Protege4ClientServer</url>
 
     <organization>
         <name>Stanford Center for Biomedical Informatics Research</name>
@@ -85,16 +84,17 @@
             <plugin>
                 <groupId>org.apache.felix</groupId>
                 <artifactId>maven-bundle-plugin</artifactId>
-                <version>2.5.0</version>
+                <version>3.0.1</version>
                 <extensions>true</extensions>
                 <configuration>
                     <instructions>
                         <Bundle-ClassPath>.</Bundle-ClassPath>
-                        <Bundle-SymbolicName>${project.artifactId};singleton:=true</Bundle-SymbolicName>
+                        <Bundle-SymbolicName>org.protege.editor.owl.client;singleton:=true</Bundle-SymbolicName>
                         <Bundle-Vendor>The Protege Development Team</Bundle-Vendor>
-                        <Export-Package>${project.artifactId}*;version=${project.version}</Export-Package>
+                        <Export-Package>org.protege.editor.owl.client*;version=${project.version}</Export-Package>
                         <Import-Package>
                             org.protege.editor.core.*;version="5.0", <!-- equivalent to [5.0,infinity) -->
+                            org.protege.editor.owl.client.*;version=${project.version},
                             org.protege.editor.owl.*;version="5.0",
                             *
                         </Import-Package>
@@ -110,7 +110,7 @@
                         </goals>
                     </execution>
                 </executions>
-            </plugin>            
+            </plugin>
         </plugins>
     </build>
 </project>

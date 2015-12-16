@@ -12,8 +12,7 @@ import org.protege.owl.server.api.UserId;
 import org.protege.owl.server.api.client.Client;
 import org.protege.owl.server.api.client.VersionedOntologyDocument;
 import org.protege.owl.server.api.exception.OWLServerException;
-import org.semanticweb.owlapi.model.OWLOntology;
-import org.semanticweb.owlapi.model.OWLOntologyChange;
+import org.semanticweb.owlapi.model.*;
 
 import java.util.*;
 
@@ -175,6 +174,44 @@ public class LogDiffManager implements Disposable {
 
     public void commitChanges(List<OWLOntologyChange> changes) {
         modelManager.applyChanges(changes);
+    }
+
+    public List<OWLOntologyChange> removeCustomAnnotations() {
+        OWLOntology ont = getActiveOntology();
+        OWLAnnotationProperty property = modelManager.getOWLDataFactory().getOWLAnnotationProperty(AxiomChangeAnnotator.PROPERTY_IRI);
+        Set<OWLAxiom> toRemove = new HashSet<>(), toAdd = new HashSet<>();
+        for(OWLAxiom axiom : ont.getReferencingAxioms(property)) {
+            if(axiom.isAnnotated()) {
+                Set<OWLAnnotation> annotations = axiom.getAnnotations();
+                for(OWLAnnotation ann : axiom.getAnnotations()) {
+                    if(ann.getProperty().equals(property)) {
+                        annotations.remove(ann);
+                    }
+                }
+                toRemove.add(axiom);
+                OWLAxiom axiomUnAnnotated = axiom.getAxiomWithoutAnnotations();
+                OWLAxiom axiomReAnnottated = axiomUnAnnotated.getAnnotatedAxiom(annotations);
+                toAdd.add(axiomReAnnottated);
+            }
+        }
+        toRemove.addAll(ont.getDeclarationAxioms(property));
+        List<OWLOntologyChange> changes = ont.getOWLOntologyManager().removeAxioms(ont, toRemove);
+        changes.addAll(ont.getOWLOntologyManager().addAxioms(ont, toAdd));
+        commitChanges(changes);
+        return changes;
+    }
+
+    public void addCustomAnnotations(List<OWLOntologyChange> changes) {
+        List<OWLOntologyChange> changeList = new ArrayList<>();
+        for(OWLOntologyChange change : changes) {
+            if(change.isAddAxiom()) {
+                changeList.add(new RemoveAxiom(change.getOntology(), change.getAxiom()));
+            }
+            else if(change.isRemoveAxiom()) {
+                changeList.add(new AddAxiom(change.getOntology(), change.getAxiom()));
+            }
+        }
+        commitChanges(changeList);
     }
 
     @Override

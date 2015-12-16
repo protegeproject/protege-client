@@ -10,6 +10,8 @@ import org.protege.owl.server.api.client.Client;
 import org.protege.owl.server.api.client.VersionedOntologyDocument;
 import org.protege.owl.server.api.exception.OWLServerException;
 import org.protege.owl.server.util.ClientUtilities;
+import org.semanticweb.owlapi.model.OWLAnnotationAxiom;
+import org.semanticweb.owlapi.model.OWLAxiom;
 import org.semanticweb.owlapi.model.OWLOntologyChange;
 
 import javax.swing.*;
@@ -18,6 +20,7 @@ import java.awt.*;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.util.List;
+import java.util.Set;
 
 import static com.google.common.base.Preconditions.checkNotNull;
 
@@ -30,7 +33,7 @@ public class ReviewButtonsPanel extends JPanel implements Disposable {
     private LogDiffManager diffManager;
     private ReviewManager reviewManager;
     private OWLEditorKit editorKit;
-    private JButton rejectBtn, clearBtn, acceptBtn, commitBtn;
+    private JButton rejectBtn, clearBtn, acceptBtn, commitBtn, downloadBtn;
 
     /**
      * Constructor
@@ -47,23 +50,27 @@ public class ReviewButtonsPanel extends JPanel implements Disposable {
     }
 
     private void addButtons() {
+        acceptBtn = getButton("Accept", acceptBtnListener);
+        acceptBtn.setToolTipText("Accept selected change(s)");
+
         rejectBtn = getButton("Reject", rejectBtnListener);
         rejectBtn.setToolTipText("Reject selected change(s); rejected changes are undone");
 
         clearBtn = getButton("Clear", clearBtnListener);
         clearBtn.setToolTipText("Reset selected change(s) to review-pending status");
 
-        acceptBtn = getButton("Accept", acceptBtnListener);
-        acceptBtn.setToolTipText("Accept selected change(s)");
-
         commitBtn = getButton("Commit", commitBtnListener);
         commitBtn.setToolTipText("Commit all change reviews");
+
+        downloadBtn = getButton("Download", downloadBtnListener);
+        downloadBtn.setToolTipText("Download the ontology without custom Protégé annotations");
 
         JSeparator separator = new JSeparator(SwingConstants.HORIZONTAL);
         separator.setPreferredSize(new Dimension(20, 0));
 
-        add(rejectBtn); add(clearBtn); add(acceptBtn); add(separator); add(commitBtn);
+        add(rejectBtn); add(clearBtn); add(acceptBtn); add(separator); add(commitBtn); add(downloadBtn);
         diffManager.addListener(changeSelectionListener);
+        enable(true, downloadBtn);
     }
 
     private LogDiffListener changeSelectionListener = new LogDiffListener() {
@@ -118,6 +125,19 @@ public class ReviewButtonsPanel extends JPanel implements Disposable {
         }
     };
 
+    private ActionListener downloadBtnListener = new ActionListener() {
+        @Override
+        public void actionPerformed(ActionEvent e) {
+            List<OWLOntologyChange> changes = diffManager.removeCustomAnnotations();
+            try {
+                editorKit.handleSaveAs();
+            } catch (Exception e1) {
+                e1.printStackTrace();
+            }
+            diffManager.addCustomAnnotations(changes);
+        }
+    };
+
     private ActionListener commitBtnListener = e -> {
         Container owner = SwingUtilities.getAncestorOfClass(Frame.class, editorKit.getOWLWorkspace());
         int answer = JOptionPane.showOptionDialog(owner, "Committing these reviews may involve undoing or redoing previous changes.\n" +
@@ -155,7 +175,7 @@ public class ReviewButtonsPanel extends JPanel implements Disposable {
     private JButton getButton(String text, ActionListener listener) {
         JButton button = new JButton();
         button.setText(text);
-        button.setPreferredSize(new Dimension(90, 32));
+        button.setPreferredSize(new Dimension(95, 32));
         button.setFocusable(false);
         button.addActionListener(listener);
         button.setEnabled(false);
@@ -174,6 +194,7 @@ public class ReviewButtonsPanel extends JPanel implements Disposable {
         clearBtn.removeActionListener(clearBtnListener);
         acceptBtn.removeActionListener(acceptBtnListener);
         commitBtn.removeActionListener(commitBtnListener);
+        downloadBtn.removeActionListener(downloadBtnListener);
         diffManager.removeListener(changeSelectionListener);
     }
 }

@@ -10,7 +10,7 @@
 		<class value="org.protege.editor.owl.ui.OWLWorkspaceViewsTab"/>
 		<index value="X"/>
 		<editorKitId value="OWLEditorKit"/>
-		<defaultViewConfigFileName value="viewconfig-logdiff.xml"/>
+		<defaultViewConfigFileName value="viewconfig.xml"/>
 	</extension>
 
 	<!-- Views -->
@@ -18,7 +18,6 @@
 	<extension id="ChangesView"
 			   point="org.protege.editor.core.application.ViewComponent">
 		<label value="Changes"/>
-		<name value="Changes"/>
 		<class value="org.protege.editor.owl.client.diff.ui.ChangesView"/>
 		<headerColor value="@org.protege.ontologycolor"/>
 		<category value="@org.protege.differencecategory"/>
@@ -27,7 +26,6 @@
 	<extension id="ChangeDetailsView"
 			   point="org.protege.editor.core.application.ViewComponent">
 		<label value="Details"/>
-		<name value="Details"/>
 		<class value="org.protege.editor.owl.client.diff.ui.ChangeDetailsView"/>
 		<headerColor value="@org.protege.ontologycolor"/>
 		<category value="@org.protege.differencecategory"/>
@@ -36,7 +34,6 @@
 	<extension id="ConflictsGridView"
 			   point="org.protege.editor.core.application.ViewComponent">
 		<label value="Conflicts (grid)"/>
-		<name value="Conflicts (grid)"/>
 		<class value="org.protege.editor.owl.client.diff.ui.ConflictsGridView"/>
 		<headerColor value="@org.protege.ontologycolor"/>
 		<category value="@org.protege.differencecategory"/>
@@ -45,7 +42,6 @@
 	<extension id="ConflictsListView"
 			   point="org.protege.editor.core.application.ViewComponent">
 		<label value="Conflicts (list)"/>
-		<name value="Conflicts (list)"/>
 		<class value="org.protege.editor.owl.client.diff.ui.ConflictsListView"/>
 		<headerColor value="@org.protege.ontologycolor"/>
 		<category value="@org.protege.differencecategory"/>
@@ -63,7 +59,6 @@
 	<extension id="CommitView"
 			   point="org.protege.editor.core.application.ViewComponent">
 		<label value="Commits"/>
-		<name value="Commits"/>
 		<class value="org.protege.editor.owl.client.diff.ui.CommitView"/>
 		<headerColor value="@org.protege.ontologycolor"/>
 		<category value="@org.protege.differencecategory"/>

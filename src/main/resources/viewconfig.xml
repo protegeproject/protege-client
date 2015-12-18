@@ -1,0 +1,37 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<layout>
+    <VSNode splits="0.2 0.8">
+        <HSNode splits="0.5 0.5">
+            <CNode>
+                <Component label="Authors">
+                    <Property id="pluginId" value="org.protege.editor.owl.client.diff.ui.AuthorView"/>
+                </Component>
+            </CNode>
+            <CNode>
+                <Component label="Commits">
+                    <Property id="pluginId" value="org.protege.editor.owl.client.diff.ui.CommitView"/>
+                </Component>
+            </CNode>
+        </HSNode>
+        <HSNode splits="0.5 0.2 0.3">
+            <CNode>
+                <Component label="Changes">
+                    <Property id="pluginId" value="org.protege.editor.owl.client.diff.ui.ChangesView"/>
+                </Component>
+            </CNode>
+            <CNode>
+                <Component label="Details">
+                    <Property id="pluginId" value="org.protege.editor.owl.client.diff.ui.ChangeDetailsView"/>
+                </Component>
+            </CNode>
+            <CNode>
+                <Component label="Conflicts (list)">
+                    <Property id="pluginId" value="org.protege.editor.owl.client.diff.ui.ConflictsListView"/>
+                </Component>
+                <Component label="Conflicts (grid)">
+                    <Property id="pluginId" value="org.protege.editor.owl.client.diff.ui.ConflictsGridView"/>
+                </Component>
+            </CNode>
+        </HSNode>
+    </VSNode>
+</layout>

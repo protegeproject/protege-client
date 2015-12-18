@@ -27,7 +27,7 @@ public class GuiUtils {
             ADDITION_COLOR = new Color(219, 253, 217),
             REMOVAL_COLOR = new Color(255, 221, 220),
             ONTOLOGY_IRI_COLOR = new Color(242, 248, 255),
-            DEFAULT_CHANGE_COLOR = new Color(252, 249, 232),
+            DEFAULT_CHANGE_COLOR = new Color(250, 242, 209),
             WHITE_BACKGROUND = Color.WHITE,
             UNSELECTED_FOREGROUND = Color.BLACK,
             BORDER_COLOR = new Color(220, 220, 220);

@@ -38,9 +38,9 @@
     </developers>
 
     <scm>
-        <connection>scm:git:git@github.com:protegeproject/protege-ontology-client.git</connection>
-        <developerConnection>scm:git:git@github.com:protegeproject/protege-ontology-client.git</developerConnection>
-        <url>https://github.com/protegeproject/protege-ontology-client</url>
+        <connection>scm:git:git@github.com:protegeproject/protege-client.git</connection>
+        <developerConnection>scm:git:git@github.com:protegeproject/protege-client.git</developerConnection>
+        <url>https://github.com/protegeproject/protege-client</url>
     </scm>
 
     <properties>

@@ -24,7 +24,7 @@ public class CommitListCellRenderer extends DefaultListCellRenderer {
 
         String dateStr = GuiUtils.getShortenedFormattedDate(c.getDate());
         label.setText("<html><strong>" + dateStr + " · " + c.getAuthor().getUserName() +
-                "</strong><br><p style=\"padding-top:3;color:gray;\"><nobr>" + c.getComment() + "</nobr></p></html>");
+                "</strong><br><p style=\"padding-top:3;" + (!isSelected ? "color:gray;" : "") + "\"><nobr>" + c.getComment() + "</nobr></p></html>");
         return label;
     }
 

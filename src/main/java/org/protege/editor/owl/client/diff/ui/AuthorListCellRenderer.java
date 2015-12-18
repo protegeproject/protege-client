@@ -19,6 +19,7 @@ public class AuthorListCellRenderer extends DefaultListCellRenderer {
         UserId user = (UserId)value;
         if(user.equals(LogDiffManager.ALL_AUTHORS)) {
             label.setIcon(GuiUtils.getIcon(GuiUtils.USERS_ICON_FILENAME, 20, 20));
+            label.setFont(getFont().deriveFont(Font.BOLD));
         }
         else {
             label.setIcon(GuiUtils.getIcon(GuiUtils.USER_ICON_FILENAME, 20, 20));

@@ -1,7 +1,7 @@
 package org.protege.editor.owl.client.diff.ui;
 
 import org.protege.editor.core.Disposable;
-import org.protege.editor.core.ProtegeApplication;
+import org.protege.editor.core.ui.error.ErrorLogPanel;
 import org.protege.editor.owl.OWLEditorKit;
 import org.protege.editor.owl.client.diff.model.*;
 import org.protege.editor.owl.model.OWLModelManager;
@@ -10,17 +10,13 @@ import org.protege.owl.server.api.client.Client;
 import org.protege.owl.server.api.client.VersionedOntologyDocument;
 import org.protege.owl.server.api.exception.OWLServerException;
 import org.protege.owl.server.util.ClientUtilities;
-import org.semanticweb.owlapi.model.OWLAnnotationAxiom;
-import org.semanticweb.owlapi.model.OWLAxiom;
 import org.semanticweb.owlapi.model.OWLOntologyChange;
 
 import javax.swing.*;
-
 import java.awt.*;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.util.List;
-import java.util.Set;
 
 import static com.google.common.base.Preconditions.checkNotNull;
 
@@ -164,7 +160,7 @@ public class ReviewButtonsPanel extends JPanel implements Disposable {
                 try {
                     ClientUtilities.commit(client, metaData, vont);
                 } catch (OWLServerException e1) {
-                    ProtegeApplication.getErrorLog().logError(e1);
+                    ErrorLogPanel.showErrorDialog(e1);
                 }
                 diffManager.setSelectedCommitToLatest();
             }

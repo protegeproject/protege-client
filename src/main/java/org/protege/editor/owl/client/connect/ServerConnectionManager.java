@@ -1,5 +1,17 @@
 package org.protege.editor.owl.client.connect;
 
+import org.protege.editor.core.editorkit.plugin.EditorKitHook;
+import org.protege.editor.core.ui.error.ErrorLogPanel;
+import org.protege.editor.owl.OWLEditorKit;
+import org.protege.editor.owl.model.OWLModelManager;
+import org.protege.editor.owl.model.io.IOListener;
+import org.protege.editor.owl.model.io.IOListenerEvent;
+import org.protege.owl.server.api.client.Client;
+import org.protege.owl.server.api.client.VersionedOntologyDocument;
+import org.protege.owl.server.api.exception.OWLServerException;
+import org.protege.owl.server.util.ClientRegistry;
+import org.semanticweb.owlapi.model.*;
+
 import java.io.IOException;
 import java.util.List;
 import java.util.Map;
@@ -9,25 +21,6 @@ import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.ThreadFactory;
 import java.util.concurrent.TimeUnit;
 import java.util.logging.Logger;
-
-import org.protege.editor.core.ProtegeApplication;
-import org.protege.editor.core.editorkit.plugin.EditorKitHook;
-import org.protege.editor.owl.OWLEditorKit;
-import org.protege.editor.owl.model.OWLModelManager;
-import org.protege.editor.owl.model.io.IOListener;
-import org.protege.editor.owl.model.io.IOListenerEvent;
-import org.protege.owl.server.api.client.Client;
-import org.protege.owl.server.api.client.VersionedOntologyDocument;
-import org.protege.owl.server.api.exception.OWLServerException;
-import org.protege.owl.server.util.ClientRegistry;
-import org.semanticweb.owlapi.model.IRI;
-import org.semanticweb.owlapi.model.OWLException;
-import org.semanticweb.owlapi.model.OWLOntology;
-import org.semanticweb.owlapi.model.OWLOntologyChange;
-import org.semanticweb.owlapi.model.OWLOntologyChangeListener;
-import org.semanticweb.owlapi.model.OWLOntologyID;
-import org.semanticweb.owlapi.model.OWLOntologyManager;
-import org.semanticweb.owlapi.model.SetOntologyID;
 
 public class ServerConnectionManager extends EditorKitHook {
 	public static String ID = "org.protege.editor.owl.client.ServerConnectionManager";
@@ -70,7 +63,7 @@ public class ServerConnectionManager extends EditorKitHook {
 					vont.saveMetaData();
 				}
 				catch (IOException ioe) {
-					ProtegeApplication.getErrorLog().logError(ioe);
+					ErrorLogPanel.showErrorDialog(ioe);
 				}
 			}
 		}
@@ -86,7 +79,7 @@ public class ServerConnectionManager extends EditorKitHook {
 		        }
 		    }
 		    catch (IOException ioe) {
-		        ProtegeApplication.getErrorLog().logError(ioe);
+				ErrorLogPanel.showErrorDialog(ioe);
 		    }
 		}
 	};
@@ -185,16 +178,10 @@ public class ServerConnectionManager extends EditorKitHook {
 	                logger.info("Save of history file for " + vont.getOntology().getOntologyID() + " took " + (interval / 1000) + " seconds.");
 	            }
 	        }
-	        catch (Error e) {
-	            ProtegeApplication.getErrorLog().logError(e);
+	        catch (Error | RuntimeException | IOException e) {
+				ErrorLogPanel.showErrorDialog(e);
 	        }
-	        catch (RuntimeException e) {
-	            ProtegeApplication.getErrorLog().logError(e);
-	        }
-	        catch (IOException ioe) {
-	            ProtegeApplication.getErrorLog().logError(ioe);
-	        }
-	    }
+		}
 	}
 
 }

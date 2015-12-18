@@ -216,19 +216,19 @@ public class LogDiff {
         else if(ontChange.isImportChange()) {
             ImportChange importChange = (ImportChange) ontChange;
             OWLImportsDeclaration importDecl = importChange.getImportDeclaration();
-            change = new ChangeImpl(changeAxiomSet, revisionTag, commitMetadata, getChangeMode(ontChange), ontChange.getOntology().getOntologyID().getOntologyIRI(),
+            change = new ChangeImpl(changeAxiomSet, revisionTag, commitMetadata, getChangeMode(ontChange), ontChange.getOntology().getOntologyID().getOntologyIRI().get(),
                     BuiltInChangeType.IMPORT, Optional.empty(), Optional.of(getQuotedIri(importDecl.getIRI())));
         }
         else if(ontChange instanceof AnnotationChange) { // possible OWLOntologyChange type not covered by OWLOntologyChange.isXXX() methods
             AnnotationChange annotationChange = (AnnotationChange) ontChange;
             OWLAnnotation annotation = annotationChange.getAnnotation();
-            change = new ChangeImpl(changeAxiomSet, revisionTag, commitMetadata, getChangeMode(ontChange), ontChange.getOntology().getOntologyID().getOntologyIRI(),
+            change = new ChangeImpl(changeAxiomSet, revisionTag, commitMetadata, getChangeMode(ontChange), ontChange.getOntology().getOntologyID().getOntologyIRI().get(),
                     BuiltInChangeType.ONTOLOGY_ANNOTATION, Optional.of(annotation.getProperty()), Optional.of(annotation.getValue().toString()));
         }
         else if(ontChange instanceof SetOntologyID) { // another possible OWLOntologyChange not covered by OWLOntologyChange.isXXX() methods
             SetOntologyID setOntologyID = (SetOntologyID) ontChange;
-            IRI newIri = setOntologyID.getNewOntologyID().getOntologyIRI();
-            change = new ChangeImpl(changeAxiomSet, revisionTag, commitMetadata, ChangeMode.ONTOLOGY_IRI, setOntologyID.getNewOntologyID().getOntologyIRI(),
+            IRI newIri = setOntologyID.getNewOntologyID().getOntologyIRI().get();
+            change = new ChangeImpl(changeAxiomSet, revisionTag, commitMetadata, ChangeMode.ONTOLOGY_IRI, setOntologyID.getNewOntologyID().getOntologyIRI().get(),
                     BuiltInChangeType.ONTOLOGY_IRI, Optional.empty(), Optional.of(getQuotedIri(newIri)));
         }
         else {

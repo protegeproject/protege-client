@@ -1,15 +1,6 @@
 package org.protege.editor.owl.client.action;
 
-import java.awt.BorderLayout;
-import java.awt.Dimension;
-import java.awt.GridLayout;
-import java.awt.event.ActionEvent;
-
-import javax.swing.JDialog;
-import javax.swing.JLabel;
-import javax.swing.JPanel;
-
-import org.protege.editor.core.ProtegeApplication;
+import org.protege.editor.core.ui.error.ErrorLogPanel;
 import org.protege.editor.owl.client.connect.ServerConnectionManager;
 import org.protege.editor.owl.model.event.OWLModelManagerChangeEvent;
 import org.protege.editor.owl.model.event.OWLModelManagerListener;
@@ -21,6 +12,10 @@ import org.protege.owl.server.api.client.VersionedOntologyDocument;
 import org.protege.owl.server.api.exception.UserDeclinedAuthenticationException;
 import org.protege.owl.server.util.ClientUtilities;
 import org.semanticweb.owlapi.model.OWLOntology;
+
+import javax.swing.*;
+import java.awt.*;
+import java.awt.event.ActionEvent;
 
 public class ShowStatusAction extends ProtegeOWLAction {
     private static final long serialVersionUID = 4601012273632698091L;
@@ -88,7 +83,7 @@ public class ShowStatusAction extends ProtegeOWLAction {
             ; // ignore this because the user knows that he didn't want to authenticate
         }
         catch (Exception e) {
-            ProtegeApplication.getErrorLog().logError(e);
+            ErrorLogPanel.showErrorDialog(e);
 			UIHelper ui = new UIHelper(getOWLEditorKit());
 			ui.showDialog("Error connecting to server", new JLabel("Commit failed - " + e.getMessage()));
         }

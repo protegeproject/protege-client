@@ -1,12 +1,24 @@
 package org.protege.editor.owl.client.panel;
 
-import java.awt.BorderLayout;
-import java.awt.Color;
-import java.awt.Dimension;
-import java.awt.FlowLayout;
-import java.awt.GridBagConstraints;
-import java.awt.GridBagLayout;
-import java.awt.Insets;
+import org.protege.editor.core.ui.error.ErrorLogPanel;
+import org.protege.editor.core.ui.util.UIUtil;
+import org.protege.editor.owl.OWLEditorKit;
+import org.protege.editor.owl.client.ClientPreferences;
+import org.protege.editor.owl.client.connect.ServerConnectionManager;
+import org.protege.editor.owl.ui.UIHelper;
+import org.protege.owl.server.api.ChangeMetaData;
+import org.protege.owl.server.api.client.*;
+import org.protege.owl.server.api.exception.OWLServerException;
+import org.protege.owl.server.connect.rmi.RMIClient;
+import org.protege.owl.server.util.ClientUtilities;
+import org.semanticweb.owlapi.apibinding.OWLManager;
+import org.semanticweb.owlapi.model.IRI;
+import org.semanticweb.owlapi.model.OWLOntology;
+import org.semanticweb.owlapi.model.OWLOntologyManager;
+
+import javax.swing.*;
+import javax.swing.border.CompoundBorder;
+import java.awt.*;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.awt.event.MouseAdapter;
@@ -15,41 +27,6 @@ import java.io.File;
 import java.net.URLEncoder;
 import java.util.ArrayList;
 import java.util.Collections;
-
-import javax.swing.BorderFactory;
-import javax.swing.DefaultComboBoxModel;
-import javax.swing.JButton;
-import javax.swing.JComboBox;
-import javax.swing.JDialog;
-import javax.swing.JLabel;
-import javax.swing.JOptionPane;
-import javax.swing.JPanel;
-import javax.swing.JPasswordField;
-import javax.swing.JRootPane;
-import javax.swing.JScrollPane;
-import javax.swing.JTable;
-import javax.swing.JTextField;
-import javax.swing.border.CompoundBorder;
-
-import org.protege.editor.core.ProtegeApplication;
-import org.protege.editor.core.ui.util.UIUtil;
-import org.protege.editor.owl.OWLEditorKit;
-import org.protege.editor.owl.client.ClientPreferences;
-import org.protege.editor.owl.client.connect.ServerConnectionManager;
-import org.protege.editor.owl.ui.UIHelper;
-import org.protege.owl.server.api.ChangeMetaData;
-import org.protege.owl.server.api.client.Client;
-import org.protege.owl.server.api.client.RemoteOntologyDocument;
-import org.protege.owl.server.api.client.RemoteServerDirectory;
-import org.protege.owl.server.api.client.RemoteServerDocument;
-import org.protege.owl.server.api.client.VersionedOntologyDocument;
-import org.protege.owl.server.api.exception.OWLServerException;
-import org.protege.owl.server.connect.rmi.RMIClient;
-import org.protege.owl.server.util.ClientUtilities;
-import org.semanticweb.owlapi.apibinding.OWLManager;
-import org.semanticweb.owlapi.model.IRI;
-import org.semanticweb.owlapi.model.OWLOntology;
-import org.semanticweb.owlapi.model.OWLOntologyManager;
 
 public class OpenFromServerDialog extends JDialog {
 
@@ -303,7 +280,7 @@ public class OpenFromServerDialog extends JDialog {
 	                
 				}
 			} catch (OWLServerException ose) {
-				ProtegeApplication.getErrorLog().logError(ose);
+				ErrorLogPanel.showErrorDialog(ose);
 				UIHelper ui = new UIHelper(editorKit);
 				ui.showDialog("Error connecting to server", new JLabel("Connection failed - " + ose.getMessage()));
 			}
@@ -335,7 +312,7 @@ public class OpenFromServerDialog extends JDialog {
 				JOptionPane.showMessageDialog(mainPanel, "Select a document from the 'Ontology Documents' list to open.", "Error", JOptionPane.ERROR_MESSAGE);
 			}
 		} catch (Exception ex) {
-			ProtegeApplication.getErrorLog().logError(ex);
+			ErrorLogPanel.showErrorDialog(ex);
 		}
 	}
 	
@@ -366,7 +343,7 @@ public class OpenFromServerDialog extends JDialog {
 					}
 				}
 				catch (Exception ex) {
-					ProtegeApplication.getErrorLog().logError(ex);
+					ErrorLogPanel.showErrorDialog(ex);
 				}
 			}
 		}

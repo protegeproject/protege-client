@@ -1,16 +1,6 @@
 package org.protege.editor.owl.client.action;
 
-import java.awt.Frame;
-import java.awt.event.ActionEvent;
-import java.util.List;
-
-import javax.swing.JDialog;
-import javax.swing.JOptionPane;
-import javax.swing.JScrollPane;
-import javax.swing.JTable;
-import javax.swing.SwingUtilities;
-
-import org.protege.editor.core.ProtegeApplication;
+import org.protege.editor.core.ui.error.ErrorLogPanel;
 import org.protege.editor.owl.client.connect.ServerConnectionManager;
 import org.protege.editor.owl.client.panel.ChangeListTableModel;
 import org.protege.editor.owl.ui.action.ProtegeOWLAction;
@@ -23,6 +13,11 @@ import org.semanticweb.owlapi.model.OWLObject;
 import org.semanticweb.owlapi.model.OWLOntology;
 import org.semanticweb.owlapi.model.OWLOntologyChange;
 import org.semanticweb.owlapi.model.OWLOntologyID;
+
+import javax.swing.*;
+import java.awt.*;
+import java.awt.event.ActionEvent;
+import java.util.List;
 
 public class ShowUncommittedChangesAction extends ProtegeOWLAction {
     private static final long serialVersionUID = -7628375950917155764L;
@@ -62,7 +57,7 @@ public class ShowUncommittedChangesAction extends ProtegeOWLAction {
             ; // ignore this because the user knows that he didn't authenticate.
         }
         catch (Exception e) {
-            ProtegeApplication.getErrorLog().logError(e);
+            ErrorLogPanel.showErrorDialog(e);
         }
     }
     
@@ -70,7 +65,7 @@ public class ShowUncommittedChangesAction extends ProtegeOWLAction {
 		String shortOntologyName = "";
 		OWLOntologyID ontologyId = ontology.getOntologyID();
 		if (!ontologyId.isAnonymous()) {
-		    shortOntologyName = ontology.getOntologyID().getOntologyIRI().getFragment();
+		    shortOntologyName = ontology.getOntologyID().getOntologyIRI().get().getRemainder().get();
 		}
 		if (shortOntologyName.isEmpty()) {
 		    shortOntologyName = ontologyId.toString();

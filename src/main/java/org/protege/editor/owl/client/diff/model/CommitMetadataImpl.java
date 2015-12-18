@@ -1,5 +1,6 @@
 package org.protege.editor.owl.client.diff.model;
 
+import com.google.common.base.MoreObjects;
 import com.google.common.base.Objects;
 import org.protege.owl.server.api.UserId;
 
@@ -70,7 +71,7 @@ public final class CommitMetadataImpl implements CommitMetadata {
 
     @Override
     public String toString() {
-        return Objects.toStringHelper(this)
+        return MoreObjects.toStringHelper(this)
                 .add("userId", userId)
                 .add("date", date)
                 .add("comment", comment)

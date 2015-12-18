@@ -59,7 +59,7 @@ public class ChangeHistoryPanel extends JDialog {
 		String shortOntologyName = "";
 		OWLOntologyID ontologyId = ontology.getOntologyID();
 		if (!ontologyId.isAnonymous()) {
-		    shortOntologyName = ontology.getOntologyID().getOntologyIRI().getFragment();
+		    shortOntologyName = ontology.getOntologyID().getOntologyIRI().get().getRemainder().get();
 		}
 		if (shortOntologyName.isEmpty()) {
 		    shortOntologyName = ontologyId.toString();

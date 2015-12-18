@@ -132,7 +132,7 @@ public class ChangeListTableModel extends AbstractTableModel {
         @Override
         public void visit(SetOntologyID change) {
             changeType = "Set Ontology Id";
-            entityChanged = change.getNewOntologyID().getDefaultDocumentIRI();
+            entityChanged = change.getNewOntologyID().getDefaultDocumentIRI().get();
         }
         @Override
         public void visit(AddImport change) {

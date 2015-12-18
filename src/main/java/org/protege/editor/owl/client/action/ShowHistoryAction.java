@@ -1,10 +1,6 @@
 package org.protege.editor.owl.client.action;
 
-import java.awt.event.ActionEvent;
-
-import javax.swing.JOptionPane;
-
-import org.protege.editor.core.ProtegeApplication;
+import org.protege.editor.core.ui.error.ErrorLogPanel;
 import org.protege.editor.owl.client.connect.ServerConnectionManager;
 import org.protege.editor.owl.client.panel.ChangeHistoryPanel;
 import org.protege.editor.owl.ui.action.ProtegeOWLAction;
@@ -16,6 +12,9 @@ import org.protege.owl.server.api.client.VersionedOntologyDocument;
 import org.protege.owl.server.api.exception.UserDeclinedAuthenticationException;
 import org.protege.owl.server.util.ClientUtilities;
 import org.semanticweb.owlapi.model.OWLOntology;
+
+import javax.swing.*;
+import java.awt.event.ActionEvent;
 
 public class ShowHistoryAction extends ProtegeOWLAction {
     private static final long serialVersionUID = -7628375950917155764L;
@@ -51,7 +50,7 @@ public class ShowHistoryAction extends ProtegeOWLAction {
             ; // ignore this because the user knows that he didn't authenticate
         }
         catch (Exception e) {
-            ProtegeApplication.getErrorLog().logError(e);
+            ErrorLogPanel.showErrorDialog(e);
         }
     }
 

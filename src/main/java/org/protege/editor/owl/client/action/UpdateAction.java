@@ -1,14 +1,6 @@
 package org.protege.editor.owl.client.action;
 
-import java.awt.Container;
-import java.awt.Frame;
-import java.awt.event.ActionEvent;
-import java.util.concurrent.Future;
-
-import javax.swing.JOptionPane;
-import javax.swing.SwingUtilities;
-
-import org.protege.editor.core.ProtegeApplication;
+import org.protege.editor.core.ui.error.ErrorLogPanel;
 import org.protege.editor.owl.client.connect.ServerConnectionManager;
 import org.protege.editor.owl.ui.action.ProtegeOWLAction;
 import org.protege.owl.server.api.client.Client;
@@ -16,6 +8,11 @@ import org.protege.owl.server.api.client.VersionedOntologyDocument;
 import org.protege.owl.server.api.exception.OWLServerException;
 import org.protege.owl.server.util.ClientUtilities;
 import org.semanticweb.owlapi.model.OWLOntology;
+
+import javax.swing.*;
+import java.awt.*;
+import java.awt.event.ActionEvent;
+import java.util.concurrent.Future;
 
 public class UpdateAction extends ProtegeOWLAction {
 
@@ -61,7 +58,7 @@ public class UpdateAction extends ProtegeOWLAction {
 	            ClientUtilities.update(client, vont);
 	        }
 	        catch (OWLServerException ioe) {
-	            ProtegeApplication.getErrorLog().logError(ioe);
+				ErrorLogPanel.showErrorDialog(ioe);
 	        }	        
 	    }
 	}

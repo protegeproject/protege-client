@@ -46,7 +46,7 @@
     <properties>
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
         <protege.version>5.0.0-beta-20</protege.version>
-        <protege-server.version>2.0.6-SNAPSHOT</protege-server.version>
+        <protege-server.version>3.0.0-SNAPSHOT</protege-server.version>
     </properties>
 
     <dependencies>
@@ -64,7 +64,7 @@
 
         <dependency>
             <groupId>edu.stanford.protege</groupId>
-            <artifactId>org.protege.owl.server</artifactId>
+            <artifactId>protege-server</artifactId>
             <version>${protege-server.version}</version>
         </dependency>
     </dependencies>

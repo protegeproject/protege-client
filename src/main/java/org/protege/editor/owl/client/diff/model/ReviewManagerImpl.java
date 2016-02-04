@@ -1,5 +1,6 @@
 package org.protege.editor.owl.client.diff.model;
 
+import com.google.common.base.MoreObjects;
 import com.google.common.base.Objects;
 import org.semanticweb.owlapi.model.*;
 
@@ -96,7 +97,7 @@ public class ReviewManagerImpl implements ReviewManager {
             }
         }
         else if(change instanceof SetOntologyID) {
-            return new SetOntologyID(change.getOntology(), ((SetOntologyID)change).getOriginalOntologyID().getOntologyIRI());
+            return new SetOntologyID(change.getOntology(), ((SetOntologyID)change).getOriginalOntologyID().getOntologyIRI().get());
         }
         return null;
     }
@@ -125,7 +126,7 @@ public class ReviewManagerImpl implements ReviewManager {
 
     @Override
     public String toString() {
-        return Objects.toStringHelper(this)
+        return MoreObjects.toStringHelper(this)
                 .add("newReviewMap", newReviewMap)
                 .add("initialReviewMap", initialReviewMap)
                 .toString();

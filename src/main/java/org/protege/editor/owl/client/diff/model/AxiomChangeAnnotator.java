@@ -1,5 +1,6 @@
 package org.protege.editor.owl.client.diff.model;
 
+import com.google.common.base.MoreObjects;
 import com.google.common.base.Objects;
 import org.apache.log4j.Logger;
 import org.semanticweb.owlapi.apibinding.OWLManager;
@@ -87,7 +88,7 @@ public final class AxiomChangeAnnotator implements OwlOntologyChangeAnnotator {
 
     @Override
     public String toString() {
-        return Objects.toStringHelper(this)
+        return MoreObjects.toStringHelper(this)
                 .add("df", df)
                 .toString();
     }

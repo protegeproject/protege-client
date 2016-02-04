@@ -1,14 +1,6 @@
 package org.protege.editor.owl.client.action;
 
-import java.awt.event.ActionEvent;
-import java.util.concurrent.ScheduledExecutorService;
-import java.util.concurrent.ScheduledFuture;
-import java.util.concurrent.TimeUnit;
-
-import javax.swing.JCheckBoxMenuItem;
-import javax.swing.JMenuItem;
-
-import org.protege.editor.core.ProtegeApplication;
+import org.protege.editor.core.ui.error.ErrorLogPanel;
 import org.protege.editor.owl.client.connect.ServerConnectionManager;
 import org.protege.editor.owl.ui.action.ProtegeOWLAction;
 import org.protege.owl.server.api.client.Client;
@@ -16,6 +8,12 @@ import org.protege.owl.server.api.client.VersionedOntologyDocument;
 import org.protege.owl.server.api.exception.UserDeclinedAuthenticationException;
 import org.protege.owl.server.util.ClientUtilities;
 import org.semanticweb.owlapi.model.OWLOntology;
+
+import javax.swing.*;
+import java.awt.event.ActionEvent;
+import java.util.concurrent.ScheduledExecutorService;
+import java.util.concurrent.ScheduledFuture;
+import java.util.concurrent.TimeUnit;
 
 public class EnableAutoUpdateAction extends ProtegeOWLAction {
 	private static final long serialVersionUID = 1098490684799516207L;
@@ -73,8 +71,8 @@ public class EnableAutoUpdateAction extends ProtegeOWLAction {
                 checkBoxMenuItem.setSelected(false);
             }
             catch (Throwable t) {
-                if (!lastRunSuccessful) { 
-                    ProtegeApplication.getErrorLog().logError(t);
+                if (!lastRunSuccessful) {
+					ErrorLogPanel.showErrorDialog(t);
                 }
                 lastRunSuccessful = false;
             }

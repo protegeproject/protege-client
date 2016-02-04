@@ -64,6 +64,6 @@ public class ChangeListCellRenderer extends JTextArea implements ListCellRendere
         OWLAnnotation ann = change.getAnnotation();
         OWLOntology ont = change.getOntology();
         OWLDataFactory df = ont.getOWLOntologyManager().getOWLDataFactory();
-        return df.getOWLAnnotationAssertionAxiom(ont.getOntologyID().getOntologyIRI(), ann);
+        return df.getOWLAnnotationAssertionAxiom(ont.getOntologyID().getOntologyIRI().get(), ann);
     }
 }

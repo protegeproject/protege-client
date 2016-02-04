@@ -51,7 +51,7 @@ public class ChangeDetailsTableCellRenderer extends LogDiffCellRenderer {
             return c;
         }
         else if(value instanceof SetOntologyID) {
-            IRI newIri = ((SetOntologyID)value).getNewOntologyID().getOntologyIRI();
+            IRI newIri = ((SetOntologyID)value).getNewOntologyID().getOntologyIRI().get();
             setText("New IRI: " + newIri);
             setToolTipText(modelManager.getRendering(newIri));
         }
@@ -64,7 +64,7 @@ public class ChangeDetailsTableCellRenderer extends LogDiffCellRenderer {
         OWLAnnotation ann = change.getAnnotation();
         OWLOntology ont = change.getOntology();
         OWLDataFactory df = ont.getOWLOntologyManager().getOWLDataFactory();
-        return df.getOWLAnnotationAssertionAxiom(ont.getOntologyID().getOntologyIRI(), ann);
+        return df.getOWLAnnotationAssertionAxiom(ont.getOntologyID().getOntologyIRI().get(), ann);
     }
 
     private void setBackground(JTable table, ChangeMode mode, Component c, boolean isSelected) {

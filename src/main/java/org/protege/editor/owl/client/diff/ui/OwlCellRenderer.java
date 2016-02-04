@@ -31,7 +31,7 @@ public class OwlCellRenderer extends OWLCellRenderer {
     protected Icon getIcon(Object object) {
         if(object instanceof IRI) {
             setHighlightKeywords(false);
-            IRI ontIri = editorKit.getOWLModelManager().getActiveOntology().getOntologyID().getOntologyIRI();
+            IRI ontIri = editorKit.getOWLModelManager().getActiveOntology().getOntologyID().getOntologyIRI().get();
             if(!object.equals(ontIri)) { // IRI of OWLAnnotationSubject
                 return new OWLAnnotationPropertyIcon();
             }

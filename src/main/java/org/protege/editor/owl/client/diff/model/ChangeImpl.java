@@ -1,5 +1,6 @@
 package org.protege.editor.owl.client.diff.model;
 
+import com.google.common.base.MoreObjects;
 import com.google.common.base.Objects;
 import com.google.common.collect.ComparisonChain;
 import org.semanticweb.owlapi.model.OWLObject;
@@ -182,7 +183,7 @@ public class ChangeImpl implements Change {
 
     @Override
     public String toString() {
-        return Objects.toStringHelper(this)
+        return MoreObjects.toStringHelper(this)
                 .add("subject", subject)
                 .add("property", property)
                 .add("newValue", newValue)

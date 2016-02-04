@@ -1,7 +1,7 @@
 package org.protege.editor.owl.client.diff.model;
 
 import org.protege.editor.core.Disposable;
-import org.protege.editor.core.ProtegeApplication;
+import org.protege.editor.core.ui.error.ErrorLogPanel;
 import org.protege.editor.owl.OWLEditorKit;
 import org.protege.editor.owl.client.connect.ServerConnectionManager;
 import org.protege.editor.owl.model.OWLModelManager;
@@ -13,8 +13,10 @@ import org.protege.owl.server.api.client.Client;
 import org.protege.owl.server.api.client.VersionedOntologyDocument;
 import org.protege.owl.server.api.exception.OWLServerException;
 import org.semanticweb.owlapi.model.*;
+import org.semanticweb.owlapi.model.parameters.ChangeApplied;
 
 import java.util.*;
+import java.util.stream.Collectors;
 
 import static com.google.common.base.Preconditions.checkNotNull;
 
@@ -159,7 +161,7 @@ public class LogDiffManager implements Disposable {
             try {
                 listener.statusChanged(event);
             } catch(Exception e) {
-                ProtegeApplication.getErrorLog().logError(e);
+                ErrorLogPanel.showErrorDialog(e);
             }
         }
     }
@@ -195,8 +197,8 @@ public class LogDiffManager implements Disposable {
             }
         }
         toRemove.addAll(ont.getDeclarationAxioms(property));
-        List<OWLOntologyChange> changes = ont.getOWLOntologyManager().removeAxioms(ont, toRemove);
-        changes.addAll(ont.getOWLOntologyManager().addAxioms(ont, toAdd));
+        List<OWLOntologyChange> changes = toRemove.stream().map(ax -> new RemoveAxiom(ont, ax)).collect(Collectors.toList());
+        changes.addAll(toAdd.stream().map(ax -> new AddAxiom(ont, ax)).collect(Collectors.toList()));
         commitChanges(changes);
         return changes;
     }

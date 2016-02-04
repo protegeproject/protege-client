@@ -1,5 +1,6 @@
 package org.protege.editor.owl.client.diff.model;
 
+import com.google.common.base.MoreObjects;
 import com.google.common.base.Objects;
 import org.semanticweb.owlapi.model.OWLEntity;
 import org.semanticweb.owlapi.model.OWLObject;
@@ -72,7 +73,7 @@ public final class ChangeDetails {
 
     @Override
     public String toString() {
-        return Objects.toStringHelper(this)
+        return MoreObjects.toStringHelper(this)
                 .add("revisionTag", revisionTag)
                 .add("changeSubject", changeSubject)
                 .add("property", property)

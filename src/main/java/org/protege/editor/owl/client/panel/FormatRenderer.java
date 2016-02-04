@@ -1,11 +1,10 @@
 package org.protege.editor.owl.client.panel;
 
-import java.text.DateFormat;
-import java.text.Format;
+import org.protege.editor.core.ui.error.ErrorLogPanel;
 
 import javax.swing.table.DefaultTableCellRenderer;
-
-import org.protege.editor.core.ProtegeApplication;
+import java.text.DateFormat;
+import java.text.Format;
 
 /*
  * Code from: http://tips4java.wordpress.com/2008/10/11/table-format-renderers/
@@ -30,7 +29,7 @@ public class FormatRenderer extends DefaultTableCellRenderer {
 			}
 		}
 		catch(IllegalArgumentException e) {
-			ProtegeApplication.getErrorLog().logError(e);
+			ErrorLogPanel.showErrorDialog(e);
 		}
 
 		super.setValue(value);

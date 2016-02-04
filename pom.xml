@@ -15,7 +15,7 @@
     <version>3.0.0-SNAPSHOT</version>
     <packaging>bundle</packaging>
 
-    <name>Protege Desktop Client</name>
+    <name>Protege Client</name>
     <description>Provides client functionality for Protege 5 to connect to a Protege Server, allowing end users to collaboratively edit collections of OWL ontologies.</description>
 
     <organization>
@@ -45,7 +45,7 @@
 
     <properties>
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
-        <protege.version>5.0.0-beta-20</protege.version>
+        <protege.version>5.0.0-beta-21</protege.version>
         <protege-server.version>3.0.0-SNAPSHOT</protege-server.version>
     </properties>
 

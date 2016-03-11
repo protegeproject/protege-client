@@ -1,15 +1,12 @@
 package org.protege.editor.owl.client.diff.model;
 
-import com.google.common.base.MoreObjects;
-import com.google.common.base.Objects;
 import org.apache.log4j.Logger;
 import org.protege.owl.server.api.UserId;
 import org.semanticweb.owlapi.model.OWLAxiom;
-import org.semanticweb.owlapi.model.OWLObject;
 import org.semanticweb.owlapi.model.OWLOntologyChange;
 
+import java.util.Collection;
 import java.util.HashSet;
-import java.util.List;
 import java.util.Set;
 
 import static com.google.common.base.Preconditions.checkNotNull;
@@ -20,42 +17,39 @@ import static com.google.common.base.Preconditions.checkNotNull;
  */
 public final class SimpleConflictDetector implements ConflictDetector {
     private static final Logger log = Logger.getLogger(SimpleConflictDetector.class);
-    private final Strategy DEFAULT_STRATEGY = Strategy.SAME_TYPE_AND_ANNOTATION_PROPERTY;
-    private final List<Change> changes;
+    private static final Strategy DEFAULT_STRATEGY = Strategy.SAME_TYPE_AND_ANNOTATION_PROPERTY;
 
     /**
-     * Constructor
-     *
-     * @param changes Change set
+     * No-args constructor
      */
-    public SimpleConflictDetector(List<Change> changes) {
-        this.changes = checkNotNull(changes);
-    }
+    public SimpleConflictDetector() { }
 
     @Override
-    public Set<Change> getConflictingChanges(Change seed) {
-        return getConflictingChanges(seed, DEFAULT_STRATEGY);
+    public Set<ChangeId> getConflictingChanges(Change seed, Collection<Change> searchSpace) {
+        return getConflictingChanges(seed, DEFAULT_STRATEGY, searchSpace);
     }
 
-    private Set<Change> getConflictingChanges(Change seed, Strategy strategy) {
+    private Set<ChangeId> getConflictingChanges(Change seed, Strategy strategy, Collection<Change> searchSpace) {
+        checkNotNull(seed);
+        checkNotNull(strategy);
+        checkNotNull(searchSpace);
         UserId userId = seed.getCommitMetadata().getAuthor();
-        OWLObject changeSubject = seed.getSubject();
-        Set<Change> conflictingChanges = new HashSet<>();
-        for(Change change : changes) {
-            if(changeSubject.equals(change.getSubject()) && !(change.getCommitMetadata().getAuthor().equals(userId))) {
-                if(strategy.equals(Strategy.LOOSE) || (strategy.equals(Strategy.SAME_TYPE) && isSameType(seed, change))) {
-                    conflictingChanges.add(change);
-                }
-                else if (strategy.equals(Strategy.SAME_TYPE_AND_ANNOTATION_PROPERTY) && isSameType(seed, change)) {
-                    if (seed.getType().equals(BuiltInChangeType.ANNOTATION) || seed.getType().equals(BuiltInChangeType.ONTOLOGY_ANNOTATION)) {
-                        if (seed.getProperty().isPresent() && change.getProperty().isPresent()) {
-                            if (seed.getProperty().get().equals(change.getProperty().get())) {
-                                conflictingChanges.add(change);
+        Set<ChangeId> conflictingChanges = new HashSet<>();
+        // The search space is restricted to changes with the same change subject
+        for (Change change : searchSpace) {
+            if (!(change.getCommitMetadata().getAuthor().equals(userId))) {
+                if (strategy.equals(Strategy.LOOSE) || (strategy.equals(Strategy.SAME_TYPE) && isSameType(seed, change))) {
+                    conflictingChanges.add(change.getId());
+                } else if (strategy.equals(Strategy.SAME_TYPE_AND_ANNOTATION_PROPERTY) && isSameType(seed, change)) {
+                    if (seed.getDetails().getType().equals(BuiltInChangeType.ANNOTATION) ||
+                            seed.getDetails().getType().equals(BuiltInChangeType.ONTOLOGY_ANNOTATION)) {
+                        if (seed.getDetails().getProperty().isPresent() && change.getDetails().getProperty().isPresent()) {
+                            if (seed.getDetails().getProperty().get().equals(change.getDetails().getProperty().get())) {
+                                conflictingChanges.add(change.getId());
                             }
                         }
-                    }
-                    else {
-                        conflictingChanges.add(change);
+                    } else {
+                        conflictingChanges.add(change.getId());
                     }
                 }
             }
@@ -64,7 +58,7 @@ public final class SimpleConflictDetector implements ConflictDetector {
     }
 
     private boolean isSameType(Change c1, Change c2) {
-        return c1.getType().equals(c2.getType()) && axiomTypesMatch(c1, c2);
+        return c1.getDetails().getType().equals(c2.getDetails().getType()) && axiomTypesMatch(c1, c2);
     }
 
     private boolean axiomTypesMatch(Change c1, Change c2) {
@@ -80,26 +74,6 @@ public final class SimpleConflictDetector implements ConflictDetector {
             log.error("Cannot find conflicts for composite changes (i.e., changes that involve multiple OWL ontology changes)");
         }
         return true;
-    }
-
-    @Override
-    public boolean equals(Object o) {
-        if (this == o) return true;
-        if (o == null || getClass() != o.getClass()) return false;
-        SimpleConflictDetector that = (SimpleConflictDetector) o;
-        return Objects.equal(changes, that.changes);
-    }
-
-    @Override
-    public int hashCode() {
-        return Objects.hashCode(changes);
-    }
-
-    @Override
-    public String toString() {
-        return MoreObjects.toStringHelper(this)
-                .add("changes", changes)
-                .toString();
     }
 
     public enum Strategy {

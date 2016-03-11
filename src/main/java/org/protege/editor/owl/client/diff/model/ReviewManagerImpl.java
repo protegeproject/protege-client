@@ -14,36 +14,41 @@ import static com.google.common.base.Preconditions.checkNotNull;
  * Stanford Center for Biomedical Informatics Research
  */
 public class ReviewManagerImpl implements ReviewManager {
-    private Map<Change,ReviewStatus> newReviewMap = new HashMap<>();
-    private Map<Change,ReviewStatus> initialReviewMap = new HashMap<>();
+    private Map<ChangeId,ReviewStatus> newReviews = new HashMap<>();
+    private Map<ChangeId,ReviewStatus> reviews = new HashMap<>();
+    private LogDiff diff;
 
     /**
-     * No-args constructor
+     * Constructor
+     *
+     * @param diff  Log diff engine
      */
-    public ReviewManagerImpl() { }
+    public ReviewManagerImpl(LogDiff diff) {
+        this.diff = checkNotNull(diff);
+    }
 
     @Override
     public void setReviewStatus(Change c, ReviewStatus status) {
         checkNotNull(c); checkNotNull(status);
 
         // gather initial status of the newly reviewed change
-        if(!newReviewMap.containsKey(c)) {
-            initialReviewMap.put(c, c.getReviewStatus());
+        if(!newReviews.containsKey(c.getId())) {
+            reviews.put(c.getId(), c.getReviewStatus());
         }
 
         // if new review does not differ from initial state, no real review change occurred
-        if(initialReviewMap.get(c).equals(status)) {
-            newReviewMap.remove(c);
+        if(reviews.get(c.getId()).equals(status)) {
+            newReviews.remove(c.getId());
         } else {
-            newReviewMap.put(c, status);
+            newReviews.put(c.getId(), status);
         }
         c.setReviewStatus(status);
     }
 
     @Override
     public boolean reviewChanged(Change c) {
-        if(initialReviewMap.get(c) != null && newReviewMap.get(c) != null) {
-            if (!initialReviewMap.get(c).equals(newReviewMap.get(c))) {
+        if(reviews.get(c.getId()) != null && newReviews.get(c.getId()) != null) {
+            if (!reviews.get(c.getId()).equals(newReviews.get(c.getId()))) {
                 return true;
             }
         }
@@ -52,14 +57,15 @@ public class ReviewManagerImpl implements ReviewManager {
 
     @Override
     public boolean hasUncommittedReviews() {
-        return !newReviewMap.isEmpty();
+        return !newReviews.isEmpty();
     }
 
     @Override
     public List<OWLOntologyChange> getReviewOntologyChanges() {
         List<OWLOntologyChange> changes = new ArrayList<>();
-        for(Change c : newReviewMap.keySet()) {
-            if(newReviewMap.get(c).equals(ReviewStatus.REJECTED)) {
+        for(ChangeId id : newReviews.keySet()) {
+            Change c = diff.getChange(id);
+            if(newReviews.get(c.getId()).equals(ReviewStatus.REJECTED)) {
                 Set<OWLOntologyChange> ontChanges = c.getChanges();
                 if (c.getBaselineChange().isPresent()) {
                     OWLOntologyChange baseline = c.getBaselineChange().get();
@@ -104,10 +110,11 @@ public class ReviewManagerImpl implements ReviewManager {
 
     @Override
     public void clearUncommittedReviews() {
-        for(Change c : newReviewMap.keySet()) {
+        for(ChangeId id : newReviews.keySet()) {
+            Change c = diff.getChange(id);
             c.setReviewStatus(ReviewStatus.PENDING);
         }
-        newReviewMap.clear();
+        newReviews.clear();
     }
 
     @Override
@@ -115,20 +122,20 @@ public class ReviewManagerImpl implements ReviewManager {
         if (this == o) return true;
         if (o == null || getClass() != o.getClass()) return false;
         ReviewManagerImpl that = (ReviewManagerImpl) o;
-        return Objects.equal(newReviewMap, that.newReviewMap) &&
-                Objects.equal(initialReviewMap, that.initialReviewMap);
+        return Objects.equal(newReviews, that.newReviews) &&
+                Objects.equal(reviews, that.reviews);
     }
 
     @Override
     public int hashCode() {
-        return Objects.hashCode(newReviewMap, initialReviewMap);
+        return Objects.hashCode(newReviews, reviews);
     }
 
     @Override
     public String toString() {
         return MoreObjects.toStringHelper(this)
-                .add("newReviewMap", newReviewMap)
-                .add("initialReviewMap", initialReviewMap)
+                .add("newReviews", newReviews)
+                .add("reviews", reviews)
                 .toString();
     }
 }

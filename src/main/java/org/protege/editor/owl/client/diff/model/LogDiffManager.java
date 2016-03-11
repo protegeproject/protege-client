@@ -4,6 +4,8 @@ import org.protege.editor.core.Disposable;
 import org.protege.editor.core.ui.error.ErrorLogPanel;
 import org.protege.editor.owl.OWLEditorKit;
 import org.protege.editor.owl.client.connect.ServerConnectionManager;
+import org.protege.editor.owl.client.diff.DiffFactory;
+import org.protege.editor.owl.client.diff.DiffFactoryImpl;
 import org.protege.editor.owl.model.OWLModelManager;
 import org.protege.owl.server.api.ChangeHistory;
 import org.protege.owl.server.api.ChangeMetaData;
@@ -13,7 +15,6 @@ import org.protege.owl.server.api.client.Client;
 import org.protege.owl.server.api.client.VersionedOntologyDocument;
 import org.protege.owl.server.api.exception.OWLServerException;
 import org.semanticweb.owlapi.model.*;
-import org.semanticweb.owlapi.model.parameters.ChangeApplied;
 
 import java.util.*;
 import java.util.stream.Collectors;
@@ -25,17 +26,25 @@ import static com.google.common.base.Preconditions.checkNotNull;
  * Stanford Center for Biomedical Informatics Research
  */
 public class LogDiffManager implements Disposable {
-    public static final UserId ALL_AUTHORS = new UserId("All authors");
+    public static final UserId ALL_AUTHORS = new UserId("All Authors");
+    private static DiffFactory diffFactory = new DiffFactoryImpl();
     private Set<LogDiffListener> listeners = new HashSet<>();
     private List<Change> selectedChanges = new ArrayList<>();
     private List<CommitMetadata> commits = new ArrayList<>();
-    private ReviewManager reviewManager = new ReviewManagerImpl();
+    private ReviewManager reviewManager;
     private OWLModelManager modelManager;
     private OWLEditorKit editorKit;
     private UserId selectedAuthor;
     private CommitMetadata selectedCommit;
     private LogDiff diff;
 
+    /**
+     * Get the LogDiff manager
+     *
+     * @param modelManager  Model manager
+     * @param editorKit Protege OWL editor kit
+     * @return Log diff manager
+     */
     public static LogDiffManager get(OWLModelManager modelManager, OWLEditorKit editorKit) {
         LogDiffManager diffManager = modelManager.get(LogDiffManager.class);
         if(diffManager == null) {
@@ -43,6 +52,15 @@ public class LogDiffManager implements Disposable {
             modelManager.put(LogDiffManager.class, diffManager);
         }
         return diffManager;
+    }
+
+    /**
+     * Get instance of a diff object factory
+     *
+     * @return Diff factory
+     */
+    public static DiffFactory getDiffFactory() {
+        return diffFactory;
     }
 
     /**
@@ -123,7 +141,7 @@ public class LogDiffManager implements Disposable {
             if (event.equals(LogDiffEvent.AUTHOR_SELECTION_CHANGED) && getSelectedAuthor() != null &&
                     (metaData.getUserId().equals(getSelectedAuthor()) || getSelectedAuthor().equals(LogDiffManager.ALL_AUTHORS)) ||
                     event.equals(LogDiffEvent.ONTOLOGY_UPDATED)) {
-                CommitMetadata c = new CommitMetadataImpl(metaData.getUserId(), metaData.getDate(), metaData.getCommitComment(), metaData.hashCode());
+                CommitMetadata c = diffFactory.createCommitMetadata(metaData.getUserId(), metaData.getDate(), metaData.getCommitComment(), metaData.hashCode());
                 if (!commits.contains(c)) {
                     commits.add(c);
                 }
@@ -143,6 +161,7 @@ public class LogDiffManager implements Disposable {
     public LogDiff getDiffEngine() {
         if(diff == null) {
             diff = new LogDiff(this, modelManager);
+            reviewManager = new ReviewManagerImpl(diff);
         }
         return diff;
     }
@@ -168,10 +187,6 @@ public class LogDiffManager implements Disposable {
 
     public ReviewManager getReviewManager() {
         return reviewManager;
-    }
-
-    public UserId getAllAuthorsUserId() {
-        return ALL_AUTHORS;
     }
 
     public void commitChanges(List<OWLOntologyChange> changes) {
@@ -217,7 +232,5 @@ public class LogDiffManager implements Disposable {
     }
 
     @Override
-    public void dispose() throws Exception {
-
-    }
+    public void dispose() throws Exception { }
 }

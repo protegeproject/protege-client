@@ -25,7 +25,7 @@ public class ChangesTableModel extends AbstractTableModel {
     public ChangesTableModel() { }
 
     public void setChanges(List<Change> changes) {
-        this.changes = new ArrayList<>(checkNotNull(changes));
+        this.changes = checkNotNull(changes);
         fireTableDataChanged();
     }
 
@@ -44,17 +44,17 @@ public class ChangesTableModel extends AbstractTableModel {
         Change change = getChange(rowIndex);
         switch (Column.values()[columnIndex]) {
             case MODE:
-                return change.getChangeMode();
+                return change.getMode();
             case DATE:
                 return change.getCommitMetadata().getDate();
             case AUTHOR:
                 return change.getCommitMetadata().getAuthor();
             case CHANGE_SUBJECT:
-                return change.getSubject();
+                return change.getDetails().getSubject();
             case CHANGE_TYPE:
-                return change.getType();
+                return change.getDetails().getType();
             case REVISION_TAG:
-                return change.getRevisionTag().getTag();
+                return change.getDetails().getRevisionTag().getTag();
             case COMMENT:
                 return change.getCommitMetadata().getComment();
             case CONFLICT:

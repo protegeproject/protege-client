@@ -67,6 +67,12 @@
             <artifactId>protege-server</artifactId>
             <version>${protege-server.version}</version>
         </dependency>
+
+        <dependency>
+            <groupId>com.fasterxml.uuid</groupId>
+            <artifactId>java-uuid-generator</artifactId>
+            <version>3.1.3</version>
+        </dependency>
     </dependencies>
 
     <build>
@@ -92,11 +98,15 @@
                         <Bundle-SymbolicName>org.protege.editor.owl.client;singleton:=true</Bundle-SymbolicName>
                         <Bundle-Version>${project.version}</Bundle-Version>
                         <Bundle-Vendor>The Protege Development Team</Bundle-Vendor>
-                        <Export-Package>org.protege.editor.owl.client*;version=${project.version}</Export-Package>
+                        <Export-Package>
+                            org.protege.editor.owl.client*;version=${project.version},
+                            com.fasterxml.uuid.*
+                        </Export-Package>
                         <Import-Package>
                             org.protege.editor.core.*;version="5.0", <!-- equivalent to [5.0,infinity) -->
                             org.protege.editor.owl.client.*;version=${project.version},
                             org.protege.editor.owl.*;version="5.0",
+                            com.fasterxml.uuid.*,
                             *
                         </Import-Package>
                         <Include-Resource>{maven-resources}</Include-Resource>

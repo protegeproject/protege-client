@@ -97,7 +97,7 @@ public class AuthorPanel extends JPanel implements Disposable {
                 rev = rev.next();
             }
             Collections.sort(users);
-            users.add(0, diffManager.getAllAuthorsUserId());
+            users.add(0, LogDiffManager.ALL_AUTHORS);
             authorsList.setListData(users.toArray(new UserId[users.size()]));
         }
         else {

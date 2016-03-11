@@ -68,8 +68,8 @@ public class ChangesPanel extends JPanel implements Disposable {
                 diffManager.clearSelectedChanges();
                 updateDiff(event);
             }
-            else if(event.equals(LogDiffEvent.ONTOLOGY_UPDATED)) {
-                diff.clearChanges();
+            else if(event.equals(LogDiffEvent.ONTOLOGY_UPDATED)) { // TODO incrementally update change indices
+                diff.clear();
                 diff.initDiff();
                 diffTableModel.setChanges(Collections.<Change>emptyList());
             }

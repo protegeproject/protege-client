@@ -1,6 +1,5 @@
 package org.protege.editor.owl.client.diff.model;
 
-import org.semanticweb.owlapi.model.OWLObject;
 import org.semanticweb.owlapi.model.OWLOntologyChange;
 
 import java.util.Optional;
@@ -13,6 +12,13 @@ import java.util.Set;
 public interface Change extends Comparable<Change> {
 
     /**
+     * Get the change identifier
+     *
+     * @return Change identifier
+     */
+    ChangeId getId();
+
+    /**
      * Get the set of ontology changes involved in this change
      *
      * @return Set of OWLOntologyChange
@@ -20,11 +26,12 @@ public interface Change extends Comparable<Change> {
     Set<OWLOntologyChange> getChanges();
 
     /**
-     * Get the revision tag for this change
+     * Get the change details object containing further information
+     * about this change, such as its author, type, subject, ...
      *
-     * @return Revision tag
+     * @return Change details
      */
-    RevisionTag getRevisionTag();
+    ChangeDetails getDetails();
 
     /**
      * Get the commit metadata, such as author, date and comment
@@ -38,30 +45,7 @@ public interface Change extends Comparable<Change> {
      *
      * @return Change mode
      */
-    ChangeMode getChangeMode();
-
-    /**
-     * Get the change subject, that is (for most axioms), the left-hand side of the axiom. For example,
-     * for A SubClassOf B the change subject is A. This may be an OWL entity or class expression
-     *
-     * @return Change subject as an OWLObject
-     */
-    OWLObject getSubject();
-
-    /**
-     * Get the change type, which could be one of the built-in types such as logical, signature or
-     * annotation, or a custom type
-     *
-     * @return Change type
-     */
-    ChangeType getType();
-
-    /**
-     * Set the type of this change
-     *
-     * @param type  Change type
-     */
-    void setType(ChangeType type);
+    ChangeMode getMode();
 
     /**
      * Set the change mode
@@ -79,25 +63,18 @@ public interface Change extends Comparable<Change> {
     boolean isOfType(ChangeType type);
 
     /**
-     * Get the (annotation) property involved in the change, if any
+     * Add a change that is in conflict with this one
      *
-     * @return Annotation property changed
+     * @param conflictingChange    Conflicting change
      */
-    Optional<OWLObject> getProperty();
-
-    /**
-     * Add a set of changes that are in conflict with this one
-     *
-     * @param conflictingChanges    Set of conflicting changes
-     */
-    void addConflictingChanges(Set<Change> conflictingChanges);
+    void addConflictingChange(ChangeId conflictingChange);
 
     /**
      * Get the set of changes that conflict with this one
      *
      * @return Set of conflicting changes
      */
-    Set<Change> getConflictingChanges();
+    Set<ChangeId> getConflictingChanges();
 
     /**
      * Check if change is in conflict with some other change(s)

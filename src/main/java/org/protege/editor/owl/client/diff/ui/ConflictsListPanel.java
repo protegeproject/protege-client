@@ -11,6 +11,7 @@ import javax.swing.border.Border;
 import javax.swing.border.EmptyBorder;
 import java.awt.*;
 import java.util.*;
+import java.util.stream.Collectors;
 
 import static com.google.common.base.Preconditions.checkNotNull;
 
@@ -21,6 +22,7 @@ import static com.google.common.base.Preconditions.checkNotNull;
 public class ConflictsListPanel extends JPanel implements Disposable {
     private OWLEditorKit editorKit;
     private LogDiffManager diffManager;
+    private LogDiff diff;
     private Change change;
 
     /**
@@ -33,6 +35,7 @@ public class ConflictsListPanel extends JPanel implements Disposable {
         this.editorKit = checkNotNull(editorKit);
         diffManager = LogDiffManager.get(modelManager, editorKit);
         diffManager.addListener(diffListener);
+        diff = diffManager.getDiffEngine();
 
         setLayout(new BorderLayout());
         setBorder(GuiUtils.MATTE_BORDER);
@@ -75,7 +78,7 @@ public class ConflictsListPanel extends JPanel implements Disposable {
 
     private void addConflictDetails() {
         if (change != null) {
-            Set<Change> changes = change.getConflictingChanges();
+            Set<Change> changes = change.getConflictingChanges().stream().map(id -> diff.getChange(id)).collect(Collectors.toSet());
             if (!changes.isEmpty()) {
                 GridBagConstraints bpc = createGridBagConstraints();
                 add(getConflictsScrollPane(changes, bpc, ""), BorderLayout.CENTER);

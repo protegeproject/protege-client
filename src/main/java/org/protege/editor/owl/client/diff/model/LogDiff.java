@@ -45,7 +45,7 @@ public class LogDiff {
     public LogDiff(LogDiffManager diffManager, OWLModelManager modelManager) {
         this.diffManager = checkNotNull(diffManager);
         this.modelManager = checkNotNull(modelManager);
-        this.diffFactory = diffManager.getDiffFactory();
+        this.diffFactory = LogDiffManager.getDiffFactory();
     }
 
     /**
@@ -391,25 +391,24 @@ public class LogDiff {
         Set<Change> matches = new HashSet<>();
         CommitMetadata commitMetadata = c.getCommitMetadata();
         ChangeDetails changeDetails = c.getDetails();
-        Collection<ChangeId> userChanges = changesByUser.get(commitMetadata.getAuthor());
-        Collection<ChangeId> dateChanges = changesByDate.get(commitMetadata.getDate());
         Collection<ChangeId> subjectChanges = changesBySubject.get(changeDetails.getSubject());
-
-        dateChanges.stream().filter(userChanges::contains).filter(subjectChanges::contains).forEach(id -> {
+        for(ChangeId id : subjectChanges) {
             Change userChange = changeMap.get(id);
-            if (userChange.getDetails().getType().equals(changeDetails.getType())) {
-                if (axiomTypesMatch(c, userChange)) {
-                    // TODO: match RHS expression types for axioms that can be reduced to SubClassOf axioms
-                    if (c.getDetails().getProperty().isPresent() && userChange.getDetails().getProperty().isPresent()) {
-                        if (c.getDetails().getProperty().get().equals(userChange.getDetails().getProperty().get()) && !c.equals(userChange)) {
+            if(userChange.getCommitMetadata().getAuthor().equals(commitMetadata.getAuthor()) && userChange.getCommitMetadata().getDate().equals(commitMetadata.getDate())) { // same commit...?
+                if (userChange.getDetails().getType().equals(changeDetails.getType())) {
+                    if (axiomTypesMatch(c, userChange)) {
+                        // TODO: match RHS expression types for axioms that can be reduced to SubClassOf axioms
+                        if (c.getDetails().getProperty().isPresent() && userChange.getDetails().getProperty().isPresent()) {
+                            if (c.getDetails().getProperty().get().equals(userChange.getDetails().getProperty().get()) && !c.equals(userChange)) {
+                                matches.add(userChange);
+                            }
+                        } else if (!c.equals(userChange)) {
                             matches.add(userChange);
                         }
-                    } else if (!c.equals(userChange)) {
-                        matches.add(userChange);
                     }
                 }
             }
-        });
+        }
         return matches;
     }
 

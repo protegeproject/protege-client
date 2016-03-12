@@ -62,7 +62,7 @@ public class LogDiff {
                 ChangeHistory hist = changes.cropChanges(rev, rev.next());
                 findRevisionChanges(hist.getChanges(ontology), metaData);
                 if(!rev.equals(OntologyDocumentRevision.START_REVISION)) {
-                    matchOldValues(changeMap.values());
+                    findBaselineMatches(changeMap.values());
                     findConflits(changeMap.values());
                 }
                 rev = rev.next();
@@ -80,7 +80,7 @@ public class LogDiff {
         String commitComment = (metaData.getCommitComment() != null ? metaData.getCommitComment() : "");
         // produce a revision tag that uses the hashcode of the commit metadata
         RevisionTag revisionTag = getRevisionTag(metaData.hashCode() + "");
-        CommitMetadata commitMetadata = diffFactory.createCommitMetadata(metaData.getUserId(), metaData.getDate(), commitComment, metaData.hashCode());
+        CommitMetadata commitMetadata = diffFactory.createCommitMetadata(diffFactory.createCommitId(metaData.hashCode()+""), metaData.getUserId(), metaData.getDate(), commitComment);
         Multimap<ChangeDetails, OWLOntologyChange> multimap = HashMultimap.create();
         ontChanges.stream().filter(ontChange -> !isCustomPropertyDeclaration(ontChange)).forEach(ontChange -> {
             if (isAnnotated(ontChange)) { // custom change
@@ -319,9 +319,9 @@ public class LogDiff {
      */
     private List<Change> getChangesForCommit(CommitMetadata metadata, Collection<ChangeId> searchSpace) {
         List<Change> changes = new ArrayList<>();
-        for(ChangeId id : searchSpace) {
+        for (ChangeId id : searchSpace) {
             Change c = changeMap.get(id);
-            if(c.getCommitMetadata().getHashcode() == metadata.getHashcode()) {
+            if (c.getCommitMetadata().getCommitId().equals(metadata.getCommitId())) {
                 changes.add(c);
             }
         }
@@ -359,13 +359,13 @@ public class LogDiff {
      *
      * @param changes   Set of changes
      */
-    private void matchOldValues(Collection<Change> changes) {
+    private void findBaselineMatches(Collection<Change> changes) {
         Set<Change> toRemove = new HashSet<>();
         for (Change c : changes) {
             // only modify addition; the corresponding removal will be the "baseline" for the (addition) change,
             // and will get removed after an alignment is established
             if (c.getDetails().getType().isBuiltInType() && c.getMode().equals(ChangeMode.ADDITION)) {
-                Set<Change> matches = findMatchingChanges(c);
+                Set<Change> matches = getMatchingChanges(c);
                 if (matches.size() == 1) {
                     Change c2 = matches.iterator().next();
                     if (((c.isOfType(BuiltInChangeType.ANNOTATION) || c.isOfType(BuiltInChangeType.ONTOLOGY_ANNOTATION))
@@ -387,24 +387,21 @@ public class LogDiff {
      * @param c Change
      * @return Set of changes that match with given one
      */
-    private Set<Change> findMatchingChanges(Change c) {
+    private Set<Change> getMatchingChanges(Change c) {
         Set<Change> matches = new HashSet<>();
         CommitMetadata commitMetadata = c.getCommitMetadata();
         ChangeDetails changeDetails = c.getDetails();
-        Collection<ChangeId> subjectChanges = changesBySubject.get(changeDetails.getSubject());
-        for(ChangeId id : subjectChanges) {
-            Change userChange = changeMap.get(id);
-            if(userChange.getCommitMetadata().getAuthor().equals(commitMetadata.getAuthor()) && userChange.getCommitMetadata().getDate().equals(commitMetadata.getDate())) { // same commit...?
-                if (userChange.getDetails().getType().equals(changeDetails.getType())) {
-                    if (axiomTypesMatch(c, userChange)) {
-                        // TODO: match RHS expression types for axioms that can be reduced to SubClassOf axioms
-                        if (c.getDetails().getProperty().isPresent() && userChange.getDetails().getProperty().isPresent()) {
-                            if (c.getDetails().getProperty().get().equals(userChange.getDetails().getProperty().get()) && !c.equals(userChange)) {
-                                matches.add(userChange);
-                            }
-                        } else if (!c.equals(userChange)) {
-                            matches.add(userChange);
+        Collection<ChangeId> changes = changesBySubject.get(changeDetails.getSubject());
+        for (Change change : getChangesForCommit(commitMetadata, changes)) {
+            if (change.getDetails().getType().equals(changeDetails.getType())) {
+                if (isMatchable(c, change)) {
+                    // TODO: match RHS expression types for axioms that can be reduced to SubClassOf axioms
+                    if (c.getDetails().getProperty().isPresent() && change.getDetails().getProperty().isPresent()) {
+                        if (c.getDetails().getProperty().get().equals(change.getDetails().getProperty().get()) && !c.equals(change)) {
+                            matches.add(change);
                         }
+                    } else if (!c.equals(change)) {
+                        matches.add(change);
                     }
                 }
             }
@@ -420,7 +417,7 @@ public class LogDiff {
      * @param change2   Change
      * @return true if changes have the same type
      */
-    private boolean axiomTypesMatch(Change change1, Change change2) {
+    private boolean isMatchable(Change change1, Change change2) {
         if ((change1.getMode().equals(ChangeMode.ADDITION) && change2.getMode().equals(ChangeMode.REMOVAL)) ||
                 (change1.getMode().equals(ChangeMode.REMOVAL) && change2.getMode().equals(ChangeMode.ADDITION))) {
             // assuming single ontology change here, since these are built-in type changes
@@ -481,9 +478,10 @@ public class LogDiff {
      * @param change Change
      */
     private void add(Change change) {
+        CommitMetadata commitMetadata = change.getCommitMetadata();
         changeMap.put(change.getId(), change);
-        changesByUser.put(change.getCommitMetadata().getAuthor(), change.getId());
-        changesByDate.put(change.getCommitMetadata().getDate(), change.getId());
+        changesByUser.put(commitMetadata.getAuthor(), change.getId());
+        changesByDate.put(commitMetadata.getDate(), change.getId());
         changesBySubject.put(change.getDetails().getSubject(), change.getId());
     }
 
@@ -494,9 +492,10 @@ public class LogDiff {
      */
     private void remove(Change change) {
         ChangeId id = change.getId();
+        CommitMetadata commitMetadata = change.getCommitMetadata();
         changeMap.remove(id);
-        changesByUser.remove(change.getCommitMetadata().getAuthor(), id);
-        changesByDate.remove(change.getCommitMetadata().getDate(), id);
+        changesByUser.remove(commitMetadata.getAuthor(), id);
+        changesByDate.remove(commitMetadata.getDate(), id);
         changesBySubject.remove(change.getDetails().getSubject(), id);
     }
 

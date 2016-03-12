@@ -141,7 +141,8 @@ public class LogDiffManager implements Disposable {
             if (event.equals(LogDiffEvent.AUTHOR_SELECTION_CHANGED) && getSelectedAuthor() != null &&
                     (metaData.getUserId().equals(getSelectedAuthor()) || getSelectedAuthor().equals(LogDiffManager.ALL_AUTHORS)) ||
                     event.equals(LogDiffEvent.ONTOLOGY_UPDATED)) {
-                CommitMetadata c = diffFactory.createCommitMetadata(metaData.getUserId(), metaData.getDate(), metaData.getCommitComment(), metaData.hashCode());
+                CommitMetadata c = diffFactory.createCommitMetadata(diffFactory.createCommitId(metaData.hashCode()+""),
+                        metaData.getUserId(), metaData.getDate(), metaData.getCommitComment());
                 if (!commits.contains(c)) {
                     commits.add(c);
                 }

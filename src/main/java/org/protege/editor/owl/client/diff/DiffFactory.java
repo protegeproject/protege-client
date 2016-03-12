@@ -39,15 +39,23 @@ public interface DiffFactory {
     Change createChange(Set<OWLOntologyChange> changes, ChangeDetails details, CommitMetadata commitMetadata, ChangeMode changeMode);
 
     /**
+     * Create a commit identifier
+     *
+     * @param commitId  Commit identifier
+     * @return Commit identifier string
+     */
+    CommitId createCommitId(String commitId);
+
+    /**
      * Create an instance of commit metadata
      *
+     * @param commitId  Commit identifier
      * @param userId    User identifier
      * @param date  Commit date
      * @param comment   Commit comment
-     * @param hashcode  Commit hashcode
      * @return Commit metadata instance
      */
-    CommitMetadata createCommitMetadata(UserId userId, Date date, String comment, int hashcode);
+    CommitMetadata createCommitMetadata(CommitId commitId, UserId userId, Date date, String comment);
 
     /**
      * Create an instance of change details

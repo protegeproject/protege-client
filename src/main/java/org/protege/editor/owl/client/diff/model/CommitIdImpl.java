@@ -9,15 +9,15 @@ import static com.google.common.base.Preconditions.checkNotNull;
  * @author Rafael Gonçalves <br>
  * Stanford Center for Biomedical Informatics Research
  */
-public final class ChangeIdImpl implements ChangeId {
+public final class CommitIdImpl implements CommitId {
     private final String id;
 
     /**
      * Constructor
      *
-     * @param id    Identifier
+     * @param id    Commit identifier
      */
-    public ChangeIdImpl(String id) {
+    public CommitIdImpl(String id) {
         this.id = checkNotNull(id);
     }
 
@@ -30,8 +30,8 @@ public final class ChangeIdImpl implements ChangeId {
     public boolean equals(Object o) {
         if (this == o) return true;
         if (o == null || getClass() != o.getClass()) return false;
-        ChangeIdImpl changeId = (ChangeIdImpl) o;
-        return Objects.equal(id, changeId.id);
+        CommitIdImpl commitId = (CommitIdImpl) o;
+        return Objects.equal(id, commitId.id);
     }
 
     @Override

@@ -11,6 +11,13 @@ import java.util.Date;
 public interface CommitMetadata extends Comparable<CommitMetadata> {
 
     /**
+     * Get the commit identifier
+     *
+     * @return Commit identifier
+     */
+    CommitId getCommitId();
+
+    /**
      * Get the user identifier of the commit author
      *
      * @return User identifier of commit author
@@ -30,12 +37,5 @@ public interface CommitMetadata extends Comparable<CommitMetadata> {
      * @return Commit comment
      */
     String getComment();
-
-    /**
-     * Get the commit hashcode
-     *
-     * @return Commit hashcode
-     */
-    int getHashcode();
 
 }

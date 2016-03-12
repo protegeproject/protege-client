@@ -9,11 +9,12 @@ import static com.google.common.base.Preconditions.checkNotNull;
  * @author Rafael Gonçalves <br>
  * Stanford Center for Biomedical Informatics Research
  */
-public class RevisionTagImpl implements RevisionTag {
-    private String tag;
+public final class RevisionTagImpl implements RevisionTag {
+    private final String tag;
 
     /**
      * Constructor
+     *
      * @param tag   Revision tag string
      */
     public RevisionTagImpl(String tag) {
@@ -37,7 +38,6 @@ public class RevisionTagImpl implements RevisionTag {
     public int hashCode() {
         return Objects.hashCode(tag);
     }
-
 
     @Override
     public String toString() {

@@ -5,12 +5,13 @@ import org.protege.editor.owl.OWLEditorKit;
 import org.protege.editor.owl.client.ClientPreferences;
 import org.protege.editor.owl.client.RmiClient;
 import org.protege.editor.owl.client.api.Client;
+import org.protege.editor.owl.client.connect.DefaultUserAuthenticator;
 import org.protege.editor.owl.ui.UIHelper;
+import org.protege.owl.server.api.RmiLoginService;
 import org.protege.owl.server.api.client.RemoteServerDirectory;
 import org.protege.owl.server.api.exception.OWLServerException;
 import org.protege.owl.server.connect.RmiServer;
 import org.protege.owl.server.connect.rmi.RMIClient;
-import org.protege.owl.server.security.RmiLoginService;
 
 import java.awt.BorderLayout;
 import java.awt.Color;
@@ -47,8 +48,6 @@ import edu.stanford.protege.metaproject.Manager;
 import edu.stanford.protege.metaproject.api.AuthToken;
 import edu.stanford.protege.metaproject.api.Factory;
 import edu.stanford.protege.metaproject.api.PlainPassword;
-import edu.stanford.protege.metaproject.api.Salt;
-import edu.stanford.protege.metaproject.api.SaltedPasswordDigest;
 import edu.stanford.protege.metaproject.api.UserId;
 
 public class OpenFromServerDialog extends JDialog {
@@ -321,15 +320,13 @@ public class OpenFromServerDialog extends JDialog {
             try {
                 Registry registry = getRmiRegistry(serverLocation);
                 RmiLoginService loginService = (RmiLoginService) registry.lookup(RmiLoginService.LOGIN_SERVICE);
+                DefaultUserAuthenticator authenticator = new DefaultUserAuthenticator(loginService);
                 
                 Factory f = Manager.getFactory();
                 UserId userId = f.createUserId(username.getText());
                 PlainPassword plainPassword = f.createPlainPassword(password.getPassword().toString());
                 
-                Salt userSalt = loginService.getSalt(userId);
-                SaltedPasswordDigest saltedPasswordDigest = f.createPasswordHasher().hash(plainPassword, userSalt);
-
-                AuthToken authToken = loginService.hasValidCredentials(userId, saltedPasswordDigest);
+                AuthToken authToken = authenticator.hasValidCredentials(userId, plainPassword);
                 RmiServer server = (RmiServer) registry.lookup(RmiServer.SERVER_SERVICE);
                 client = new RmiClient(authToken, server);
                 

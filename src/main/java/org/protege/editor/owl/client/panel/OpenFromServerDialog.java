@@ -320,8 +320,8 @@ public class OpenFromServerDialog extends JDialog {
                 DefaultUserAuthenticator authenticator = new DefaultUserAuthenticator(loginService);
                 
                 Factory f = Manager.getFactory();
-                UserId userId = f.createUserId(username.getText());
-                PlainPassword plainPassword = f.createPlainPassword(password.getPassword().toString());
+                UserId userId = f.getUserId(username.getText());
+                PlainPassword plainPassword = f.getPlainPassword(password.getPassword().toString());
                 
                 AuthToken authToken = authenticator.hasValidCredentials(userId, plainPassword);
                 client = new RmiClient(authToken, serverLocation);

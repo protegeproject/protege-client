@@ -27,7 +27,7 @@ public final class DefaultUserAuthenticator implements UserAuthenticator {
     public AuthToken hasValidCredentials(UserId userId, PlainPassword password) throws Exception {
         Salt userSalt = loginService.getSalt(userId);
         Factory f = Manager.getFactory();
-        SaltedPasswordDigest passwordDigest = f.createPasswordHasher().hash(password, userSalt);
+        SaltedPasswordDigest passwordDigest = f.getSaltedPasswordDigest(password.getPassword(), userSalt);
         AuthToken authToken = loginService.login(userId, passwordDigest);
         return authToken;
     }

@@ -11,20 +11,22 @@ import org.protege.owl.server.util.GetUncommittedChangesVisitor;
 import org.semanticweb.owlapi.model.OWLOntology;
 import org.semanticweb.owlapi.model.OWLOntologyChange;
 
+import java.io.File;
+import java.net.URI;
 import java.rmi.NotBoundException;
 import java.rmi.RemoteException;
 import java.rmi.registry.LocateRegistry;
 import java.rmi.registry.Registry;
 import java.util.List;
 
-import edu.stanford.protege.metaproject.api.Address;
 import edu.stanford.protege.metaproject.api.Host;
 
 public class ChangeUtils {
 
     private static RemoteChangeService getChangeService(Host remoteHost) throws OWLServerException {
-        String host = remoteHost.getAddress().get();
-        int port = remoteHost.getRegistryPort().get();
+        URI remoteUri = remoteHost.getUri();
+        String host = remoteUri.getHost();
+        int port = remoteHost.getSecondaryPort().isPresent() ? remoteHost.getSecondaryPort().get().get() : remoteUri.getPort();
         try {
             Registry registry = LocateRegistry.getRegistry(host, port);
             return (RemoteChangeService) registry.lookup(RmiChangeService.CHANGE_SERVICE);
@@ -43,8 +45,8 @@ public class ChangeUtils {
             Host remoteHost = versionedOntology.getRemoteHost();
             RemoteChangeService changeService = getChangeService(remoteHost);
             
-            Address remoteAddress = versionedOntology.getRemoteAddress();
-            ChangeHistory remoteChanges = changeService.getLatestChanges(remoteAddress, localHeadRevision);
+            File remoteFile = versionedOntology.getRemoteFile();
+            ChangeHistory remoteChanges = changeService.getLatestChanges(remoteFile, localHeadRevision);
             if (!remoteChanges.isEmpty()) {
                 versionedOntology.appendLocalHistory(remoteChanges);
             }

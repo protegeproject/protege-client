@@ -16,7 +16,6 @@ import org.semanticweb.owlapi.model.OWLOntologyChangeListener;
 
 import java.awt.BorderLayout;
 import java.util.ArrayList;
-import java.util.Collections;
 import java.util.List;
 
 import javax.swing.JList;
@@ -102,7 +101,7 @@ public class AuthorPanel extends JPanel implements Disposable {
                 }
                 rev = rev.next();
             }
-            Collections.sort(users);
+//            Collections.sort(users); TODO: To review later
             users.add(0, LogDiffManager.ALL_AUTHORS);
             authorsList.setListData(users.toArray(new UserId[users.size()]));
         }

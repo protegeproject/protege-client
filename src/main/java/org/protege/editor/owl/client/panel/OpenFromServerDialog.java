@@ -3,7 +3,7 @@ package org.protege.editor.owl.client.panel;
 import org.protege.editor.core.ui.error.ErrorLogPanel;
 import org.protege.editor.owl.OWLEditorKit;
 import org.protege.editor.owl.client.ClientPreferences;
-import org.protege.editor.owl.client.RmiClient;
+import org.protege.editor.owl.client.LocalClient;
 import org.protege.editor.owl.client.api.Client;
 import org.protege.editor.owl.client.connect.DefaultUserAuthenticator;
 import org.protege.editor.owl.client.util.ServerUtils;
@@ -324,7 +324,7 @@ public class OpenFromServerDialog extends JDialog {
                 PlainPassword plainPassword = f.getPlainPassword(password.getPassword().toString());
                 
                 AuthToken authToken = authenticator.hasValidCredentials(userId, plainPassword);
-                client = new RmiClient(authToken, serverLocation);
+                client = new LocalClient(authToken, serverLocation);
                 
                 saveServerConnectionData();
             }

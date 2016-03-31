@@ -15,14 +15,14 @@ import edu.stanford.protege.metaproject.api.ProjectId;
 import edu.stanford.protege.metaproject.api.User;
 import edu.stanford.protege.metaproject.api.UserId;
 
-public class RmiClient implements Client {
+public class LocalClient implements Client {
 
     private AuthToken authToken;
     private String serverAddress;
 
     private RmiServer server;
 
-    public RmiClient(AuthToken authToken, String serverAddress) {
+    public LocalClient(AuthToken authToken, String serverAddress) {
         this.authToken = authToken;
         this.serverAddress = serverAddress;
     }

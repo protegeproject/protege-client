@@ -4,12 +4,12 @@ import org.protege.editor.core.ui.error.ErrorLogPanel;
 import org.protege.editor.owl.client.connect.ServerConnectionManager;
 import org.protege.editor.owl.client.panel.ChangeHistoryPanel;
 import org.protege.editor.owl.ui.action.ProtegeOWLAction;
-import org.protege.owl.server.api.ChangeHistory;
-import org.protege.owl.server.api.OntologyDocumentRevision;
-import org.protege.owl.server.api.RevisionPointer;
 import org.protege.owl.server.api.client.Client;
-import org.protege.owl.server.api.client.VersionedOntologyDocument;
 import org.protege.owl.server.api.exception.UserDeclinedAuthenticationException;
+import org.protege.owl.server.changes.OntologyDocumentRevision;
+import org.protege.owl.server.changes.api.ChangeHistory;
+import org.protege.owl.server.changes.api.RevisionPointer;
+import org.protege.owl.server.changes.api.VersionedOntologyDocument;
 import org.protege.owl.server.util.ClientUtilities;
 import org.semanticweb.owlapi.model.OWLOntology;
 
@@ -21,12 +21,12 @@ public class ShowHistoryAction extends ProtegeOWLAction {
 
     @Override
     public void initialise() throws Exception {
-
+        // NO-OP
     }
 
     @Override
     public void dispose() throws Exception {
-
+        // NO-OP
     }
 
     @Override
@@ -53,5 +53,4 @@ public class ShowHistoryAction extends ProtegeOWLAction {
             ErrorLogPanel.showErrorDialog(e);
         }
     }
-
 }

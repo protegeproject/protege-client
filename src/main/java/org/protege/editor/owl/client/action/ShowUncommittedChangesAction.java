@@ -6,8 +6,8 @@ import org.protege.editor.owl.client.panel.ChangeListTableModel;
 import org.protege.editor.owl.ui.action.ProtegeOWLAction;
 import org.protege.editor.owl.ui.renderer.OWLCellRenderer;
 import org.protege.owl.server.api.client.Client;
-import org.protege.owl.server.api.client.VersionedOntologyDocument;
 import org.protege.owl.server.api.exception.UserDeclinedAuthenticationException;
+import org.protege.owl.server.changes.api.VersionedOntologyDocument;
 import org.protege.owl.server.util.ClientUtilities;
 import org.semanticweb.owlapi.model.OWLObject;
 import org.semanticweb.owlapi.model.OWLOntology;
@@ -24,12 +24,12 @@ public class ShowUncommittedChangesAction extends ProtegeOWLAction {
 
     @Override
     public void initialise() throws Exception {
-
+        // NO-OP
     }
 
     @Override
     public void dispose() throws Exception {
-
+        // NO-OP
     }
 
     @Override
@@ -37,16 +37,17 @@ public class ShowUncommittedChangesAction extends ProtegeOWLAction {
         try {
             ServerConnectionManager connectionManager = ServerConnectionManager.get(getOWLEditorKit());
             OWLOntology ontology = getOWLModelManager().getActiveOntology();
-            
+
             VersionedOntologyDocument vont = connectionManager.getVersionedOntology(ontology);
             if (vont != null) {
                 Client client = connectionManager.createClient(ontology);
                 List<OWLOntologyChange> uncommitted = ClientUtilities.getUncommittedChanges(client, vont);
                 connectionManager.saveHistoryInBackground(vont);
                 if (uncommitted.isEmpty()) {
-                	JOptionPane.showMessageDialog(getOWLWorkspace(), "No uncommitted changes");
-                } else {
-                	displayUncommittedChanges(ontology, uncommitted);
+                    JOptionPane.showMessageDialog(getOWLWorkspace(), "No uncommitted changes");
+                }
+                else {
+                    displayUncommittedChanges(ontology, uncommitted);
                 }
             }
             else {
@@ -60,16 +61,16 @@ public class ShowUncommittedChangesAction extends ProtegeOWLAction {
             ErrorLogPanel.showErrorDialog(e);
         }
     }
-    
+
     private void displayUncommittedChanges(OWLOntology ontology, List<OWLOntologyChange> uncommitted) {
-		String shortOntologyName = "";
-		OWLOntologyID ontologyId = ontology.getOntologyID();
-		if (!ontologyId.isAnonymous()) {
-		    shortOntologyName = ontology.getOntologyID().getOntologyIRI().get().getRemainder().get();
-		}
-		if (shortOntologyName.isEmpty()) {
-		    shortOntologyName = ontologyId.toString();
-		}
+        String shortOntologyName = "";
+        OWLOntologyID ontologyId = ontology.getOntologyID();
+        if (!ontologyId.isAnonymous()) {
+            shortOntologyName = ontology.getOntologyID().getOntologyIRI().get().getRemainder().get();
+        }
+        if (shortOntologyName.isEmpty()) {
+            shortOntologyName = ontologyId.toString();
+        }
         ChangeListTableModel tableModel = new ChangeListTableModel(uncommitted);
         JTable table = new JTable(tableModel);
         table.setDefaultRenderer(OWLObject.class, new OWLCellRenderer(getOWLEditorKit()));
@@ -82,5 +83,4 @@ public class ShowUncommittedChangesAction extends ProtegeOWLAction {
         dialog.pack();
         dialog.setVisible(true);
     }
-
 }

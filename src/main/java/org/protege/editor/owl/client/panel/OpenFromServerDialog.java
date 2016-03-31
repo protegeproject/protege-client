@@ -6,10 +6,11 @@ import org.protege.editor.owl.client.ClientPreferences;
 import org.protege.editor.owl.client.RmiClient;
 import org.protege.editor.owl.client.api.Client;
 import org.protege.editor.owl.client.connect.DefaultUserAuthenticator;
+import org.protege.editor.owl.client.util.ServerUtils;
 import org.protege.editor.owl.ui.UIHelper;
-import org.protege.owl.server.api.RmiLoginService;
-import org.protege.owl.server.api.client.RemoteServerDirectory;
 import org.protege.owl.server.api.exception.OWLServerException;
+import org.protege.owl.server.changes.api.RemoteServerDirectory;
+import org.protege.owl.server.connect.RmiLoginService;
 import org.protege.owl.server.connect.RmiServer;
 import org.protege.owl.server.connect.rmi.RMIClient;
 
@@ -24,9 +25,6 @@ import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
-import java.net.URI;
-import java.rmi.RemoteException;
-import java.rmi.registry.LocateRegistry;
 import java.rmi.registry.Registry;
 import java.util.ArrayList;
 import java.util.Collections;
@@ -318,8 +316,7 @@ public class OpenFromServerDialog extends JDialog {
         public void actionPerformed(ActionEvent evt) {
             String serverLocation = (String) serverLocationsList.getSelectedItem();
             try {
-                Registry registry = getRmiRegistry(serverLocation);
-                RmiLoginService loginService = (RmiLoginService) registry.lookup(RmiLoginService.LOGIN_SERVICE);
+                RmiLoginService loginService = (RmiLoginService) ServerUtils.getRemoteService(serverLocation, RmiLoginService.LOGIN_SERVICE);
                 DefaultUserAuthenticator authenticator = new DefaultUserAuthenticator(loginService);
                 
                 Factory f = Manager.getFactory();
@@ -327,8 +324,7 @@ public class OpenFromServerDialog extends JDialog {
                 PlainPassword plainPassword = f.createPlainPassword(password.getPassword().toString());
                 
                 AuthToken authToken = authenticator.hasValidCredentials(userId, plainPassword);
-                RmiServer server = (RmiServer) registry.lookup(RmiServer.SERVER_SERVICE);
-                client = new RmiClient(authToken, server);
+                client = new RmiClient(authToken, serverLocation);
                 
                 saveServerConnectionData();
             }
@@ -337,13 +333,6 @@ public class OpenFromServerDialog extends JDialog {
                 UIHelper ui = new UIHelper(editorKit);
                 ui.showDialog("Error connecting to server", new JLabel("Connection failed: " + e.getMessage()));
             }
-        }
-        
-        private Registry getRmiRegistry(String serverLocation) throws RemoteException {
-            URI serverLocationUri = URI.create(serverLocation);
-            String host = serverLocationUri.getHost();
-            int port = serverLocationUri.getPort();
-            return LocateRegistry.getRegistry(host, port);
         }
     }
 

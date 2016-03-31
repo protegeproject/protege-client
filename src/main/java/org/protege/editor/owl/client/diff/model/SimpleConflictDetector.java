@@ -1,7 +1,8 @@
 package org.protege.editor.owl.client.diff.model;
 
+import static com.google.common.base.Preconditions.checkNotNull;
+
 import org.apache.log4j.Logger;
-import org.protege.owl.server.api.UserId;
 import org.semanticweb.owlapi.model.OWLAxiom;
 import org.semanticweb.owlapi.model.OWLOntologyChange;
 
@@ -9,7 +10,7 @@ import java.util.Collection;
 import java.util.HashSet;
 import java.util.Set;
 
-import static com.google.common.base.Preconditions.checkNotNull;
+import edu.stanford.protege.metaproject.api.UserId;
 
 /**
  * @author Rafael Gonçalves <br>

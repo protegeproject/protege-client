@@ -7,17 +7,18 @@ import org.protege.editor.owl.client.connect.ServerConnectionManager;
 import org.protege.editor.owl.client.diff.DiffFactory;
 import org.protege.editor.owl.client.diff.DiffFactoryImpl;
 import org.protege.editor.owl.model.OWLModelManager;
-import org.protege.owl.server.api.ChangeHistory;
-import org.protege.owl.server.api.ChangeMetaData;
-import org.protege.owl.server.api.OntologyDocumentRevision;
-import org.protege.owl.server.api.UserId;
+import org.protege.owl.server.changes.api.ChangeHistory;
+import org.protege.owl.server.changes.api.VersionedOntologyDocument;
+import org.protege.owl.server.changes.ChangeMetaData;
+import org.protege.owl.server.changes.OntologyDocumentRevision;
 import org.protege.owl.server.api.client.Client;
-import org.protege.owl.server.api.client.VersionedOntologyDocument;
 import org.protege.owl.server.api.exception.OWLServerException;
 import org.semanticweb.owlapi.model.*;
 
 import java.util.*;
 import java.util.stream.Collectors;
+
+import edu.stanford.protege.metaproject.api.UserId;
 
 import static com.google.common.base.Preconditions.checkNotNull;
 
@@ -26,7 +27,7 @@ import static com.google.common.base.Preconditions.checkNotNull;
  * Stanford Center for Biomedical Informatics Research
  */
 public class LogDiffManager implements Disposable {
-    public static final UserId ALL_AUTHORS = new UserId("All Authors");
+    public static final UserId ALL_AUTHORS = null; // new UserId("All Authors"); TODO: To reivew later
     private static DiffFactory diffFactory = new DiffFactoryImpl();
     private Set<LogDiffListener> listeners = new HashSet<>();
     private List<Change> selectedChanges = new ArrayList<>();

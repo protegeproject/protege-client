@@ -1,9 +1,9 @@
 package org.protege.editor.owl.client.diff.model;
 
-import org.protege.owl.server.api.UserId;
-
 import java.util.Date;
 import java.util.Optional;
+
+import edu.stanford.protege.metaproject.api.UserId;
 
 /**
  * @author Rafael Gonçalves <br>

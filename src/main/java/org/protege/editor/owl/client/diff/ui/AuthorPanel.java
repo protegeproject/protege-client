@@ -7,19 +7,25 @@ import org.protege.editor.owl.client.diff.model.LogDiffManager;
 import org.protege.editor.owl.model.OWLModelManager;
 import org.protege.editor.owl.model.event.EventType;
 import org.protege.editor.owl.model.event.OWLModelManagerListener;
-import org.protege.owl.server.api.ChangeHistory;
-import org.protege.owl.server.api.ChangeMetaData;
-import org.protege.owl.server.api.OntologyDocumentRevision;
-import org.protege.owl.server.api.UserId;
-import org.protege.owl.server.api.client.VersionedOntologyDocument;
+import org.protege.owl.server.changes.ChangeMetaData;
+import org.protege.owl.server.changes.OntologyDocumentRevision;
+import org.protege.owl.server.changes.api.ChangeHistory;
+import org.protege.owl.server.changes.api.VersionedOntologyDocument;
+
 import org.semanticweb.owlapi.model.OWLOntologyChangeListener;
 
-import javax.swing.*;
-import javax.swing.event.ListSelectionListener;
-import java.awt.*;
+import java.awt.BorderLayout;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
+
+import javax.swing.JList;
+import javax.swing.JPanel;
+import javax.swing.JScrollPane;
+import javax.swing.ListSelectionModel;
+import javax.swing.event.ListSelectionListener;
+
+import edu.stanford.protege.metaproject.api.UserId;
 
 /**
  * @author Rafael Gonçalves <br>

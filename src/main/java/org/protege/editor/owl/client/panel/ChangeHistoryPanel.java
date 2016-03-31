@@ -32,8 +32,9 @@ import javax.swing.table.TableRowSorter;
 
 import org.protege.editor.owl.OWLEditorKit;
 import org.protege.editor.owl.ui.renderer.OWLCellRenderer;
-import org.protege.owl.server.api.ChangeHistory;
-import org.protege.owl.server.api.OntologyDocumentRevision;
+import org.protege.owl.server.changes.OntologyDocumentRevision;
+import org.protege.owl.server.changes.api.ChangeHistory;
+
 import org.semanticweb.owlapi.model.OWLObject;
 import org.semanticweb.owlapi.model.OWLOntology;
 import org.semanticweb.owlapi.model.OWLOntologyChange;

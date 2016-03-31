@@ -1,16 +1,22 @@
 package org.protege.editor.owl.client.diff.ui;
 
+import static com.google.common.base.Preconditions.checkNotNull;
+
 import org.protege.editor.owl.OWLEditorKit;
-import org.protege.owl.server.api.UserId;
+
 import org.semanticweb.owlapi.model.OWLOntologyChange;
 
-import javax.swing.*;
-import javax.swing.border.EmptyBorder;
-import java.awt.*;
+import java.awt.BorderLayout;
 import java.util.Date;
 import java.util.Set;
 
-import static com.google.common.base.Preconditions.checkNotNull;
+import javax.swing.JLabel;
+import javax.swing.JList;
+import javax.swing.JPanel;
+import javax.swing.SwingConstants;
+import javax.swing.border.EmptyBorder;
+
+import edu.stanford.protege.metaproject.api.UserId;
 
 /**
  * @author Rafael Gonçalves <br>
@@ -57,7 +63,7 @@ public class ConflictingCommitPanel extends JPanel {
     private void addConflictDetails() {
         int fontSize = getFont().getSize();
         String dateStr = GuiUtils.getShortenedFormattedDate(commitDate);
-        String headerText = "<html>Conflicting commit " + conflictNr + " by <strong>" + commitAuthor.getUserName() + "</strong> on <strong>" + dateStr + "</strong><br>" +
+        String headerText = "<html>Conflicting commit " + conflictNr + " by <strong>" + commitAuthor.toString() + "</strong> on <strong>" + dateStr + "</strong><br>" + // TODO: To review later
                 "<p style=\"padding-top:3;color:gray;font-size:" + (fontSize-1) + ";\"><nobr>" + commitComment + "</nobr></p></html>";
 
         JLabel headerLbl = new JLabel(headerText, GuiUtils.getIcon(GuiUtils.WARNING_ICON_FILENAME, 33, 33), SwingConstants.LEFT);

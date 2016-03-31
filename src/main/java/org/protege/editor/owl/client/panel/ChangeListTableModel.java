@@ -5,7 +5,8 @@ import java.util.List;
 
 import javax.swing.table.AbstractTableModel;
 
-import org.protege.owl.server.api.ChangeMetaData;
+import org.protege.owl.server.changes.ChangeMetaData;
+
 import org.semanticweb.owlapi.model.AddAxiom;
 import org.semanticweb.owlapi.model.AddImport;
 import org.semanticweb.owlapi.model.AddOntologyAnnotation;
@@ -30,7 +31,7 @@ public class ChangeListTableModel extends AbstractTableModel {
         ENTITY("Entity") {
             @Override
             public String getValue(ChangeMetaData metaData) {
-                return metaData.getUserId().getUserName();
+                return metaData.getUserID().getUserName(); // TODO: To review later
             }             
         };
         

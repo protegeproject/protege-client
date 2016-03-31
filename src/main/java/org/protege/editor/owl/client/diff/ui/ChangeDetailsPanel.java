@@ -115,7 +115,7 @@ public class ChangeDetailsPanel extends JPanel implements Disposable {
             if (review.getDate().isPresent()) {
                 dateStr = GuiUtils.getShortenedFormattedDate(review.getDate().get());
             }
-            author = (review.getAuthor().isPresent() ? review.getAuthor().get().getUserName() : "");
+            author = (review.getAuthor().isPresent() ? review.getAuthor().get().toString() : ""); // TODO: To review later
             comment = (review.getComment().isPresent() ? review.getComment().get() : "");
         }
         String reviewText = "<html><p style=\"font-size:14\"><strong><i><u>" + statusStr + "</u></i></strong></p>";

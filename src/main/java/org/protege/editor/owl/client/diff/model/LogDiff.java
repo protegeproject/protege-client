@@ -2,13 +2,15 @@ package org.protege.editor.owl.client.diff.model;
 
 import com.google.common.collect.HashMultimap;
 import com.google.common.collect.Multimap;
+
+import edu.stanford.protege.metaproject.api.UserId;
+
 import org.protege.editor.owl.client.diff.DiffFactory;
 import org.protege.editor.owl.model.OWLModelManager;
-import org.protege.owl.server.api.ChangeHistory;
-import org.protege.owl.server.api.ChangeMetaData;
-import org.protege.owl.server.api.OntologyDocumentRevision;
-import org.protege.owl.server.api.UserId;
-import org.protege.owl.server.api.client.VersionedOntologyDocument;
+import org.protege.owl.server.changes.api.ChangeHistory;
+import org.protege.owl.server.changes.api.VersionedOntologyDocument;
+import org.protege.owl.server.changes.ChangeMetaData;
+import org.protege.owl.server.changes.OntologyDocumentRevision;
 import org.semanticweb.owlapi.model.*;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;

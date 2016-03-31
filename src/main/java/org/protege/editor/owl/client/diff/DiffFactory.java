@@ -1,13 +1,24 @@
 package org.protege.editor.owl.client.diff;
 
-import org.protege.editor.owl.client.diff.model.*;
-import org.protege.owl.server.api.UserId;
+import org.protege.editor.owl.client.diff.model.Change;
+import org.protege.editor.owl.client.diff.model.ChangeDetails;
+import org.protege.editor.owl.client.diff.model.ChangeId;
+import org.protege.editor.owl.client.diff.model.ChangeMode;
+import org.protege.editor.owl.client.diff.model.ChangeType;
+import org.protege.editor.owl.client.diff.model.CommitId;
+import org.protege.editor.owl.client.diff.model.CommitMetadata;
+import org.protege.editor.owl.client.diff.model.Review;
+import org.protege.editor.owl.client.diff.model.ReviewStatus;
+import org.protege.editor.owl.client.diff.model.RevisionTag;
+
 import org.semanticweb.owlapi.model.OWLObject;
 import org.semanticweb.owlapi.model.OWLOntologyChange;
 
 import java.util.Date;
 import java.util.Optional;
 import java.util.Set;
+
+import edu.stanford.protege.metaproject.api.UserId;
 
 /**
  * @author Rafael Gonçalves <br>

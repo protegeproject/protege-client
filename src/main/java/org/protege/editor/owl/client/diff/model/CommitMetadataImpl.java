@@ -1,12 +1,13 @@
 package org.protege.editor.owl.client.diff.model;
 
-import com.google.common.base.MoreObjects;
-import com.google.common.base.Objects;
-import org.protege.owl.server.api.UserId;
+import static com.google.common.base.Preconditions.checkNotNull;
 
 import java.util.Date;
 
-import static com.google.common.base.Preconditions.checkNotNull;
+import com.google.common.base.MoreObjects;
+import com.google.common.base.Objects;
+
+import edu.stanford.protege.metaproject.api.UserId;
 
 /**
  * @author Rafael Gonçalves <br>

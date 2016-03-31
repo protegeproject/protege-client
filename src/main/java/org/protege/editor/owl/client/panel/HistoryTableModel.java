@@ -4,8 +4,8 @@ import java.util.Date;
 
 import javax.swing.table.AbstractTableModel;
 
-import org.protege.owl.server.api.ChangeHistory;
-import org.protege.owl.server.api.ChangeMetaData;
+import org.protege.owl.server.changes.ChangeMetaData;
+import org.protege.owl.server.changes.api.ChangeHistory;
 
 public class HistoryTableModel extends AbstractTableModel {
 	private static final long serialVersionUID = -1510343786742688724L;
@@ -20,7 +20,7 @@ public class HistoryTableModel extends AbstractTableModel {
         USER("Author", String.class) {
             @Override
             public String getValue(ChangeMetaData metaData) {
-                return metaData.getUserId().getUserName();
+                return metaData.getUserID().getUserName(); // TODO: To review later
             }             
         },
         COMMIT_COMMENT("Comment", String.class) {

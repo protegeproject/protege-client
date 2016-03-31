@@ -5,10 +5,10 @@ import org.protege.editor.core.ui.error.ErrorLogPanel;
 import org.protege.editor.owl.OWLEditorKit;
 import org.protege.editor.owl.client.diff.model.*;
 import org.protege.editor.owl.model.OWLModelManager;
-import org.protege.owl.server.api.ChangeMetaData;
 import org.protege.owl.server.api.client.Client;
-import org.protege.owl.server.api.client.VersionedOntologyDocument;
 import org.protege.owl.server.api.exception.OWLServerException;
+import org.protege.owl.server.changes.ChangeMetaData;
+import org.protege.owl.server.changes.api.VersionedOntologyDocument;
 import org.protege.owl.server.util.ClientUtilities;
 import org.semanticweb.owlapi.model.OWLOntologyChange;
 

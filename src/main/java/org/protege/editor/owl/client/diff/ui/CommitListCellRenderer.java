@@ -23,7 +23,7 @@ public class CommitListCellRenderer extends DefaultListCellRenderer {
         label.setToolTipText("Comment: " + c.getComment());
 
         String dateStr = GuiUtils.getShortenedFormattedDate(c.getDate());
-        label.setText("<html><strong>" + dateStr + " · " + c.getAuthor().getUserName() +
+        label.setText("<html><strong>" + dateStr + " · " + c.getAuthor().toString() + // TODO: To review later
                 "</strong><br><p style=\"padding-top:3;" + (!isSelected ? "color:gray;" : "") + "\"><nobr>" + c.getComment() + "</nobr></p></html>");
         return label;
     }

@@ -9,9 +9,9 @@ import java.util.List;
 import javax.swing.table.AbstractTableModel;
 
 import org.protege.owl.server.api.client.Client;
-import org.protege.owl.server.api.client.RemoteServerDirectory;
-import org.protege.owl.server.api.client.RemoteServerDocument;
 import org.protege.owl.server.api.exception.OWLServerException;
+import org.protege.owl.server.changes.api.RemoteServerDirectory;
+import org.protege.owl.server.changes.api.RemoteServerDocument;
 
 
 public class ServerTableModel extends AbstractTableModel {

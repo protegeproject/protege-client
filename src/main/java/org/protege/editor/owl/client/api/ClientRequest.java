@@ -58,11 +58,11 @@ public interface ClientRequest {
     /**
      * Committing the given ontology changes to be applied in the server.
      *
-     * @param projectId
+     * @param project
      *            The target project for such changes
      * @param changes
      *            A list of changes coming from the client
      * @throws ServerRequestException
      */
-    void commit(ProjectId projectId, CommitBundle changes) throws ServerRequestException;
+    void commit(Project project, CommitBundle changes) throws ServerRequestException;
 }

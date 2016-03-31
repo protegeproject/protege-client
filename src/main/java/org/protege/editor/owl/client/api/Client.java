@@ -5,7 +5,9 @@ import edu.stanford.protege.metaproject.api.ClientConfiguration;
 
 public interface Client extends ClientRequest {
 
-    ClientConfiguration getClientConfiguration();
-
     AuthToken getAuthToken();
+
+    String getServerAddress();
+
+    ClientConfiguration getClientConfiguration();
 }

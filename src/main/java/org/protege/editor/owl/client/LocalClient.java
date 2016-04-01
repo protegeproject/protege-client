@@ -10,21 +10,33 @@ import java.rmi.RemoteException;
 
 import edu.stanford.protege.metaproject.api.AuthToken;
 import edu.stanford.protege.metaproject.api.ClientConfiguration;
+import edu.stanford.protege.metaproject.api.PolicyAgent;
 import edu.stanford.protege.metaproject.api.Project;
 import edu.stanford.protege.metaproject.api.ProjectId;
 import edu.stanford.protege.metaproject.api.User;
 import edu.stanford.protege.metaproject.api.UserId;
+import edu.stanford.protege.metaproject.impl.Operations;
 
 public class LocalClient implements Client {
 
     private AuthToken authToken;
     private String serverAddress;
 
+    private ProjectId projectId;
+    private UserId userId;
+
     private RmiServer server;
+    private ClientConfiguration clientConfiguration;
+    private PolicyAgent policyAgent;
 
     public LocalClient(AuthToken authToken, String serverAddress) {
         this.authToken = authToken;
         this.serverAddress = serverAddress;
+        userId = authToken.getUser().getId();
+    }
+
+    public void setActiveProject(ProjectId projectId) {
+        this.projectId = projectId;
     }
 
     @Override
@@ -32,21 +44,16 @@ public class LocalClient implements Client {
         return authToken;
     }
 
-    @Override
-    public String getServerAddress() {
-        return serverAddress;
-    }
-
-    @Override
-    public ClientConfiguration getClientConfiguration() {
-        // TODO Auto-generated method stub
-        return null;
+    public UserId getUserId() {
+        return userId;
     }
 
     public void connect() throws ServerRequestException {
         if (server == null) {
             try {
                 server = (RmiServer) ServerUtils.getRemoteService(serverAddress, RmiServer.SERVER_SERVICE);
+                clientConfiguration = server.getClientConfiguration(userId);
+                policyAgent = clientConfiguration.getMetaproject().getPolicyAgent();
             }
             catch (RemoteException e) {
                 throw new ServerRequestException(e);
@@ -56,6 +63,8 @@ public class LocalClient implements Client {
 
     public void disconnect() {
         server = null;
+        clientConfiguration = null;
+        policyAgent = null;
     }
 
     @Override
@@ -92,5 +101,130 @@ public class LocalClient implements Client {
     public void commit(Project project, CommitBundle commits) throws ServerRequestException {
         connect();
         server.commit(authToken, project, commits);
+    }
+
+    @Override
+    public boolean canAddAxiom() {
+        return policyAgent.isOperationAllowed(Operations.ADD_AXIOM.getId(), projectId, userId);
+    }
+
+    @Override
+    public boolean canRemoveAxiom() {
+        return policyAgent.isOperationAllowed(Operations.REMOVE_AXIOM.getId(), projectId, userId);
+    }
+
+    @Override
+    public boolean canAddAnnotatation() {
+        return policyAgent.isOperationAllowed(Operations.ADD_ONTOLOGY_ANNOTATION.getId(), projectId, userId);
+    }
+
+    @Override
+    public boolean canRemoveAnnotation() {
+        return policyAgent.isOperationAllowed(Operations.REMOVE_ONTOLOGY_ANNOTATION.getId(), projectId, userId);
+    }
+
+    @Override
+    public boolean canAddImport() {
+        return policyAgent.isOperationAllowed(Operations.ADD_IMPORT.getId(), projectId, userId);
+    }
+
+    @Override
+    public boolean canRemoveImport() {
+        return policyAgent.isOperationAllowed(Operations.REMOVE_IMPORT.getId(), projectId, userId);
+    }
+
+    @Override
+    public boolean canModifyOntologyId() {
+        return policyAgent.isOperationAllowed(Operations.MODIFY_ONTOLOGY_IRI.getId(), projectId, userId);
+    }
+
+    @Override
+    public boolean canAddUser() {
+        return policyAgent.isOperationAllowed(Operations.ADD_USER.getId(), projectId, userId);
+    }
+
+    @Override
+    public boolean canRemoveUser() {
+        return policyAgent.isOperationAllowed(Operations.REMOVE_USER.getId(), projectId, userId);
+    }
+
+    @Override
+    public boolean canModifyUser() {
+        return policyAgent.isOperationAllowed(Operations.MODIFY_USER.getId(), projectId, userId);
+    }
+
+    @Override
+    public boolean canAddProject() {
+        return policyAgent.isOperationAllowed(Operations.ADD_PROJECT.getId(), projectId, userId);
+    }
+
+    @Override
+    public boolean canRemoveProject() {
+        return policyAgent.isOperationAllowed(Operations.REMOVE_PROJECT.getId(), projectId, userId);
+    }
+
+    @Override
+    public boolean canModifyProject() {
+        return policyAgent.isOperationAllowed(Operations.MODIFY_PROJECT.getId(), projectId, userId);
+    }
+
+    @Override
+    public boolean canViewProject() {
+        return policyAgent.isOperationAllowed(Operations.VIEW_PROJECT.getId(), projectId, userId);
+    }
+
+    @Override
+    public boolean canAddRole() {
+        return policyAgent.isOperationAllowed(Operations.ADD_ROLE.getId(), projectId, userId);
+    }
+
+    @Override
+    public boolean canRemoveRole() {
+        return policyAgent.isOperationAllowed(Operations.REMOVE_ROLE.getId(), projectId, userId);
+    }
+
+    @Override
+    public boolean canModifyRole() {
+        return policyAgent.isOperationAllowed(Operations.MODIFY_ROLE.getId(), projectId, userId);
+    }
+
+    @Override
+    public boolean canAddOperation() {
+        return policyAgent.isOperationAllowed(Operations.ADD_OPERATION.getId(), projectId, userId);
+    }
+
+    @Override
+    public boolean caRemoveOperation() {
+        return policyAgent.isOperationAllowed(Operations.REMOVE_OPERATION.getId(), projectId, userId);
+    }
+
+    @Override
+    public boolean canModifyOperation() {
+        return policyAgent.isOperationAllowed(Operations.MODIFY_OPERATION.getId(), projectId, userId);
+    }
+
+    @Override
+    public boolean canAssignRole() {
+        return policyAgent.isOperationAllowed(Operations.ASSIGN_ROLE.getId(), projectId, userId);
+    }
+
+    @Override
+    public boolean canRetractRole() {
+        return policyAgent.isOperationAllowed(Operations.RETRACT_ROLE.getId(), projectId, userId);
+    }
+
+    @Override
+    public boolean canStopServer() {
+        return policyAgent.isOperationAllowed(Operations.STOP_SERVER.getId(), projectId, userId);
+    }
+
+    @Override
+    public boolean canRestartServer() {
+        return policyAgent.isOperationAllowed(Operations.RESTART_SERVER.getId(), projectId, userId);
+    }
+
+    @Override
+    public boolean canModifyServerConfig() {
+        return policyAgent.isOperationAllowed(Operations.MODIFY_SERVER_CONFIG.getId(), projectId, userId);
     }
 }

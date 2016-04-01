@@ -1,13 +1,58 @@
 package org.protege.editor.owl.client.api;
 
 import edu.stanford.protege.metaproject.api.AuthToken;
-import edu.stanford.protege.metaproject.api.ClientConfiguration;
 
 public interface Client extends ClientRequest {
 
     AuthToken getAuthToken();
 
-    String getServerAddress();
+    boolean canAddAxiom();
 
-    ClientConfiguration getClientConfiguration();
+    boolean canRemoveAxiom();
+
+    boolean canAddAnnotatation();
+
+    boolean canRemoveAnnotation();
+
+    boolean canAddImport();
+
+    boolean canRemoveImport();
+
+    boolean canModifyOntologyId();
+
+    boolean canAddUser();
+
+    boolean canRemoveUser();
+
+    boolean canModifyUser();
+
+    boolean canAddProject();
+
+    boolean canRemoveProject();
+
+    boolean canModifyProject();
+
+    boolean canViewProject();
+
+    boolean canAddRole();
+
+    boolean canRemoveRole();
+
+    boolean canModifyRole();
+
+    boolean canAddOperation();
+
+    boolean caRemoveOperation();
+
+    boolean canModifyOperation();
+
+    boolean canAssignRole();
+
+    boolean canRetractRole();
+
+    boolean canStopServer();
+
+    boolean canRestartServer();
+
+    boolean canModifyServerConfig();
 }

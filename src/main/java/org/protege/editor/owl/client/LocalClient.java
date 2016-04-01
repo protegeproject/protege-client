@@ -10,6 +10,7 @@ import java.rmi.RemoteException;
 
 import edu.stanford.protege.metaproject.api.AuthToken;
 import edu.stanford.protege.metaproject.api.ClientConfiguration;
+import edu.stanford.protege.metaproject.api.OperationId;
 import edu.stanford.protege.metaproject.api.PolicyAgent;
 import edu.stanford.protege.metaproject.api.Project;
 import edu.stanford.protege.metaproject.api.ProjectId;
@@ -226,5 +227,10 @@ public class LocalClient implements Client {
     @Override
     public boolean canModifyServerConfig() {
         return policyAgent.isOperationAllowed(Operations.MODIFY_SERVER_CONFIG.getId(), projectId, userId);
+    }
+
+    @Override
+    public boolean canPerformOperation(OperationId operationId) {
+        return policyAgent.isOperationAllowed(operationId, projectId, userId);
     }
 }

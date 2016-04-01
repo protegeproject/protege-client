@@ -1,6 +1,7 @@
 package org.protege.editor.owl.client.api;
 
 import edu.stanford.protege.metaproject.api.AuthToken;
+import edu.stanford.protege.metaproject.api.OperationId;
 
 public interface Client extends ClientRequest {
 
@@ -55,4 +56,6 @@ public interface Client extends ClientRequest {
     boolean canRestartServer();
 
     boolean canModifyServerConfig();
+
+    boolean canPerformOperation(OperationId operationId);
 }

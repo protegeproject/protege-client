@@ -1,6 +1,6 @@
 package org.protege.editor.owl.client.connect;
 
-import org.protege.owl.server.connect.RmiLoginService;
+import org.protege.owl.server.connect.RemoteLoginService;
 
 import edu.stanford.protege.metaproject.Manager;
 import edu.stanford.protege.metaproject.api.AuthToken;
@@ -17,15 +17,15 @@ import edu.stanford.protege.metaproject.api.UserId;
  */
 public final class DefaultUserAuthenticator implements UserAuthenticator {
 
-    private RmiLoginService loginService;
+    private RemoteLoginService loginService;
 
-    public DefaultUserAuthenticator(RmiLoginService loginService) {
+    public DefaultUserAuthenticator(RemoteLoginService loginService) {
         this.loginService = loginService;
     }
 
     @Override
     public AuthToken hasValidCredentials(UserId userId, PlainPassword password) throws Exception {
-        Salt userSalt = loginService.getSalt(userId);
+        Salt userSalt = (Salt) loginService.getEncryptionKey(userId);
         Factory f = Manager.getFactory();
         SaltedPasswordDigest passwordDigest = f.getSaltedPasswordDigest(password.getPassword(), userSalt);
         AuthToken authToken = loginService.login(userId, passwordDigest);

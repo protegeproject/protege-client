@@ -8,7 +8,7 @@ import edu.stanford.protege.metaproject.api.ProjectId;
 import edu.stanford.protege.metaproject.api.User;
 import edu.stanford.protege.metaproject.api.UserId;
 
-public interface ClientRequest {
+public interface ClientRequests {
 
     /**
      * Adding a new user to the server.

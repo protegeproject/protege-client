@@ -3,7 +3,7 @@ package org.protege.editor.owl.client.api;
 import edu.stanford.protege.metaproject.api.AuthToken;
 import edu.stanford.protege.metaproject.api.OperationId;
 
-public interface Client extends ClientRequest {
+public interface Client extends ClientRequests {
 
     AuthToken getAuthToken();
 

@@ -49,7 +49,7 @@ public class LocalClient implements Client {
         return userId;
     }
 
-    public void connect() throws ServerRequestException {
+    protected void connect() throws ServerRequestException {
         if (server == null) {
             try {
                 server = (RmiServer) ServerUtils.getRemoteService(serverAddress, RmiServer.SERVER_SERVICE);

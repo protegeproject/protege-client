@@ -10,10 +10,13 @@ import java.rmi.RemoteException;
 
 import edu.stanford.protege.metaproject.api.AuthToken;
 import edu.stanford.protege.metaproject.api.ClientConfiguration;
+import edu.stanford.protege.metaproject.api.Operation;
 import edu.stanford.protege.metaproject.api.OperationId;
 import edu.stanford.protege.metaproject.api.PolicyAgent;
 import edu.stanford.protege.metaproject.api.Project;
 import edu.stanford.protege.metaproject.api.ProjectId;
+import edu.stanford.protege.metaproject.api.Role;
+import edu.stanford.protege.metaproject.api.RoleId;
 import edu.stanford.protege.metaproject.api.User;
 import edu.stanford.protege.metaproject.api.UserId;
 import edu.stanford.protege.metaproject.impl.Operations;
@@ -81,6 +84,12 @@ public class LocalClient implements Client {
     }
 
     @Override
+    public void modifyUser(UserId userId) throws ServerRequestException {
+        connect();
+        server.modifyUser(authToken, userId);
+    }
+
+    @Override
     public void addProject(Project newProject) throws ServerRequestException {
         connect();
         server.addProject(authToken, newProject);
@@ -93,9 +102,69 @@ public class LocalClient implements Client {
     }
 
     @Override
+    public void modifyProject(ProjectId projectId) throws ServerRequestException {
+        connect();
+        server.modifyProject(authToken, projectId);
+    }
+
+    @Override
     public void viewProject(ProjectId projectId) throws ServerRequestException {
         connect();
         server.viewProject(authToken, projectId);
+    }
+
+    @Override
+    public void addRole(Role newRole) throws ServerRequestException {
+        connect();
+        server.addRole(authToken, newRole);
+    }
+
+    @Override
+    public void removeRole(RoleId roleId) throws ServerRequestException {
+        connect();
+        server.removeRole(authToken, roleId);
+    }
+
+    @Override
+    public void modifyRole(RoleId roleId) throws ServerRequestException {
+        connect();
+        server.modifyRole(authToken, roleId);
+    }
+
+    @Override
+    public void addOperation(Operation operation) throws ServerRequestException {
+        connect();
+        server.addOperation(authToken, operation);
+    }
+
+    @Override
+    public void removeOperation(OperationId operationId) throws ServerRequestException {
+        connect();
+        server.removeOperation(authToken, operationId);
+    }
+
+    @Override
+    public void modifyOperation(OperationId operationId) throws ServerRequestException {
+        connect();
+        server.modifyOperation(authToken, operationId);
+    }
+
+    @Override
+    public void assignRole(UserId userId, ProjectId projectId, RoleId roleId) throws ServerRequestException {
+        connect();
+        server.assignRole(authToken, userId, projectId, roleId);
+    }
+
+    @Override
+    public void retractRole(UserId userId, ProjectId projectId, RoleId roleId) throws ServerRequestException {
+        connect();
+        server.retractRole(authToken, userId, projectId, roleId);
+    }
+
+    @Override
+    public void modifyServerConfiguration(String property, String value) throws ServerRequestException {
+        connect();
+        server.modifyServerConfiguration(authToken, property, value);
     }
 
     @Override

@@ -7,6 +7,8 @@ import org.protege.owl.server.api.exception.ServerRequestException;
 import org.protege.owl.server.connect.RmiServer;
 
 import java.rmi.RemoteException;
+import java.util.Map;
+import java.util.Set;
 
 import edu.stanford.protege.metaproject.api.AuthToken;
 import edu.stanford.protege.metaproject.api.ClientConfiguration;
@@ -301,5 +303,30 @@ public class LocalClient implements Client {
     @Override
     public boolean canPerformOperation(OperationId operationId) {
         return policyAgent.isOperationAllowed(operationId, projectId, userId);
+    }
+
+    @Override
+    public Set<User> getUsers() {
+        return clientConfiguration.getMetaproject().getUserRegistry().getUsers();
+    }
+
+    @Override
+    public Set<Project> getProjects() {
+        return clientConfiguration.getMetaproject().getProjectRegistry().getProjects();
+    }
+
+    @Override
+    public Set<Role> getRoles() {
+        return clientConfiguration.getMetaproject().getRoleRegistry().getRoles();
+    }
+
+    @Override
+    public Set<Operation> getOperations() {
+        return clientConfiguration.getMetaproject().getOperationRegistry().getOperations();
+    }
+
+    @Override
+    public Map<UserId, Map<ProjectId, Set<RoleId>>> getPolicyMappings() {
+        return clientConfiguration.getMetaproject().getPolicy().getPolicyMappings();
     }
 }

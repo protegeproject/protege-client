@@ -84,9 +84,9 @@ public class LocalClient implements Client {
     }
 
     @Override
-    public void modifyUser(UserId userId) throws ServerRequestException {
+    public void modifyUser(UserId userId, User newUser) throws ServerRequestException {
         connect();
-        server.modifyUser(authToken, userId);
+        server.modifyUser(authToken, userId, newUser);
     }
 
     @Override
@@ -102,9 +102,9 @@ public class LocalClient implements Client {
     }
 
     @Override
-    public void modifyProject(ProjectId projectId) throws ServerRequestException {
+    public void modifyProject(ProjectId projectId, Project newProject) throws ServerRequestException {
         connect();
-        server.modifyProject(authToken, projectId);
+        server.modifyProject(authToken, projectId, newProject);
     }
 
     @Override
@@ -126,9 +126,9 @@ public class LocalClient implements Client {
     }
 
     @Override
-    public void modifyRole(RoleId roleId) throws ServerRequestException {
+    public void modifyRole(RoleId roleId, Role newRole) throws ServerRequestException {
         connect();
-        server.modifyRole(authToken, roleId);
+        server.modifyRole(authToken, roleId, newRole);
     }
 
     @Override
@@ -144,9 +144,9 @@ public class LocalClient implements Client {
     }
 
     @Override
-    public void modifyOperation(OperationId operationId) throws ServerRequestException {
+    public void modifyOperation(OperationId operationId, Operation newOperation) throws ServerRequestException {
         connect();
-        server.modifyOperation(authToken, operationId);
+        server.modifyOperation(authToken, operationId, newOperation);
     }
 
     @Override

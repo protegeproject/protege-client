@@ -36,10 +36,12 @@ public interface ClientRequests {
      * Modifying an exiting user in the server.
      * 
      * @param userId
-     *          The user to modify identified by the ID
+     *          The target user to modify identified by the ID
+     * @param newUser
+     *          The new user to replace with
      * @throws ServerRequestException
      */
-    void modifyUser(UserId userId) throws ServerRequestException;
+    void modifyUser(UserId userId, User user) throws ServerRequestException;
 
     /**
      * Adding a new project to the server.
@@ -63,10 +65,12 @@ public interface ClientRequests {
      * Modifying an existing project in the server.
      *
      * @param projectId
-     *            The project to modify identified by its ID.
+     *            The target project to modify identified by its ID.
+     * @param newProject
+     *            The new project to replace with.
      * @throws ServerRequestException
      */
-    void modifyProject(ProjectId projectId) throws ServerRequestException;
+    void modifyProject(ProjectId projectId, Project newProject) throws ServerRequestException;
 
     /**
      * Viewing only the project (similar to read-only permission) from the
@@ -100,10 +104,12 @@ public interface ClientRequests {
      * Modifying an existing role at the server.
      *
      * @param roleId
-     *          The role to modify identified by its ID.
+     *          The target role to modify identified by its ID.
+     * @param newRole
+     *          The new role to replace with.
      * @throws ServerRequestException
      */
-    void modifyRole(RoleId roleId) throws ServerRequestException;
+    void modifyRole(RoleId roleId, Role newRole) throws ServerRequestException;
 
     /**
      * Adding a new operation to the server.
@@ -127,10 +133,12 @@ public interface ClientRequests {
      * Modifying an existing operation at the server.
      *
      * @param operationId
-     *          The operation to modify identified by its ID.
+     *          The target operation to modify identified by its ID.
+     * @param newOperation
+     *          The new operation to replace with.
      * @throws ServerRequestException
      */
-    void modifyOperation(OperationId operationId) throws ServerRequestException;
+    void modifyOperation(OperationId operationId, Operation newOperation) throws ServerRequestException;
 
     /**
      * Assigning a role to a user for a particular project.

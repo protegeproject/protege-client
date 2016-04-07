@@ -43,6 +43,7 @@ public class CommitAction extends AbstractClientAction {
 
     @Override
     public void dispose() throws Exception {
+        super.dispose();
         getOWLModelManager().removeListener(checkVersionOntology);
     }
 

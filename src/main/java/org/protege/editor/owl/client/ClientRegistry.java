@@ -25,7 +25,7 @@ public class ClientRegistry extends EditorKitHook {
 
     @Override
     public void initialise() throws Exception {
-        // TODO Auto-generated method stub
+        // NO-OP
     }
 
     public void setActiveClient(Client client) {
@@ -47,6 +47,6 @@ public class ClientRegistry extends EditorKitHook {
 
     @Override
     public void dispose() throws Exception {
-        // TODO Auto-generated method stub
+        // NO-OP
     }
 }

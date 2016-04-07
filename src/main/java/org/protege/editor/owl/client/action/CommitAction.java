@@ -54,7 +54,7 @@ public class CommitAction extends AbstractClientAction {
             VersionedOntologyDocument vont = findActiveVersionedOntology();
             String commitComment = JOptionPane.showInputDialog(container, "Commit comment: ", "Commit", JOptionPane.PLAIN_MESSAGE);
             if (commitComment != null && !commitComment.isEmpty()) {
-                submit(new DoCommit(getClient(), vont, commitComment));
+                submit(new DoCommit(vont, commitComment));
             }
         }
         catch (Exception e) {
@@ -70,12 +70,10 @@ public class CommitAction extends AbstractClientAction {
     }
 
     private class DoCommit implements Runnable {
-        private Client client;
         private VersionedOntologyDocument versionOntology;
         private String commitcomment;
 
-        public DoCommit(Client client, VersionedOntologyDocument vont, String commitComment) {
-            this.client = client;
+        public DoCommit(VersionedOntologyDocument vont, String commitComment) {
             this.versionOntology = vont;
             this.commitcomment = commitComment;
         }

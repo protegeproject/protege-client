@@ -1,10 +1,9 @@
 package org.protege.editor.owl.client.action;
 
-import org.protege.owl.server.api.client.Client;
+import org.protege.editor.owl.client.api.Client;
+import org.protege.editor.owl.client.util.ChangeUtils;
 import org.protege.owl.server.api.exception.OWLServerException;
-import org.protege.owl.server.changes.api.RevisionPointer;
 import org.protege.owl.server.changes.api.VersionedOntologyDocument;
-import org.protege.owl.server.util.ClientUtilities;
 
 import org.semanticweb.owlapi.model.OWLOntologyChange;
 
@@ -13,6 +12,7 @@ import java.util.List;
 import javax.swing.table.AbstractTableModel;
 
 public class ClientStatusTableModel extends AbstractTableModel {
+
     private static final long serialVersionUID = -465483270258124763L;
 
     public enum Column {
@@ -23,7 +23,7 @@ public class ClientStatusTableModel extends AbstractTableModel {
         SERVER_DOCUMENT("Server document:") {
             @Override
             public String evaluate(Client client, VersionedOntologyDocument vont) {
-                return vont.getServerDocument().getServerLocation().toString();
+                return vont.getRemoteFile().getName();
             }
         },
         CLIENT_REVISION("Local revision:") {
@@ -35,15 +35,14 @@ public class ClientStatusTableModel extends AbstractTableModel {
         SERVER_REVISION("Latest server revision:") {
             @Override
             public String evaluate(Client client, VersionedOntologyDocument vont) throws OWLServerException {
-                return client.evaluateRevisionPointer(vont.getServerDocument(), RevisionPointer.HEAD_REVISION)
-                        .toString();
+                return ChangeUtils.getRemoteHeadRevision(vont).toString();
             }
         },
         UNCOMMITTED_CHANGES("# of uncommitted changes:") {
             @Override
             public String evaluate(Client client, VersionedOntologyDocument vont) throws OWLServerException {
-                List<OWLOntologyChange> changes = ClientUtilities.getUncommittedChanges(client, vont);
-                return "" + changes.size();
+                List<OWLOntologyChange> changes = ChangeUtils.getUncommittedChanges(vont);
+                return changes.size()+"";
             }
         };
 

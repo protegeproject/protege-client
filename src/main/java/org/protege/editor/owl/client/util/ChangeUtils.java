@@ -38,15 +38,8 @@ public class ChangeUtils {
 
     public static List<OWLOntologyChange> getUncommittedChanges(VersionedOntologyDocument versionedOntology)
             throws OWLServerException {
-        ChangeHistory localChanges = versionedOntology.getLocalHistory();
-//        OntologyDocumentRevision localHeadRevision = versionedOntology.getRevision();
-        OntologyDocumentRevision localHeadRevision = localChanges.getEndRevision();
         try {
-            Host remoteHost = versionedOntology.getRemoteHost();
-            RemoteChangeService changeService = getChangeService(remoteHost);
-            
-            File remoteFile = versionedOntology.getRemoteFile();
-            ChangeHistory remoteChanges = changeService.getLatestChanges(remoteFile, localHeadRevision);
+            ChangeHistory remoteChanges = getLatestChanges(versionedOntology);
             if (!remoteChanges.isEmpty()) {
                 versionedOntology.appendLocalHistory(remoteChanges);
             }
@@ -66,5 +59,22 @@ public class ChangeUtils {
         catch (Exception e) {
             throw new OWLServerException(e);
         }
+    }
+
+    public static OntologyDocumentRevision getRemoteHeadRevision(VersionedOntologyDocument versionedOntology) throws OWLServerException {
+        try {
+            return getLatestChanges(versionedOntology).getEndRevision();
+        }
+        catch (Exception e) {
+            throw new OWLServerException(e);
+        }
+    }
+
+    private static ChangeHistory getLatestChanges(VersionedOntologyDocument versionedOntology) throws Exception {
+        final RemoteChangeService changeService = getChangeService(versionedOntology.getRemoteHost());
+        File remoteFile = versionedOntology.getRemoteFile();
+        OntologyDocumentRevision localHeadRevision = versionedOntology.getLocalHistory().getEndRevision();
+        ChangeHistory latestChanges = changeService.getLatestChanges(remoteFile, localHeadRevision);
+        return latestChanges;
     }
 }

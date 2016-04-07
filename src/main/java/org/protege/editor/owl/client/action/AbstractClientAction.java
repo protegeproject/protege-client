@@ -41,6 +41,10 @@ public abstract class AbstractClientAction extends ProtegeOWLAction {
         clientRegistry.dispose();
     }
 
+    protected ClientRegistry getClientRegistry() {
+        return clientRegistry;
+    }
+
     protected Client getClient() {
         return clientRegistry.getActiveClient();
     }

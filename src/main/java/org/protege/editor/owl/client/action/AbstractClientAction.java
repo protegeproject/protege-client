@@ -3,7 +3,11 @@ package org.protege.editor.owl.client.action;
 import org.protege.editor.owl.client.ClientRegistry;
 import org.protege.editor.owl.client.api.Client;
 import org.protege.editor.owl.ui.action.ProtegeOWLAction;
+import org.protege.owl.server.changes.api.VersionedOntologyDocument;
 
+import org.semanticweb.owlapi.model.OWLOntology;
+
+import java.util.Optional;
 import java.util.concurrent.Executors;
 import java.util.concurrent.Future;
 import java.util.concurrent.ScheduledExecutorService;
@@ -41,6 +45,11 @@ public abstract class AbstractClientAction extends ProtegeOWLAction {
         return clientRegistry.getActiveClient();
     }
 
+    protected Optional<VersionedOntologyDocument> getOntologyResource() {
+        OWLOntology ontology = getOWLEditorKit().getModelManager().getActiveOntology();
+        return Optional.ofNullable(clientRegistry.getVersionedOntology(ontology));
+    }
+    
     protected Future<?> submit(Runnable task) {
         return executorService.submit(task);
     }

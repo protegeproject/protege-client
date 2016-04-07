@@ -1,7 +1,6 @@
 package org.protege.editor.owl.client.action;
 
 import org.protege.editor.core.ui.error.ErrorLogPanel;
-import org.protege.editor.owl.client.ClientRegistry;
 import org.protege.editor.owl.client.api.Client;
 import org.protege.editor.owl.client.util.ChangeUtils;
 import org.protege.editor.owl.model.event.OWLModelManagerChangeEvent;
@@ -10,7 +9,6 @@ import org.protege.editor.owl.ui.UIHelper;
 import org.protege.owl.server.changes.ChangeMetaData;
 import org.protege.owl.server.changes.api.VersionedOntologyDocument;
 
-import org.semanticweb.owlapi.model.OWLOntology;
 import org.semanticweb.owlapi.model.OWLOntologyChange;
 
 import java.awt.Container;
@@ -26,8 +24,6 @@ public class CommitAction extends AbstractClientAction {
 
     private static final long serialVersionUID = 4601012273632698091L;
 
-    private ClientRegistry clientRegistry;
-
     private OWLModelManagerListener checkVersionOntology = new OWLModelManagerListener() {
         @Override
         public void handleChange(OWLModelManagerChangeEvent event) {
@@ -42,14 +38,7 @@ public class CommitAction extends AbstractClientAction {
     }
 
     private void updateEnabled() {
-        OWLOntology ontology = getOWLEditorKit().getModelManager().getActiveOntology();
-        VersionedOntologyDocument vont = clientRegistry.getVersionedOntology(ontology);
-        if (vont == null) {
-            setEnabled(false);
-        }
-        else {
-            setEnabled(true);
-        }
+        setEnabled(getOntologyResource().isPresent());
     }
 
     @Override
@@ -64,8 +53,7 @@ public class CommitAction extends AbstractClientAction {
             VersionedOntologyDocument vont = findActiveVersionedOntology();
             String commitComment = JOptionPane.showInputDialog(container, "Commit comment: ", "Commit", JOptionPane.PLAIN_MESSAGE);
             if (commitComment != null && !commitComment.isEmpty()) {
-                Client client = clientRegistry.getActiveClient();
-                submit(new DoCommit(client, vont, commitComment));
+                submit(new DoCommit(getClient(), vont, commitComment));
             }
         }
         catch (Exception e) {
@@ -74,14 +62,10 @@ public class CommitAction extends AbstractClientAction {
     }
 
     private VersionedOntologyDocument findActiveVersionedOntology() throws Exception {
-        OWLOntology ontology = getOWLEditorKit().getModelManager().getActiveOntology();
-        VersionedOntologyDocument vont = clientRegistry.getVersionedOntology(ontology);
-        if (vont == null) {
-            String template = "The ontology <%s> does not link to the server";
-            String message = String.format(template, ontology.getOntologyID().getOntologyIRI());
-            throw new Exception(message);
+        if (!getOntologyResource().isPresent()) {
+            throw new Exception("The current active ontology does not link to the server");
         }
-        return vont;
+        return getOntologyResource().get();
     }
 
     private class DoCommit implements Runnable {

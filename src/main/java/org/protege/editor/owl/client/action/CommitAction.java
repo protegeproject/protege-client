@@ -7,7 +7,6 @@ import org.protege.editor.owl.client.util.ChangeUtils;
 import org.protege.editor.owl.model.event.OWLModelManagerChangeEvent;
 import org.protege.editor.owl.model.event.OWLModelManagerListener;
 import org.protege.editor.owl.ui.UIHelper;
-import org.protege.editor.owl.ui.action.ProtegeOWLAction;
 import org.protege.owl.server.changes.ChangeMetaData;
 import org.protege.owl.server.changes.api.VersionedOntologyDocument;
 
@@ -18,18 +17,14 @@ import java.awt.Container;
 import java.awt.Frame;
 import java.awt.event.ActionEvent;
 import java.util.List;
-import java.util.concurrent.ExecutorService;
-import java.util.concurrent.Executors;
 
 import javax.swing.JLabel;
 import javax.swing.JOptionPane;
 import javax.swing.SwingUtilities;
 
-public class CommitAction extends ProtegeOWLAction {
+public class CommitAction extends AbstractClientAction {
 
     private static final long serialVersionUID = 4601012273632698091L;
-
-    private ExecutorService service = Executors.newSingleThreadExecutor();
 
     private ClientRegistry clientRegistry;
 
@@ -42,7 +37,7 @@ public class CommitAction extends ProtegeOWLAction {
 
     @Override
     public void initialise() throws Exception {
-        clientRegistry = ClientRegistry.getInstance(getOWLEditorKit());
+        super.initialise();
         getOWLModelManager().addListener(checkVersionOntology);
     }
 
@@ -70,7 +65,7 @@ public class CommitAction extends ProtegeOWLAction {
             String commitComment = JOptionPane.showInputDialog(container, "Commit comment: ", "Commit", JOptionPane.PLAIN_MESSAGE);
             if (commitComment != null && !commitComment.isEmpty()) {
                 Client client = clientRegistry.getActiveClient();
-                service.submit(new DoCommit(client, vont, commitComment));
+                submit(new DoCommit(client, vont, commitComment));
             }
         }
         catch (Exception e) {

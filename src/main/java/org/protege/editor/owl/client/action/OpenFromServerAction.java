@@ -1,27 +1,26 @@
 package org.protege.editor.owl.client.action;
 
+import org.protege.editor.owl.client.panel.OpenFromServerDialog;
+
 import java.awt.event.ActionEvent;
 
-import org.protege.editor.owl.client.panel.OpenFromServerDialog;
-import org.protege.editor.owl.ui.action.ProtegeOWLAction;
-
-public class OpenFromServerAction extends ProtegeOWLAction {
+public class OpenFromServerAction extends AbstractClientAction {
 
     private static final long serialVersionUID = 1921872278936323557L;
 
     @Override
     public void initialise() throws Exception {
-        // NO-OP
+        super.initialise();
     }
 
     @Override
     public void dispose() throws Exception {
-        // NO-OP
+        super.dispose();
     }
 
     @Override
     public void actionPerformed(ActionEvent e) {
-        OpenFromServerDialog dialog = new OpenFromServerDialog(getOWLEditorKit());
+        OpenFromServerDialog dialog = new OpenFromServerDialog(getClientRegistry());
         dialog.setLocationRelativeTo(getOWLWorkspace());
         dialog.setVisible(true);
     }

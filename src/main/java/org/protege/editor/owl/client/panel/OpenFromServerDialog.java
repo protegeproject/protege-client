@@ -3,16 +3,13 @@ package org.protege.editor.owl.client.panel;
 import org.protege.editor.core.ui.error.ErrorLogPanel;
 import org.protege.editor.owl.OWLEditorKit;
 import org.protege.editor.owl.client.ClientPreferences;
+import org.protege.editor.owl.client.ClientRegistry;
 import org.protege.editor.owl.client.LocalClient;
 import org.protege.editor.owl.client.api.Client;
 import org.protege.editor.owl.client.connect.DefaultUserAuthenticator;
 import org.protege.editor.owl.client.util.ServerUtils;
 import org.protege.editor.owl.ui.UIHelper;
-import org.protege.owl.server.api.exception.OWLServerException;
-import org.protege.owl.server.changes.api.RemoteServerDirectory;
 import org.protege.owl.server.connect.RmiLoginService;
-import org.protege.owl.server.connect.RmiServer;
-import org.protege.owl.server.connect.rmi.RMIClient;
 
 import java.awt.BorderLayout;
 import java.awt.Color;
@@ -25,7 +22,6 @@ import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
-import java.rmi.registry.Registry;
 import java.util.ArrayList;
 import java.util.Collections;
 
@@ -54,46 +50,32 @@ public class OpenFromServerDialog extends JDialog {
 
     private static String currentPassword = null;
 
-    private Client client;
+    private ClientRegistry clientRegistry;
     private JButton cancelButton;
     private JButton connectButton;
     private JButton openButton;
-    private JButton uploadButton;
     private JComboBox<String> serverLocationsList;
     private JPanel mainPanel;
     private JPasswordField password;
     private JTable serverContentTable;
     private JTextField username;
     private OWLEditorKit editorKit;
-    private RemoteServerDirectory currentDirectory;
     private ServerTableModel tableModel;
 
-    public OpenFromServerDialog(OWLEditorKit editorKit) {
+    public OpenFromServerDialog(ClientRegistry clientRegistry) {
+        this.clientRegistry = clientRegistry;
         setTitle("Open from Protege OWL Server");
         setPreferredSize(new Dimension(650, 650));
         setModal(true);
         setResizable(true);
-
-        this.editorKit = editorKit;
-
         initUI();
-
-        if (password.getPassword().length == 0) {
-            password.requestFocus();
-        }
-        else {
-            connectButton.requestFocus();
-        }
     }
 
     private void initUI() {
         mainPanel = new JPanel(new GridBagLayout());
 
-        /*
-         * gridx, gridy, gridwidth, gridheight, weightx, weighty, anchor, fill,
-         * insets, ipadx, ipady
-         */
-        GridBagConstraints c = new GridBagConstraints(0, 0, 1, 1, 0, 0,GridBagConstraints.LINE_START,
+        // gridx, gridy, gridwidth, gridheight, weightx, weighty, anchor, fill, insets, ipadx, ipady
+        GridBagConstraints c = new GridBagConstraints(0, 0, 1, 1, 0, 0, GridBagConstraints.LINE_START,
                 GridBagConstraints.NONE, new Insets(12, 12, 0, 11), 0, 0);
         JLabel serverIRILabel = new JLabel("Server address:");
         mainPanel.add(serverIRILabel, c);
@@ -169,6 +151,13 @@ public class OpenFromServerDialog extends JDialog {
         getRootPane().setDefaultButton(connectButton);
         pack();
         getContentPane().add(mainPanel);
+
+        if (password.getPassword().length == 0) {
+            password.requestFocus();
+        }
+        else {
+            connectButton.requestFocus();
+        }
     }
 
     private JComboBox<String> getServerLocationsList() {
@@ -179,19 +168,13 @@ public class OpenFromServerDialog extends JDialog {
         ClientPreferences prefs = ClientPreferences.getInstance();
         ArrayList<String> serverLocations = new ArrayList<String>(prefs.getServerLocations());
 
-        if (serverLocations.isEmpty()) {
-            serverLocationsList.addItem(new String(RMIClient.SCHEME + "://localhost:4875/"));
-            serverLocationsList.setSelectedIndex(0);
+        Collections.sort(serverLocations);
+        for (String serverLocation : serverLocations) {
+            serverLocationsList.addItem(serverLocation);
         }
-        else {
-            Collections.sort(serverLocations);
-            for (String serverLocation : serverLocations) {
-                serverLocationsList.addItem(serverLocation);
-            }
-            String lastLocation = prefs.getLastServerLocation();
-            if (serverLocations.contains(lastLocation)) {
-                serverLocationsList.setSelectedItem(lastLocation);
-            }
+        String lastLocation = prefs.getLastServerLocation();
+        if (serverLocations.contains(lastLocation)) {
+            serverLocationsList.setSelectedItem(lastLocation);
         }
         return serverLocationsList;
     }
@@ -217,12 +200,6 @@ public class OpenFromServerDialog extends JDialog {
         JScrollPane scrollPane = new JScrollPane(serverContentTable);
         panel.add(scrollPane, BorderLayout.CENTER);
 
-        JPanel buttonPanel = new JPanel(new FlowLayout(FlowLayout.RIGHT, 0, 5));
-        uploadButton = new JButton("Upload");
-        uploadButton.addActionListener(new UploadActionListener());
-        buttonPanel.add(uploadButton);
-        panel.add(buttonPanel, BorderLayout.SOUTH);
-
         return panel;
     }
 
@@ -241,13 +218,7 @@ public class OpenFromServerDialog extends JDialog {
             }
         });
         panel.add(cancelButton);
-
         return panel;
-    }
-
-    public void setDirectory(RemoteServerDirectory dir) throws OWLServerException {
-//        tableModel.loadServerData(client, dir);
-        currentDirectory = dir;
     }
 
     private void saveServerConnectionData() {
@@ -274,58 +245,24 @@ public class OpenFromServerDialog extends JDialog {
         prefs.setCurrentUsername(username.getText());
     }
 
-    @Deprecated
-    private class ConnectToServerActionListener implements ActionListener {
-
-        @Override
-        public void actionPerformed(ActionEvent e) {
-//            String serverIRI = (String) serverLocationsList.getSelectedItem();
-//            IRI serverLocation = IRI.create(serverIRI);
-//            ServerConnectionManager connectionManager = ServerConnectionManager.get(editorKit);
-//            try {
-//                client = connectionManager.createClient(serverLocation, username.getText(),
-//                        new String(password.getPassword()));
-//                if (client != null) {
-//
-//                    /*
-//                     * After a successful connection, save server location to
-//                     * the preferences so that users don't have to retype this
-//                     * information.
-//                     */
-//                    saveServerConnectionData();
-//
-//                    // Do we still need this code?
-//                    RemoteServerDocument dir = client.getServerDocument(serverLocation);
-//                    if (dir instanceof RemoteServerDirectory) {
-//                        setDirectory((RemoteServerDirectory) dir);
-//                    }
-//
-//                }
-//            }
-//            catch (OWLServerException ose) {
-//                ErrorLogPanel.showErrorDialog(ose);
-//                UIHelper ui = new UIHelper(editorKit);
-//                ui.showDialog("Error connecting to server", new JLabel("Connection failed - " + ose.getMessage()));
-//            }
-        }
-    }
-
     private class ConnectServerActionListener implements ActionListener {
 
         @Override
         public void actionPerformed(ActionEvent evt) {
             String serverLocation = (String) serverLocationsList.getSelectedItem();
             try {
-                RmiLoginService loginService = (RmiLoginService) ServerUtils.getRemoteService(serverLocation, RmiLoginService.LOGIN_SERVICE);
+                RmiLoginService loginService = (RmiLoginService) ServerUtils.getRemoteService(serverLocation,
+                        RmiLoginService.LOGIN_SERVICE);
                 DefaultUserAuthenticator authenticator = new DefaultUserAuthenticator(loginService);
-                
+
                 Factory f = Manager.getFactory();
                 UserId userId = f.getUserId(username.getText());
                 PlainPassword plainPassword = f.getPlainPassword(password.getPassword().toString());
-                
+
                 AuthToken authToken = authenticator.hasValidCredentials(userId, plainPassword);
-                client = new LocalClient(authToken, serverLocation);
-                
+                Client client = new LocalClient(authToken, serverLocation);
+                clientRegistry.setActiveClient(client);
+
                 saveServerConnectionData();
             }
             catch (Exception e) {
@@ -344,64 +281,31 @@ public class OpenFromServerDialog extends JDialog {
     }
 
     protected void openOntologyDocument() {
-//        try {
-//            int row = serverContentTable.getSelectedRow();
-//            if (row != -1) {
-//                RemoteServerDocument doc = tableModel.getValueAt(row);
-//                if (doc instanceof RemoteOntologyDocument) {
-//                    RemoteOntologyDocument remoteOntology = (RemoteOntologyDocument) doc;
-//                    ServerConnectionManager connectionManager = ServerConnectionManager.get(editorKit);
-//                    VersionedOntologyDocument vont = ClientUtilities.loadOntology(client,
-//                            editorKit.getOWLModelManager().getOWLOntologyManager(), remoteOntology);
-//                    connectionManager.addVersionedOntology(vont);
-//                    editorKit.getOWLModelManager().setActiveOntology(vont.getOntology());
-//                    OpenFromServerDialog.this.setVisible(false);
-//                }
-//            }
-//            else {
-//                JOptionPane.showMessageDialog(mainPanel,
-//                        "Select a document from the 'Ontology Documents' list to open.", "Error",
-//                        JOptionPane.ERROR_MESSAGE);
-//            }
-//        }
-//        catch (Exception ex) {
-//            ErrorLogPanel.showErrorDialog(ex);
-//        }
-    }
-
-    private class UploadActionListener implements ActionListener {
-
-        @Override
-        public void actionPerformed(ActionEvent e) {
-//            if (client != null) {
-//                try {
-//                    JRootPane rootPane = OpenFromServerDialog.this.getRootPane();
-//                    File input = UIUtil.openFile(rootPane, "Choose file to upload", "OWL File",
-//                            UIHelper.OWL_EXTENSIONS);
-//                    if (input != null) {
-//                        OWLOntologyManager manager = OWLManager.createOWLOntologyManager();
-//                        OWLOntology ontology = manager.loadOntologyFromOntologyDocument(input);
-//                        String name = (String) JOptionPane.showInputDialog(rootPane, "Name: ",
-//                                "Upload Ontology Document", JOptionPane.PLAIN_MESSAGE);
-//                        if ((name != null) && (name.length() > 0)) {
-//                            StringBuilder builder = new StringBuilder();
-//                            builder.append((String) serverLocationsList.getSelectedItem());
-//                            if (!(builder.toString().endsWith("/"))) {
-//                                builder.append("/");
-//                            }
-//                            builder.append(URLEncoder.encode(name, "UTF-8"));
-//                            builder.append(".history");
-//                            IRI serverIRI = IRI.create(builder.toString());
-//                            ClientUtilities.createServerOntology(client, serverIRI,
-//                                    new ChangeMetaData("Uploaded from file " + input), ontology);
-//                            tableModel.loadServerData(client, currentDirectory);
-//                        }
-//                    }
-//                }
-//                catch (Exception ex) {
-//                    ErrorLogPanel.showErrorDialog(ex);
-//                }
-//            }
-        }
+        // try {
+        // int row = serverContentTable.getSelectedRow();
+        // if (row != -1) {
+        // RemoteServerDocument doc = tableModel.getValueAt(row);
+        // if (doc instanceof RemoteOntologyDocument) {
+        // RemoteOntologyDocument remoteOntology = (RemoteOntologyDocument) doc;
+        // ServerConnectionManager connectionManager =
+        // ServerConnectionManager.get(editorKit);
+        // VersionedOntologyDocument vont = ClientUtilities.loadOntology(client,
+        // editorKit.getOWLModelManager().getOWLOntologyManager(),
+        // remoteOntology);
+        // connectionManager.addVersionedOntology(vont);
+        // editorKit.getOWLModelManager().setActiveOntology(vont.getOntology());
+        // OpenFromServerDialog.this.setVisible(false);
+        // }
+        // }
+        // else {
+        // JOptionPane.showMessageDialog(mainPanel,
+        // "Select a document from the 'Ontology Documents' list to open.",
+        // "Error",
+        // JOptionPane.ERROR_MESSAGE);
+        // }
+        // }
+        // catch (Exception ex) {
+        // ErrorLogPanel.showErrorDialog(ex);
+        // }
     }
 }

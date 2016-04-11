@@ -1,86 +1,104 @@
 package org.protege.editor.owl.client.action;
 
 import org.protege.editor.core.ui.error.ErrorLogPanel;
-import org.protege.editor.owl.client.connect.ServerConnectionManager;
 import org.protege.editor.owl.client.panel.ChangeListTableModel;
-import org.protege.editor.owl.ui.action.ProtegeOWLAction;
+import org.protege.editor.owl.client.util.ChangeUtils;
+import org.protege.editor.owl.ui.UIHelper;
 import org.protege.editor.owl.ui.renderer.OWLCellRenderer;
-import org.protege.owl.server.api.client.Client;
-import org.protege.owl.server.api.exception.UserDeclinedAuthenticationException;
 import org.protege.owl.server.changes.api.VersionedOntologyDocument;
-import org.protege.owl.server.util.ClientUtilities;
-import org.semanticweb.owlapi.model.OWLObject;
-import org.semanticweb.owlapi.model.OWLOntology;
-import org.semanticweb.owlapi.model.OWLOntologyChange;
-import org.semanticweb.owlapi.model.OWLOntologyID;
 
-import javax.swing.*;
-import java.awt.*;
+import org.semanticweb.owlapi.model.OWLObject;
+import org.semanticweb.owlapi.model.OWLOntologyChange;
+
+import java.awt.Frame;
 import java.awt.event.ActionEvent;
 import java.util.List;
 
-public class ShowUncommittedChangesAction extends ProtegeOWLAction {
+import javax.swing.JDialog;
+import javax.swing.JLabel;
+import javax.swing.JOptionPane;
+import javax.swing.JScrollPane;
+import javax.swing.JTable;
+import javax.swing.SwingUtilities;
+
+public class ShowUncommittedChangesAction extends AbstractClientAction {
+
     private static final long serialVersionUID = -7628375950917155764L;
 
     @Override
     public void initialise() throws Exception {
-        // NO-OP
+        super.initialise();
     }
 
     @Override
     public void dispose() throws Exception {
-        // NO-OP
+        super.dispose();
     }
 
     @Override
     public void actionPerformed(ActionEvent arg0) {
         try {
-            ServerConnectionManager connectionManager = ServerConnectionManager.get(getOWLEditorKit());
-            OWLOntology ontology = getOWLModelManager().getActiveOntology();
-
-            VersionedOntologyDocument vont = connectionManager.getVersionedOntology(ontology);
-            if (vont != null) {
-                Client client = connectionManager.createClient(ontology);
-                List<OWLOntologyChange> uncommitted = ClientUtilities.getUncommittedChanges(client, vont);
-                connectionManager.saveHistoryInBackground(vont);
+            final VersionedOntologyDocument vont = findActiveVersionedOntology();
+                List<OWLOntologyChange> uncommitted = ChangeUtils.getUncommittedChanges(vont);
                 if (uncommitted.isEmpty()) {
                     JOptionPane.showMessageDialog(getOWLWorkspace(), "No uncommitted changes");
                 }
                 else {
-                    displayUncommittedChanges(ontology, uncommitted);
+                    saveLocalHistoryInBackground(vont);
+                    displayUncommittedChanges(uncommitted);
                 }
             }
-            else {
-                JOptionPane.showMessageDialog(getOWLWorkspace(), "Active ontology is not connected to a server.");
-            }
-        }
-        catch (UserDeclinedAuthenticationException udae) {
-            ; // ignore this because the user knows that he didn't authenticate.
-        }
         catch (Exception e) {
             ErrorLogPanel.showErrorDialog(e);
         }
     }
 
-    private void displayUncommittedChanges(OWLOntology ontology, List<OWLOntologyChange> uncommitted) {
-        String shortOntologyName = "";
-        OWLOntologyID ontologyId = ontology.getOntologyID();
-        if (!ontologyId.isAnonymous()) {
-            shortOntologyName = ontology.getOntologyID().getOntologyIRI().get().getRemainder().get();
+    private VersionedOntologyDocument findActiveVersionedOntology() throws Exception {
+        if (!getOntologyResource().isPresent()) {
+            throw new Exception("The current active ontology does not link to the server");
         }
-        if (shortOntologyName.isEmpty()) {
-            shortOntologyName = ontologyId.toString();
-        }
+        return getOntologyResource().get();
+    }
+
+    private void saveLocalHistoryInBackground(VersionedOntologyDocument vont) {
+        submit(new SaveHistory(vont));
+    }
+
+    private void displayUncommittedChanges(List<OWLOntologyChange> uncommitted) {
         ChangeListTableModel tableModel = new ChangeListTableModel(uncommitted);
         JTable table = new JTable(tableModel);
         table.setDefaultRenderer(OWLObject.class, new OWLCellRenderer(getOWLEditorKit()));
         JScrollPane pane = new JScrollPane(table);
         JDialog dialog = new JDialog((Frame) SwingUtilities.getAncestorOfClass(Frame.class, getOWLWorkspace()));
-        dialog.setTitle("Uncommitted changes for " + shortOntologyName);
+        dialog.setTitle("Synchronize changes");
         dialog.getContentPane().add(pane);
         dialog.setResizable(true);
         dialog.setModal(true);
         dialog.pack();
         dialog.setVisible(true);
+    }
+
+    private class SaveHistory implements Runnable {
+        private VersionedOntologyDocument vont;
+
+        public SaveHistory(VersionedOntologyDocument vont) {
+            this.vont = vont;
+        }
+
+        @Override
+        public void run() {
+            try {
+                vont.saveLocalHistory();
+            }
+            catch (Exception e) {
+                handleError(e);
+            }
+        }
+    }
+
+    private void handleError(Throwable t) {
+        ErrorLogPanel.showErrorDialog(t);
+        UIHelper ui = new UIHelper(getOWLEditorKit());
+        ui.showDialog("Error at client instance", new JLabel("Save history failed: " + t.getMessage()));
     }
 }

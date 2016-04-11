@@ -1,7 +1,9 @@
 package org.protege.editor.owl.client.action;
 
+import org.protege.editor.core.ui.error.ErrorLogPanel;
 import org.protege.editor.owl.client.ClientRegistry;
 import org.protege.editor.owl.client.api.Client;
+import org.protege.editor.owl.ui.UIHelper;
 import org.protege.editor.owl.ui.action.ProtegeOWLAction;
 import org.protege.owl.server.changes.api.VersionedOntologyDocument;
 
@@ -14,6 +16,9 @@ import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.ScheduledFuture;
 import java.util.concurrent.ThreadFactory;
 import java.util.concurrent.TimeUnit;
+
+import javax.swing.JLabel;
+import javax.swing.JOptionPane;
 
 public abstract class AbstractClientAction extends ProtegeOWLAction {
 
@@ -60,5 +65,11 @@ public abstract class AbstractClientAction extends ProtegeOWLAction {
 
     protected ScheduledFuture<?> submit(Runnable task, long delay) {
         return executorService.scheduleWithFixedDelay(task, delay, delay, TimeUnit.SECONDS);
+    }
+
+    protected void showErrorDialog(String title, String message, Throwable t) {
+        ErrorLogPanel.showErrorDialog(t);
+        UIHelper ui = new UIHelper(getOWLEditorKit());
+        ui.showDialog(title, new JLabel(message), JOptionPane.ERROR_MESSAGE);
     }
 }

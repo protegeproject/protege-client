@@ -4,8 +4,6 @@ import edu.stanford.protege.metaproject.api.OperationId;
 
 public interface PolicyMediator {
 
-
-
     boolean canAddAxiom();
 
     boolean canRemoveAxiom();
@@ -42,7 +40,7 @@ public interface PolicyMediator {
 
     boolean canAddOperation();
 
-    boolean caRemoveOperation();
+    boolean canRemoveOperation();
 
     boolean canModifyOperation();
 

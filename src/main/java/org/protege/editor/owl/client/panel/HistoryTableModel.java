@@ -8,50 +8,50 @@ import org.protege.owl.server.changes.ChangeMetaData;
 import org.protege.owl.server.changes.api.ChangeHistory;
 
 public class HistoryTableModel extends AbstractTableModel {
-	private static final long serialVersionUID = -1510343786742688724L;
+    private static final long serialVersionUID = -1510343786742688724L;
 
-	public enum Column {
+    public enum Column {
         DATE("Date", Date.class) {
             @Override
             public Date getValue(ChangeMetaData metaData) {
                 return metaData.getDate();
-            } 
+            }
         },
         USER("Author", String.class) {
             @Override
             public String getValue(ChangeMetaData metaData) {
                 return metaData.getUserID().getUserName(); // TODO: To review later
-            }             
+            }
         },
         COMMIT_COMMENT("Comment", String.class) {
             @Override
             public String getValue(ChangeMetaData metaData) {
                 return metaData.getCommitComment();
-            } 
+            }
         };
-        
+
         private String name;
-        private Class<?> clazz;            
-        
-        
+        private Class<?> clazz;
+
         private Column(String name, Class<?> clazz) {
             this.name = name;
             this.clazz = clazz;
         }
-        
+
         public String getName() {
             return name;
         }
-        
+
         public Class<?> getClazz() {
             return clazz;
         }
-        
+
         public abstract Object getValue(ChangeMetaData metaData);
-        
+
     }
+
     private ChangeHistory changes;
-    
+
     public HistoryTableModel(ChangeHistory changes) {
         this.changes = changes;
     }
@@ -65,13 +65,13 @@ public class HistoryTableModel extends AbstractTableModel {
     public int getColumnCount() {
         return Column.values().length;
     }
-    
+
     @Override
     public Class<?> getColumnClass(int columnIndex) {
         Column col = Column.values()[columnIndex];
         return col.getClazz();
     }
-    
+
     @Override
     public String getColumnName(int column) {
         Column col = Column.values()[column];
@@ -84,5 +84,4 @@ public class HistoryTableModel extends AbstractTableModel {
         ChangeMetaData metaData = changes.getMetaData(changes.getStartRevision().add(rowIndex));
         return col.getValue(metaData);
     }
-
 }

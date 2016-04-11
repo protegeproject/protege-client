@@ -1,21 +1,21 @@
 package org.protege.editor.owl.client.action;
 
-import org.protege.editor.core.ui.error.ErrorLogPanel;
+import org.protege.editor.owl.client.api.exception.SynchronizationException;
 import org.protege.editor.owl.client.panel.ChangeListTableModel;
 import org.protege.editor.owl.client.util.ChangeUtils;
-import org.protege.editor.owl.ui.UIHelper;
 import org.protege.editor.owl.ui.renderer.OWLCellRenderer;
+import org.protege.owl.server.api.exception.OWLServerException;
 import org.protege.owl.server.changes.api.VersionedOntologyDocument;
 
 import org.semanticweb.owlapi.model.OWLObject;
 import org.semanticweb.owlapi.model.OWLOntologyChange;
 
+import java.awt.Container;
 import java.awt.Frame;
 import java.awt.event.ActionEvent;
 import java.util.List;
 
 import javax.swing.JDialog;
-import javax.swing.JLabel;
 import javax.swing.JOptionPane;
 import javax.swing.JScrollPane;
 import javax.swing.JTable;
@@ -38,26 +38,23 @@ public class ShowUncommittedChangesAction extends AbstractClientAction {
     @Override
     public void actionPerformed(ActionEvent arg0) {
         try {
-            final VersionedOntologyDocument vont = findActiveVersionedOntology();
-                List<OWLOntologyChange> uncommitted = ChangeUtils.getUncommittedChanges(vont);
-                if (uncommitted.isEmpty()) {
-                    JOptionPane.showMessageDialog(getOWLWorkspace(), "No uncommitted changes");
-                }
-                else {
-                    saveLocalHistoryInBackground(vont);
-                    displayUncommittedChanges(uncommitted);
-                }
+            final VersionedOntologyDocument vont = getActiveVersionedOntology();
+            List<OWLOntologyChange> uncommitted = ChangeUtils.getUncommittedChanges(vont);
+            if (uncommitted.isEmpty()) {
+                Container container = SwingUtilities.getAncestorOfClass(Frame.class, getOWLWorkspace());
+                JOptionPane.showMessageDialog(container, "No uncommitted changes");
             }
-        catch (Exception e) {
-            ErrorLogPanel.showErrorDialog(e);
+            else {
+                saveLocalHistoryInBackground(vont);
+                displayUncommittedChanges(uncommitted);
+            }
         }
-    }
-
-    private VersionedOntologyDocument findActiveVersionedOntology() throws Exception {
-        if (!getOntologyResource().isPresent()) {
-            throw new Exception("The current active ontology does not link to the server");
+        catch (SynchronizationException e) {
+            showSynchronizationErrorDialog(e.getMessage(), e);
         }
-        return getOntologyResource().get();
+        catch (OWLServerException e) {
+            showSynchronizationErrorDialog("Show uncommitted changes failed: " + e.getMessage(), e);
+        }
     }
 
     private void saveLocalHistoryInBackground(VersionedOntologyDocument vont) {
@@ -91,14 +88,8 @@ public class ShowUncommittedChangesAction extends AbstractClientAction {
                 vont.saveLocalHistory();
             }
             catch (Exception e) {
-                handleError(e);
+                showSynchronizationErrorDialog("Save local history failed: " + e.getMessage(), e);
             }
         }
-    }
-
-    private void handleError(Throwable t) {
-        ErrorLogPanel.showErrorDialog(t);
-        UIHelper ui = new UIHelper(getOWLEditorKit());
-        ui.showDialog("Error at client instance", new JLabel("Save history failed: " + t.getMessage()));
     }
 }

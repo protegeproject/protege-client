@@ -1,6 +1,7 @@
 package org.protege.editor.owl.client.action;
 
-import org.protege.editor.core.ui.error.ErrorLogPanel;
+import org.protege.editor.owl.client.api.exception.SynchronizationException;
+import org.protege.owl.server.changes.api.VersionedOntologyDocument;
 
 import java.awt.event.ActionEvent;
 import java.util.concurrent.ScheduledFuture;
@@ -30,10 +31,16 @@ public class EnableAutoUpdateAction extends AbstractClientAction {
     }
 
     @Override
-    public void actionPerformed(ActionEvent e) {
+    public void actionPerformed(ActionEvent event) {
         killAutoUpdate();
         if (checkBoxMenuItem.isSelected()) {
-            autoUpdate = submit(new AutoUpdate(), 15); // TODO Make the auto-update timing adjustable
+            try {
+                final VersionedOntologyDocument vont = getActiveVersionedOntology();
+                autoUpdate = submit(new AutoUpdate(vont), 15); // TODO Make the auto-update timing adjustable
+            }
+            catch (SynchronizationException e) {
+                showSynchronizationErrorDialog(e.getMessage(), e);
+            }
         }
     }
 
@@ -45,14 +52,18 @@ public class EnableAutoUpdateAction extends AbstractClientAction {
     }
 
     private class AutoUpdate implements Runnable {
+        private VersionedOntologyDocument vont;
+
         private boolean lastRunSuccessful = true;
+
+        public AutoUpdate(VersionedOntologyDocument vont) {
+            this.vont = vont;
+        }
 
         @Override
         public void run() {
             try {
-                if (getOntologyResource().isPresent()) {
-//                    getClient(). TODO: Implement update operation in the server
-                }
+//                  TODO: Implement update operation in the server
                 lastRunSuccessful = true;
             }
 //            catch (UserDeclinedAuthenticationException udae) {
@@ -61,7 +72,7 @@ public class EnableAutoUpdateAction extends AbstractClientAction {
 //            }
             catch (Throwable t) {
                 if (!lastRunSuccessful) {
-                    ErrorLogPanel.showErrorDialog(t);
+                    showSynchronizationErrorDialog("Autoupdate failed: " + t.getMessage(), t);
                 }
                 lastRunSuccessful = false;
             }

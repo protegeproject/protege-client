@@ -3,6 +3,7 @@ package org.protege.editor.owl.client.action;
 import org.protege.editor.core.ui.error.ErrorLogPanel;
 import org.protege.editor.owl.client.ClientRegistry;
 import org.protege.editor.owl.client.api.Client;
+import org.protege.editor.owl.client.api.exception.SynchronizationException;
 import org.protege.editor.owl.ui.UIHelper;
 import org.protege.editor.owl.ui.action.ProtegeOWLAction;
 import org.protege.owl.server.changes.api.VersionedOntologyDocument;
@@ -58,7 +59,14 @@ public abstract class AbstractClientAction extends ProtegeOWLAction {
         OWLOntology ontology = getOWLEditorKit().getModelManager().getActiveOntology();
         return Optional.ofNullable(clientRegistry.getVersionedOntology(ontology));
     }
-    
+
+    protected VersionedOntologyDocument getActiveVersionedOntology() throws SynchronizationException {
+        if (getOntologyResource().isPresent()) {
+            return getOntologyResource().get();
+        }
+        throw new SynchronizationException("The current active ontology does not link to the server");
+    }
+
     protected Future<?> submit(Runnable task) {
         return executorService.submit(task);
     }
@@ -67,9 +75,9 @@ public abstract class AbstractClientAction extends ProtegeOWLAction {
         return executorService.scheduleWithFixedDelay(task, delay, delay, TimeUnit.SECONDS);
     }
 
-    protected void showErrorDialog(String title, String message, Throwable t) {
+    protected void showSynchronizationErrorDialog(String message, Throwable t) {
         ErrorLogPanel.showErrorDialog(t);
         UIHelper ui = new UIHelper(getOWLEditorKit());
-        ui.showDialog(title, new JLabel(message), JOptionPane.ERROR_MESSAGE);
+        ui.showDialog("Synchronization error", new JLabel(message), JOptionPane.ERROR_MESSAGE);
     }
 }

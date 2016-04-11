@@ -1,10 +1,9 @@
 package org.protege.editor.owl.client.action;
 
-import org.protege.editor.core.ui.error.ErrorLogPanel;
+import org.protege.editor.owl.client.api.exception.SynchronizationException;
 import org.protege.editor.owl.client.util.ChangeUtils;
 import org.protege.editor.owl.model.event.OWLModelManagerChangeEvent;
 import org.protege.editor.owl.model.event.OWLModelManagerListener;
-import org.protege.editor.owl.ui.UIHelper;
 import org.protege.owl.server.changes.ChangeMetaData;
 import org.protege.owl.server.changes.api.VersionedOntologyDocument;
 
@@ -15,7 +14,6 @@ import java.awt.Frame;
 import java.awt.event.ActionEvent;
 import java.util.List;
 
-import javax.swing.JLabel;
 import javax.swing.JOptionPane;
 import javax.swing.SwingUtilities;
 
@@ -50,22 +48,15 @@ public class CommitAction extends AbstractClientAction {
     public void actionPerformed(ActionEvent arg0) {
         Container container = SwingUtilities.getAncestorOfClass(Frame.class, getOWLWorkspace());
         try {
-            final VersionedOntologyDocument vont = findActiveVersionedOntology();
+            final VersionedOntologyDocument vont = getActiveVersionedOntology();
             String commitComment = JOptionPane.showInputDialog(container, "Commit comment: ", "Commit", JOptionPane.PLAIN_MESSAGE);
             if (commitComment != null && !commitComment.isEmpty()) {
                 submit(new DoCommit(vont, commitComment));
             }
         }
-        catch (Exception e) {
-            handleError(e);
+        catch (SynchronizationException e) {
+            showSynchronizationErrorDialog(e.getMessage(), e);
         }
-    }
-
-    private VersionedOntologyDocument findActiveVersionedOntology() throws Exception {
-        if (!getOntologyResource().isPresent()) {
-            throw new Exception("The current active ontology does not link to the server");
-        }
-        return getOntologyResource().get();
     }
 
     private class DoCommit implements Runnable {
@@ -89,14 +80,8 @@ public class CommitAction extends AbstractClientAction {
 //                client.commit(project, commits);
             }
             catch (Exception e) {
-                handleError(e);
+                showSynchronizationErrorDialog("Commit failed: " + e.getMessage(), e);
             }
         }
-    }
-
-    private void handleError(Throwable t) {
-        ErrorLogPanel.showErrorDialog(t);
-        UIHelper ui = new UIHelper(getOWLEditorKit());
-        ui.showDialog("Error connecting to server", new JLabel("Commit failed: " + t.getMessage()));
     }
 }

@@ -1,14 +1,9 @@
 package org.protege.editor.owl.client.action;
 
-import org.protege.editor.core.ui.error.ErrorLogPanel;
-import org.protege.editor.owl.client.util.ChangeUtils;
-import org.protege.editor.owl.ui.UIHelper;
-import org.protege.owl.server.api.exception.OWLServerException;
+import org.protege.editor.owl.client.api.exception.SynchronizationException;
 import org.protege.owl.server.changes.api.VersionedOntologyDocument;
 
 import java.awt.event.ActionEvent;
-
-import javax.swing.JLabel;
 
 public class UpdateAction extends AbstractClientAction {
 
@@ -27,23 +22,12 @@ public class UpdateAction extends AbstractClientAction {
     @Override
     public void actionPerformed(ActionEvent event) {
         try {
-            final VersionedOntologyDocument vont = findActiveVersionedOntology();
-            updateOntologyInBackground(vont);
+            final VersionedOntologyDocument vont = getActiveVersionedOntology();
+            submit(new DoUpdate(vont));
         }
-        catch (Exception e) {
-            ErrorLogPanel.showErrorDialog(e);
+        catch (SynchronizationException e) {
+            showSynchronizationErrorDialog(e.getMessage(), e);
         }
-    }
-
-    private VersionedOntologyDocument findActiveVersionedOntology() throws Exception {
-        if (!getOntologyResource().isPresent()) {
-            throw new Exception("The current active ontology does not link to the server");
-        }
-        return getOntologyResource().get();
-    }
-
-    private void updateOntologyInBackground(VersionedOntologyDocument vont) {
-        submit(new DoUpdate(vont));
     }
 
     private class DoUpdate implements Runnable {
@@ -55,18 +39,7 @@ public class UpdateAction extends AbstractClientAction {
 
         @Override
         public void run() {
-            try {
-                ChangeUtils.getLatestChanges(vont);
-            }
-            catch (OWLServerException e) {
-                handleError(e);
-            }
+//              TODO: Implement update operation in the server
         }
-    }
-
-    private void handleError(Throwable t) {
-        ErrorLogPanel.showErrorDialog(t);
-        UIHelper ui = new UIHelper(getOWLEditorKit());
-        ui.showDialog("Error at client instance", new JLabel("Save history failed: " + t.getMessage()));
     }
 }

@@ -1,10 +1,10 @@
 package org.protege.editor.owl.client.action;
 
-import org.protege.editor.core.ui.error.ErrorLogPanel;
+import org.protege.editor.owl.client.api.exception.SynchronizationException;
 import org.protege.editor.owl.client.util.ChangeUtils;
 import org.protege.editor.owl.model.event.OWLModelManagerChangeEvent;
 import org.protege.editor.owl.model.event.OWLModelManagerListener;
-import org.protege.editor.owl.ui.UIHelper;
+import org.protege.owl.server.api.exception.OWLServerException;
 import org.protege.owl.server.changes.api.VersionedOntologyDocument;
 
 import java.awt.BorderLayout;
@@ -45,7 +45,7 @@ public class ShowStatusAction extends AbstractClientAction {
     @Override
     public void actionPerformed(ActionEvent arg0) {
         try {
-            final VersionedOntologyDocument vont = findActiveVersionedOntology();
+            final VersionedOntologyDocument vont = getActiveVersionedOntology();
 
             JDialog dialog = new JDialog();
             dialog.setTitle("Client status");
@@ -71,17 +71,11 @@ public class ShowStatusAction extends AbstractClientAction {
             dialog.setVisible(true);
 
         }
-        catch (Exception e) {
-            ErrorLogPanel.showErrorDialog(e);
-            UIHelper ui = new UIHelper(getOWLEditorKit());
-            ui.showDialog("Error connecting to server", new JLabel("Show status failed: " + e.getMessage()));
+        catch (SynchronizationException e) {
+            showSynchronizationErrorDialog(e.getMessage(), e);
         }
-    }
-
-    private VersionedOntologyDocument findActiveVersionedOntology() throws Exception {
-        if (!getOntologyResource().isPresent()) {
-            throw new Exception("The current active ontology does not link to the server");
+        catch (OWLServerException e) {
+            showSynchronizationErrorDialog("Show change status failed: " + e.getMessage(), e);
         }
-        return getOntologyResource().get();
     }
 }

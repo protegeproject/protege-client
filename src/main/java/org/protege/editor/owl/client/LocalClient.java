@@ -50,8 +50,9 @@ public class LocalClient implements Client {
         return authToken;
     }
 
-    public UserId getUserId() {
-        return userId;
+    @Override
+    public User getUser() {
+        return authToken.getUser();
     }
 
     protected void connect() throws ServerRequestException {
@@ -266,7 +267,7 @@ public class LocalClient implements Client {
     }
 
     @Override
-    public boolean caRemoveOperation() {
+    public boolean canRemoveOperation() {
         return policyAgent.isOperationAllowed(Operations.REMOVE_OPERATION.getId(), projectId, userId);
     }
 
@@ -306,22 +307,40 @@ public class LocalClient implements Client {
     }
 
     @Override
-    public Set<User> getUsers() {
-        return clientConfiguration.getMetaproject().getUserRegistry().getUsers();
-    }
-
-    @Override
     public Set<Project> getProjects() {
-        return clientConfiguration.getMetaproject().getProjectRegistry().getProjects();
+        return null;
+//        return clientConfiguration.getMetaproject().getPolicy().getProjects(userId);
     }
 
     @Override
     public Set<Role> getRoles() {
-        return clientConfiguration.getMetaproject().getRoleRegistry().getRoles();
+        // TODO Auto-generated method stub
+        return null;
     }
 
     @Override
     public Set<Operation> getOperations() {
+        // TODO Auto-generated method stub
+        return null;
+    }
+
+    @Override
+    public Set<User> getAllUsers() {
+        return clientConfiguration.getMetaproject().getUserRegistry().getUsers();
+    }
+
+    @Override
+    public Set<Project> getAllProjects() {
+        return clientConfiguration.getMetaproject().getProjectRegistry().getProjects();
+    }
+
+    @Override
+    public Set<Role> getAllRoles() {
+        return clientConfiguration.getMetaproject().getRoleRegistry().getRoles();
+    }
+
+    @Override
+    public Set<Operation> getAllOperations() {
         return clientConfiguration.getMetaproject().getOperationRegistry().getOperations();
     }
 

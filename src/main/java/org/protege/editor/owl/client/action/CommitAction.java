@@ -4,7 +4,6 @@ import org.protege.editor.owl.client.api.exception.SynchronizationException;
 import org.protege.editor.owl.client.util.ChangeUtils;
 import org.protege.editor.owl.model.event.OWLModelManagerChangeEvent;
 import org.protege.editor.owl.model.event.OWLModelManagerListener;
-import org.protege.owl.server.changes.ChangeMetaData;
 import org.protege.owl.server.changes.api.VersionedOntologyDocument;
 
 import org.semanticweb.owlapi.model.OWLOntologyChange;
@@ -60,22 +59,22 @@ public class CommitAction extends AbstractClientAction {
     }
 
     private class DoCommit implements Runnable {
-        private VersionedOntologyDocument versionOntology;
+        private VersionedOntologyDocument vont;
         private String commitcomment;
 
         public DoCommit(VersionedOntologyDocument vont, String commitComment) {
-            this.versionOntology = vont;
+            this.vont = vont;
             this.commitcomment = commitComment;
         }
 
         @Override
         public void run() {
-            ChangeMetaData metaData = new ChangeMetaData(commitcomment);
+//            ChangeMetaData metaData = new ChangeMetaData(commitcomment);
             try {
 //                DocumentFactory factory = new DocumentFactoryImpl();
 //                RemoteOntologyDocument serverDoc = versionOntology.getServerDocument();
 //                OntologyDocumentRevision revision = versionOntology.getRevision();
-                List<OWLOntologyChange> uncommittedChanges = ChangeUtils.getUncommittedChanges(versionOntology);
+                List<OWLOntologyChange> uncommittedChanges = ChangeUtils.getUncommittedChanges(vont);
 //                CommitBundle commits = new CommitBundles(uncommittedChanges);
 //                client.commit(project, commits);
             }

@@ -1,15 +1,13 @@
 package org.protege.editor.owl.client.diff.ui;
 
 import org.protege.editor.core.Disposable;
-import org.protege.editor.core.ui.error.ErrorLogPanel;
 import org.protege.editor.owl.OWLEditorKit;
+import org.protege.editor.owl.client.ClientRegistry;
+import org.protege.editor.owl.client.api.Client;
 import org.protege.editor.owl.client.diff.model.*;
 import org.protege.editor.owl.model.OWLModelManager;
-import org.protege.owl.server.api.client.Client;
-import org.protege.owl.server.api.exception.OWLServerException;
 import org.protege.owl.server.changes.ChangeMetaData;
 import org.protege.owl.server.changes.api.VersionedOntologyDocument;
-import org.protege.owl.server.util.ClientUtilities;
 import org.semanticweb.owlapi.model.OWLOntologyChange;
 
 import javax.swing.*;
@@ -155,13 +153,13 @@ public class ReviewButtonsPanel extends JPanel implements Disposable {
                 if (commitComment == null) {
                     return; // user pressed cancel
                 }
-                Client client = diffManager.getCurrentClient().get();
-                ChangeMetaData metaData = new ChangeMetaData("[Review] " + commitComment);
-                try {
-                    ClientUtilities.commit(client, metaData, vont);
-                } catch (OWLServerException e1) {
-                    ErrorLogPanel.showErrorDialog(e1);
-                }
+                Client client = ClientRegistry.getInstance(editorKit).getActiveClient();
+                ChangeMetaData metaData = new ChangeMetaData(client.getUser(), "[Review] " + commitComment);
+//                try {
+//                    client.commit(client, metaData, vont); TODO: Implement commit later
+//                } catch (OWLServerException e1) {
+//                    ErrorLogPanel.showErrorDialog(e1);
+//                }
                 diffManager.setSelectedCommitToLatest();
             }
             JOptionPane.showMessageDialog(owner, "The reviews have been successfully committed", "Reviews committed", JOptionPane.INFORMATION_MESSAGE);

@@ -95,7 +95,7 @@ public class AuthorPanel extends JPanel implements Disposable {
             OntologyDocumentRevision rev = changes.getStartRevision();
             while (changes.getMetaData(rev) != null) {
                 ChangeMetaData metaData = changes.getMetaData(rev);
-                UserId user = metaData.getUserId();
+                UserId user = metaData.getAuthorId();
                 if (!users.contains(user)) {
                     users.add(user);
                 }

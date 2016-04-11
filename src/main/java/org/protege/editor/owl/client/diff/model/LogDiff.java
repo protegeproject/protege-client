@@ -82,7 +82,7 @@ public class LogDiff {
         String commitComment = (metaData.getCommitComment() != null ? metaData.getCommitComment() : "");
         // produce a revision tag that uses the hashcode of the commit metadata
         RevisionTag revisionTag = getRevisionTag(metaData.hashCode() + "");
-        CommitMetadata commitMetadata = diffFactory.createCommitMetadata(diffFactory.createCommitId(metaData.hashCode()+""), metaData.getUserId(), metaData.getDate(), commitComment);
+        CommitMetadata commitMetadata = diffFactory.createCommitMetadata(diffFactory.createCommitId(metaData.hashCode()+""), metaData.getAuthorId(), metaData.getDate(), commitComment);
         Multimap<ChangeDetails, OWLOntologyChange> multimap = HashMultimap.create();
         ontChanges.stream().filter(ontChange -> !isCustomPropertyDeclaration(ontChange)).forEach(ontChange -> {
             if (isAnnotated(ontChange)) { // custom change

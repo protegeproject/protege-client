@@ -1,26 +1,37 @@
 package org.protege.editor.owl.client.diff.model;
 
+import static com.google.common.base.Preconditions.checkNotNull;
+
 import org.protege.editor.core.Disposable;
 import org.protege.editor.core.ui.error.ErrorLogPanel;
 import org.protege.editor.owl.OWLEditorKit;
-import org.protege.editor.owl.client.connect.ServerConnectionManager;
+import org.protege.editor.owl.client.ClientRegistry;
+import org.protege.editor.owl.client.api.Client;
 import org.protege.editor.owl.client.diff.DiffFactory;
 import org.protege.editor.owl.client.diff.DiffFactoryImpl;
 import org.protege.editor.owl.model.OWLModelManager;
-import org.protege.owl.server.changes.api.ChangeHistory;
-import org.protege.owl.server.changes.api.VersionedOntologyDocument;
 import org.protege.owl.server.changes.ChangeMetaData;
 import org.protege.owl.server.changes.OntologyDocumentRevision;
-import org.protege.owl.server.api.client.Client;
-import org.protege.owl.server.api.exception.OWLServerException;
-import org.semanticweb.owlapi.model.*;
+import org.protege.owl.server.changes.api.ChangeHistory;
+import org.protege.owl.server.changes.api.VersionedOntologyDocument;
 
-import java.util.*;
+import org.semanticweb.owlapi.model.AddAxiom;
+import org.semanticweb.owlapi.model.OWLAnnotation;
+import org.semanticweb.owlapi.model.OWLAnnotationProperty;
+import org.semanticweb.owlapi.model.OWLAxiom;
+import org.semanticweb.owlapi.model.OWLOntology;
+import org.semanticweb.owlapi.model.OWLOntologyChange;
+import org.semanticweb.owlapi.model.RemoveAxiom;
+
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.HashSet;
+import java.util.List;
+import java.util.Optional;
+import java.util.Set;
 import java.util.stream.Collectors;
 
 import edu.stanford.protege.metaproject.api.UserId;
-
-import static com.google.common.base.Preconditions.checkNotNull;
 
 /**
  * @author Rafael Gonçalves <br>
@@ -73,18 +84,13 @@ public class LogDiffManager implements Disposable {
     }
 
     public Optional<VersionedOntologyDocument> getVersionedOntologyDocument() {
-        ServerConnectionManager connectionManager = ServerConnectionManager.get(editorKit);
-        VersionedOntologyDocument vont = connectionManager.getVersionedOntology(getActiveOntology());
+        OWLOntology activeOntology = editorKit.getModelManager().getActiveOntology();
+        VersionedOntologyDocument vont = ClientRegistry.getInstance(editorKit).getVersionedOntology(activeOntology);
         return Optional.ofNullable(vont);
     }
 
     public Optional<Client> getCurrentClient() {
-        Client client = null;
-        try {
-            client = ServerConnectionManager.get(editorKit).createClient(getActiveOntology());
-        } catch (OWLServerException e) {
-            e.printStackTrace();
-        }
+        Client client = ClientRegistry.getInstance(editorKit).getActiveClient();
         return Optional.ofNullable(client);
     }
 
@@ -140,10 +146,10 @@ public class LogDiffManager implements Disposable {
         while (changes.getMetaData(rev) != null) {
             ChangeMetaData metaData = changes.getMetaData(rev);
             if (event.equals(LogDiffEvent.AUTHOR_SELECTION_CHANGED) && getSelectedAuthor() != null &&
-                    (metaData.getUserId().equals(getSelectedAuthor()) || getSelectedAuthor().equals(LogDiffManager.ALL_AUTHORS)) ||
+                    (metaData.getAuthorId().equals(getSelectedAuthor()) || getSelectedAuthor().equals(LogDiffManager.ALL_AUTHORS)) ||
                     event.equals(LogDiffEvent.ONTOLOGY_UPDATED)) {
                 CommitMetadata c = diffFactory.createCommitMetadata(diffFactory.createCommitId(metaData.hashCode()+""),
-                        metaData.getUserId(), metaData.getDate(), metaData.getCommitComment());
+                        metaData.getAuthorId(), metaData.getDate(), metaData.getCommitComment());
                 if (!commits.contains(c)) {
                     commits.add(c);
                 }

@@ -9,6 +9,7 @@ import org.semanticweb.owlapi.model.OWLOntologyChange;
 
 import java.util.List;
 
+import javax.annotation.Nonnull;
 import javax.swing.table.AbstractTableModel;
 
 public class ClientStatusTableModel extends AbstractTableModel {
@@ -62,7 +63,7 @@ public class ClientStatusTableModel extends AbstractTableModel {
     private Client client;
     private VersionedOntologyDocument vont;
 
-    public ClientStatusTableModel(Client client, VersionedOntologyDocument vont) {
+    public ClientStatusTableModel(@Nonnull Client client, @Nonnull VersionedOntologyDocument vont) {
         this.client = client;
         this.vont = vont;
     }
@@ -79,9 +80,6 @@ public class ClientStatusTableModel extends AbstractTableModel {
 
     @Override
     public Object getValueAt(int rowIndex, int columnIndex) {
-        if (vont == null) {
-            return "Not a server ontology";
-        }
         Row row = Row.values()[rowIndex];
         Column column = Column.values()[columnIndex];
         try {

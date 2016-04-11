@@ -1,7 +1,7 @@
 package org.protege.editor.owl.client.diff.ui;
 
 import org.protege.editor.owl.client.diff.model.*;
-import org.protege.owl.server.api.UserId;
+import edu.stanford.protege.metaproject.api.UserId;
 import org.semanticweb.owlapi.model.OWLObject;
 
 import javax.swing.table.AbstractTableModel;

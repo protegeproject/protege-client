@@ -61,20 +61,32 @@ public class ChangeUtils {
         }
     }
 
-    public static OntologyDocumentRevision getRemoteHeadRevision(VersionedOntologyDocument versionedOntology) throws OWLServerException {
+    public static ChangeHistory getAllChanges(VersionedOntologyDocument versionedOntology) throws OWLServerException {
         try {
-            return getLatestChanges(versionedOntology).getEndRevision();
+            final RemoteChangeService changeService = getChangeService(versionedOntology.getRemoteHost());
+            File remoteFile = versionedOntology.getRemoteFile();
+            ChangeHistory allChanges = changeService.getAllChanges(remoteFile);
+            return allChanges;
         }
         catch (Exception e) {
             throw new OWLServerException(e);
         }
     }
 
-    private static ChangeHistory getLatestChanges(VersionedOntologyDocument versionedOntology) throws Exception {
-        final RemoteChangeService changeService = getChangeService(versionedOntology.getRemoteHost());
-        File remoteFile = versionedOntology.getRemoteFile();
-        OntologyDocumentRevision localHeadRevision = versionedOntology.getLocalHistory().getEndRevision();
-        ChangeHistory latestChanges = changeService.getLatestChanges(remoteFile, localHeadRevision);
-        return latestChanges;
+    public static ChangeHistory getLatestChanges(VersionedOntologyDocument versionedOntology) throws OWLServerException {
+        try {
+            final RemoteChangeService changeService = getChangeService(versionedOntology.getRemoteHost());
+            File remoteFile = versionedOntology.getRemoteFile();
+            OntologyDocumentRevision localHeadRevision = versionedOntology.getLocalHistory().getEndRevision();
+            ChangeHistory latestChanges = changeService.getLatestChanges(remoteFile, localHeadRevision);
+            return latestChanges;
+        }
+        catch (Exception e) {
+            throw new OWLServerException(e);
+        }
+    }
+
+    public static OntologyDocumentRevision getRemoteHeadRevision(VersionedOntologyDocument versionedOntology) throws OWLServerException {
+        return getLatestChanges(versionedOntology).getEndRevision();
     }
 }

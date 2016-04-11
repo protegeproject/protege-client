@@ -8,25 +8,26 @@ import org.protege.owl.server.changes.ChangeMetaData;
 import org.protege.owl.server.changes.api.ChangeHistory;
 
 public class HistoryTableModel extends AbstractTableModel {
+
     private static final long serialVersionUID = -1510343786742688724L;
 
     public enum Column {
         DATE("Date", Date.class) {
             @Override
-            public Date getValue(ChangeMetaData metaData) {
-                return metaData.getDate();
+            public Date getValue(ChangeMetaData metadata) {
+                return metadata.getDate();
             }
         },
         USER("Author", String.class) {
             @Override
-            public String getValue(ChangeMetaData metaData) {
-                return metaData.getUserID().getUserName(); // TODO: To review later
+            public String getValue(ChangeMetaData metadata) {
+                return metadata.getAuthor().getId().get();
             }
         },
         COMMIT_COMMENT("Comment", String.class) {
             @Override
-            public String getValue(ChangeMetaData metaData) {
-                return metaData.getCommitComment();
+            public String getValue(ChangeMetaData metadata) {
+                return metadata.getCommitComment();
             }
         };
 
@@ -46,8 +47,7 @@ public class HistoryTableModel extends AbstractTableModel {
             return clazz;
         }
 
-        public abstract Object getValue(ChangeMetaData metaData);
-
+        public abstract Object getValue(ChangeMetaData metadata);
     }
 
     private ChangeHistory changes;

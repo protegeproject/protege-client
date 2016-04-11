@@ -6,7 +6,6 @@ import org.protege.editor.core.Disposable;
 import org.protege.editor.core.ui.error.ErrorLogPanel;
 import org.protege.editor.owl.OWLEditorKit;
 import org.protege.editor.owl.client.ClientRegistry;
-import org.protege.editor.owl.client.api.Client;
 import org.protege.editor.owl.client.diff.DiffFactory;
 import org.protege.editor.owl.client.diff.DiffFactoryImpl;
 import org.protege.editor.owl.model.OWLModelManager;
@@ -87,11 +86,6 @@ public class LogDiffManager implements Disposable {
         OWLOntology activeOntology = editorKit.getModelManager().getActiveOntology();
         VersionedOntologyDocument vont = ClientRegistry.getInstance(editorKit).getVersionedOntology(activeOntology);
         return Optional.ofNullable(vont);
-    }
-
-    public Optional<Client> getCurrentClient() {
-        Client client = ClientRegistry.getInstance(editorKit).getActiveClient();
-        return Optional.ofNullable(client);
     }
 
     public OWLOntology getActiveOntology() {

@@ -1,7 +1,6 @@
 package org.protege.editor.owl.client.action;
 
 import org.protege.editor.core.ui.error.ErrorLogPanel;
-import org.protege.editor.owl.client.api.Client;
 import org.protege.editor.owl.client.util.ChangeUtils;
 import org.protege.editor.owl.model.event.OWLModelManagerChangeEvent;
 import org.protege.editor.owl.model.event.OWLModelManagerListener;
@@ -51,7 +50,7 @@ public class CommitAction extends AbstractClientAction {
     public void actionPerformed(ActionEvent arg0) {
         Container container = SwingUtilities.getAncestorOfClass(Frame.class, getOWLWorkspace());
         try {
-            VersionedOntologyDocument vont = findActiveVersionedOntology();
+            final VersionedOntologyDocument vont = findActiveVersionedOntology();
             String commitComment = JOptionPane.showInputDialog(container, "Commit comment: ", "Commit", JOptionPane.PLAIN_MESSAGE);
             if (commitComment != null && !commitComment.isEmpty()) {
                 submit(new DoCommit(vont, commitComment));
@@ -98,6 +97,6 @@ public class CommitAction extends AbstractClientAction {
     private void handleError(Throwable t) {
         ErrorLogPanel.showErrorDialog(t);
         UIHelper ui = new UIHelper(getOWLEditorKit());
-        ui.showDialog("Error connecting to server", new JLabel("Commit failed - " + t.getMessage()));
+        ui.showDialog("Error connecting to server", new JLabel("Commit failed: " + t.getMessage()));
     }
 }

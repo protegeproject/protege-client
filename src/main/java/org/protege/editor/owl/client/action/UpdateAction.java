@@ -1,46 +1,49 @@
 package org.protege.editor.owl.client.action;
 
 import org.protege.editor.core.ui.error.ErrorLogPanel;
-import org.protege.editor.owl.client.connect.ServerConnectionManager;
-import org.protege.editor.owl.ui.action.ProtegeOWLAction;
-import org.protege.owl.server.api.client.Client;
+import org.protege.editor.owl.client.util.ChangeUtils;
+import org.protege.editor.owl.ui.UIHelper;
 import org.protege.owl.server.api.exception.OWLServerException;
 import org.protege.owl.server.changes.api.VersionedOntologyDocument;
-import org.protege.owl.server.util.ClientUtilities;
-import org.semanticweb.owlapi.model.OWLOntology;
 
-import javax.swing.*;
-import java.awt.*;
 import java.awt.event.ActionEvent;
-import java.util.concurrent.Future;
 
-public class UpdateAction extends ProtegeOWLAction {
+import javax.swing.JLabel;
+
+public class UpdateAction extends AbstractClientAction {
 
     private static final long serialVersionUID = 2694484296709954780L;
-    private ServerConnectionManager connectionManager;
 
     @Override
     public void initialise() throws Exception {
-        connectionManager = ServerConnectionManager.get(getOWLEditorKit());
+        super.initialise();
     }
 
     @Override
     public void dispose() throws Exception {
-        // NO-OP
+        super.dispose();
     }
 
     @Override
-    public void actionPerformed(ActionEvent e) {
-        Container owner = SwingUtilities.getAncestorOfClass(Frame.class, getOWLWorkspace());
-        OWLOntology ontology = getOWLModelManager().getActiveOntology();
-        VersionedOntologyDocument vont = connectionManager.getVersionedOntology(ontology);
-        if (vont == null) {
-            JOptionPane.showMessageDialog(owner, "Update ignored because the ontology is not associated with a server.");
-            return;
+    public void actionPerformed(ActionEvent event) {
+        try {
+            final VersionedOntologyDocument vont = findActiveVersionedOntology();
+            updateOntologyInBackground(vont);
         }
-        @SuppressWarnings("unused")
-        Future<?> ret = connectionManager.getSingleThreadExecutorService().submit(new DoUpdate(vont));
-        // if you wait here with ret.get(), then Protege will deadlock because he needs the UI thread to modify the ontology.
+        catch (Exception e) {
+            ErrorLogPanel.showErrorDialog(e);
+        }
+    }
+
+    private VersionedOntologyDocument findActiveVersionedOntology() throws Exception {
+        if (!getOntologyResource().isPresent()) {
+            throw new Exception("The current active ontology does not link to the server");
+        }
+        return getOntologyResource().get();
+    }
+
+    private void updateOntologyInBackground(VersionedOntologyDocument vont) {
+        submit(new DoUpdate(vont));
     }
 
     private class DoUpdate implements Runnable {
@@ -53,13 +56,17 @@ public class UpdateAction extends ProtegeOWLAction {
         @Override
         public void run() {
             try {
-                OWLOntology ontology = vont.getOntology();
-                Client client = connectionManager.createClient(ontology);
-                ClientUtilities.update(client, vont);
+                ChangeUtils.getLatestChanges(vont);
             }
-            catch (OWLServerException ioe) {
-                ErrorLogPanel.showErrorDialog(ioe);
+            catch (OWLServerException e) {
+                handleError(e);
             }
         }
+    }
+
+    private void handleError(Throwable t) {
+        ErrorLogPanel.showErrorDialog(t);
+        UIHelper ui = new UIHelper(getOWLEditorKit());
+        ui.showDialog("Error at client instance", new JLabel("Save history failed: " + t.getMessage()));
     }
 }

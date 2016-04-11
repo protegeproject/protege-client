@@ -1,4 +1,4 @@
-package org.protege.editor.owl.client.action;
+package org.protege.editor.owl.client.panel;
 
 import org.protege.editor.owl.client.api.Client;
 import org.protege.editor.owl.client.util.ChangeUtils;

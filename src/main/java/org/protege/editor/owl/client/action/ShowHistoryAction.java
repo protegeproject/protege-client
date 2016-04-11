@@ -1,56 +1,50 @@
 package org.protege.editor.owl.client.action;
 
 import org.protege.editor.core.ui.error.ErrorLogPanel;
-import org.protege.editor.owl.client.connect.ServerConnectionManager;
 import org.protege.editor.owl.client.panel.ChangeHistoryPanel;
-import org.protege.editor.owl.ui.action.ProtegeOWLAction;
-import org.protege.owl.server.api.client.Client;
-import org.protege.owl.server.api.exception.UserDeclinedAuthenticationException;
-import org.protege.owl.server.changes.OntologyDocumentRevision;
+import org.protege.editor.owl.client.util.ChangeUtils;
+import org.protege.editor.owl.ui.UIHelper;
 import org.protege.owl.server.changes.api.ChangeHistory;
-import org.protege.owl.server.changes.api.RevisionPointer;
 import org.protege.owl.server.changes.api.VersionedOntologyDocument;
-import org.protege.owl.server.util.ClientUtilities;
-import org.semanticweb.owlapi.model.OWLOntology;
 
-import javax.swing.*;
 import java.awt.event.ActionEvent;
 
-public class ShowHistoryAction extends ProtegeOWLAction {
+import javax.swing.JLabel;
+
+public class ShowHistoryAction extends AbstractClientAction {
+
     private static final long serialVersionUID = -7628375950917155764L;
 
     @Override
     public void initialise() throws Exception {
-        // NO-OP
+        super.initialise();
     }
 
     @Override
     public void dispose() throws Exception {
-        // NO-OP
+        super.dispose();
     }
 
     @Override
-    public void actionPerformed(ActionEvent arg0) {
+    public void actionPerformed(ActionEvent event) {
         try {
-            ServerConnectionManager connectionManager = ServerConnectionManager.get(getOWLEditorKit());
-            OWLOntology ontology = getOWLModelManager().getActiveOntology();
-            VersionedOntologyDocument vont = connectionManager.getVersionedOntology(ontology);
-            Client client = connectionManager.createClient(ontology);
-            if (vont != null) {
-                ChangeHistory changes = ClientUtilities.getChanges(client, vont, OntologyDocumentRevision.START_REVISION.asPointer(), RevisionPointer.HEAD_REVISION);
-                ChangeHistoryPanel changeHistoryPanel = new ChangeHistoryPanel(getOWLEditorKit(), changes);
-                changeHistoryPanel.setLocationRelativeTo(getOWLWorkspace());
-                changeHistoryPanel.setVisible(true);
-            }
-            else {
-                JOptionPane.showMessageDialog(getOWLWorkspace(), "Active ontology is not connected to a server.");
-            }
-        }
-        catch (UserDeclinedAuthenticationException udae) {
-            ; // ignore this because the user knows that he didn't authenticate
+            final VersionedOntologyDocument vont = findActiveVersionedOntology();
+            ChangeHistory changes = ChangeUtils.getAllChanges(vont);
+            ChangeHistoryPanel changeHistoryPanel = new ChangeHistoryPanel(getOWLEditorKit(), changes);
+            changeHistoryPanel.setLocationRelativeTo(getOWLWorkspace());
+            changeHistoryPanel.setVisible(true);
         }
         catch (Exception e) {
             ErrorLogPanel.showErrorDialog(e);
+            UIHelper ui = new UIHelper(getOWLEditorKit());
+            ui.showDialog("Error connecting to server", new JLabel("Show history failed: " + e.getMessage()));
         }
+    }
+
+    private VersionedOntologyDocument findActiveVersionedOntology() throws Exception {
+        if (!getOntologyResource().isPresent()) {
+            throw new Exception("The current active ontology does not link to the server");
+        }
+        return getOntologyResource().get();
     }
 }

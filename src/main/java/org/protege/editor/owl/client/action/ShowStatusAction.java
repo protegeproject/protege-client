@@ -53,16 +53,16 @@ public class ShowStatusAction extends AbstractClientAction {
 
             JPanel panel = new JPanel(new GridLayout(0, 2));
 
-            panel.add(new JLabel("Server Document:"));
-            panel.add(new JLabel(vont.getRemoteFile().getName()));
+            panel.add(new JLabel("Ontology:"));
+            panel.add(new JLabel(vont.getDisplayName()));
 
             panel.add(new JLabel("Local Revision:"));
             panel.add(new JLabel(vont.getRevision().toString()));
 
-            panel.add(new JLabel("Latest Server Revision:"));
+            panel.add(new JLabel("Remote Revision:"));
             panel.add(new JLabel(ChangeUtils.getRemoteHeadRevision(vont).toString()));
 
-            panel.add(new JLabel("# of uncommitted changes:"));
+            panel.add(new JLabel("#Uncommitted Changes:"));
             panel.add(new JLabel(ChangeUtils.getUncommittedChanges(vont).size()+""));
 
             dialog.getContentPane().setLayout(new BorderLayout());

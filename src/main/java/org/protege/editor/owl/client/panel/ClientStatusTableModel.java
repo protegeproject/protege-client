@@ -21,10 +21,10 @@ public class ClientStatusTableModel extends AbstractTableModel {
     }
 
     public enum Row {
-        SERVER_DOCUMENT("Server document:") {
+        SERVER_DOCUMENT("Ontology:") {
             @Override
             public String evaluate(Client client, VersionedOntologyDocument vont) {
-                return vont.getRemoteFile().getName();
+                return vont.getOntology().getOntologyID().toString();
             }
         },
         CLIENT_REVISION("Local revision:") {
@@ -33,13 +33,13 @@ public class ClientStatusTableModel extends AbstractTableModel {
                 return vont.getRevision().toString();
             }
         },
-        SERVER_REVISION("Latest server revision:") {
+        SERVER_REVISION("Remote revision:") {
             @Override
             public String evaluate(Client client, VersionedOntologyDocument vont) throws OWLServerException {
                 return ChangeUtils.getRemoteHeadRevision(vont).toString();
             }
         },
-        UNCOMMITTED_CHANGES("# of uncommitted changes:") {
+        UNCOMMITTED_CHANGES("#Uncommitted Changes:") {
             @Override
             public String evaluate(Client client, VersionedOntologyDocument vont) throws OWLServerException {
                 List<OWLOntologyChange> changes = ChangeUtils.getUncommittedChanges(vont);

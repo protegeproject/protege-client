@@ -1,7 +1,7 @@
 package org.protege.editor.owl.client.action;
 
 import org.protege.editor.core.ui.error.ErrorLogPanel;
-import org.protege.editor.owl.client.ClientRegistry;
+import org.protege.editor.owl.client.ClientSession;
 import org.protege.editor.owl.client.api.Client;
 import org.protege.editor.owl.client.api.exception.SynchronizationException;
 import org.protege.editor.owl.ui.UIHelper;
@@ -26,7 +26,7 @@ public abstract class AbstractClientAction extends ProtegeOWLAction {
 
     private static final long serialVersionUID = 8677318010907902600L;
 
-    private ClientRegistry clientRegistry;
+    private ClientSession clientRegistry;
 
     private static ScheduledExecutorService executorService = Executors
             .newSingleThreadScheduledExecutor(new ThreadFactory() {
@@ -40,7 +40,7 @@ public abstract class AbstractClientAction extends ProtegeOWLAction {
 
     @Override
     public void initialise() throws Exception {
-        clientRegistry = ClientRegistry.getInstance(getOWLEditorKit());
+        clientRegistry = ClientSession.getInstance(getOWLEditorKit());
     }
 
     @Override
@@ -48,7 +48,7 @@ public abstract class AbstractClientAction extends ProtegeOWLAction {
         clientRegistry.dispose();
     }
 
-    protected ClientRegistry getClientRegistry() {
+    protected ClientSession getClientRegistry() {
         return clientRegistry;
     }
 

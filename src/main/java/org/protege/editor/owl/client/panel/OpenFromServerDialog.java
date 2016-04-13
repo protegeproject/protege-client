@@ -3,7 +3,7 @@ package org.protege.editor.owl.client.panel;
 import org.protege.editor.core.ui.error.ErrorLogPanel;
 import org.protege.editor.owl.OWLEditorKit;
 import org.protege.editor.owl.client.ClientPreferences;
-import org.protege.editor.owl.client.ClientRegistry;
+import org.protege.editor.owl.client.ClientSession;
 import org.protege.editor.owl.client.LocalClient;
 import org.protege.editor.owl.client.api.Client;
 import org.protege.editor.owl.client.connect.DefaultUserAuthenticator;
@@ -59,7 +59,7 @@ public class OpenFromServerDialog extends JDialog {
 
     private static String currentPassword = null;
 
-    private ClientRegistry clientRegistry;
+    private ClientSession clientRegistry;
     private JButton cancelButton;
     private JButton connectButton;
     private JButton openButton;
@@ -71,7 +71,7 @@ public class OpenFromServerDialog extends JDialog {
     private OWLEditorKit editorKit;
     private ServerTableModel tableModel;
 
-    public OpenFromServerDialog(ClientRegistry clientRegistry) {
+    public OpenFromServerDialog(ClientSession clientRegistry) {
         this.clientRegistry = clientRegistry;
         setTitle("Open from Protege OWL Server");
         setPreferredSize(new Dimension(650, 650));

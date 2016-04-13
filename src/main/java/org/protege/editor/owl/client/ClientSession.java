@@ -10,7 +10,7 @@ import org.semanticweb.owlapi.model.OWLOntologyID;
 import java.util.Map;
 import java.util.TreeMap;
 
-public class ClientRegistry extends OWLEditorKitHook {
+public class ClientSession extends OWLEditorKitHook {
 
     public static String ID = "org.protege.editor.owl.client.ClientHook";
 
@@ -18,8 +18,8 @@ public class ClientRegistry extends OWLEditorKitHook {
 
     private Map<OWLOntologyID, VersionedOntologyDocument> ontologyMap = new TreeMap<>();
 
-    public static ClientRegistry getInstance(OWLEditorKit editorKit) {
-        return (ClientRegistry) editorKit.get(ID);
+    public static ClientSession getInstance(OWLEditorKit editorKit) {
+        return (ClientSession) editorKit.get(ID);
     }
 
     @Override

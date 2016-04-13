@@ -2,7 +2,7 @@ package org.protege.editor.owl.client.diff.ui;
 
 import org.protege.editor.core.Disposable;
 import org.protege.editor.owl.OWLEditorKit;
-import org.protege.editor.owl.client.ClientRegistry;
+import org.protege.editor.owl.client.ClientSession;
 import org.protege.editor.owl.client.api.Client;
 import org.protege.editor.owl.client.diff.model.*;
 import org.protege.editor.owl.model.OWLModelManager;
@@ -153,7 +153,7 @@ public class ReviewButtonsPanel extends JPanel implements Disposable {
                 if (commitComment == null) {
                     return; // user pressed cancel
                 }
-                Client client = ClientRegistry.getInstance(editorKit).getActiveClient();
+                Client client = ClientSession.getInstance(editorKit).getActiveClient();
                 ChangeMetaData metaData = new ChangeMetaData(client.getUser(), "[Review] " + commitComment);
 //                try {
 //                    client.commit(client, metaData, vont); TODO: Implement commit later

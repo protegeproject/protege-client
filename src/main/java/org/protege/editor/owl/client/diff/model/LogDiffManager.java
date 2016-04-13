@@ -5,7 +5,7 @@ import static com.google.common.base.Preconditions.checkNotNull;
 import org.protege.editor.core.Disposable;
 import org.protege.editor.core.ui.error.ErrorLogPanel;
 import org.protege.editor.owl.OWLEditorKit;
-import org.protege.editor.owl.client.ClientRegistry;
+import org.protege.editor.owl.client.ClientSession;
 import org.protege.editor.owl.client.diff.DiffFactory;
 import org.protege.editor.owl.client.diff.DiffFactoryImpl;
 import org.protege.editor.owl.model.OWLModelManager;
@@ -86,7 +86,7 @@ public class LogDiffManager implements Disposable {
     public Optional<VersionedOntologyDocument> getVersionedOntologyDocument() {
         OWLOntology activeOntology = editorKit.getModelManager().getActiveOntology();
         OWLOntologyID activeId = activeOntology.getOntologyID();
-        VersionedOntologyDocument vont = ClientRegistry.getInstance(editorKit).getVersionedOntology(activeId);
+        VersionedOntologyDocument vont = ClientSession.getInstance(editorKit).getVersionedOntology(activeId);
         return Optional.ofNullable(vont);
     }
 

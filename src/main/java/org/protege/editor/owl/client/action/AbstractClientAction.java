@@ -9,6 +9,7 @@ import org.protege.editor.owl.ui.action.ProtegeOWLAction;
 import org.protege.owl.server.changes.api.VersionedOntologyDocument;
 
 import org.semanticweb.owlapi.model.OWLOntology;
+import org.semanticweb.owlapi.model.OWLOntologyID;
 
 import java.util.Optional;
 import java.util.concurrent.Executors;
@@ -56,8 +57,9 @@ public abstract class AbstractClientAction extends ProtegeOWLAction {
     }
 
     protected Optional<VersionedOntologyDocument> getOntologyResource() {
-        OWLOntology ontology = getOWLEditorKit().getModelManager().getActiveOntology();
-        return Optional.ofNullable(clientRegistry.getVersionedOntology(ontology));
+        OWLOntology activeOntology = getOWLEditorKit().getModelManager().getActiveOntology();
+        OWLOntologyID activeId = activeOntology.getOntologyID();
+        return Optional.ofNullable(clientRegistry.getVersionedOntology(activeId));
     }
 
     protected VersionedOntologyDocument getActiveVersionedOntology() throws SynchronizationException {

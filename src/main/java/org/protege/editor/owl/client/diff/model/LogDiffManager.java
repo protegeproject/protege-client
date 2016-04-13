@@ -20,6 +20,7 @@ import org.semanticweb.owlapi.model.OWLAnnotationProperty;
 import org.semanticweb.owlapi.model.OWLAxiom;
 import org.semanticweb.owlapi.model.OWLOntology;
 import org.semanticweb.owlapi.model.OWLOntologyChange;
+import org.semanticweb.owlapi.model.OWLOntologyID;
 import org.semanticweb.owlapi.model.RemoveAxiom;
 
 import java.util.ArrayList;
@@ -84,7 +85,8 @@ public class LogDiffManager implements Disposable {
 
     public Optional<VersionedOntologyDocument> getVersionedOntologyDocument() {
         OWLOntology activeOntology = editorKit.getModelManager().getActiveOntology();
-        VersionedOntologyDocument vont = ClientRegistry.getInstance(editorKit).getVersionedOntology(activeOntology);
+        OWLOntologyID activeId = activeOntology.getOntologyID();
+        VersionedOntologyDocument vont = ClientRegistry.getInstance(editorKit).getVersionedOntology(activeId);
         return Optional.ofNullable(vont);
     }
 

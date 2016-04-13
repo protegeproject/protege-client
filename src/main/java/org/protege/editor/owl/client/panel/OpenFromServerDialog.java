@@ -7,9 +7,16 @@ import org.protege.editor.owl.client.ClientRegistry;
 import org.protege.editor.owl.client.LocalClient;
 import org.protege.editor.owl.client.api.Client;
 import org.protege.editor.owl.client.connect.DefaultUserAuthenticator;
+import org.protege.editor.owl.client.util.ClientUtils;
 import org.protege.editor.owl.client.util.ServerUtils;
 import org.protege.editor.owl.ui.UIHelper;
+import org.protege.owl.server.changes.ServerDocument;
+import org.protege.owl.server.changes.api.VersionedOntologyDocument;
 import org.protege.owl.server.connect.RmiLoginService;
+
+import org.semanticweb.owlapi.model.OWLMutableOntology;
+import org.semanticweb.owlapi.model.OWLOntology;
+import org.semanticweb.owlapi.model.OWLOntologyCreationException;
 
 import java.awt.BorderLayout;
 import java.awt.Color;
@@ -31,6 +38,7 @@ import javax.swing.JButton;
 import javax.swing.JComboBox;
 import javax.swing.JDialog;
 import javax.swing.JLabel;
+import javax.swing.JOptionPane;
 import javax.swing.JPanel;
 import javax.swing.JPasswordField;
 import javax.swing.JScrollPane;
@@ -42,6 +50,7 @@ import edu.stanford.protege.metaproject.Manager;
 import edu.stanford.protege.metaproject.api.AuthToken;
 import edu.stanford.protege.metaproject.api.Factory;
 import edu.stanford.protege.metaproject.api.PlainPassword;
+import edu.stanford.protege.metaproject.api.ProjectId;
 import edu.stanford.protege.metaproject.api.UserId;
 
 public class OpenFromServerDialog extends JDialog {
@@ -251,8 +260,8 @@ public class OpenFromServerDialog extends JDialog {
         public void actionPerformed(ActionEvent evt) {
             String serverLocation = (String) serverLocationsList.getSelectedItem();
             try {
-                RmiLoginService loginService = (RmiLoginService) ServerUtils.getRemoteService(serverLocation,
-                        RmiLoginService.LOGIN_SERVICE);
+                // TODO Make it switchable for different transport implementation
+                RmiLoginService loginService = (RmiLoginService) ServerUtils.getRemoteService(serverLocation, RmiLoginService.LOGIN_SERVICE);
                 DefaultUserAuthenticator authenticator = new DefaultUserAuthenticator(loginService);
 
                 Factory f = Manager.getFactory();
@@ -281,31 +290,28 @@ public class OpenFromServerDialog extends JDialog {
     }
 
     protected void openOntologyDocument() {
-        // try {
-        // int row = serverContentTable.getSelectedRow();
-        // if (row != -1) {
-        // RemoteServerDocument doc = tableModel.getValueAt(row);
-        // if (doc instanceof RemoteOntologyDocument) {
-        // RemoteOntologyDocument remoteOntology = (RemoteOntologyDocument) doc;
-        // ServerConnectionManager connectionManager =
-        // ServerConnectionManager.get(editorKit);
-        // VersionedOntologyDocument vont = ClientUtilities.loadOntology(client,
-        // editorKit.getOWLModelManager().getOWLOntologyManager(),
-        // remoteOntology);
-        // connectionManager.addVersionedOntology(vont);
-        // editorKit.getOWLModelManager().setActiveOntology(vont.getOntology());
-        // OpenFromServerDialog.this.setVisible(false);
-        // }
-        // }
-        // else {
-        // JOptionPane.showMessageDialog(mainPanel,
-        // "Select a document from the 'Ontology Documents' list to open.",
-        // "Error",
-        // JOptionPane.ERROR_MESSAGE);
-        // }
-        // }
-        // catch (Exception ex) {
-        // ErrorLogPanel.showErrorDialog(ex);
-        // }
+        try {
+            int row = serverContentTable.getSelectedRow();
+            if (row != -1) {
+                ProjectId pid = tableModel.getValueAt(row);
+                Client client = clientRegistry.getActiveClient();
+                ServerDocument serverDocument = client.openProject(pid);
+                OWLOntology ontology = ClientUtils.buildOntology(serverDocument, createEmptyMutableOntology());
+                VersionedOntologyDocument vont = ClientUtils.constructVersionedOntology(serverDocument, ontology);
+                clientRegistry.addVersionedOntology(vont);
+                editorKit.getOWLModelManager().setActiveOntology(ontology);
+                OpenFromServerDialog.this.setVisible(false);
+            }
+            else {
+                JOptionPane.showMessageDialog(mainPanel, "No project was selected", "Error", JOptionPane.ERROR_MESSAGE);
+            }
+        }
+        catch (Exception ex) {
+            ErrorLogPanel.showErrorDialog(ex);
+        }
+    }
+
+    private OWLMutableOntology createEmptyMutableOntology() throws OWLOntologyCreationException {
+        return (OWLMutableOntology) editorKit.getOWLModelManager().getOWLOntologyManager().createOntology();
     }
 }

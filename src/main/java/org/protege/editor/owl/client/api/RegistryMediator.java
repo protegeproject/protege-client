@@ -13,13 +13,19 @@ import edu.stanford.protege.metaproject.api.UserId;
 
 public interface RegistryMediator {
 
-    Set<User> getUsers();
-
     Set<Project> getProjects();
 
     Set<Role> getRoles();
 
     Set<Operation> getOperations();
+
+    Set<User> getAllUsers();
+
+    Set<Project> getAllProjects();
+
+    Set<Role> getAllRoles();
+
+    Set<Operation> getAllOperations();
 
     Map<UserId,Map<ProjectId,Set<RoleId>>> getPolicyMappings();
 }

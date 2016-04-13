@@ -1,17 +1,16 @@
 package org.protege.editor.owl.client;
 
-import org.protege.editor.core.editorkit.plugin.EditorKitHook;
 import org.protege.editor.owl.OWLEditorKit;
 import org.protege.editor.owl.client.api.Client;
+import org.protege.editor.owl.model.OWLEditorKitHook;
 import org.protege.owl.server.changes.api.VersionedOntologyDocument;
 
-import org.semanticweb.owlapi.model.OWLOntology;
 import org.semanticweb.owlapi.model.OWLOntologyID;
 
 import java.util.Map;
 import java.util.TreeMap;
 
-public class ClientRegistry extends EditorKitHook {
+public class ClientRegistry extends OWLEditorKitHook {
 
     public static String ID = "org.protege.editor.owl.client.ClientHook";
 
@@ -30,23 +29,32 @@ public class ClientRegistry extends EditorKitHook {
 
     public void setActiveClient(Client client) {
         activeClient = client;
+        changeActiveClient();
     }
 
     public Client getActiveClient() {
         return activeClient;
     }
 
-    public VersionedOntologyDocument getVersionedOntology(OWLOntology ontology) {
-        return ontologyMap.get(ontology.getOntologyID());
+    public VersionedOntologyDocument getVersionedOntology(OWLOntologyID ontologyId) {
+        return ontologyMap.get(ontologyId);
     }
 
     public void addVersionedOntology(VersionedOntologyDocument versionOntology) {
-        OWLOntologyID id = versionOntology.getOntology().getOntologyID();
-        ontologyMap.put(id, versionOntology);
+        OWLOntologyID ontologyId = versionOntology.getOntology().getOntologyID();
+        ontologyMap.put(ontologyId, versionOntology);
+    }
+
+    private void changeActiveClient() {
+        for (VersionedOntologyDocument vont : ontologyMap.values()) {
+            getEditorKit().getOWLModelManager().removeOntology(vont.getOntology()); // TODO How to close ontology properly?
+        }
+        ontologyMap.clear();
     }
 
     @Override
     public void dispose() throws Exception {
-        // NO-OP
+        activeClient = null;
+        ontologyMap.clear();
     }
 }

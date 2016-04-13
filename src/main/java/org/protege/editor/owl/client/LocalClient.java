@@ -4,6 +4,7 @@ import org.protege.editor.owl.client.api.Client;
 import org.protege.editor.owl.client.util.ServerUtils;
 import org.protege.owl.server.api.CommitBundle;
 import org.protege.owl.server.api.exception.ServerRequestException;
+import org.protege.owl.server.changes.ServerDocument;
 import org.protege.owl.server.connect.RmiServer;
 
 import java.rmi.RemoteException;
@@ -111,9 +112,9 @@ public class LocalClient implements Client {
     }
 
     @Override
-    public void viewProject(ProjectId projectId) throws ServerRequestException {
+    public ServerDocument openProject(ProjectId projectId) throws ServerRequestException {
         connect();
-        server.viewProject(authToken, projectId);
+        return server.openProject(authToken, projectId);
     }
 
     @Override

@@ -1,7 +1,7 @@
 package org.protege.editor.owl.client.api;
 
+import org.protege.editor.owl.client.api.exception.ClientRequestException;
 import org.protege.owl.server.api.CommitBundle;
-import org.protege.owl.server.api.exception.ServerRequestException;
 import org.protege.owl.server.changes.ServerDocument;
 
 import java.util.List;
@@ -28,27 +28,27 @@ public interface ClientRequests {
      * Getting all users known by the server.
      *
      * @return A list of {@code User}.
-     * @throws ServerRequestException
+     * @throws ClientRequestException
      */
-    List<User> getAllUsers() throws ServerRequestException;
+    List<User> getAllUsers() throws ClientRequestException;
 
     /**
      * Creating a new user to the server.
      *
      * @param newUser
      *            The new user to add.
-     * @throws ServerRequestException
+     * @throws ClientRequestException
      */
-    void createUser(User newUser) throws ServerRequestException;
+    void createUser(User newUser) throws ClientRequestException;
 
     /**
      * Deleting an existing user from the server.
      *
      * @param userId
      *            The user to remove identified by the ID
-     * @throws ServerRequestException
+     * @throws ClientRequestException
      */
-    void deleteUser(UserId userId) throws ServerRequestException;
+    void deleteUser(UserId userId) throws ClientRequestException;
 
     /**
      * Updating information of an exiting user in the server.
@@ -57,9 +57,9 @@ public interface ClientRequests {
      *          The target user to modify identified by the ID
      * @param updatedUser
      *          The new updated user to replace with
-     * @throws ServerRequestException
+     * @throws ClientRequestException
      */
-    void updateUser(UserId userId, User updatedUser) throws ServerRequestException;
+    void updateUser(UserId userId, User updatedUser) throws ClientRequestException;
 
     /**
      * Getting all projects the given the user id.
@@ -67,35 +67,35 @@ public interface ClientRequests {
      * @param userId
      *          The target user identified by the ID
      * @return A list of {@code Project}
-     * @throws ServerRequestException
+     * @throws ClientRequestException
      */
-    List<Project> getProjects(UserId userId) throws ServerRequestException;
+    List<Project> getProjects(UserId userId) throws ClientRequestException;
 
     /**
      * Getting all project known by the server.
      *
      * @return A list of {@code Project}.
-     * @throws ServerRequestException
+     * @throws ClientRequestException
      */
-    List<Project> getAllProjects() throws ServerRequestException;
+    List<Project> getAllProjects() throws ClientRequestException;
 
     /**
      * Creating a new project to the server.
      *
      * @param newProject
      *            The new project to add.
-     * @throws ServerRequestException
+     * @throws ClientRequestException
      */
-    void createProject(Project newProject) throws ServerRequestException;
+    void createProject(Project newProject) throws ClientRequestException;
 
     /**
      * Deleting an existing project from the server.
      *
      * @param projectId
      *            The project to remove identified by its ID.
-     * @throws ServerRequestException
+     * @throws ClientRequestException
      */
-    void deleteProject(ProjectId projectId) throws ServerRequestException;
+    void deleteProject(ProjectId projectId) throws ClientRequestException;
 
     /**
      * Updating information of an existing project in the server.
@@ -104,9 +104,9 @@ public interface ClientRequests {
      *            The target project to modify identified by its ID.
      * @param updatedProject
      *            The new updated project to replace with.
-     * @throws ServerRequestException
+     * @throws ClientRequestException
      */
-    void updateProject(ProjectId projectId, Project updatedProject) throws ServerRequestException;
+    void updateProject(ProjectId projectId, Project updatedProject) throws ClientRequestException;
 
     /**
      * Opening a project from the server. The server will return the {@code ProjectResource} that
@@ -114,9 +114,9 @@ public interface ClientRequests {
      *
      * @param projectId
      *            The project to open identified by its ID
-     * @throws ServerRequestException
+     * @throws ClientRequestException
      */
-    ServerDocument openProject(ProjectId projectId) throws ServerRequestException;
+    ServerDocument openProject(ProjectId projectId) throws ClientRequestException;
 
     /**
      * Getting all roles given the user id, categorized for each owned project.
@@ -124,9 +124,9 @@ public interface ClientRequests {
      * @param userId
      *          The target user identified by the ID
      * @return A map of {@code ProjectId} with a list of corresponding {@code Role}
-     * @throws ServerRequestException
+     * @throws ClientRequestException
      */
-    Map<ProjectId, List<Role>> getRoles(UserId userId) throws ServerRequestException;
+    Map<ProjectId, List<Role>> getRoles(UserId userId) throws ClientRequestException;
 
     /**
      * Getting all roles given the user id and the project id.
@@ -136,35 +136,35 @@ public interface ClientRequests {
      * @param projectId
      *          The target project identified by the ID
      * @return A list of {@code Role}
-     * @throws ServerRequestException
+     * @throws ClientRequestException
      */
-    List<Role> getRoles(UserId userId, ProjectId projectId) throws ServerRequestException;
+    List<Role> getRoles(UserId userId, ProjectId projectId) throws ClientRequestException;
 
     /**
      * Getting all roles known by the server.
      *
      * @return A list of {@code Role}
-     * @throws ServerRequestException
+     * @throws ClientRequestException
      */
-    List<Role> getAllRoles() throws ServerRequestException;
+    List<Role> getAllRoles() throws ClientRequestException;
 
     /**
      * Creating a new role to the server.
      *
      * @param newRole
      *          The new role to add.
-     * @throws ServerRequestException
+     * @throws ClientRequestException
      */
-    void createRole(Role newRole) throws ServerRequestException;
+    void createRole(Role newRole) throws ClientRequestException;
 
     /**
      * Deleting an existing role from the server.
      *
      * @param roleId
      *          The role to remove identified by its ID.
-     * @throws ServerRequestException
+     * @throws ClientRequestException
      */
-    void deleteRole(RoleId roleId) throws ServerRequestException;
+    void deleteRole(RoleId roleId) throws ClientRequestException;
 
     /**
      * Updating information of an existing role at the server.
@@ -173,9 +173,9 @@ public interface ClientRequests {
      *          The target role to modify identified by its ID.
      * @param updatedRole
      *          The new updated role to replace with.
-     * @throws ServerRequestException
+     * @throws ClientRequestException
      */
-    void updateRole(RoleId roleId, Role updatedRole) throws ServerRequestException;
+    void updateRole(RoleId roleId, Role updatedRole) throws ClientRequestException;
 
     /**
      * Getting all operations given the user id, categorized for each owned project.
@@ -183,9 +183,9 @@ public interface ClientRequests {
      * @param userId
      *          The target user identified by the ID
      * @return A map of {@code ProjectId} with a list of corresponding {@code Operation}
-     * @throws ServerRequestException
+     * @throws ClientRequestException
      */
-    Map<ProjectId, List<Operation>> getOperations(UserId userId) throws ServerRequestException;
+    Map<ProjectId, List<Operation>> getOperations(UserId userId) throws ClientRequestException;
 
     /**
      * Getting all operations given the user id and the project id.
@@ -195,35 +195,35 @@ public interface ClientRequests {
      * @param projectId
      *          The target project identified by the ID
      * @return A list of {code Operation}
-     * @throws ServerRequestException
+     * @throws ClientRequestException
      */
-    List<Operation> getOperations(UserId userId, ProjectId projectId) throws ServerRequestException;
+    List<Operation> getOperations(UserId userId, ProjectId projectId) throws ClientRequestException;
 
     /**
      * Getting all operations known by the server.
      *
      * @return A list of {@code Operation}
-     * @throws ServerRequestException
+     * @throws ClientRequestException
      */
-    List<Operation> getAllOperations() throws ServerRequestException;
+    List<Operation> getAllOperations() throws ClientRequestException;
 
     /**
      * Creating a new operation to the server.
      *
      * @param operation
      *          The new operation to add.
-     * @throws ServerRequestException
+     * @throws ClientRequestException
      */
-    void createOperation(Operation operation) throws ServerRequestException;
+    void createOperation(Operation operation) throws ClientRequestException;
 
     /**
      * Deleting an existing operation from the server.
      *
      * @param operationId
      *          The operation to remove identified by its ID.
-     * @throws ServerRequestException
+     * @throws ClientRequestException
      */
-    void deleteOperation(OperationId operationId) throws ServerRequestException;
+    void deleteOperation(OperationId operationId) throws ClientRequestException;
 
     /**
      * Updating an existing operation at the server.
@@ -232,9 +232,9 @@ public interface ClientRequests {
      *          The target operation to modify identified by its ID.
      * @param updatedOperation
      *          The new updated operation to replace with.
-     * @throws ServerRequestException
+     * @throws ClientRequestException
      */
-    void updateOperation(OperationId operationId, Operation updatedOperation) throws ServerRequestException;
+    void updateOperation(OperationId operationId, Operation updatedOperation) throws ClientRequestException;
 
     /**
      * Assigning a role to a user for a particular project.
@@ -245,9 +245,9 @@ public interface ClientRequests {
      *          The target project
      * @param roleId
      *          The role to assign
-     * @throws ServerRequestException
+     * @throws ClientRequestException
      */
-    void assignRole(UserId userId, ProjectId projectId, RoleId roleId) throws ServerRequestException;
+    void assignRole(UserId userId, ProjectId projectId, RoleId roleId) throws ClientRequestException;
 
     /**
      * Retracting a role from a user for a particular project.
@@ -258,9 +258,9 @@ public interface ClientRequests {
      *          The target project
      * @param roleId
      *          The role to retract
-     * @throws ServerRequestException
+     * @throws ClientRequestException
      */
-    void retractRole(UserId userId, ProjectId projectId, RoleId roleId) throws ServerRequestException;
+    void retractRole(UserId userId, ProjectId projectId, RoleId roleId) throws ClientRequestException;
 
     /**
      * Setting a server property by specifying the property name and the value.
@@ -269,9 +269,9 @@ public interface ClientRequests {
      *          The target property name
      * @param value
      *          The property value
-     * @throws ServerRequestException
+     * @throws ClientRequestException
      */
-    void setServerConfiguration(String property, String value) throws ServerRequestException;
+    void setServerConfiguration(String property, String value) throws ClientRequestException;
 
     /**
      * Committing the given ontology changes to be applied in the server.
@@ -280,7 +280,7 @@ public interface ClientRequests {
      *            The target project for such changes
      * @param changes
      *            A list of changes coming from the client
-     * @throws ServerRequestException
+     * @throws ClientRequestException
      */
-    void commit(Project project, CommitBundle changes) throws ServerRequestException;
+    void commit(Project project, CommitBundle changes) throws ClientRequestException;
 }

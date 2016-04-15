@@ -4,6 +4,9 @@ import org.protege.owl.server.api.CommitBundle;
 import org.protege.owl.server.api.exception.ServerRequestException;
 import org.protege.owl.server.changes.ServerDocument;
 
+import java.util.List;
+import java.util.Map;
+
 import edu.stanford.protege.metaproject.api.Operation;
 import edu.stanford.protege.metaproject.api.OperationId;
 import edu.stanford.protege.metaproject.api.Project;
@@ -13,7 +16,21 @@ import edu.stanford.protege.metaproject.api.RoleId;
 import edu.stanford.protege.metaproject.api.User;
 import edu.stanford.protege.metaproject.api.UserId;
 
+/**
+ * Represents all operations that the client could request to the server.
+ *
+ * @author Josef Hardi <johardi@stanford.edu> <br>
+ *         Stanford Center for Biomedical Informatics Research
+ */
 public interface ClientRequests {
+
+    /**
+     * Getting all users known by the server.
+     *
+     * @return A list of {@code User}.
+     * @throws ServerRequestException
+     */
+    List<User> getAllUsers() throws ServerRequestException;
 
     /**
      * Creating a new user to the server.
@@ -43,6 +60,24 @@ public interface ClientRequests {
      * @throws ServerRequestException
      */
     void updateUser(UserId userId, User updatedUser) throws ServerRequestException;
+
+    /**
+     * Getting all projects the given the user id.
+     *
+     * @param userId
+     *          The target user identified by the ID
+     * @return A list of {@code Project}
+     * @throws ServerRequestException
+     */
+    List<Project> getProjects(UserId userId) throws ServerRequestException;
+
+    /**
+     * Getting all project known by the server.
+     *
+     * @return A list of {@code Project}.
+     * @throws ServerRequestException
+     */
+    List<Project> getAllProjects() throws ServerRequestException;
 
     /**
      * Creating a new project to the server.
@@ -84,6 +119,36 @@ public interface ClientRequests {
     ServerDocument openProject(ProjectId projectId) throws ServerRequestException;
 
     /**
+     * Getting all roles given the user id, categorized for each owned project.
+     *
+     * @param userId
+     *          The target user identified by the ID
+     * @return A map of {@code ProjectId} with a list of corresponding {@code Role}
+     * @throws ServerRequestException
+     */
+    Map<ProjectId, List<Role>> getRoles(UserId userId) throws ServerRequestException;
+
+    /**
+     * Getting all roles given the user id and the project id.
+     *
+     * @param userId
+     *          The target user identified by the ID
+     * @param projectId
+     *          The target project identified by the ID
+     * @return A list of {@code Role}
+     * @throws ServerRequestException
+     */
+    List<Role> getRoles(UserId userId, ProjectId projectId) throws ServerRequestException;
+
+    /**
+     * Getting all roles known by the server.
+     *
+     * @return A list of {@code Role}
+     * @throws ServerRequestException
+     */
+    List<Role> getAllRoles() throws ServerRequestException;
+
+    /**
      * Creating a new role to the server.
      *
      * @param newRole
@@ -111,6 +176,36 @@ public interface ClientRequests {
      * @throws ServerRequestException
      */
     void updateRole(RoleId roleId, Role updatedRole) throws ServerRequestException;
+
+    /**
+     * Getting all operations given the user id, categorized for each owned project.
+     *
+     * @param userId
+     *          The target user identified by the ID
+     * @return A map of {@code ProjectId} with a list of corresponding {@code Operation}
+     * @throws ServerRequestException
+     */
+    Map<ProjectId, List<Operation>> getOperations(UserId userId) throws ServerRequestException;
+
+    /**
+     * Getting all operations given the user id and the project id.
+     *
+     * @param userId
+     *          The target user identified by the ID
+     * @param projectId
+     *          The target project identified by the ID
+     * @return A list of {code Operation}
+     * @throws ServerRequestException
+     */
+    List<Operation> getOperations(UserId userId, ProjectId projectId) throws ServerRequestException;
+
+    /**
+     * Getting all operations known by the server.
+     *
+     * @return A list of {@code Operation}
+     * @throws ServerRequestException
+     */
+    List<Operation> getAllOperations() throws ServerRequestException;
 
     /**
      * Creating a new operation to the server.

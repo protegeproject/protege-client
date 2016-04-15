@@ -6,7 +6,7 @@ import org.protege.editor.owl.client.ClientSession;
 import org.protege.editor.owl.client.api.Client;
 import org.protege.editor.owl.client.diff.model.*;
 import org.protege.editor.owl.model.OWLModelManager;
-import org.protege.owl.server.changes.ChangeMetaData;
+import org.protege.owl.server.changes.ChangeMetadata;
 import org.protege.owl.server.changes.api.VersionedOntologyDocument;
 import org.semanticweb.owlapi.model.OWLOntologyChange;
 
@@ -154,7 +154,7 @@ public class ReviewButtonsPanel extends JPanel implements Disposable {
                     return; // user pressed cancel
                 }
                 Client client = ClientSession.getInstance(editorKit).getActiveClient();
-                ChangeMetaData metaData = new ChangeMetaData(client.getUser(), "[Review] " + commitComment);
+                ChangeMetadata metaData = new ChangeMetadata(client.getUser(), "[Review] " + commitComment);
 //                try {
 //                    client.commit(client, metaData, vont); TODO: Implement commit later
 //                } catch (OWLServerException e1) {

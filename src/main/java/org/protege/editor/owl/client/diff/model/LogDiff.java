@@ -9,7 +9,7 @@ import org.protege.editor.owl.client.diff.DiffFactory;
 import org.protege.editor.owl.model.OWLModelManager;
 import org.protege.owl.server.changes.api.ChangeHistory;
 import org.protege.owl.server.changes.api.VersionedOntologyDocument;
-import org.protege.owl.server.changes.ChangeMetaData;
+import org.protege.owl.server.changes.ChangeMetadata;
 import org.protege.owl.server.changes.OntologyDocumentRevision;
 import org.semanticweb.owlapi.model.*;
 import org.slf4j.Logger;
@@ -59,8 +59,8 @@ public class LogDiff {
             OWLOntology ontology = modelManager.getActiveOntology();
             ChangeHistory changes = vont.getLocalHistory();
             OntologyDocumentRevision rev = changes.getStartRevision();
-            while (changes.getMetaData(rev) != null) {
-                ChangeMetaData metaData = changes.getMetaData(rev);
+            while (changes.getChangeMetadataForRevision(rev) != null) {
+                ChangeMetadata metaData = changes.getChangeMetadataForRevision(rev);
                 ChangeHistory hist = changes.cropChanges(rev, rev.next());
                 findRevisionChanges(hist.getChanges(ontology), metaData);
                 if(!rev.equals(OntologyDocumentRevision.START_REVISION)) {
@@ -78,7 +78,7 @@ public class LogDiff {
      * @param ontChanges    List of OWL ontology changes
      * @param metaData  Metadata regarding the commit
      */
-    private void findRevisionChanges(List<OWLOntologyChange> ontChanges, ChangeMetaData metaData) {
+    private void findRevisionChanges(List<OWLOntologyChange> ontChanges, ChangeMetadata metaData) {
         String commitComment = (metaData.getCommitComment() != null ? metaData.getCommitComment() : "");
         // produce a revision tag that uses the hashcode of the commit metadata
         RevisionTag revisionTag = getRevisionTag(metaData.hashCode() + "");

@@ -9,7 +9,7 @@ import org.protege.editor.owl.client.ClientSession;
 import org.protege.editor.owl.client.diff.DiffFactory;
 import org.protege.editor.owl.client.diff.DiffFactoryImpl;
 import org.protege.editor.owl.model.OWLModelManager;
-import org.protege.owl.server.changes.ChangeMetaData;
+import org.protege.owl.server.changes.ChangeMetadata;
 import org.protege.owl.server.changes.OntologyDocumentRevision;
 import org.protege.owl.server.changes.api.ChangeHistory;
 import org.protege.owl.server.changes.api.VersionedOntologyDocument;
@@ -139,8 +139,8 @@ public class LogDiffManager implements Disposable {
         VersionedOntologyDocument vont = getVersionedOntologyDocument().get();
         ChangeHistory changes = vont.getLocalHistory();
         OntologyDocumentRevision rev = changes.getStartRevision();
-        while (changes.getMetaData(rev) != null) {
-            ChangeMetaData metaData = changes.getMetaData(rev);
+        while (changes.getChangeMetadataForRevision(rev) != null) {
+            ChangeMetadata metaData = changes.getChangeMetadataForRevision(rev);
             if (event.equals(LogDiffEvent.AUTHOR_SELECTION_CHANGED) && getSelectedAuthor() != null &&
                     (metaData.getAuthorId().equals(getSelectedAuthor()) || getSelectedAuthor().equals(LogDiffManager.ALL_AUTHORS)) ||
                     event.equals(LogDiffEvent.ONTOLOGY_UPDATED)) {

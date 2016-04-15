@@ -4,7 +4,7 @@ import java.util.Date;
 
 import javax.swing.table.AbstractTableModel;
 
-import org.protege.owl.server.changes.ChangeMetaData;
+import org.protege.owl.server.changes.ChangeMetadata;
 import org.protege.owl.server.changes.api.ChangeHistory;
 
 public class HistoryTableModel extends AbstractTableModel {
@@ -14,19 +14,19 @@ public class HistoryTableModel extends AbstractTableModel {
     public enum Column {
         DATE("Date", Date.class) {
             @Override
-            public Date getValue(ChangeMetaData metadata) {
+            public Date getValue(ChangeMetadata metadata) {
                 return metadata.getDate();
             }
         },
         USER("Author", String.class) {
             @Override
-            public String getValue(ChangeMetaData metadata) {
+            public String getValue(ChangeMetadata metadata) {
                 return metadata.getAuthorId().get();
             }
         },
         COMMIT_COMMENT("Comment", String.class) {
             @Override
-            public String getValue(ChangeMetaData metadata) {
+            public String getValue(ChangeMetadata metadata) {
                 return metadata.getCommitComment();
             }
         };
@@ -47,7 +47,7 @@ public class HistoryTableModel extends AbstractTableModel {
             return clazz;
         }
 
-        public abstract Object getValue(ChangeMetaData metadata);
+        public abstract Object getValue(ChangeMetadata metadata);
     }
 
     private ChangeHistory changes;
@@ -81,7 +81,7 @@ public class HistoryTableModel extends AbstractTableModel {
     @Override
     public Object getValueAt(int rowIndex, int columnIndex) {
         Column col = Column.values()[columnIndex];
-        ChangeMetaData metaData = changes.getMetaData(changes.getStartRevision().add(rowIndex));
+        ChangeMetadata metaData = changes.getChangeMetadataForRevision(changes.getStartRevision().add(rowIndex));
         return col.getValue(metaData);
     }
 }

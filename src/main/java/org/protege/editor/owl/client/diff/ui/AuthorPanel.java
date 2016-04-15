@@ -7,7 +7,7 @@ import org.protege.editor.owl.client.diff.model.LogDiffManager;
 import org.protege.editor.owl.model.OWLModelManager;
 import org.protege.editor.owl.model.event.EventType;
 import org.protege.editor.owl.model.event.OWLModelManagerListener;
-import org.protege.owl.server.changes.ChangeMetaData;
+import org.protege.owl.server.changes.ChangeMetadata;
 import org.protege.owl.server.changes.OntologyDocumentRevision;
 import org.protege.owl.server.changes.api.ChangeHistory;
 import org.protege.owl.server.changes.api.VersionedOntologyDocument;
@@ -93,8 +93,8 @@ public class AuthorPanel extends JPanel implements Disposable {
             ChangeHistory changes = vont.getLocalHistory();
             List<UserId> users = new ArrayList<>();
             OntologyDocumentRevision rev = changes.getStartRevision();
-            while (changes.getMetaData(rev) != null) {
-                ChangeMetaData metaData = changes.getMetaData(rev);
+            while (changes.getChangeMetadataForRevision(rev) != null) {
+                ChangeMetadata metaData = changes.getChangeMetadataForRevision(rev);
                 UserId user = metaData.getAuthorId();
                 if (!users.contains(user)) {
                     users.add(user);

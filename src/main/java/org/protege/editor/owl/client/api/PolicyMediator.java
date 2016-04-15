@@ -1,58 +1,60 @@
 package org.protege.editor.owl.client.api;
 
+import org.protege.editor.owl.client.api.exception.ClientRequestException;
+
 import edu.stanford.protege.metaproject.api.OperationId;
 
 public interface PolicyMediator {
 
-    boolean canAddAxiom();
+    boolean canAddAxiom() throws ClientRequestException;
 
-    boolean canRemoveAxiom();
+    boolean canRemoveAxiom() throws ClientRequestException;
 
-    boolean canAddAnnotatation();
+    boolean canAddAnnotatation() throws ClientRequestException;
 
-    boolean canRemoveAnnotation();
+    boolean canRemoveAnnotation() throws ClientRequestException;
 
-    boolean canAddImport();
+    boolean canAddImport() throws ClientRequestException;
 
-    boolean canRemoveImport();
+    boolean canRemoveImport() throws ClientRequestException;
 
-    boolean canModifyOntologyId();
+    boolean canModifyOntologyId() throws ClientRequestException;
 
-    boolean canAddUser();
+    boolean canAddUser() throws ClientRequestException;
 
-    boolean canRemoveUser();
+    boolean canRemoveUser() throws ClientRequestException;
 
-    boolean canModifyUser();
+    boolean canModifyUser() throws ClientRequestException;
 
-    boolean canAddProject();
+    boolean canAddProject() throws ClientRequestException;
 
-    boolean canRemoveProject();
+    boolean canRemoveProject() throws ClientRequestException;
 
-    boolean canModifyProject();
+    boolean canModifyProject() throws ClientRequestException;
 
-    boolean canViewProject();
+    boolean canViewProject() throws ClientRequestException;
 
-    boolean canAddRole();
+    boolean canAddRole() throws ClientRequestException;
 
-    boolean canRemoveRole();
+    boolean canRemoveRole() throws ClientRequestException;
 
-    boolean canModifyRole();
+    boolean canModifyRole() throws ClientRequestException;
 
-    boolean canAddOperation();
+    boolean canAddOperation() throws ClientRequestException;
 
-    boolean canRemoveOperation();
+    boolean canRemoveOperation() throws ClientRequestException;
 
-    boolean canModifyOperation();
+    boolean canModifyOperation() throws ClientRequestException;
 
-    boolean canAssignRole();
+    boolean canAssignRole() throws ClientRequestException;
 
-    boolean canRetractRole();
+    boolean canRetractRole() throws ClientRequestException;
 
-    boolean canStopServer();
+    boolean canStopServer() throws ClientRequestException;
 
-    boolean canRestartServer();
+    boolean canRestartServer() throws ClientRequestException;
 
-    boolean canModifyServerConfig();
+    boolean canModifyServerConfig() throws ClientRequestException;
 
-    boolean canPerformOperation(OperationId operationId);
+    boolean canPerformOperation(OperationId operationId) throws ClientRequestException;
 }

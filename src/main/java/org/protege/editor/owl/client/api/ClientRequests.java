@@ -16,62 +16,62 @@ import edu.stanford.protege.metaproject.api.UserId;
 public interface ClientRequests {
 
     /**
-     * Adding a new user to the server.
+     * Creating a new user to the server.
      *
      * @param newUser
      *            The new user to add.
      * @throws ServerRequestException
      */
-    void addUser(User newUser) throws ServerRequestException;
+    void createUser(User newUser) throws ServerRequestException;
 
     /**
-     * Removing an existing user from the server.
+     * Deleting an existing user from the server.
      *
      * @param userId
      *            The user to remove identified by the ID
      * @throws ServerRequestException
      */
-    void removeUser(UserId userId) throws ServerRequestException;
+    void deleteUser(UserId userId) throws ServerRequestException;
 
     /**
-     * Modifying an exiting user in the server.
+     * Updating information of an exiting user in the server.
      * 
      * @param userId
      *          The target user to modify identified by the ID
-     * @param newUser
-     *          The new user to replace with
+     * @param updatedUser
+     *          The new updated user to replace with
      * @throws ServerRequestException
      */
-    void modifyUser(UserId userId, User user) throws ServerRequestException;
+    void updateUser(UserId userId, User updatedUser) throws ServerRequestException;
 
     /**
-     * Adding a new project to the server.
+     * Creating a new project to the server.
      *
      * @param newProject
      *            The new project to add.
      * @throws ServerRequestException
      */
-    void addProject(Project newProject) throws ServerRequestException;
+    void createProject(Project newProject) throws ServerRequestException;
 
     /**
-     * Removing an existing project from the server.
+     * Deleting an existing project from the server.
      *
      * @param projectId
      *            The project to remove identified by its ID.
      * @throws ServerRequestException
      */
-    void removeProject(ProjectId projectId) throws ServerRequestException;
+    void deleteProject(ProjectId projectId) throws ServerRequestException;
 
     /**
-     * Modifying an existing project in the server.
+     * Updating information of an existing project in the server.
      *
      * @param projectId
      *            The target project to modify identified by its ID.
-     * @param newProject
-     *            The new project to replace with.
+     * @param updatedProject
+     *            The new updated project to replace with.
      * @throws ServerRequestException
      */
-    void modifyProject(ProjectId projectId, Project newProject) throws ServerRequestException;
+    void updateProject(ProjectId projectId, Project updatedProject) throws ServerRequestException;
 
     /**
      * Opening a project from the server. The server will return the {@code ProjectResource} that
@@ -84,62 +84,62 @@ public interface ClientRequests {
     ServerDocument openProject(ProjectId projectId) throws ServerRequestException;
 
     /**
-     * Adding a new role to the server.
+     * Creating a new role to the server.
      *
      * @param newRole
      *          The new role to add.
      * @throws ServerRequestException
      */
-    void addRole(Role newRole) throws ServerRequestException;
+    void createRole(Role newRole) throws ServerRequestException;
 
     /**
-     * Removing an existing role from the server.
+     * Deleting an existing role from the server.
      *
      * @param roleId
      *          The role to remove identified by its ID.
      * @throws ServerRequestException
      */
-    void removeRole(RoleId roleId) throws ServerRequestException;
+    void deleteRole(RoleId roleId) throws ServerRequestException;
 
     /**
-     * Modifying an existing role at the server.
+     * Updating information of an existing role at the server.
      *
      * @param roleId
      *          The target role to modify identified by its ID.
-     * @param newRole
-     *          The new role to replace with.
+     * @param updatedRole
+     *          The new updated role to replace with.
      * @throws ServerRequestException
      */
-    void modifyRole(RoleId roleId, Role newRole) throws ServerRequestException;
+    void updateRole(RoleId roleId, Role updatedRole) throws ServerRequestException;
 
     /**
-     * Adding a new operation to the server.
+     * Creating a new operation to the server.
      *
      * @param operation
      *          The new operation to add.
      * @throws ServerRequestException
      */
-    void addOperation(Operation operation) throws ServerRequestException;
+    void createOperation(Operation operation) throws ServerRequestException;
 
     /**
-     * Removing an existing operation from the server.
+     * Deleting an existing operation from the server.
      *
      * @param operationId
      *          The operation to remove identified by its ID.
      * @throws ServerRequestException
      */
-    void removeOperation(OperationId operationId) throws ServerRequestException;
+    void deleteOperation(OperationId operationId) throws ServerRequestException;
 
     /**
-     * Modifying an existing operation at the server.
+     * Updating an existing operation at the server.
      *
      * @param operationId
      *          The target operation to modify identified by its ID.
-     * @param newOperation
-     *          The new operation to replace with.
+     * @param updatedOperation
+     *          The new updated operation to replace with.
      * @throws ServerRequestException
      */
-    void modifyOperation(OperationId operationId, Operation newOperation) throws ServerRequestException;
+    void updateOperation(OperationId operationId, Operation updatedOperation) throws ServerRequestException;
 
     /**
      * Assigning a role to a user for a particular project.
@@ -168,15 +168,15 @@ public interface ClientRequests {
     void retractRole(UserId userId, ProjectId projectId, RoleId roleId) throws ServerRequestException;
 
     /**
-     * Modifying an existing server property by replacing the value.
+     * Setting a server property by specifying the property name and the value.
      *
      * @param property
      *          The target property name
      * @param value
-     *          The new property value
+     *          The property value
      * @throws ServerRequestException
      */
-    void modifyServerConfiguration(String property, String value) throws ServerRequestException;
+    void setServerConfiguration(String property, String value) throws ServerRequestException;
 
     /**
      * Committing the given ontology changes to be applied in the server.

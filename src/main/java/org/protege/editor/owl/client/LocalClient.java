@@ -76,39 +76,39 @@ public class LocalClient implements Client {
     }
 
     @Override
-    public void addUser(User newUser) throws ServerRequestException {
+    public void createUser(User newUser) throws ServerRequestException {
         connect();
-        server.addUser(authToken, newUser);
+        server.createUser(authToken, newUser);
     }
 
     @Override
-    public void removeUser(UserId userId) throws ServerRequestException {
+    public void deleteUser(UserId userId) throws ServerRequestException {
         connect();
-        server.removeUser(authToken, userId);
+        server.deleteUser(authToken, userId);
     }
 
     @Override
-    public void modifyUser(UserId userId, User newUser) throws ServerRequestException {
+    public void updateUser(UserId userId, User updatedUser) throws ServerRequestException {
         connect();
-        server.modifyUser(authToken, userId, newUser);
+        server.updateUser(authToken, userId, updatedUser);
     }
 
     @Override
-    public void addProject(Project newProject) throws ServerRequestException {
+    public void createProject(Project newProject) throws ServerRequestException {
         connect();
-        server.addProject(authToken, newProject);
+        server.createProject(authToken, newProject);
     }
 
     @Override
-    public void removeProject(ProjectId projectId) throws ServerRequestException {
+    public void deleteProject(ProjectId projectId) throws ServerRequestException {
         connect();
-        server.removeProject(authToken, projectId);
+        server.deleteProject(authToken, projectId);
     }
 
     @Override
-    public void modifyProject(ProjectId projectId, Project newProject) throws ServerRequestException {
+    public void updateProject(ProjectId projectId, Project updatedProject) throws ServerRequestException {
         connect();
-        server.modifyProject(authToken, projectId, newProject);
+        server.updateProject(authToken, projectId, updatedProject);
     }
 
     @Override
@@ -118,39 +118,39 @@ public class LocalClient implements Client {
     }
 
     @Override
-    public void addRole(Role newRole) throws ServerRequestException {
+    public void createRole(Role newRole) throws ServerRequestException {
         connect();
-        server.addRole(authToken, newRole);
+        server.createRole(authToken, newRole);
     }
 
     @Override
-    public void removeRole(RoleId roleId) throws ServerRequestException {
+    public void deleteRole(RoleId roleId) throws ServerRequestException {
         connect();
-        server.removeRole(authToken, roleId);
+        server.deleteRole(authToken, roleId);
     }
 
     @Override
-    public void modifyRole(RoleId roleId, Role newRole) throws ServerRequestException {
+    public void updateRole(RoleId roleId, Role updatedRole) throws ServerRequestException {
         connect();
-        server.modifyRole(authToken, roleId, newRole);
+        server.updateRole(authToken, roleId, updatedRole);
     }
 
     @Override
-    public void addOperation(Operation operation) throws ServerRequestException {
+    public void createOperation(Operation operation) throws ServerRequestException {
         connect();
-        server.addOperation(authToken, operation);
+        server.createOperation(authToken, operation);
     }
 
     @Override
-    public void removeOperation(OperationId operationId) throws ServerRequestException {
+    public void deleteOperation(OperationId operationId) throws ServerRequestException {
         connect();
-        server.removeOperation(authToken, operationId);
+        server.deleteOperation(authToken, operationId);
     }
 
     @Override
-    public void modifyOperation(OperationId operationId, Operation newOperation) throws ServerRequestException {
+    public void updateOperation(OperationId operationId, Operation updatedOperation) throws ServerRequestException {
         connect();
-        server.modifyOperation(authToken, operationId, newOperation);
+        server.updateOperation(authToken, operationId, updatedOperation);
     }
 
     @Override
@@ -166,9 +166,9 @@ public class LocalClient implements Client {
     }
 
     @Override
-    public void modifyServerConfiguration(String property, String value) throws ServerRequestException {
+    public void setServerConfiguration(String property, String value) throws ServerRequestException {
         connect();
-        server.modifyServerConfiguration(authToken, property, value);
+        server.setServerConfiguration(authToken, property, value);
     }
 
     @Override

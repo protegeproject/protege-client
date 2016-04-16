@@ -1,7 +1,7 @@
 package org.protege.editor.owl.client.panel;
 
 import org.protege.editor.owl.client.api.Client;
-import org.protege.owl.server.api.exception.OWLServerException;
+import org.protege.editor.owl.client.api.exception.OWLClientException;
 
 import java.util.ArrayList;
 import java.util.Collections;
@@ -22,7 +22,7 @@ public class ServerTableModel extends AbstractTableModel {
 
     private List<Project> remoteProjects;
 
-    public void initialize(Client client) throws OWLServerException {
+    public void initialize(Client client) throws OWLClientException {
         remoteProjects = new ArrayList<>(client.getProjects());
         Collections.sort(remoteProjects);
         fireTableStructureChanged();

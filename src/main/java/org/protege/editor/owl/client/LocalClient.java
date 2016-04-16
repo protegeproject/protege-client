@@ -1,6 +1,7 @@
 package org.protege.editor.owl.client;
 
 import org.protege.editor.owl.client.api.Client;
+import org.protege.editor.owl.client.api.exception.ClientRequestException;
 import org.protege.editor.owl.client.util.ServerUtils;
 import org.protege.owl.server.api.CommitBundle;
 import org.protege.owl.server.api.exception.ServerRequestException;
@@ -8,14 +9,12 @@ import org.protege.owl.server.changes.ServerDocument;
 import org.protege.owl.server.connect.RmiServer;
 
 import java.rmi.RemoteException;
+import java.util.List;
 import java.util.Map;
-import java.util.Set;
 
 import edu.stanford.protege.metaproject.api.AuthToken;
-import edu.stanford.protege.metaproject.api.ClientConfiguration;
 import edu.stanford.protege.metaproject.api.Operation;
 import edu.stanford.protege.metaproject.api.OperationId;
-import edu.stanford.protege.metaproject.api.PolicyAgent;
 import edu.stanford.protege.metaproject.api.Project;
 import edu.stanford.protege.metaproject.api.ProjectId;
 import edu.stanford.protege.metaproject.api.Role;
@@ -24,6 +23,10 @@ import edu.stanford.protege.metaproject.api.User;
 import edu.stanford.protege.metaproject.api.UserId;
 import edu.stanford.protege.metaproject.impl.Operations;
 
+/**
+ * @author Josef Hardi <johardi@stanford.edu> <br>
+ *         Stanford Center for Biomedical Informatics Research
+ */
 public class LocalClient implements Client {
 
     private AuthToken authToken;
@@ -33,8 +36,6 @@ public class LocalClient implements Client {
     private UserId userId;
 
     private RmiServer server;
-    private ClientConfiguration clientConfiguration;
-    private PolicyAgent policyAgent;
 
     public LocalClient(AuthToken authToken, String serverAddress) {
         this.authToken = authToken;
@@ -56,297 +57,606 @@ public class LocalClient implements Client {
         return authToken.getUser();
     }
 
-    protected void connect() throws ServerRequestException {
+    @Override
+    public List<Project> getProjects() throws ClientRequestException {
+        return getProjects(userId);
+    }
+
+    @Override
+    public List<Role> getActiveRoles() throws ClientRequestException {
+        return getRoles(userId, projectId);
+    }
+
+    @Override
+    public List<Operation> getActiveOperations() throws ClientRequestException {
+        return getOperations(userId, projectId);
+    }
+
+    protected void connect() throws ClientRequestException {
         if (server == null) {
             try {
                 server = (RmiServer) ServerUtils.getRemoteService(serverAddress, RmiServer.SERVER_SERVICE);
-                clientConfiguration = server.getClientConfiguration(userId);
-                policyAgent = clientConfiguration.getMetaproject().getPolicyAgent();
             }
             catch (RemoteException e) {
-                throw new ServerRequestException(e);
+                throw new ClientRequestException(e);
             }
         }
     }
 
     public void disconnect() {
         server = null;
-        clientConfiguration = null;
-        policyAgent = null;
     }
 
     @Override
-    public void createUser(User newUser) throws ServerRequestException {
-        connect();
-        server.createUser(authToken, newUser);
+    public void createUser(User newUser) throws ClientRequestException {
+        try {
+            connect();
+            server.createUser(authToken, newUser);
+        }
+        catch (ServerRequestException e) {
+            throw new ClientRequestException(e);
+        }
     }
 
     @Override
-    public void deleteUser(UserId userId) throws ServerRequestException {
-        connect();
-        server.deleteUser(authToken, userId);
+    public void deleteUser(UserId userId) throws ClientRequestException {
+        try {
+            connect();
+            server.deleteUser(authToken, userId);
+        }
+        catch (ServerRequestException e) {
+            throw new ClientRequestException(e);
+        }
     }
 
     @Override
-    public void updateUser(UserId userId, User updatedUser) throws ServerRequestException {
-        connect();
-        server.updateUser(authToken, userId, updatedUser);
+    public void updateUser(UserId userId, User updatedUser) throws ClientRequestException {
+        try {
+            connect();
+            server.updateUser(authToken, userId, updatedUser);
+        }
+        catch (ServerRequestException e) {
+            throw new ClientRequestException(e);
+        }
     }
 
     @Override
-    public void createProject(Project newProject) throws ServerRequestException {
-        connect();
-        server.createProject(authToken, newProject);
+    public void createProject(Project newProject) throws ClientRequestException {
+        try {
+            connect();
+            server.createProject(authToken, newProject);
+        }
+        catch (ServerRequestException e) {
+            throw new ClientRequestException(e);
+        }
     }
 
     @Override
-    public void deleteProject(ProjectId projectId) throws ServerRequestException {
-        connect();
-        server.deleteProject(authToken, projectId);
+    public void deleteProject(ProjectId projectId) throws ClientRequestException {
+        try {
+            connect();
+            server.deleteProject(authToken, projectId);
+        }
+        catch (ServerRequestException e) {
+            throw new ClientRequestException(e);
+        }
     }
 
     @Override
-    public void updateProject(ProjectId projectId, Project updatedProject) throws ServerRequestException {
-        connect();
-        server.updateProject(authToken, projectId, updatedProject);
+    public void updateProject(ProjectId projectId, Project updatedProject) throws ClientRequestException {
+        try {
+            connect();
+            server.updateProject(authToken, projectId, updatedProject);
+        }
+        catch (ServerRequestException e) {
+            throw new ClientRequestException(e);
+        }
     }
 
     @Override
-    public ServerDocument openProject(ProjectId projectId) throws ServerRequestException {
-        connect();
-        return server.openProject(authToken, projectId);
+    public ServerDocument openProject(ProjectId projectId) throws ClientRequestException {
+        try {
+            connect();
+            return server.openProject(authToken, projectId);
+        }
+        catch (ServerRequestException e) {
+            throw new ClientRequestException(e);
+        }
     }
 
     @Override
-    public void createRole(Role newRole) throws ServerRequestException {
-        connect();
-        server.createRole(authToken, newRole);
+    public void createRole(Role newRole) throws ClientRequestException {
+        try {
+            connect();
+            server.createRole(authToken, newRole);
+        }
+        catch (ServerRequestException e) {
+            throw new ClientRequestException(e);
+        }
     }
 
     @Override
-    public void deleteRole(RoleId roleId) throws ServerRequestException {
-        connect();
-        server.deleteRole(authToken, roleId);
+    public void deleteRole(RoleId roleId) throws ClientRequestException {
+        try {
+            connect();
+            server.deleteRole(authToken, roleId);
+        }
+        catch (ServerRequestException e) {
+            throw new ClientRequestException(e);
+        }
     }
 
     @Override
-    public void updateRole(RoleId roleId, Role updatedRole) throws ServerRequestException {
-        connect();
-        server.updateRole(authToken, roleId, updatedRole);
+    public void updateRole(RoleId roleId, Role updatedRole) throws ClientRequestException {
+        try {
+            connect();
+            server.updateRole(authToken, roleId, updatedRole);
+        }
+        catch (ServerRequestException e) {
+            throw new ClientRequestException(e);
+        }
     }
 
     @Override
-    public void createOperation(Operation operation) throws ServerRequestException {
-        connect();
-        server.createOperation(authToken, operation);
+    public void createOperation(Operation operation) throws ClientRequestException {
+        try {
+            connect();
+            server.createOperation(authToken, operation);
+        }
+        catch (ServerRequestException e) {
+            throw new ClientRequestException(e);
+        }
     }
 
     @Override
-    public void deleteOperation(OperationId operationId) throws ServerRequestException {
-        connect();
-        server.deleteOperation(authToken, operationId);
+    public void deleteOperation(OperationId operationId) throws ClientRequestException {
+        try {
+            connect();
+            server.deleteOperation(authToken, operationId);
+        }
+        catch (ServerRequestException e) {
+            throw new ClientRequestException(e);
+        }
     }
 
     @Override
-    public void updateOperation(OperationId operationId, Operation updatedOperation) throws ServerRequestException {
-        connect();
-        server.updateOperation(authToken, operationId, updatedOperation);
+    public void updateOperation(OperationId operationId, Operation updatedOperation) throws ClientRequestException {
+        try {
+            connect();
+            server.updateOperation(authToken, operationId, updatedOperation);
+        }
+        catch (ServerRequestException e) {
+            throw new ClientRequestException(e);
+        }
     }
 
     @Override
-    public void assignRole(UserId userId, ProjectId projectId, RoleId roleId) throws ServerRequestException {
-        connect();
-        server.assignRole(authToken, userId, projectId, roleId);
+    public void assignRole(UserId userId, ProjectId projectId, RoleId roleId) throws ClientRequestException {
+        try {
+            connect();
+            server.assignRole(authToken, userId, projectId, roleId);
+        }
+        catch (ServerRequestException e) {
+            throw new ClientRequestException(e);
+        }
     }
 
     @Override
-    public void retractRole(UserId userId, ProjectId projectId, RoleId roleId) throws ServerRequestException {
-        connect();
-        server.retractRole(authToken, userId, projectId, roleId);
+    public void retractRole(UserId userId, ProjectId projectId, RoleId roleId) throws ClientRequestException {
+        try {
+            connect();
+            server.retractRole(authToken, userId, projectId, roleId);
+        }
+        catch (ServerRequestException e) {
+            throw new ClientRequestException(e);
+        }
     }
 
     @Override
-    public void setServerConfiguration(String property, String value) throws ServerRequestException {
-        connect();
-        server.setServerConfiguration(authToken, property, value);
+    public void setServerConfiguration(String property, String value) throws ClientRequestException {
+        try {
+            connect();
+            server.setServerConfiguration(authToken, property, value);
+        }
+        catch (ServerRequestException e) {
+            throw new ClientRequestException(e);
+        }
     }
 
     @Override
-    public void commit(Project project, CommitBundle commits) throws ServerRequestException {
-        connect();
-        server.commit(authToken, project, commits);
+    public void commit(Project project, CommitBundle commits) throws ClientRequestException {
+        try {
+            connect();
+            server.commit(authToken, project, commits);
+        }
+        catch (ServerRequestException e) {
+            throw new ClientRequestException(e);
+        }
     }
 
     @Override
-    public boolean canAddAxiom() {
-        return policyAgent.isOperationAllowed(Operations.ADD_AXIOM.getId(), projectId, userId);
+    public boolean canAddAxiom() throws ClientRequestException {
+        try {
+            connect();
+            return server.isOperationAllowed(authToken, Operations.ADD_AXIOM.getId(), projectId, userId);
+        }
+        catch (ServerRequestException e) {
+            throw new ClientRequestException(e);
+        }
     }
 
     @Override
-    public boolean canRemoveAxiom() {
-        return policyAgent.isOperationAllowed(Operations.REMOVE_AXIOM.getId(), projectId, userId);
+    public boolean canRemoveAxiom() throws ClientRequestException {
+        try {
+            connect();
+            return server.isOperationAllowed(authToken, Operations.REMOVE_AXIOM.getId(), projectId, userId);
+        }
+        catch (ServerRequestException e) {
+            throw new ClientRequestException(e);
+        }
     }
 
     @Override
-    public boolean canAddAnnotatation() {
-        return policyAgent.isOperationAllowed(Operations.ADD_ONTOLOGY_ANNOTATION.getId(), projectId, userId);
+    public boolean canAddAnnotatation() throws ClientRequestException {
+        try {
+            connect();
+            return server.isOperationAllowed(authToken, Operations.ADD_ONTOLOGY_ANNOTATION.getId(), projectId, userId);
+        }
+        catch (ServerRequestException e) {
+            throw new ClientRequestException(e);
+        }
     }
 
     @Override
-    public boolean canRemoveAnnotation() {
-        return policyAgent.isOperationAllowed(Operations.REMOVE_ONTOLOGY_ANNOTATION.getId(), projectId, userId);
+    public boolean canRemoveAnnotation() throws ClientRequestException {
+        try {
+            connect();
+            return server.isOperationAllowed(authToken, Operations.REMOVE_ONTOLOGY_ANNOTATION.getId(), projectId,
+                    userId);
+        }
+        catch (ServerRequestException e) {
+            throw new ClientRequestException(e);
+        }
     }
 
     @Override
-    public boolean canAddImport() {
-        return policyAgent.isOperationAllowed(Operations.ADD_IMPORT.getId(), projectId, userId);
+    public boolean canAddImport() throws ClientRequestException {
+        try {
+            connect();
+            return server.isOperationAllowed(authToken, Operations.ADD_IMPORT.getId(), projectId, userId);
+        }
+        catch (ServerRequestException e) {
+            throw new ClientRequestException(e);
+        }
     }
 
     @Override
-    public boolean canRemoveImport() {
-        return policyAgent.isOperationAllowed(Operations.REMOVE_IMPORT.getId(), projectId, userId);
+    public boolean canRemoveImport() throws ClientRequestException {
+        try {
+            connect();
+            return server.isOperationAllowed(authToken, Operations.REMOVE_IMPORT.getId(), projectId, userId);
+        }
+        catch (ServerRequestException e) {
+            throw new ClientRequestException(e);
+        }
     }
 
     @Override
-    public boolean canModifyOntologyId() {
-        return policyAgent.isOperationAllowed(Operations.MODIFY_ONTOLOGY_IRI.getId(), projectId, userId);
+    public boolean canModifyOntologyId() throws ClientRequestException {
+        try {
+            connect();
+            return server.isOperationAllowed(authToken, Operations.MODIFY_ONTOLOGY_IRI.getId(), projectId, userId);
+        }
+        catch (ServerRequestException e) {
+            throw new ClientRequestException(e);
+        }
     }
 
     @Override
-    public boolean canAddUser() {
-        return policyAgent.isOperationAllowed(Operations.ADD_USER.getId(), projectId, userId);
+    public boolean canAddUser() throws ClientRequestException {
+        try {
+            connect();
+            return server.isOperationAllowed(authToken, Operations.ADD_USER.getId(), projectId, userId);
+        }
+        catch (ServerRequestException e) {
+            throw new ClientRequestException(e);
+        }
     }
 
     @Override
-    public boolean canRemoveUser() {
-        return policyAgent.isOperationAllowed(Operations.REMOVE_USER.getId(), projectId, userId);
+    public boolean canRemoveUser() throws ClientRequestException {
+        try {
+            connect();
+            return server.isOperationAllowed(authToken, Operations.REMOVE_USER.getId(), projectId, userId);
+        }
+        catch (ServerRequestException e) {
+            throw new ClientRequestException(e);
+        }
     }
 
     @Override
-    public boolean canModifyUser() {
-        return policyAgent.isOperationAllowed(Operations.MODIFY_USER.getId(), projectId, userId);
+    public boolean canModifyUser() throws ClientRequestException {
+        try {
+            connect();
+            return server.isOperationAllowed(authToken, Operations.MODIFY_USER.getId(), projectId, userId);
+        }
+        catch (ServerRequestException e) {
+            throw new ClientRequestException(e);
+        }
     }
 
     @Override
-    public boolean canAddProject() {
-        return policyAgent.isOperationAllowed(Operations.ADD_PROJECT.getId(), projectId, userId);
+    public boolean canAddProject() throws ClientRequestException {
+        try {
+            connect();
+            return server.isOperationAllowed(authToken, Operations.ADD_PROJECT.getId(), projectId, userId);
+        }
+        catch (ServerRequestException e) {
+            throw new ClientRequestException(e);
+        }
     }
 
     @Override
-    public boolean canRemoveProject() {
-        return policyAgent.isOperationAllowed(Operations.REMOVE_PROJECT.getId(), projectId, userId);
+    public boolean canRemoveProject() throws ClientRequestException {
+        try {
+            connect();
+            return server.isOperationAllowed(authToken, Operations.REMOVE_PROJECT.getId(), projectId, userId);
+        }
+        catch (ServerRequestException e) {
+            throw new ClientRequestException(e);
+        }
     }
 
     @Override
-    public boolean canModifyProject() {
-        return policyAgent.isOperationAllowed(Operations.MODIFY_PROJECT.getId(), projectId, userId);
+    public boolean canModifyProject() throws ClientRequestException {
+        try {
+            connect();
+            return server.isOperationAllowed(authToken, Operations.MODIFY_PROJECT.getId(), projectId, userId);
+        }
+        catch (ServerRequestException e) {
+            throw new ClientRequestException(e);
+        }
     }
 
     @Override
-    public boolean canViewProject() {
-        return policyAgent.isOperationAllowed(Operations.VIEW_PROJECT.getId(), projectId, userId);
+    public boolean canViewProject() throws ClientRequestException {
+        try {
+            connect();
+            return server.isOperationAllowed(authToken, Operations.VIEW_PROJECT.getId(), projectId, userId);
+        }
+        catch (ServerRequestException e) {
+            throw new ClientRequestException(e);
+        }
     }
 
     @Override
-    public boolean canAddRole() {
-        return policyAgent.isOperationAllowed(Operations.ADD_ROLE.getId(), projectId, userId);
+    public boolean canAddRole() throws ClientRequestException {
+        try {
+            connect();
+            return server.isOperationAllowed(authToken, Operations.ADD_ROLE.getId(), projectId, userId);
+        }
+        catch (ServerRequestException e) {
+            throw new ClientRequestException(e);
+        }
     }
 
     @Override
-    public boolean canRemoveRole() {
-        return policyAgent.isOperationAllowed(Operations.REMOVE_ROLE.getId(), projectId, userId);
+    public boolean canRemoveRole() throws ClientRequestException {
+        try {
+            connect();
+            return server.isOperationAllowed(authToken, Operations.REMOVE_ROLE.getId(), projectId, userId);
+        }
+        catch (ServerRequestException e) {
+            throw new ClientRequestException(e);
+        }
     }
 
     @Override
-    public boolean canModifyRole() {
-        return policyAgent.isOperationAllowed(Operations.MODIFY_ROLE.getId(), projectId, userId);
+    public boolean canModifyRole() throws ClientRequestException {
+        try {
+            connect();
+            return server.isOperationAllowed(authToken, Operations.MODIFY_ROLE.getId(), projectId, userId);
+        }
+        catch (ServerRequestException e) {
+            throw new ClientRequestException(e);
+        }
     }
 
     @Override
-    public boolean canAddOperation() {
-        return policyAgent.isOperationAllowed(Operations.ADD_OPERATION.getId(), projectId, userId);
+    public boolean canAddOperation() throws ClientRequestException {
+        try {
+            connect();
+            return server.isOperationAllowed(authToken, Operations.ADD_OPERATION.getId(), projectId, userId);
+        }
+        catch (ServerRequestException e) {
+            throw new ClientRequestException(e);
+        }
     }
 
     @Override
-    public boolean canRemoveOperation() {
-        return policyAgent.isOperationAllowed(Operations.REMOVE_OPERATION.getId(), projectId, userId);
+    public boolean canRemoveOperation() throws ClientRequestException {
+        try {
+            connect();
+            return server.isOperationAllowed(authToken, Operations.REMOVE_OPERATION.getId(), projectId, userId);
+        }
+        catch (ServerRequestException e) {
+            throw new ClientRequestException(e);
+        }
     }
 
     @Override
-    public boolean canModifyOperation() {
-        return policyAgent.isOperationAllowed(Operations.MODIFY_OPERATION.getId(), projectId, userId);
+    public boolean canModifyOperation() throws ClientRequestException {
+        try {
+            connect();
+            return server.isOperationAllowed(authToken, Operations.MODIFY_OPERATION.getId(), projectId, userId);
+        }
+        catch (ServerRequestException e) {
+            throw new ClientRequestException(e);
+        }
     }
 
     @Override
-    public boolean canAssignRole() {
-        return policyAgent.isOperationAllowed(Operations.ASSIGN_ROLE.getId(), projectId, userId);
+    public boolean canAssignRole() throws ClientRequestException {
+        try {
+            connect();
+            return server.isOperationAllowed(authToken, Operations.ASSIGN_ROLE.getId(), projectId, userId);
+        }
+        catch (ServerRequestException e) {
+            throw new ClientRequestException(e);
+        }
     }
 
     @Override
-    public boolean canRetractRole() {
-        return policyAgent.isOperationAllowed(Operations.RETRACT_ROLE.getId(), projectId, userId);
+    public boolean canRetractRole() throws ClientRequestException {
+        try {
+            connect();
+            return server.isOperationAllowed(authToken, Operations.RETRACT_ROLE.getId(), projectId, userId);
+        }
+        catch (ServerRequestException e) {
+            throw new ClientRequestException(e);
+        }
     }
 
     @Override
-    public boolean canStopServer() {
-        return policyAgent.isOperationAllowed(Operations.STOP_SERVER.getId(), projectId, userId);
+    public boolean canStopServer() throws ClientRequestException {
+        try {
+            connect();
+            return server.isOperationAllowed(authToken, Operations.STOP_SERVER.getId(), projectId, userId);
+        }
+        catch (ServerRequestException e) {
+            throw new ClientRequestException(e);
+        }
     }
 
     @Override
-    public boolean canRestartServer() {
-        return policyAgent.isOperationAllowed(Operations.RESTART_SERVER.getId(), projectId, userId);
+    public boolean canRestartServer() throws ClientRequestException {
+        try {
+            connect();
+            return server.isOperationAllowed(authToken, Operations.RESTART_SERVER.getId(), projectId, userId);
+        }
+        catch (ServerRequestException e) {
+            throw new ClientRequestException(e);
+        }
     }
 
     @Override
-    public boolean canModifyServerConfig() {
-        return policyAgent.isOperationAllowed(Operations.MODIFY_SERVER_CONFIG.getId(), projectId, userId);
+    public boolean canModifyServerConfig() throws ClientRequestException {
+        try {
+            connect();
+            return server.isOperationAllowed(authToken, Operations.MODIFY_SERVER_CONFIG.getId(), projectId, userId);
+        }
+        catch (ServerRequestException e) {
+            throw new ClientRequestException(e);
+        }
     }
 
     @Override
-    public boolean canPerformOperation(OperationId operationId) {
-        return policyAgent.isOperationAllowed(operationId, projectId, userId);
+    public boolean canPerformOperation(OperationId operationId) throws ClientRequestException {
+        try {
+            connect();
+            return server.isOperationAllowed(authToken, operationId, projectId, userId);
+        }
+        catch (ServerRequestException e) {
+            throw new ClientRequestException(e);
+        }
     }
 
     @Override
-    public Set<Project> getProjects() {
-        return null;
-//        return clientConfiguration.getMetaproject().getPolicy().getProjects(userId);
+    public List<User> getAllUsers() throws ClientRequestException {
+        try {
+            connect();
+            return server.getAllUsers(authToken);
+        }
+        catch (ServerRequestException e) {
+            throw new ClientRequestException(e);
+        }
     }
 
     @Override
-    public Set<Role> getRoles() {
-        // TODO Auto-generated method stub
-        return null;
+    public List<Project> getProjects(UserId userId) throws ClientRequestException {
+        try {
+            connect();
+            return server.getProjects(authToken, userId);
+        }
+        catch (ServerRequestException e) {
+            throw new ClientRequestException(e);
+        }
     }
 
     @Override
-    public Set<Operation> getOperations() {
-        // TODO Auto-generated method stub
-        return null;
+    public List<Project> getAllProjects() throws ClientRequestException {
+        try {
+            connect();
+            return server.getAllProjects(authToken);
+        }
+        catch (ServerRequestException e) {
+            throw new ClientRequestException(e);
+        }
     }
 
     @Override
-    public Set<User> getAllUsers() {
-        return clientConfiguration.getMetaproject().getUserRegistry().getUsers();
+    public Map<ProjectId, List<Role>> getRoles(UserId userId) throws ClientRequestException {
+        try {
+            connect();
+            return server.getRoles(authToken, userId);
+        }
+        catch (ServerRequestException e) {
+            throw new ClientRequestException(e);
+        }
     }
 
     @Override
-    public Set<Project> getAllProjects() {
-        return clientConfiguration.getMetaproject().getProjectRegistry().getProjects();
+    public List<Role> getRoles(UserId userId, ProjectId projectId) throws ClientRequestException {
+        try {
+            connect();
+            return server.getRoles(authToken, userId, projectId);
+        }
+        catch (ServerRequestException e) {
+            throw new ClientRequestException(e);
+        }
     }
 
     @Override
-    public Set<Role> getAllRoles() {
-        return clientConfiguration.getMetaproject().getRoleRegistry().getRoles();
+    public List<Role> getAllRoles() throws ClientRequestException {
+        try {
+            connect();
+            return server.getAllRoles(authToken);
+        }
+        catch (ServerRequestException e) {
+            throw new ClientRequestException(e);
+        }
     }
 
     @Override
-    public Set<Operation> getAllOperations() {
-        return clientConfiguration.getMetaproject().getOperationRegistry().getOperations();
+    public Map<ProjectId, List<Operation>> getOperations(UserId userId) throws ClientRequestException {
+        try {
+            connect();
+            return server.getOperations(authToken, userId);
+        }
+        catch (ServerRequestException e) {
+            throw new ClientRequestException(e);
+        }
     }
 
     @Override
-    public Map<UserId, Map<ProjectId, Set<RoleId>>> getPolicyMappings() {
-        return clientConfiguration.getMetaproject().getPolicy().getPolicyMappings();
+    public List<Operation> getOperations(UserId userId, ProjectId projectId) throws ClientRequestException {
+        try {
+            connect();
+            return server.getOperations(authToken, userId, projectId);
+        }
+        catch (ServerRequestException e) {
+            throw new ClientRequestException(e);
+        }
+    }
+
+    @Override
+    public List<Operation> getAllOperations() throws ClientRequestException {
+        try {
+            connect();
+            return server.getAllOperations(authToken);
+        }
+        catch (ServerRequestException e) {
+            throw new ClientRequestException(e);
+        }
     }
 }

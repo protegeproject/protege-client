@@ -48,7 +48,7 @@ import javax.swing.border.CompoundBorder;
 
 import edu.stanford.protege.metaproject.Manager;
 import edu.stanford.protege.metaproject.api.AuthToken;
-import edu.stanford.protege.metaproject.api.Factory;
+import edu.stanford.protege.metaproject.api.MetaprojectFactory;
 import edu.stanford.protege.metaproject.api.PlainPassword;
 import edu.stanford.protege.metaproject.api.ProjectId;
 import edu.stanford.protege.metaproject.api.UserId;
@@ -264,7 +264,7 @@ public class OpenFromServerDialog extends JDialog {
                 RmiLoginService loginService = (RmiLoginService) ServerUtils.getRemoteService(serverLocation, RmiLoginService.LOGIN_SERVICE);
                 DefaultUserAuthenticator authenticator = new DefaultUserAuthenticator(loginService);
 
-                Factory f = Manager.getFactory();
+                MetaprojectFactory f = Manager.getFactory();
                 UserId userId = f.getUserId(username.getText());
                 PlainPassword plainPassword = f.getPlainPassword(password.getPassword().toString());
 

@@ -4,7 +4,7 @@ import org.protege.owl.server.connect.RemoteLoginService;
 
 import edu.stanford.protege.metaproject.Manager;
 import edu.stanford.protege.metaproject.api.AuthToken;
-import edu.stanford.protege.metaproject.api.Factory;
+import edu.stanford.protege.metaproject.api.MetaprojectFactory;
 import edu.stanford.protege.metaproject.api.PlainPassword;
 import edu.stanford.protege.metaproject.api.Salt;
 import edu.stanford.protege.metaproject.api.SaltedPasswordDigest;
@@ -26,7 +26,7 @@ public final class DefaultUserAuthenticator implements UserAuthenticator {
     @Override
     public AuthToken hasValidCredentials(UserId userId, PlainPassword password) throws Exception {
         Salt userSalt = (Salt) loginService.getEncryptionKey(userId);
-        Factory f = Manager.getFactory();
+        MetaprojectFactory f = Manager.getFactory();
         SaltedPasswordDigest passwordDigest = f.getSaltedPasswordDigest(password.getPassword(), userSalt);
         AuthToken authToken = loginService.login(userId, passwordDigest);
         return authToken;

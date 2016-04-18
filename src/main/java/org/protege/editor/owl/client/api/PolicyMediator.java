@@ -32,7 +32,7 @@ public interface PolicyMediator {
 
     boolean canModifyProject() throws ClientRequestException;
 
-    boolean canViewProject() throws ClientRequestException;
+    boolean canOpenProject() throws ClientRequestException;
 
     boolean canAddRole() throws ClientRequestException;
 

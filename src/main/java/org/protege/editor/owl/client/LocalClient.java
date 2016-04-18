@@ -419,10 +419,10 @@ public class LocalClient implements Client {
     }
 
     @Override
-    public boolean canViewProject() throws ClientRequestException {
+    public boolean canOpenProject() throws ClientRequestException {
         try {
             connect();
-            return server.isOperationAllowed(authToken, Operations.VIEW_PROJECT.getId(), projectId, userId);
+            return server.isOperationAllowed(authToken, Operations.OPEN_PROJECT.getId(), projectId, userId);
         }
         catch (ServerRequestException e) {
             throw new ClientRequestException(e);

@@ -12,6 +12,7 @@ import org.protege.editor.owl.client.util.ServerUtils;
 import org.protege.editor.owl.ui.UIHelper;
 import org.protege.owl.server.changes.ServerDocument;
 import org.protege.owl.server.changes.api.VersionedOntologyDocument;
+import org.protege.owl.server.connect.RemoteLoginService;
 import org.protege.owl.server.connect.RmiLoginService;
 
 import org.semanticweb.owlapi.model.OWLMutableOntology;
@@ -261,7 +262,7 @@ public class OpenFromServerDialog extends JDialog {
             String serverLocation = (String) serverLocationsList.getSelectedItem();
             try {
                 // TODO Make it switchable for different transport implementation
-                RmiLoginService loginService = (RmiLoginService) ServerUtils.getRemoteService(serverLocation, RmiLoginService.LOGIN_SERVICE);
+                RemoteLoginService loginService = (RemoteLoginService) ServerUtils.getRemoteService(serverLocation, RmiLoginService.LOGIN_SERVICE);
                 DefaultUserAuthenticator authenticator = new DefaultUserAuthenticator(loginService);
 
                 MetaprojectFactory f = Manager.getFactory();

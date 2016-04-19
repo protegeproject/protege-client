@@ -4,7 +4,6 @@ import org.protege.editor.owl.client.api.Client;
 import org.protege.editor.owl.client.api.exception.ClientRequestException;
 import org.protege.editor.owl.client.util.ServerUtils;
 import org.protege.owl.server.api.CommitBundle;
-import org.protege.owl.server.api.exception.ServerRequestException;
 import org.protege.owl.server.changes.ServerDocument;
 import org.protege.owl.server.connect.RmiServer;
 
@@ -93,7 +92,7 @@ public class LocalClient implements Client {
             connect();
             server.createUser(authToken, newUser);
         }
-        catch (ServerRequestException e) {
+        catch (RemoteException e) {
             throw new ClientRequestException(e);
         }
     }
@@ -104,7 +103,7 @@ public class LocalClient implements Client {
             connect();
             server.deleteUser(authToken, userId);
         }
-        catch (ServerRequestException e) {
+        catch (RemoteException e) {
             throw new ClientRequestException(e);
         }
     }
@@ -115,7 +114,7 @@ public class LocalClient implements Client {
             connect();
             server.updateUser(authToken, userId, updatedUser);
         }
-        catch (ServerRequestException e) {
+        catch (RemoteException e) {
             throw new ClientRequestException(e);
         }
     }
@@ -126,7 +125,7 @@ public class LocalClient implements Client {
             connect();
             server.createProject(authToken, newProject);
         }
-        catch (ServerRequestException e) {
+        catch (RemoteException e) {
             throw new ClientRequestException(e);
         }
     }
@@ -137,7 +136,7 @@ public class LocalClient implements Client {
             connect();
             server.deleteProject(authToken, projectId);
         }
-        catch (ServerRequestException e) {
+        catch (RemoteException e) {
             throw new ClientRequestException(e);
         }
     }
@@ -148,7 +147,7 @@ public class LocalClient implements Client {
             connect();
             server.updateProject(authToken, projectId, updatedProject);
         }
-        catch (ServerRequestException e) {
+        catch (RemoteException e) {
             throw new ClientRequestException(e);
         }
     }
@@ -159,7 +158,7 @@ public class LocalClient implements Client {
             connect();
             return server.openProject(authToken, projectId);
         }
-        catch (ServerRequestException e) {
+        catch (RemoteException e) {
             throw new ClientRequestException(e);
         }
     }
@@ -170,7 +169,7 @@ public class LocalClient implements Client {
             connect();
             server.createRole(authToken, newRole);
         }
-        catch (ServerRequestException e) {
+        catch (RemoteException e) {
             throw new ClientRequestException(e);
         }
     }
@@ -181,7 +180,7 @@ public class LocalClient implements Client {
             connect();
             server.deleteRole(authToken, roleId);
         }
-        catch (ServerRequestException e) {
+        catch (RemoteException e) {
             throw new ClientRequestException(e);
         }
     }
@@ -192,7 +191,7 @@ public class LocalClient implements Client {
             connect();
             server.updateRole(authToken, roleId, updatedRole);
         }
-        catch (ServerRequestException e) {
+        catch (RemoteException e) {
             throw new ClientRequestException(e);
         }
     }
@@ -203,7 +202,7 @@ public class LocalClient implements Client {
             connect();
             server.createOperation(authToken, operation);
         }
-        catch (ServerRequestException e) {
+        catch (RemoteException e) {
             throw new ClientRequestException(e);
         }
     }
@@ -214,7 +213,7 @@ public class LocalClient implements Client {
             connect();
             server.deleteOperation(authToken, operationId);
         }
-        catch (ServerRequestException e) {
+        catch (RemoteException e) {
             throw new ClientRequestException(e);
         }
     }
@@ -225,7 +224,7 @@ public class LocalClient implements Client {
             connect();
             server.updateOperation(authToken, operationId, updatedOperation);
         }
-        catch (ServerRequestException e) {
+        catch (RemoteException e) {
             throw new ClientRequestException(e);
         }
     }
@@ -236,7 +235,7 @@ public class LocalClient implements Client {
             connect();
             server.assignRole(authToken, userId, projectId, roleId);
         }
-        catch (ServerRequestException e) {
+        catch (RemoteException e) {
             throw new ClientRequestException(e);
         }
     }
@@ -247,7 +246,7 @@ public class LocalClient implements Client {
             connect();
             server.retractRole(authToken, userId, projectId, roleId);
         }
-        catch (ServerRequestException e) {
+        catch (RemoteException e) {
             throw new ClientRequestException(e);
         }
     }
@@ -258,7 +257,7 @@ public class LocalClient implements Client {
             connect();
             server.setServerConfiguration(authToken, property, value);
         }
-        catch (ServerRequestException e) {
+        catch (RemoteException e) {
             throw new ClientRequestException(e);
         }
     }
@@ -269,7 +268,7 @@ public class LocalClient implements Client {
             connect();
             server.commit(authToken, project, commits);
         }
-        catch (ServerRequestException e) {
+        catch (RemoteException e) {
             throw new ClientRequestException(e);
         }
     }
@@ -280,7 +279,7 @@ public class LocalClient implements Client {
             connect();
             return server.isOperationAllowed(authToken, Operations.ADD_AXIOM.getId(), projectId, userId);
         }
-        catch (ServerRequestException e) {
+        catch (RemoteException e) {
             throw new ClientRequestException(e);
         }
     }
@@ -291,7 +290,7 @@ public class LocalClient implements Client {
             connect();
             return server.isOperationAllowed(authToken, Operations.REMOVE_AXIOM.getId(), projectId, userId);
         }
-        catch (ServerRequestException e) {
+        catch (RemoteException e) {
             throw new ClientRequestException(e);
         }
     }
@@ -302,7 +301,7 @@ public class LocalClient implements Client {
             connect();
             return server.isOperationAllowed(authToken, Operations.ADD_ONTOLOGY_ANNOTATION.getId(), projectId, userId);
         }
-        catch (ServerRequestException e) {
+        catch (RemoteException e) {
             throw new ClientRequestException(e);
         }
     }
@@ -314,7 +313,7 @@ public class LocalClient implements Client {
             return server.isOperationAllowed(authToken, Operations.REMOVE_ONTOLOGY_ANNOTATION.getId(), projectId,
                     userId);
         }
-        catch (ServerRequestException e) {
+        catch (RemoteException e) {
             throw new ClientRequestException(e);
         }
     }
@@ -325,7 +324,7 @@ public class LocalClient implements Client {
             connect();
             return server.isOperationAllowed(authToken, Operations.ADD_IMPORT.getId(), projectId, userId);
         }
-        catch (ServerRequestException e) {
+        catch (RemoteException e) {
             throw new ClientRequestException(e);
         }
     }
@@ -336,7 +335,7 @@ public class LocalClient implements Client {
             connect();
             return server.isOperationAllowed(authToken, Operations.REMOVE_IMPORT.getId(), projectId, userId);
         }
-        catch (ServerRequestException e) {
+        catch (RemoteException e) {
             throw new ClientRequestException(e);
         }
     }
@@ -347,7 +346,7 @@ public class LocalClient implements Client {
             connect();
             return server.isOperationAllowed(authToken, Operations.MODIFY_ONTOLOGY_IRI.getId(), projectId, userId);
         }
-        catch (ServerRequestException e) {
+        catch (RemoteException e) {
             throw new ClientRequestException(e);
         }
     }
@@ -358,7 +357,7 @@ public class LocalClient implements Client {
             connect();
             return server.isOperationAllowed(authToken, Operations.ADD_USER.getId(), projectId, userId);
         }
-        catch (ServerRequestException e) {
+        catch (RemoteException e) {
             throw new ClientRequestException(e);
         }
     }
@@ -369,7 +368,7 @@ public class LocalClient implements Client {
             connect();
             return server.isOperationAllowed(authToken, Operations.REMOVE_USER.getId(), projectId, userId);
         }
-        catch (ServerRequestException e) {
+        catch (RemoteException e) {
             throw new ClientRequestException(e);
         }
     }
@@ -380,7 +379,7 @@ public class LocalClient implements Client {
             connect();
             return server.isOperationAllowed(authToken, Operations.MODIFY_USER.getId(), projectId, userId);
         }
-        catch (ServerRequestException e) {
+        catch (RemoteException e) {
             throw new ClientRequestException(e);
         }
     }
@@ -391,7 +390,7 @@ public class LocalClient implements Client {
             connect();
             return server.isOperationAllowed(authToken, Operations.ADD_PROJECT.getId(), projectId, userId);
         }
-        catch (ServerRequestException e) {
+        catch (RemoteException e) {
             throw new ClientRequestException(e);
         }
     }
@@ -402,7 +401,7 @@ public class LocalClient implements Client {
             connect();
             return server.isOperationAllowed(authToken, Operations.REMOVE_PROJECT.getId(), projectId, userId);
         }
-        catch (ServerRequestException e) {
+        catch (RemoteException e) {
             throw new ClientRequestException(e);
         }
     }
@@ -413,7 +412,7 @@ public class LocalClient implements Client {
             connect();
             return server.isOperationAllowed(authToken, Operations.MODIFY_PROJECT.getId(), projectId, userId);
         }
-        catch (ServerRequestException e) {
+        catch (RemoteException e) {
             throw new ClientRequestException(e);
         }
     }
@@ -424,7 +423,7 @@ public class LocalClient implements Client {
             connect();
             return server.isOperationAllowed(authToken, Operations.OPEN_PROJECT.getId(), projectId, userId);
         }
-        catch (ServerRequestException e) {
+        catch (RemoteException e) {
             throw new ClientRequestException(e);
         }
     }
@@ -435,7 +434,7 @@ public class LocalClient implements Client {
             connect();
             return server.isOperationAllowed(authToken, Operations.ADD_ROLE.getId(), projectId, userId);
         }
-        catch (ServerRequestException e) {
+        catch (RemoteException e) {
             throw new ClientRequestException(e);
         }
     }
@@ -446,7 +445,7 @@ public class LocalClient implements Client {
             connect();
             return server.isOperationAllowed(authToken, Operations.REMOVE_ROLE.getId(), projectId, userId);
         }
-        catch (ServerRequestException e) {
+        catch (RemoteException e) {
             throw new ClientRequestException(e);
         }
     }
@@ -457,7 +456,7 @@ public class LocalClient implements Client {
             connect();
             return server.isOperationAllowed(authToken, Operations.MODIFY_ROLE.getId(), projectId, userId);
         }
-        catch (ServerRequestException e) {
+        catch (RemoteException e) {
             throw new ClientRequestException(e);
         }
     }
@@ -468,7 +467,7 @@ public class LocalClient implements Client {
             connect();
             return server.isOperationAllowed(authToken, Operations.ADD_OPERATION.getId(), projectId, userId);
         }
-        catch (ServerRequestException e) {
+        catch (RemoteException e) {
             throw new ClientRequestException(e);
         }
     }
@@ -479,7 +478,7 @@ public class LocalClient implements Client {
             connect();
             return server.isOperationAllowed(authToken, Operations.REMOVE_OPERATION.getId(), projectId, userId);
         }
-        catch (ServerRequestException e) {
+        catch (RemoteException e) {
             throw new ClientRequestException(e);
         }
     }
@@ -490,7 +489,7 @@ public class LocalClient implements Client {
             connect();
             return server.isOperationAllowed(authToken, Operations.MODIFY_OPERATION.getId(), projectId, userId);
         }
-        catch (ServerRequestException e) {
+        catch (RemoteException e) {
             throw new ClientRequestException(e);
         }
     }
@@ -501,7 +500,7 @@ public class LocalClient implements Client {
             connect();
             return server.isOperationAllowed(authToken, Operations.ASSIGN_ROLE.getId(), projectId, userId);
         }
-        catch (ServerRequestException e) {
+        catch (RemoteException e) {
             throw new ClientRequestException(e);
         }
     }
@@ -512,7 +511,7 @@ public class LocalClient implements Client {
             connect();
             return server.isOperationAllowed(authToken, Operations.RETRACT_ROLE.getId(), projectId, userId);
         }
-        catch (ServerRequestException e) {
+        catch (RemoteException e) {
             throw new ClientRequestException(e);
         }
     }
@@ -523,7 +522,7 @@ public class LocalClient implements Client {
             connect();
             return server.isOperationAllowed(authToken, Operations.STOP_SERVER.getId(), projectId, userId);
         }
-        catch (ServerRequestException e) {
+        catch (RemoteException e) {
             throw new ClientRequestException(e);
         }
     }
@@ -534,7 +533,7 @@ public class LocalClient implements Client {
             connect();
             return server.isOperationAllowed(authToken, Operations.RESTART_SERVER.getId(), projectId, userId);
         }
-        catch (ServerRequestException e) {
+        catch (RemoteException e) {
             throw new ClientRequestException(e);
         }
     }
@@ -545,7 +544,7 @@ public class LocalClient implements Client {
             connect();
             return server.isOperationAllowed(authToken, Operations.MODIFY_SERVER_CONFIG.getId(), projectId, userId);
         }
-        catch (ServerRequestException e) {
+        catch (RemoteException e) {
             throw new ClientRequestException(e);
         }
     }
@@ -556,7 +555,7 @@ public class LocalClient implements Client {
             connect();
             return server.isOperationAllowed(authToken, operationId, projectId, userId);
         }
-        catch (ServerRequestException e) {
+        catch (RemoteException e) {
             throw new ClientRequestException(e);
         }
     }
@@ -567,7 +566,7 @@ public class LocalClient implements Client {
             connect();
             return server.getAllUsers(authToken);
         }
-        catch (ServerRequestException e) {
+        catch (RemoteException e) {
             throw new ClientRequestException(e);
         }
     }
@@ -578,7 +577,7 @@ public class LocalClient implements Client {
             connect();
             return server.getProjects(authToken, userId);
         }
-        catch (ServerRequestException e) {
+        catch (RemoteException e) {
             throw new ClientRequestException(e);
         }
     }
@@ -589,7 +588,7 @@ public class LocalClient implements Client {
             connect();
             return server.getAllProjects(authToken);
         }
-        catch (ServerRequestException e) {
+        catch (RemoteException e) {
             throw new ClientRequestException(e);
         }
     }
@@ -600,7 +599,7 @@ public class LocalClient implements Client {
             connect();
             return server.getRoles(authToken, userId);
         }
-        catch (ServerRequestException e) {
+        catch (RemoteException e) {
             throw new ClientRequestException(e);
         }
     }
@@ -611,7 +610,7 @@ public class LocalClient implements Client {
             connect();
             return server.getRoles(authToken, userId, projectId);
         }
-        catch (ServerRequestException e) {
+        catch (RemoteException e) {
             throw new ClientRequestException(e);
         }
     }
@@ -622,7 +621,7 @@ public class LocalClient implements Client {
             connect();
             return server.getAllRoles(authToken);
         }
-        catch (ServerRequestException e) {
+        catch (RemoteException e) {
             throw new ClientRequestException(e);
         }
     }
@@ -633,7 +632,7 @@ public class LocalClient implements Client {
             connect();
             return server.getOperations(authToken, userId);
         }
-        catch (ServerRequestException e) {
+        catch (RemoteException e) {
             throw new ClientRequestException(e);
         }
     }
@@ -644,7 +643,7 @@ public class LocalClient implements Client {
             connect();
             return server.getOperations(authToken, userId, projectId);
         }
-        catch (ServerRequestException e) {
+        catch (RemoteException e) {
             throw new ClientRequestException(e);
         }
     }
@@ -655,7 +654,7 @@ public class LocalClient implements Client {
             connect();
             return server.getAllOperations(authToken);
         }
-        catch (ServerRequestException e) {
+        catch (RemoteException e) {
             throw new ClientRequestException(e);
         }
     }

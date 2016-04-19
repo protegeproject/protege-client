@@ -267,7 +267,7 @@ public class OpenFromServerDialog extends JDialog {
 
                 MetaprojectFactory f = Manager.getFactory();
                 UserId userId = f.getUserId(username.getText());
-                PlainPassword plainPassword = f.getPlainPassword(password.getPassword().toString());
+                PlainPassword plainPassword = f.getPlainPassword(new String(password.getPassword()));
 
                 AuthToken authToken = authenticator.hasValidCredentials(userId, plainPassword);
                 Client client = new LocalClient(authToken, serverLocation);

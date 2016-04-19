@@ -46,7 +46,7 @@ public class ServerTableModel extends AbstractTableModel {
 
     @Override
     public int getRowCount() {
-        return remoteProjects.size();
+        return (remoteProjects == null) ? 0 : remoteProjects.size();
     }
 
     @Override

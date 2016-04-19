@@ -12,7 +12,7 @@ import java.util.TreeMap;
 
 public class ClientSession extends OWLEditorKitHook {
 
-    public static String ID = "org.protege.editor.owl.client.ClientHook";
+    public static String ID = "org.protege.editor.owl.client.ClientSession";
 
     private Client activeClient;
 

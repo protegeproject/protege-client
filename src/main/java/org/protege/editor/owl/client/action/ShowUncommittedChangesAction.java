@@ -3,9 +3,9 @@ package org.protege.editor.owl.client.action;
 import org.protege.editor.owl.client.api.exception.SynchronizationException;
 import org.protege.editor.owl.client.panel.ChangeListTableModel;
 import org.protege.editor.owl.client.util.ChangeUtils;
+import org.protege.editor.owl.server.api.exception.OWLServerException;
+import org.protege.editor.owl.server.versioning.api.VersionedOWLOntology;
 import org.protege.editor.owl.ui.renderer.OWLCellRenderer;
-import org.protege.owl.server.api.exception.OWLServerException;
-import org.protege.owl.server.changes.api.VersionedOntologyDocument;
 
 import org.semanticweb.owlapi.model.OWLObject;
 import org.semanticweb.owlapi.model.OWLOntologyChange;
@@ -38,7 +38,7 @@ public class ShowUncommittedChangesAction extends AbstractClientAction {
     @Override
     public void actionPerformed(ActionEvent arg0) {
         try {
-            final VersionedOntologyDocument vont = getActiveVersionedOntology();
+            final VersionedOWLOntology vont = getActiveVersionedOntology();
             List<OWLOntologyChange> uncommitted = ChangeUtils.getUncommittedChanges(vont);
             if (uncommitted.isEmpty()) {
                 Container container = SwingUtilities.getAncestorOfClass(Frame.class, getOWLWorkspace());
@@ -57,7 +57,7 @@ public class ShowUncommittedChangesAction extends AbstractClientAction {
         }
     }
 
-    private void saveLocalHistoryInBackground(VersionedOntologyDocument vont) {
+    private void saveLocalHistoryInBackground(VersionedOWLOntology vont) {
         submit(new SaveHistory(vont));
     }
 
@@ -76,9 +76,9 @@ public class ShowUncommittedChangesAction extends AbstractClientAction {
     }
 
     private class SaveHistory implements Runnable {
-        private VersionedOntologyDocument vont;
+        private VersionedOWLOntology vont;
 
-        public SaveHistory(VersionedOntologyDocument vont) {
+        public SaveHistory(VersionedOWLOntology vont) {
             this.vont = vont;
         }
 

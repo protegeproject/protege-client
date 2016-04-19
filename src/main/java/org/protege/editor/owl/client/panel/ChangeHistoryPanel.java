@@ -31,9 +31,9 @@ import javax.swing.table.TableModel;
 import javax.swing.table.TableRowSorter;
 
 import org.protege.editor.owl.OWLEditorKit;
+import org.protege.editor.owl.server.versioning.DocumentRevision;
+import org.protege.editor.owl.server.versioning.api.ChangeHistory;
 import org.protege.editor.owl.ui.renderer.OWLCellRenderer;
-import org.protege.owl.server.changes.OntologyDocumentRevision;
-import org.protege.owl.server.changes.api.ChangeHistory;
 
 import org.semanticweb.owlapi.model.OWLObject;
 import org.semanticweb.owlapi.model.OWLOntology;
@@ -131,7 +131,7 @@ public class ChangeHistoryPanel extends JDialog {
             public void valueChanged(ListSelectionEvent listSelectionEvent) {
                 List<OWLOntologyChange> changesToDisplay = new ArrayList<OWLOntologyChange>();
                 for (int row : table.getSelectedRows()) {
-                	OntologyDocumentRevision start = changes.getStartRevision().add(table.convertRowIndexToModel(row));
+                	DocumentRevision start = changes.getStartRevision().add(table.convertRowIndexToModel(row));
                     changesToDisplay.addAll(changes.cropChanges(start, start.next()).getChanges(ontology));
                 }
                 changeListTableModel.setChangeList(changesToDisplay);

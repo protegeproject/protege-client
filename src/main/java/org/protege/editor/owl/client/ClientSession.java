@@ -3,7 +3,7 @@ package org.protege.editor.owl.client;
 import org.protege.editor.owl.OWLEditorKit;
 import org.protege.editor.owl.client.api.Client;
 import org.protege.editor.owl.model.OWLEditorKitHook;
-import org.protege.owl.server.changes.api.VersionedOntologyDocument;
+import org.protege.editor.owl.server.versioning.api.VersionedOWLOntology;
 
 import org.semanticweb.owlapi.model.OWLOntologyID;
 
@@ -16,7 +16,7 @@ public class ClientSession extends OWLEditorKitHook {
 
     private Client activeClient;
 
-    private Map<OWLOntologyID, VersionedOntologyDocument> ontologyMap = new TreeMap<>();
+    private Map<OWLOntologyID, VersionedOWLOntology> ontologyMap = new TreeMap<>();
 
     public static ClientSession getInstance(OWLEditorKit editorKit) {
         return (ClientSession) editorKit.get(ID);
@@ -36,17 +36,17 @@ public class ClientSession extends OWLEditorKitHook {
         return activeClient;
     }
 
-    public VersionedOntologyDocument getVersionedOntology(OWLOntologyID ontologyId) {
+    public VersionedOWLOntology getVersionedOntology(OWLOntologyID ontologyId) {
         return ontologyMap.get(ontologyId);
     }
 
-    public void addVersionedOntology(VersionedOntologyDocument versionOntology) {
+    public void addVersionedOntology(VersionedOWLOntology versionOntology) {
         OWLOntologyID ontologyId = versionOntology.getOntology().getOntologyID();
         ontologyMap.put(ontologyId, versionOntology);
     }
 
     private void changeActiveClient() {
-        for (VersionedOntologyDocument vont : ontologyMap.values()) {
+        for (VersionedOWLOntology vont : ontologyMap.values()) {
             getEditorKit().getOWLModelManager().removeOntology(vont.getOntology()); // TODO How to close ontology properly?
         }
         ontologyMap.clear();

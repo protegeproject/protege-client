@@ -9,10 +9,10 @@ import org.protege.editor.owl.client.ClientSession;
 import org.protege.editor.owl.client.diff.DiffFactory;
 import org.protege.editor.owl.client.diff.DiffFactoryImpl;
 import org.protege.editor.owl.model.OWLModelManager;
-import org.protege.owl.server.changes.ChangeMetadata;
-import org.protege.owl.server.changes.OntologyDocumentRevision;
-import org.protege.owl.server.changes.api.ChangeHistory;
-import org.protege.owl.server.changes.api.VersionedOntologyDocument;
+import org.protege.editor.owl.server.versioning.ChangeMetadata;
+import org.protege.editor.owl.server.versioning.DocumentRevision;
+import org.protege.editor.owl.server.versioning.api.ChangeHistory;
+import org.protege.editor.owl.server.versioning.api.VersionedOWLOntology;
 
 import org.semanticweb.owlapi.model.AddAxiom;
 import org.semanticweb.owlapi.model.OWLAnnotation;
@@ -83,10 +83,10 @@ public class LogDiffManager implements Disposable {
         this.editorKit = checkNotNull(editorKit);
     }
 
-    public Optional<VersionedOntologyDocument> getVersionedOntologyDocument() {
+    public Optional<VersionedOWLOntology> getVersionedOntologyDocument() {
         OWLOntology activeOntology = editorKit.getModelManager().getActiveOntology();
         OWLOntologyID activeId = activeOntology.getOntologyID();
-        VersionedOntologyDocument vont = ClientSession.getInstance(editorKit).getVersionedOntology(activeId);
+        VersionedOWLOntology vont = ClientSession.getInstance(editorKit).getVersionedOntology(activeId);
         return Optional.ofNullable(vont);
     }
 
@@ -136,9 +136,9 @@ public class LogDiffManager implements Disposable {
     }
 
     public List<CommitMetadata> getCommits(LogDiffEvent event) {
-        VersionedOntologyDocument vont = getVersionedOntologyDocument().get();
+        VersionedOWLOntology vont = getVersionedOntologyDocument().get();
         ChangeHistory changes = vont.getLocalHistory();
-        OntologyDocumentRevision rev = changes.getStartRevision();
+        DocumentRevision rev = changes.getStartRevision();
         while (changes.getChangeMetadataForRevision(rev) != null) {
             ChangeMetadata metaData = changes.getChangeMetadataForRevision(rev);
             if (event.equals(LogDiffEvent.AUTHOR_SELECTION_CHANGED) && getSelectedAuthor() != null &&

@@ -1,11 +1,11 @@
 package org.protege.editor.owl.client.panel;
 
+import org.protege.editor.owl.server.versioning.ChangeMetadata;
+import org.protege.editor.owl.server.versioning.api.ChangeHistory;
+
 import java.util.Date;
 
 import javax.swing.table.AbstractTableModel;
-
-import org.protege.owl.server.changes.ChangeMetadata;
-import org.protege.owl.server.changes.api.ChangeHistory;
 
 public class HistoryTableModel extends AbstractTableModel {
 

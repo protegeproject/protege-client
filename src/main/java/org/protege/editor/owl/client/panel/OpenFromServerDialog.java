@@ -9,11 +9,11 @@ import org.protege.editor.owl.client.api.Client;
 import org.protege.editor.owl.client.connect.DefaultUserAuthenticator;
 import org.protege.editor.owl.client.util.ClientUtils;
 import org.protege.editor.owl.client.util.ServerUtils;
+import org.protege.editor.owl.server.transport.rmi.RemoteLoginService;
+import org.protege.editor.owl.server.transport.rmi.RmiLoginService;
+import org.protege.editor.owl.server.versioning.ServerDocument;
+import org.protege.editor.owl.server.versioning.api.VersionedOWLOntology;
 import org.protege.editor.owl.ui.UIHelper;
-import org.protege.owl.server.changes.ServerDocument;
-import org.protege.owl.server.changes.api.VersionedOntologyDocument;
-import org.protege.owl.server.connect.RemoteLoginService;
-import org.protege.owl.server.connect.RmiLoginService;
 
 import org.semanticweb.owlapi.model.OWLMutableOntology;
 import org.semanticweb.owlapi.model.OWLOntology;
@@ -298,7 +298,7 @@ public class OpenFromServerDialog extends JDialog {
                 Client client = clientRegistry.getActiveClient();
                 ServerDocument serverDocument = client.openProject(pid);
                 OWLOntology ontology = ClientUtils.buildOntology(serverDocument, createEmptyMutableOntology());
-                VersionedOntologyDocument vont = ClientUtils.constructVersionedOntology(serverDocument, ontology);
+                VersionedOWLOntology vont = ClientUtils.constructVersionedOntology(serverDocument, ontology);
                 clientRegistry.addVersionedOntology(vont);
                 editorKit.getOWLModelManager().setActiveOntology(ontology);
                 OpenFromServerDialog.this.setVisible(false);

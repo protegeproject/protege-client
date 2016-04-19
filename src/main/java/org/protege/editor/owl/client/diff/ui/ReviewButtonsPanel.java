@@ -6,8 +6,9 @@ import org.protege.editor.owl.client.ClientSession;
 import org.protege.editor.owl.client.api.Client;
 import org.protege.editor.owl.client.diff.model.*;
 import org.protege.editor.owl.model.OWLModelManager;
-import org.protege.owl.server.changes.ChangeMetadata;
-import org.protege.owl.server.changes.api.VersionedOntologyDocument;
+import org.protege.editor.owl.server.versioning.ChangeMetadata;
+import org.protege.editor.owl.server.versioning.api.VersionedOWLOntology;
+
 import org.semanticweb.owlapi.model.OWLOntologyChange;
 
 import javax.swing.*;
@@ -144,7 +145,7 @@ public class ReviewButtonsPanel extends JPanel implements Disposable {
             if(!changes.isEmpty()) {
                 diffManager.commitChanges(changes);
 
-                VersionedOntologyDocument vont = diffManager.getVersionedOntologyDocument().get();
+                VersionedOWLOntology vont = diffManager.getVersionedOntologyDocument().get();
                 String commitComment = JOptionPane.showInputDialog(owner, "Comment for the review: ", "Commit reviews");
                 if (vont == null) {
                     JOptionPane.showMessageDialog(owner, "Commit ignored because the ontology is not associated with a server");

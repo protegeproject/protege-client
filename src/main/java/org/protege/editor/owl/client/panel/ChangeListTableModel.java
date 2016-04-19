@@ -1,6 +1,6 @@
 package org.protege.editor.owl.client.panel;
 
-import org.protege.owl.server.changes.ChangeMetadata;
+import org.protege.editor.owl.server.versioning.ChangeMetadata;
 
 import org.semanticweb.owlapi.model.AddAxiom;
 import org.semanticweb.owlapi.model.AddImport;

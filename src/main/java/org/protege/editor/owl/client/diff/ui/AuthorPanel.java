@@ -7,10 +7,10 @@ import org.protege.editor.owl.client.diff.model.LogDiffManager;
 import org.protege.editor.owl.model.OWLModelManager;
 import org.protege.editor.owl.model.event.EventType;
 import org.protege.editor.owl.model.event.OWLModelManagerListener;
-import org.protege.owl.server.changes.ChangeMetadata;
-import org.protege.owl.server.changes.OntologyDocumentRevision;
-import org.protege.owl.server.changes.api.ChangeHistory;
-import org.protege.owl.server.changes.api.VersionedOntologyDocument;
+import org.protege.editor.owl.server.versioning.ChangeMetadata;
+import org.protege.editor.owl.server.versioning.DocumentRevision;
+import org.protege.editor.owl.server.versioning.api.ChangeHistory;
+import org.protege.editor.owl.server.versioning.api.VersionedOWLOntology;
 
 import org.semanticweb.owlapi.model.OWLOntologyChangeListener;
 
@@ -89,10 +89,10 @@ public class AuthorPanel extends JPanel implements Disposable {
 
     private void listAuthors() {
         if(diffManager.getVersionedOntologyDocument().isPresent()) {
-            VersionedOntologyDocument vont = diffManager.getVersionedOntologyDocument().get();
+            VersionedOWLOntology vont = diffManager.getVersionedOntologyDocument().get();
             ChangeHistory changes = vont.getLocalHistory();
             List<UserId> users = new ArrayList<>();
-            OntologyDocumentRevision rev = changes.getStartRevision();
+            DocumentRevision rev = changes.getStartRevision();
             while (changes.getChangeMetadataForRevision(rev) != null) {
                 ChangeMetadata metaData = changes.getChangeMetadataForRevision(rev);
                 UserId user = metaData.getAuthorId();

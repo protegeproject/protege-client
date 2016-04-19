@@ -7,10 +7,11 @@ import edu.stanford.protege.metaproject.api.UserId;
 
 import org.protege.editor.owl.client.diff.DiffFactory;
 import org.protege.editor.owl.model.OWLModelManager;
-import org.protege.owl.server.changes.api.ChangeHistory;
-import org.protege.owl.server.changes.api.VersionedOntologyDocument;
-import org.protege.owl.server.changes.ChangeMetadata;
-import org.protege.owl.server.changes.OntologyDocumentRevision;
+import org.protege.editor.owl.server.versioning.ChangeMetadata;
+import org.protege.editor.owl.server.versioning.DocumentRevision;
+import org.protege.editor.owl.server.versioning.api.ChangeHistory;
+import org.protege.editor.owl.server.versioning.api.VersionedOWLOntology;
+
 import org.semanticweb.owlapi.model.*;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -55,15 +56,15 @@ public class LogDiff {
      */
     public void initDiff() {
         if (diffManager.getVersionedOntologyDocument().isPresent()) {
-            VersionedOntologyDocument vont = diffManager.getVersionedOntologyDocument().get();
+            VersionedOWLOntology vont = diffManager.getVersionedOntologyDocument().get();
             OWLOntology ontology = modelManager.getActiveOntology();
             ChangeHistory changes = vont.getLocalHistory();
-            OntologyDocumentRevision rev = changes.getStartRevision();
+            DocumentRevision rev = changes.getStartRevision();
             while (changes.getChangeMetadataForRevision(rev) != null) {
                 ChangeMetadata metaData = changes.getChangeMetadataForRevision(rev);
                 ChangeHistory hist = changes.cropChanges(rev, rev.next());
                 findRevisionChanges(hist.getChanges(ontology), metaData);
-                if(!rev.equals(OntologyDocumentRevision.START_REVISION)) {
+                if(!rev.equals(DocumentRevision.START_REVISION)) {
                     findBaselineMatches(changeMap.values());
                     findConflits(changeMap.values());
                 }

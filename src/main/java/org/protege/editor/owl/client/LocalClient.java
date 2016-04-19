@@ -3,9 +3,9 @@ package org.protege.editor.owl.client;
 import org.protege.editor.owl.client.api.Client;
 import org.protege.editor.owl.client.api.exception.ClientRequestException;
 import org.protege.editor.owl.client.util.ServerUtils;
-import org.protege.owl.server.api.CommitBundle;
-import org.protege.owl.server.changes.ServerDocument;
-import org.protege.owl.server.connect.RmiServer;
+import org.protege.editor.owl.server.api.CommitBundle;
+import org.protege.editor.owl.server.transport.rmi.RmiServer;
+import org.protege.editor.owl.server.versioning.ServerDocument;
 
 import java.rmi.RemoteException;
 import java.util.List;

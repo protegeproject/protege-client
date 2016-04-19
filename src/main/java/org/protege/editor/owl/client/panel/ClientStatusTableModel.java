@@ -2,8 +2,8 @@ package org.protege.editor.owl.client.panel;
 
 import org.protege.editor.owl.client.api.Client;
 import org.protege.editor.owl.client.util.ChangeUtils;
-import org.protege.owl.server.api.exception.OWLServerException;
-import org.protege.owl.server.changes.api.VersionedOntologyDocument;
+import org.protege.editor.owl.server.api.exception.OWLServerException;
+import org.protege.editor.owl.server.versioning.api.VersionedOWLOntology;
 
 import org.semanticweb.owlapi.model.OWLOntologyChange;
 
@@ -23,25 +23,25 @@ public class ClientStatusTableModel extends AbstractTableModel {
     public enum Row {
         SERVER_DOCUMENT("Ontology:") {
             @Override
-            public String evaluate(Client client, VersionedOntologyDocument vont) {
+            public String evaluate(Client client, VersionedOWLOntology vont) {
                 return vont.getOntology().getOntologyID().toString();
             }
         },
         CLIENT_REVISION("Local revision:") {
             @Override
-            public String evaluate(Client client, VersionedOntologyDocument vont) {
+            public String evaluate(Client client, VersionedOWLOntology vont) {
                 return vont.getRevision().toString();
             }
         },
         SERVER_REVISION("Remote revision:") {
             @Override
-            public String evaluate(Client client, VersionedOntologyDocument vont) throws OWLServerException {
+            public String evaluate(Client client, VersionedOWLOntology vont) throws OWLServerException {
                 return ChangeUtils.getRemoteHeadRevision(vont).toString();
             }
         },
         UNCOMMITTED_CHANGES("#Uncommitted Changes:") {
             @Override
-            public String evaluate(Client client, VersionedOntologyDocument vont) throws OWLServerException {
+            public String evaluate(Client client, VersionedOWLOntology vont) throws OWLServerException {
                 List<OWLOntologyChange> changes = ChangeUtils.getUncommittedChanges(vont);
                 return changes.size()+"";
             }
@@ -57,13 +57,13 @@ public class ClientStatusTableModel extends AbstractTableModel {
             return name;
         }
 
-        public abstract Object evaluate(Client client, VersionedOntologyDocument vont) throws OWLServerException;
+        public abstract Object evaluate(Client client, VersionedOWLOntology vont) throws OWLServerException;
     }
 
     private Client client;
-    private VersionedOntologyDocument vont;
+    private VersionedOWLOntology vont;
 
-    public ClientStatusTableModel(@Nonnull Client client, @Nonnull VersionedOntologyDocument vont) {
+    public ClientStatusTableModel(@Nonnull Client client, @Nonnull VersionedOWLOntology vont) {
         this.client = client;
         this.vont = vont;
     }

@@ -4,9 +4,9 @@ import org.protege.editor.core.ui.error.ErrorLogPanel;
 import org.protege.editor.owl.client.ClientSession;
 import org.protege.editor.owl.client.api.Client;
 import org.protege.editor.owl.client.api.exception.SynchronizationException;
+import org.protege.editor.owl.server.versioning.api.VersionedOWLOntology;
 import org.protege.editor.owl.ui.UIHelper;
 import org.protege.editor.owl.ui.action.ProtegeOWLAction;
-import org.protege.owl.server.changes.api.VersionedOntologyDocument;
 
 import org.semanticweb.owlapi.model.OWLOntology;
 import org.semanticweb.owlapi.model.OWLOntologyID;
@@ -56,13 +56,13 @@ public abstract class AbstractClientAction extends ProtegeOWLAction {
         return clientRegistry.getActiveClient();
     }
 
-    protected Optional<VersionedOntologyDocument> getOntologyResource() {
+    protected Optional<VersionedOWLOntology> getOntologyResource() {
         OWLOntology activeOntology = getOWLEditorKit().getModelManager().getActiveOntology();
         OWLOntologyID activeId = activeOntology.getOntologyID();
         return Optional.ofNullable(clientRegistry.getVersionedOntology(activeId));
     }
 
-    protected VersionedOntologyDocument getActiveVersionedOntology() throws SynchronizationException {
+    protected VersionedOWLOntology getActiveVersionedOntology() throws SynchronizationException {
         if (getOntologyResource().isPresent()) {
             return getOntologyResource().get();
         }

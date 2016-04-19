@@ -1,8 +1,8 @@
 package org.protege.editor.owl.client.api;
 
 import org.protege.editor.owl.client.api.exception.ClientRequestException;
-import org.protege.owl.server.api.CommitBundle;
-import org.protege.owl.server.changes.ServerDocument;
+import org.protege.editor.owl.server.api.CommitBundle;
+import org.protege.editor.owl.server.versioning.ServerDocument;
 
 import java.util.List;
 import java.util.Map;

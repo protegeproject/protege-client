@@ -1,7 +1,7 @@
 package org.protege.editor.owl.client.action;
 
 import org.protege.editor.owl.client.api.exception.SynchronizationException;
-import org.protege.owl.server.changes.api.VersionedOntologyDocument;
+import org.protege.editor.owl.server.versioning.api.VersionedOWLOntology;
 
 import java.awt.event.ActionEvent;
 import java.util.concurrent.ScheduledFuture;
@@ -35,7 +35,7 @@ public class EnableAutoUpdateAction extends AbstractClientAction {
         killAutoUpdate();
         if (checkBoxMenuItem.isSelected()) {
             try {
-                final VersionedOntologyDocument vont = getActiveVersionedOntology();
+                final VersionedOWLOntology vont = getActiveVersionedOntology();
                 autoUpdate = submit(new AutoUpdate(vont), 15); // TODO Make the auto-update timing adjustable
             }
             catch (SynchronizationException e) {
@@ -52,11 +52,11 @@ public class EnableAutoUpdateAction extends AbstractClientAction {
     }
 
     private class AutoUpdate implements Runnable {
-        private VersionedOntologyDocument vont;
+        private VersionedOWLOntology vont;
 
         private boolean lastRunSuccessful = true;
 
-        public AutoUpdate(VersionedOntologyDocument vont) {
+        public AutoUpdate(VersionedOWLOntology vont) {
             this.vont = vont;
         }
 

@@ -1,7 +1,7 @@
 package org.protege.editor.owl.client.action;
 
 import org.protege.editor.owl.client.api.exception.SynchronizationException;
-import org.protege.owl.server.changes.api.VersionedOntologyDocument;
+import org.protege.editor.owl.server.versioning.api.VersionedOWLOntology;
 
 import java.awt.event.ActionEvent;
 
@@ -22,7 +22,7 @@ public class UpdateAction extends AbstractClientAction {
     @Override
     public void actionPerformed(ActionEvent event) {
         try {
-            final VersionedOntologyDocument vont = getActiveVersionedOntology();
+            final VersionedOWLOntology vont = getActiveVersionedOntology();
             submit(new DoUpdate(vont));
         }
         catch (SynchronizationException e) {
@@ -31,9 +31,9 @@ public class UpdateAction extends AbstractClientAction {
     }
 
     private class DoUpdate implements Runnable {
-        private VersionedOntologyDocument vont;
+        private VersionedOWLOntology vont;
 
-        public DoUpdate(VersionedOntologyDocument vont) {
+        public DoUpdate(VersionedOWLOntology vont) {
             this.vont = vont;
         }
 

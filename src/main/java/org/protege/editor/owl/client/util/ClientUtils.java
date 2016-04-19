@@ -1,9 +1,9 @@
 package org.protege.editor.owl.client.util;
 
-import org.protege.owl.server.changes.ServerDocument;
-import org.protege.owl.server.changes.VersionedOntologyDocumentImpl;
-import org.protege.owl.server.changes.api.ChangeHistory;
-import org.protege.owl.server.changes.api.VersionedOntologyDocument;
+import org.protege.editor.owl.server.versioning.ServerDocument;
+import org.protege.editor.owl.server.versioning.VersionedOWLOntologyImpl;
+import org.protege.editor.owl.server.versioning.api.ChangeHistory;
+import org.protege.editor.owl.server.versioning.api.VersionedOWLOntology;
 
 import org.semanticweb.owlapi.model.AddImport;
 import org.semanticweb.owlapi.model.MissingImportHandlingStrategy;
@@ -31,8 +31,8 @@ public class ClientUtils {
         return targetOntology;
     }
 
-    public static VersionedOntologyDocument constructVersionedOntology(ServerDocument serverDocument, OWLOntology targetOntology) {
-        VersionedOntologyDocument versionedOntology = new VersionedOntologyDocumentImpl(serverDocument, targetOntology);
+    public static VersionedOWLOntology constructVersionedOntology(ServerDocument serverDocument, OWLOntology targetOntology) {
+        VersionedOWLOntology versionedOntology = new VersionedOWLOntologyImpl(serverDocument, targetOntology);
         if (serverDocument.getChangeHistory().isPresent()) {
             versionedOntology.appendChangeHistory(serverDocument.getChangeHistory().get());
         }

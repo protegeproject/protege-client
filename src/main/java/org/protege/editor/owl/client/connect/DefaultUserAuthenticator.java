@@ -1,6 +1,6 @@
 package org.protege.editor.owl.client.connect;
 
-import org.protege.owl.server.connect.RemoteLoginService;
+import org.protege.editor.owl.server.transport.rmi.RemoteLoginService;
 
 import edu.stanford.protege.metaproject.Manager;
 import edu.stanford.protege.metaproject.api.AuthToken;

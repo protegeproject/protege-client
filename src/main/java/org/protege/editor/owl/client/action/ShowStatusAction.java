@@ -4,8 +4,8 @@ import org.protege.editor.owl.client.api.exception.SynchronizationException;
 import org.protege.editor.owl.client.util.ChangeUtils;
 import org.protege.editor.owl.model.event.OWLModelManagerChangeEvent;
 import org.protege.editor.owl.model.event.OWLModelManagerListener;
-import org.protege.owl.server.api.exception.OWLServerException;
-import org.protege.owl.server.changes.api.VersionedOntologyDocument;
+import org.protege.editor.owl.server.api.exception.OWLServerException;
+import org.protege.editor.owl.server.versioning.api.VersionedOWLOntology;
 
 import java.awt.BorderLayout;
 import java.awt.GridLayout;
@@ -45,7 +45,7 @@ public class ShowStatusAction extends AbstractClientAction {
     @Override
     public void actionPerformed(ActionEvent arg0) {
         try {
-            final VersionedOntologyDocument vont = getActiveVersionedOntology();
+            final VersionedOWLOntology vont = getActiveVersionedOntology();
 
             JDialog dialog = new JDialog();
             dialog.setTitle("Client status");

@@ -4,7 +4,7 @@ import org.protege.editor.owl.client.api.exception.SynchronizationException;
 import org.protege.editor.owl.client.util.ChangeUtils;
 import org.protege.editor.owl.model.event.OWLModelManagerChangeEvent;
 import org.protege.editor.owl.model.event.OWLModelManagerListener;
-import org.protege.owl.server.changes.api.VersionedOntologyDocument;
+import org.protege.editor.owl.server.versioning.api.VersionedOWLOntology;
 
 import org.semanticweb.owlapi.model.OWLOntologyChange;
 
@@ -47,7 +47,7 @@ public class CommitAction extends AbstractClientAction {
     public void actionPerformed(ActionEvent arg0) {
         Container container = SwingUtilities.getAncestorOfClass(Frame.class, getOWLWorkspace());
         try {
-            final VersionedOntologyDocument vont = getActiveVersionedOntology();
+            final VersionedOWLOntology vont = getActiveVersionedOntology();
             String commitComment = JOptionPane.showInputDialog(container, "Commit comment: ", "Commit", JOptionPane.PLAIN_MESSAGE);
             if (commitComment != null && !commitComment.isEmpty()) {
                 submit(new DoCommit(vont, commitComment));
@@ -59,10 +59,10 @@ public class CommitAction extends AbstractClientAction {
     }
 
     private class DoCommit implements Runnable {
-        private VersionedOntologyDocument vont;
+        private VersionedOWLOntology vont;
         private String commitcomment;
 
-        public DoCommit(VersionedOntologyDocument vont, String commitComment) {
+        public DoCommit(VersionedOWLOntology vont, String commitComment) {
             this.vont = vont;
             this.commitcomment = commitComment;
         }

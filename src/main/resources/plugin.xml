@@ -143,10 +143,10 @@
       	<checkbox value="true"/>
 	</extension>
    
-	<extension id="ServerConnectionManager"
-               name="Server Connection Manager"
+	<extension id="ClientSession"
+               name="Client Session"
                point="org.protege.editor.core.application.EditorKitHook">
-		<class value="org.protege.editor.owl.client.connect.ServerConnectionManager"/>
+		<class value="org.protege.editor.owl.client.ClientSession"/>
         <editorKitId value="OWLEditorKit"/>
 	</extension>
 	

@@ -105,14 +105,14 @@
                         <Bundle-Version>${project.version}</Bundle-Version>
                         <Bundle-Vendor>The Protege Development Team</Bundle-Vendor>
                         <Export-Package>
-                            org.protege.editor.owl.client*;version=${project.version},
+                            org.protege.editor.owl.client.*;version=${project.version},
+                            edu.stanford.protege.metaproject.*,
                             com.fasterxml.uuid.*
                         </Export-Package>
                         <Import-Package>
-                            org.protege.editor.core.*;version="5.0", <!-- equivalent to [5.0,infinity) -->
                             org.protege.editor.owl.client.*;version=${project.version},
+                            org.protege.editor.core.*;version="5.0", <!-- equivalent to [5.0,infinity) -->
                             org.protege.editor.owl.*;version="5.0",
-                            com.fasterxml.uuid.*,
                             *
                         </Import-Package>
                         <Include-Resource>{maven-resources}</Include-Resource>

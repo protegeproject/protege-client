@@ -6,7 +6,6 @@ import org.protege.editor.owl.client.ClientPreferences;
 import org.protege.editor.owl.client.ClientSession;
 import org.protege.editor.owl.client.LocalClient;
 import org.protege.editor.owl.client.api.Client;
-import org.protege.editor.owl.client.connect.DefaultUserAuthenticator;
 import org.protege.editor.owl.client.util.ClientUtils;
 import org.protege.editor.owl.client.util.ServerUtils;
 import org.protege.editor.owl.server.transport.rmi.RemoteLoginService;

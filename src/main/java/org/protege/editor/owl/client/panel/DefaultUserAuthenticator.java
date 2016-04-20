@@ -1,4 +1,4 @@
-package org.protege.editor.owl.client.connect;
+package org.protege.editor.owl.client.panel;
 
 import org.protege.editor.owl.server.transport.rmi.RemoteLoginService;
 

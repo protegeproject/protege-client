@@ -1,7 +1,7 @@
 package org.protege.editor.owl.client.action;
 
 import org.protege.editor.owl.client.api.exception.SynchronizationException;
-import org.protege.editor.owl.client.panel.ChangeHistoryPanel;
+import org.protege.editor.owl.client.ui.ChangeHistoryPanel;
 import org.protege.editor.owl.client.util.ChangeUtils;
 import org.protege.editor.owl.server.api.exception.OWLServerException;
 import org.protege.editor.owl.server.versioning.api.ChangeHistory;

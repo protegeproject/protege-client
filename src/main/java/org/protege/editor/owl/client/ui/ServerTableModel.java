@@ -1,4 +1,4 @@
-package org.protege.editor.owl.client.panel;
+package org.protege.editor.owl.client.ui;
 
 import org.protege.editor.owl.client.api.Client;
 import org.protege.editor.owl.client.api.exception.OWLClientException;

@@ -1,6 +1,6 @@
 package org.protege.editor.owl.client.action;
 
-import org.protege.editor.owl.client.panel.OpenFromServerDialog;
+import org.protege.editor.owl.client.ui.OpenFromServerDialog;
 
 import java.awt.event.ActionEvent;
 

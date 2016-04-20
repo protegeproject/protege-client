@@ -1,4 +1,4 @@
-package org.protege.editor.owl.client.panel;
+package org.protege.editor.owl.client.ui;
 
 
 /*

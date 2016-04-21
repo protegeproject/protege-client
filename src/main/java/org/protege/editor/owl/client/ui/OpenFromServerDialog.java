@@ -1,6 +1,7 @@
 package org.protege.editor.owl.client.ui;
 
 import org.protege.editor.core.ui.error.ErrorLogPanel;
+import org.protege.editor.core.ui.util.AugmentedJTextField;
 import org.protege.editor.owl.OWLEditorKit;
 import org.protege.editor.owl.client.ClientPreferences;
 import org.protege.editor.owl.client.ClientSession;
@@ -65,6 +66,7 @@ public class OpenFromServerDialog extends JDialog {
     private JButton openButton;
     private JComboBox<String> serverLocationsList;
     private JPanel mainPanel;
+    private AugmentedJTextField registryPort;
     private JPasswordField password;
     private JTable serverContentTable;
     private JTextField username;
@@ -95,9 +97,24 @@ public class OpenFromServerDialog extends JDialog {
         c.insets = new Insets(12, 0, 0, 12);
         mainPanel.add(getServerLocationsList(), c);
 
-        JLabel usernameLabel = new JLabel("Username:");
+        JLabel registryPortLabel = new JLabel("Registry port:");
         c.gridx = 0;
         c.gridy = 1;
+        c.weightx = 0;
+        c.fill = GridBagConstraints.NONE;
+        c.insets = new Insets(11, 12, 0, 11);
+        mainPanel.add(registryPortLabel, c);
+
+        registryPort = new AugmentedJTextField(70, "(optional)");
+        c.gridx = 1;
+        c.weightx = 1.0;
+        c.fill = GridBagConstraints.HORIZONTAL;
+        c.insets = new Insets(11, 0, 0, 12);
+        mainPanel.add(registryPort, c);
+
+        JLabel usernameLabel = new JLabel("Username:");
+        c.gridx = 0;
+        c.gridy = 2;
         c.weightx = 0;
         c.fill = GridBagConstraints.NONE;
         c.insets = new Insets(11, 12, 0, 11);
@@ -118,7 +135,7 @@ public class OpenFromServerDialog extends JDialog {
 
         JLabel passwordlabel = new JLabel("Password:");
         c.gridx = 0;
-        c.gridy = 2;
+        c.gridy = 3;
         c.weightx = 0;
         c.fill = GridBagConstraints.NONE;
         c.insets = new Insets(11, 12, 0, 11);
@@ -137,14 +154,14 @@ public class OpenFromServerDialog extends JDialog {
 
         connectButton = new JButton("Connect to server");
         connectButton.addActionListener(new ConnectServerActionListener());
-        c.gridy = 3;
+        c.gridy = 4;
         c.weightx = 0;
         c.fill = GridBagConstraints.NONE;
         c.insets = new Insets(11, 0, 0, 0);
         mainPanel.add(connectButton, c);
 
         c.gridx = 0;
-        c.gridy = 4;
+        c.gridy = 5;
         c.gridwidth = 2;
         c.fill = GridBagConstraints.BOTH;
         c.insets = new Insets(11, 12, 12, 12);
@@ -152,7 +169,7 @@ public class OpenFromServerDialog extends JDialog {
         c.weighty = 1.0;
         mainPanel.add(getServerContentPanel(), c);
 
-        c.gridy = 5;
+        c.gridy = 6;
         c.fill = GridBagConstraints.HORIZONTAL;
         c.weighty = 0;
         mainPanel.add(getButtonPanel(), c);
@@ -261,7 +278,12 @@ public class OpenFromServerDialog extends JDialog {
             String serverLocation = (String) serverLocationsList.getSelectedItem();
             try {
                 // TODO Make it switchable for different transport implementation
-                RemoteLoginService loginService = (RemoteLoginService) ServerUtils.getRemoteService(serverLocation, RmiLoginService.LOGIN_SERVICE);
+                int registryPortNumber = -1;
+                if (!registryPort.getText().trim().isEmpty()) {
+                    registryPortNumber = Integer.parseInt(registryPort.getText());
+                }
+                RemoteLoginService loginService = (RemoteLoginService) ServerUtils
+                        .getRemoteService(serverLocation, registryPortNumber, RmiLoginService.LOGIN_SERVICE);
                 DefaultUserAuthenticator authenticator = new DefaultUserAuthenticator(loginService);
 
                 MetaprojectFactory f = Manager.getFactory();

@@ -319,7 +319,7 @@ public class LocalClient implements Client {
     }
 
     @Override
-    public void setServerConfiguration(String property, String value) throws ClientRequestException {
+    public void setServerProperty(String property, String value) throws ClientRequestException {
         try {
             connect();
             server.setServerProperty(authToken, property, value);

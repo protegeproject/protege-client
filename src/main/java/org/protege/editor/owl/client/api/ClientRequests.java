@@ -324,7 +324,7 @@ public interface ClientRequests {
      *          The property value
      * @throws ClientRequestException
      */
-    void setServerConfiguration(String property, String value) throws ClientRequestException;
+    void setServerProperty(String property, String value) throws ClientRequestException;
 
     /**
      * Unsets a server property by specifying the property name.

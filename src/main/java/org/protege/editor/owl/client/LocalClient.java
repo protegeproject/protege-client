@@ -12,6 +12,7 @@ import java.util.List;
 import java.util.Map;
 
 import edu.stanford.protege.metaproject.api.AuthToken;
+import edu.stanford.protege.metaproject.api.Host;
 import edu.stanford.protege.metaproject.api.Operation;
 import edu.stanford.protege.metaproject.api.OperationId;
 import edu.stanford.protege.metaproject.api.Project;
@@ -252,10 +253,87 @@ public class LocalClient implements Client {
     }
 
     @Override
+    public Host getHost() throws ClientRequestException {
+        try {
+            connect();
+            return server.getHost(authToken);
+        }
+        catch (RemoteException e) {
+            throw new ClientRequestException(e);
+        }
+    }
+
+    @Override
+    public void setHostAddress(String hostAddress) throws ClientRequestException {
+        try {
+            connect();
+            server.setHostAddress(authToken, hostAddress);
+        }
+        catch (RemoteException e) {
+            throw new ClientRequestException(e);
+        }
+    }
+
+    @Override
+    public void setSecondaryPort(int portNumber) throws ClientRequestException {
+        try {
+            connect();
+            server.setSecondaryPort(authToken, portNumber);
+        }
+        catch (RemoteException e) {
+            throw new ClientRequestException(e);
+        }
+    }
+
+    @Override
+    public String getRootDirectory() throws ClientRequestException {
+        try {
+            connect();
+            return server.getRootDirectory(authToken);
+        }
+        catch (RemoteException e) {
+            throw new ClientRequestException(e);
+        }
+    }
+
+    @Override
+    public void setRootDirectory(String rootDirectory) throws ClientRequestException {
+        try {
+            connect();
+            server.setRootDirectory(authToken, rootDirectory);
+        }
+        catch (RemoteException e) {
+            throw new ClientRequestException(e);
+        }
+    }
+
+    @Override
+    public Map<String, String> getServerProperties() throws ClientRequestException {
+        try {
+            connect();
+            return server.getServerProperties(authToken);
+        }
+        catch (RemoteException e) {
+            throw new ClientRequestException(e);
+        }
+    }
+
+    @Override
     public void setServerConfiguration(String property, String value) throws ClientRequestException {
         try {
             connect();
-            server.setServerConfiguration(authToken, property, value);
+            server.setServerProperty(authToken, property, value);
+        }
+        catch (RemoteException e) {
+            throw new ClientRequestException(e);
+        }
+    }
+
+    @Override
+    public void unsetServerProperty(String property) throws ClientRequestException {
+        try {
+            connect();
+            server.unsetServerProperty(authToken, property);
         }
         catch (RemoteException e) {
             throw new ClientRequestException(e);

@@ -7,6 +7,7 @@ import org.protege.editor.owl.server.versioning.ServerDocument;
 import java.util.List;
 import java.util.Map;
 
+import edu.stanford.protege.metaproject.api.Host;
 import edu.stanford.protege.metaproject.api.Operation;
 import edu.stanford.protege.metaproject.api.OperationId;
 import edu.stanford.protege.metaproject.api.Project;
@@ -262,6 +263,58 @@ public interface ClientRequests {
      */
     void retractRole(UserId userId, ProjectId projectId, RoleId roleId) throws ClientRequestException;
 
+
+    /**
+     * Gets the host information (including the host address and secondary port, if any)
+     *
+     * @return The {@code Host} object to represent such information
+     * @throws Exception
+     */
+    Host getHost() throws Exception;
+
+    /**
+     * Sets the host server address.
+     *
+     * @param hostAddress
+     *          The host address string.
+     * @throws Exception
+     */
+    void setHostAddress(String hostAddress) throws Exception;
+
+    /**
+     * Sets the secondary port number.
+     *
+     * @param portNumber
+     *          The port number.
+     * @throws Exception
+     */
+    void setSecondaryPort(int portNumber) throws Exception;
+
+    /**
+     * Gets the root directory location.
+     *
+     * @return The root directory location string.
+     * @throws Exception
+     */
+    String getRootDirectory() throws Exception;
+
+    /**
+     * Sets the root directory location.
+     *
+     * @param rootDirectory
+     *          The root directory location using the absolute path.
+     * @throws Exception
+     */
+    void setRootDirectory(String rootDirectory) throws Exception;
+
+    /**
+     * Gets the map of user's server properties.
+     *
+     * @return The server property map.
+     * @throws Exception
+     */
+    Map<String, String> getServerProperties() throws Exception;
+
     /**
      * Setting a server property by specifying the property name and the value.
      *
@@ -272,6 +325,15 @@ public interface ClientRequests {
      * @throws ClientRequestException
      */
     void setServerConfiguration(String property, String value) throws ClientRequestException;
+
+    /**
+     * Unsets a server property by specifying the property name.
+     *
+     * @param property
+     *          The target property name
+     * @throws Exception
+     */
+    void unsetServerProperty(String property) throws Exception;
 
     /**
      * Committing the given ontology changes to be applied in the server.

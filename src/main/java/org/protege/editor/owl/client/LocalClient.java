@@ -106,13 +106,8 @@ public class LocalClient implements Client {
             connect();
             server.createUser(authToken, newUser);
         }
-        catch (AuthorizationException e) {
-            // TODO Auto-generated catch block
-            e.printStackTrace();
-        }
         catch (ServerServiceException e) {
-            // TODO Auto-generated catch block
-            e.printStackTrace();
+            throw new ClientRequestException(e.getMessage(), e);
         }
     }
 

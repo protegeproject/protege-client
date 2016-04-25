@@ -4,9 +4,12 @@ import org.protege.editor.owl.client.api.Client;
 import org.protege.editor.owl.client.api.exception.ClientRequestException;
 import org.protege.editor.owl.client.util.ServerUtils;
 import org.protege.editor.owl.server.api.CommitBundle;
+import org.protege.editor.owl.server.api.exception.AuthorizationException;
+import org.protege.editor.owl.server.api.exception.ServerServiceException;
 import org.protege.editor.owl.server.transport.rmi.RmiServer;
 import org.protege.editor.owl.server.versioning.ServerDocument;
 
+import java.net.URI;
 import java.rmi.RemoteException;
 import java.util.List;
 import java.util.Map;
@@ -59,27 +62,37 @@ public class LocalClient implements Client {
 
     @Override
     public List<Project> getProjects() throws ClientRequestException {
-        return getProjects(userId);
+        try {
+            return getProjects(userId);
+        }
+        catch (AuthorizationException | RemoteException e) {
+            throw new ClientRequestException(e.getMessage(), e);
+        }
     }
 
     @Override
     public List<Role> getActiveRoles() throws ClientRequestException {
-        return getRoles(userId, projectId);
+        try {
+            return getRoles(userId, projectId);
+        }
+        catch (AuthorizationException | RemoteException e) {
+            throw new ClientRequestException(e.getMessage(), e);
+        }
     }
 
     @Override
     public List<Operation> getActiveOperations() throws ClientRequestException {
-        return getOperations(userId, projectId);
+        try {
+            return getOperations(userId, projectId);
+        }
+        catch (AuthorizationException | RemoteException e) {
+            throw new ClientRequestException(e.getMessage(), e);
+        }
     }
 
-    protected void connect() throws ClientRequestException {
+    protected void connect() throws RemoteException {
         if (server == null) {
-            try {
-                server = (RmiServer) ServerUtils.getRemoteService(serverAddress, RmiServer.SERVER_SERVICE);
-            }
-            catch (RemoteException e) {
-                throw new ClientRequestException(e);
-            }
+            server = (RmiServer) ServerUtils.getRemoteService(serverAddress, RmiServer.SERVER_SERVICE);
         }
     }
 
@@ -88,268 +101,374 @@ public class LocalClient implements Client {
     }
 
     @Override
-    public void createUser(User newUser) throws ClientRequestException {
+    public void createUser(User newUser) throws AuthorizationException, ClientRequestException, RemoteException {
         try {
             connect();
             server.createUser(authToken, newUser);
         }
-        catch (RemoteException e) {
-            throw new ClientRequestException(e);
+        catch (AuthorizationException e) {
+            // TODO Auto-generated catch block
+            e.printStackTrace();
+        }
+        catch (ServerServiceException e) {
+            // TODO Auto-generated catch block
+            e.printStackTrace();
         }
     }
 
     @Override
-    public void deleteUser(UserId userId) throws ClientRequestException {
+    public void deleteUser(UserId userId) throws AuthorizationException, ClientRequestException, RemoteException {
         try {
             connect();
             server.deleteUser(authToken, userId);
         }
-        catch (RemoteException e) {
-            throw new ClientRequestException(e);
+        catch (ServerServiceException e) {
+            throw new ClientRequestException(e.getMessage(), e);
         }
     }
 
     @Override
-    public void updateUser(UserId userId, User updatedUser) throws ClientRequestException {
+    public void updateUser(UserId userId, User updatedUser) throws AuthorizationException, ClientRequestException, RemoteException {
         try {
             connect();
             server.updateUser(authToken, userId, updatedUser);
         }
-        catch (RemoteException e) {
-            throw new ClientRequestException(e);
+        catch (ServerServiceException e) {
+            throw new ClientRequestException(e.getMessage(), e);
         }
     }
 
     @Override
-    public void createProject(Project newProject) throws ClientRequestException {
+    public void createProject(Project newProject) throws AuthorizationException, ClientRequestException, RemoteException {
         try {
             connect();
             server.createProject(authToken, newProject);
         }
-        catch (RemoteException e) {
-            throw new ClientRequestException(e);
+        catch (ServerServiceException e) {
+            throw new ClientRequestException(e.getMessage(), e);
         }
     }
 
     @Override
-    public void deleteProject(ProjectId projectId) throws ClientRequestException {
+    public void deleteProject(ProjectId projectId) throws AuthorizationException, ClientRequestException, RemoteException {
         try {
             connect();
             server.deleteProject(authToken, projectId);
         }
-        catch (RemoteException e) {
-            throw new ClientRequestException(e);
+        catch (ServerServiceException e) {
+            throw new ClientRequestException(e.getMessage(), e);
         }
     }
 
     @Override
-    public void updateProject(ProjectId projectId, Project updatedProject) throws ClientRequestException {
+    public void updateProject(ProjectId projectId, Project updatedProject) throws AuthorizationException, ClientRequestException, RemoteException {
         try {
             connect();
             server.updateProject(authToken, projectId, updatedProject);
         }
-        catch (RemoteException e) {
-            throw new ClientRequestException(e);
+        catch (ServerServiceException e) {
+            throw new ClientRequestException(e.getMessage(), e);
         }
     }
 
     @Override
-    public ServerDocument openProject(ProjectId projectId) throws ClientRequestException {
+    public ServerDocument openProject(ProjectId projectId) throws AuthorizationException, ClientRequestException, RemoteException {
         try {
             connect();
             return server.openProject(authToken, projectId);
         }
-        catch (RemoteException e) {
-            throw new ClientRequestException(e);
+        catch (ServerServiceException e) {
+            throw new ClientRequestException(e.getMessage(), e);
         }
     }
 
     @Override
-    public void createRole(Role newRole) throws ClientRequestException {
+    public void createRole(Role newRole) throws AuthorizationException, ClientRequestException, RemoteException {
         try {
             connect();
             server.createRole(authToken, newRole);
         }
-        catch (RemoteException e) {
-            throw new ClientRequestException(e);
+        catch (ServerServiceException e) {
+            throw new ClientRequestException(e.getMessage(), e);
         }
     }
 
     @Override
-    public void deleteRole(RoleId roleId) throws ClientRequestException {
+    public void deleteRole(RoleId roleId) throws AuthorizationException, ClientRequestException, RemoteException {
         try {
             connect();
             server.deleteRole(authToken, roleId);
         }
-        catch (RemoteException e) {
-            throw new ClientRequestException(e);
+        catch (ServerServiceException e) {
+            throw new ClientRequestException(e.getMessage(), e);
         }
     }
 
     @Override
-    public void updateRole(RoleId roleId, Role updatedRole) throws ClientRequestException {
+    public void updateRole(RoleId roleId, Role updatedRole) throws AuthorizationException, ClientRequestException, RemoteException {
         try {
             connect();
             server.updateRole(authToken, roleId, updatedRole);
         }
-        catch (RemoteException e) {
-            throw new ClientRequestException(e);
+        catch (ServerServiceException e) {
+            throw new ClientRequestException(e.getMessage(), e);
         }
     }
 
     @Override
-    public void createOperation(Operation operation) throws ClientRequestException {
+    public void createOperation(Operation operation) throws AuthorizationException, ClientRequestException, RemoteException {
         try {
             connect();
             server.createOperation(authToken, operation);
         }
-        catch (RemoteException e) {
-            throw new ClientRequestException(e);
+        catch (ServerServiceException e) {
+            throw new ClientRequestException(e.getMessage(), e);
         }
     }
 
     @Override
-    public void deleteOperation(OperationId operationId) throws ClientRequestException {
+    public void deleteOperation(OperationId operationId) throws AuthorizationException, ClientRequestException, RemoteException {
         try {
             connect();
             server.deleteOperation(authToken, operationId);
         }
-        catch (RemoteException e) {
-            throw new ClientRequestException(e);
+        catch (ServerServiceException e) {
+            throw new ClientRequestException(e.getMessage(), e);
         }
     }
 
     @Override
-    public void updateOperation(OperationId operationId, Operation updatedOperation) throws ClientRequestException {
+    public void updateOperation(OperationId operationId, Operation updatedOperation) throws AuthorizationException, ClientRequestException, RemoteException {
         try {
             connect();
             server.updateOperation(authToken, operationId, updatedOperation);
         }
-        catch (RemoteException e) {
-            throw new ClientRequestException(e);
+        catch (ServerServiceException e) {
+            throw new ClientRequestException(e.getMessage(), e);
         }
     }
 
     @Override
-    public void assignRole(UserId userId, ProjectId projectId, RoleId roleId) throws ClientRequestException {
+    public void assignRole(UserId userId, ProjectId projectId, RoleId roleId) throws AuthorizationException, ClientRequestException, RemoteException {
         try {
             connect();
             server.assignRole(authToken, userId, projectId, roleId);
         }
-        catch (RemoteException e) {
-            throw new ClientRequestException(e);
+        catch (ServerServiceException e) {
+            throw new ClientRequestException(e.getMessage(), e);
         }
     }
 
     @Override
-    public void retractRole(UserId userId, ProjectId projectId, RoleId roleId) throws ClientRequestException {
+    public void retractRole(UserId userId, ProjectId projectId, RoleId roleId) throws AuthorizationException, ClientRequestException, RemoteException {
         try {
             connect();
             server.retractRole(authToken, userId, projectId, roleId);
         }
-        catch (RemoteException e) {
-            throw new ClientRequestException(e);
+        catch (ServerServiceException e) {
+            throw new ClientRequestException(e.getMessage(), e);
         }
     }
 
     @Override
-    public Host getHost() throws ClientRequestException {
+    public Host getHost() throws AuthorizationException, ClientRequestException, RemoteException {
         try {
             connect();
             return server.getHost(authToken);
         }
-        catch (RemoteException e) {
-            throw new ClientRequestException(e);
+        catch (ServerServiceException e) {
+            throw new ClientRequestException(e.getMessage(), e);
         }
     }
 
     @Override
-    public void setHostAddress(String hostAddress) throws ClientRequestException {
+    public void setHostAddress(URI hostAddress) throws AuthorizationException, ClientRequestException, RemoteException {
         try {
             connect();
             server.setHostAddress(authToken, hostAddress);
         }
-        catch (RemoteException e) {
-            throw new ClientRequestException(e);
+        catch (ServerServiceException e) {
+            throw new ClientRequestException(e.getMessage(), e);
         }
     }
 
     @Override
-    public void setSecondaryPort(int portNumber) throws ClientRequestException {
+    public void setSecondaryPort(int portNumber) throws AuthorizationException, ClientRequestException, RemoteException {
         try {
             connect();
             server.setSecondaryPort(authToken, portNumber);
         }
-        catch (RemoteException e) {
-            throw new ClientRequestException(e);
+        catch (ServerServiceException e) {
+            throw new ClientRequestException(e.getMessage(), e);
         }
     }
 
     @Override
-    public String getRootDirectory() throws ClientRequestException {
+    public String getRootDirectory() throws AuthorizationException, ClientRequestException, RemoteException {
         try {
             connect();
             return server.getRootDirectory(authToken);
         }
-        catch (RemoteException e) {
-            throw new ClientRequestException(e);
+        catch (ServerServiceException e) {
+            throw new ClientRequestException(e.getMessage(), e);
         }
     }
 
     @Override
-    public void setRootDirectory(String rootDirectory) throws ClientRequestException {
+    public void setRootDirectory(String rootDirectory) throws AuthorizationException, ClientRequestException, RemoteException {
         try {
             connect();
             server.setRootDirectory(authToken, rootDirectory);
         }
-        catch (RemoteException e) {
-            throw new ClientRequestException(e);
+        catch (ServerServiceException e) {
+            throw new ClientRequestException(e.getMessage(), e);
         }
     }
 
     @Override
-    public Map<String, String> getServerProperties() throws ClientRequestException {
+    public Map<String, String> getServerProperties() throws AuthorizationException, ClientRequestException, RemoteException {
         try {
             connect();
             return server.getServerProperties(authToken);
         }
-        catch (RemoteException e) {
-            throw new ClientRequestException(e);
+        catch (ServerServiceException e) {
+            throw new ClientRequestException(e.getMessage(), e);
         }
     }
 
     @Override
-    public void setServerProperty(String property, String value) throws ClientRequestException {
+    public void setServerProperty(String property, String value) throws AuthorizationException, ClientRequestException, RemoteException {
         try {
             connect();
             server.setServerProperty(authToken, property, value);
         }
-        catch (RemoteException e) {
-            throw new ClientRequestException(e);
+        catch (ServerServiceException e) {
+            throw new ClientRequestException(e.getMessage(), e);
         }
     }
 
     @Override
-    public void unsetServerProperty(String property) throws ClientRequestException {
+    public void unsetServerProperty(String property) throws AuthorizationException, ClientRequestException, RemoteException {
         try {
             connect();
             server.unsetServerProperty(authToken, property);
         }
-        catch (RemoteException e) {
-            throw new ClientRequestException(e);
+        catch (ServerServiceException e) {
+            throw new ClientRequestException(e.getMessage(), e);
         }
     }
 
     @Override
-    public void commit(Project project, CommitBundle commits) throws ClientRequestException {
+    public void commit(Project project, CommitBundle commits) throws AuthorizationException, ClientRequestException, RemoteException {
         try {
             connect();
             server.commit(authToken, project, commits);
         }
-        catch (RemoteException e) {
-            throw new ClientRequestException(e);
+        catch (ServerServiceException e) {
+            throw new ClientRequestException(e.getMessage(), e);
         }
     }
+
+    @Override
+    public List<User> getAllUsers() throws AuthorizationException, ClientRequestException, RemoteException {
+        try {
+            connect();
+            return server.getAllUsers(authToken);
+        }
+        catch (ServerServiceException e) {
+            throw new ClientRequestException(e.getMessage(), e);
+        }
+    }
+
+    @Override
+    public List<Project> getProjects(UserId userId) throws AuthorizationException, ClientRequestException, RemoteException {
+        try {
+            connect();
+            return server.getProjects(authToken, userId);
+        }
+        catch (ServerServiceException e) {
+            throw new ClientRequestException(e.getMessage(), e);
+        }
+    }
+
+    @Override
+    public List<Project> getAllProjects() throws AuthorizationException, ClientRequestException, RemoteException {
+        try {
+            connect();
+            return server.getAllProjects(authToken);
+        }
+        catch (ServerServiceException e) {
+            throw new ClientRequestException(e.getMessage(), e);
+        }
+    }
+
+    @Override
+    public Map<ProjectId, List<Role>> getRoles(UserId userId) throws AuthorizationException, ClientRequestException, RemoteException {
+        try {
+            connect();
+            return server.getRoles(authToken, userId);
+        }
+        catch (ServerServiceException e) {
+            throw new ClientRequestException(e.getMessage(), e);
+        }
+    }
+
+    @Override
+    public List<Role> getRoles(UserId userId, ProjectId projectId) throws AuthorizationException, ClientRequestException, RemoteException {
+        try {
+            connect();
+            return server.getRoles(authToken, userId, projectId);
+        }
+        catch (ServerServiceException e) {
+            throw new ClientRequestException(e.getMessage(), e);
+        }
+    }
+
+    @Override
+    public List<Role> getAllRoles() throws AuthorizationException, ClientRequestException, RemoteException {
+        try {
+            connect();
+            return server.getAllRoles(authToken);
+        }
+        catch (ServerServiceException e) {
+            throw new ClientRequestException(e.getMessage(), e);
+        }
+    }
+
+    @Override
+    public Map<ProjectId, List<Operation>> getOperations(UserId userId) throws AuthorizationException, ClientRequestException, RemoteException {
+        try {
+            connect();
+            return server.getOperations(authToken, userId);
+        }
+        catch (ServerServiceException e) {
+            throw new ClientRequestException(e.getMessage(), e);
+        }
+    }
+
+    @Override
+    public List<Operation> getOperations(UserId userId, ProjectId projectId) throws AuthorizationException, ClientRequestException, RemoteException {
+        try {
+            connect();
+            return server.getOperations(authToken, userId, projectId);
+        }
+        catch (ServerServiceException e) {
+            throw new ClientRequestException(e.getMessage(), e);
+        }
+    }
+
+    @Override
+    public List<Operation> getAllOperations() throws AuthorizationException, ClientRequestException, RemoteException {
+        try {
+            connect();
+            return server.getAllOperations(authToken);
+        }
+        catch (ServerServiceException e) {
+            throw new ClientRequestException(e.getMessage(), e);
+        }
+    }
+
+
 
     @Override
     public boolean canAddAxiom() throws ClientRequestException {
@@ -357,8 +476,8 @@ public class LocalClient implements Client {
             connect();
             return server.isOperationAllowed(authToken, Operations.ADD_AXIOM.getId(), projectId, userId);
         }
-        catch (RemoteException e) {
-            throw new ClientRequestException(e);
+        catch (AuthorizationException | ServerServiceException | RemoteException e) {
+            throw new ClientRequestException(e.getMessage(), e);
         }
     }
 
@@ -368,8 +487,8 @@ public class LocalClient implements Client {
             connect();
             return server.isOperationAllowed(authToken, Operations.REMOVE_AXIOM.getId(), projectId, userId);
         }
-        catch (RemoteException e) {
-            throw new ClientRequestException(e);
+        catch (AuthorizationException | ServerServiceException | RemoteException e) {
+            throw new ClientRequestException(e.getMessage(), e);
         }
     }
 
@@ -379,8 +498,8 @@ public class LocalClient implements Client {
             connect();
             return server.isOperationAllowed(authToken, Operations.ADD_ONTOLOGY_ANNOTATION.getId(), projectId, userId);
         }
-        catch (RemoteException e) {
-            throw new ClientRequestException(e);
+        catch (AuthorizationException | ServerServiceException | RemoteException e) {
+            throw new ClientRequestException(e.getMessage(), e);
         }
     }
 
@@ -388,11 +507,10 @@ public class LocalClient implements Client {
     public boolean canRemoveAnnotation() throws ClientRequestException {
         try {
             connect();
-            return server.isOperationAllowed(authToken, Operations.REMOVE_ONTOLOGY_ANNOTATION.getId(), projectId,
-                    userId);
+            return server.isOperationAllowed(authToken, Operations.REMOVE_ONTOLOGY_ANNOTATION.getId(), projectId, userId);
         }
-        catch (RemoteException e) {
-            throw new ClientRequestException(e);
+        catch (AuthorizationException | ServerServiceException | RemoteException e) {
+            throw new ClientRequestException(e.getMessage(), e);
         }
     }
 
@@ -402,8 +520,8 @@ public class LocalClient implements Client {
             connect();
             return server.isOperationAllowed(authToken, Operations.ADD_IMPORT.getId(), projectId, userId);
         }
-        catch (RemoteException e) {
-            throw new ClientRequestException(e);
+        catch (AuthorizationException | ServerServiceException | RemoteException e) {
+            throw new ClientRequestException(e.getMessage(), e);
         }
     }
 
@@ -413,8 +531,8 @@ public class LocalClient implements Client {
             connect();
             return server.isOperationAllowed(authToken, Operations.REMOVE_IMPORT.getId(), projectId, userId);
         }
-        catch (RemoteException e) {
-            throw new ClientRequestException(e);
+        catch (AuthorizationException | ServerServiceException | RemoteException e) {
+            throw new ClientRequestException(e.getMessage(), e);
         }
     }
 
@@ -424,8 +542,8 @@ public class LocalClient implements Client {
             connect();
             return server.isOperationAllowed(authToken, Operations.MODIFY_ONTOLOGY_IRI.getId(), projectId, userId);
         }
-        catch (RemoteException e) {
-            throw new ClientRequestException(e);
+        catch (AuthorizationException | ServerServiceException | RemoteException e) {
+            throw new ClientRequestException(e.getMessage(), e);
         }
     }
 
@@ -435,8 +553,8 @@ public class LocalClient implements Client {
             connect();
             return server.isOperationAllowed(authToken, Operations.ADD_USER.getId(), projectId, userId);
         }
-        catch (RemoteException e) {
-            throw new ClientRequestException(e);
+        catch (AuthorizationException | ServerServiceException | RemoteException e) {
+            throw new ClientRequestException(e.getMessage(), e);
         }
     }
 
@@ -446,8 +564,8 @@ public class LocalClient implements Client {
             connect();
             return server.isOperationAllowed(authToken, Operations.REMOVE_USER.getId(), projectId, userId);
         }
-        catch (RemoteException e) {
-            throw new ClientRequestException(e);
+        catch (AuthorizationException | ServerServiceException | RemoteException e) {
+            throw new ClientRequestException(e.getMessage(), e);
         }
     }
 
@@ -457,8 +575,8 @@ public class LocalClient implements Client {
             connect();
             return server.isOperationAllowed(authToken, Operations.MODIFY_USER.getId(), projectId, userId);
         }
-        catch (RemoteException e) {
-            throw new ClientRequestException(e);
+        catch (AuthorizationException | ServerServiceException | RemoteException e) {
+            throw new ClientRequestException(e.getMessage(), e);
         }
     }
 
@@ -468,8 +586,8 @@ public class LocalClient implements Client {
             connect();
             return server.isOperationAllowed(authToken, Operations.ADD_PROJECT.getId(), projectId, userId);
         }
-        catch (RemoteException e) {
-            throw new ClientRequestException(e);
+        catch (AuthorizationException | ServerServiceException | RemoteException e) {
+            throw new ClientRequestException(e.getMessage(), e);
         }
     }
 
@@ -479,8 +597,8 @@ public class LocalClient implements Client {
             connect();
             return server.isOperationAllowed(authToken, Operations.REMOVE_PROJECT.getId(), projectId, userId);
         }
-        catch (RemoteException e) {
-            throw new ClientRequestException(e);
+        catch (AuthorizationException | ServerServiceException | RemoteException e) {
+            throw new ClientRequestException(e.getMessage(), e);
         }
     }
 
@@ -490,8 +608,8 @@ public class LocalClient implements Client {
             connect();
             return server.isOperationAllowed(authToken, Operations.MODIFY_PROJECT.getId(), projectId, userId);
         }
-        catch (RemoteException e) {
-            throw new ClientRequestException(e);
+        catch (AuthorizationException | ServerServiceException | RemoteException e) {
+            throw new ClientRequestException(e.getMessage(), e);
         }
     }
 
@@ -501,8 +619,8 @@ public class LocalClient implements Client {
             connect();
             return server.isOperationAllowed(authToken, Operations.OPEN_PROJECT.getId(), projectId, userId);
         }
-        catch (RemoteException e) {
-            throw new ClientRequestException(e);
+        catch (AuthorizationException | ServerServiceException | RemoteException e) {
+            throw new ClientRequestException(e.getMessage(), e);
         }
     }
 
@@ -512,8 +630,8 @@ public class LocalClient implements Client {
             connect();
             return server.isOperationAllowed(authToken, Operations.ADD_ROLE.getId(), projectId, userId);
         }
-        catch (RemoteException e) {
-            throw new ClientRequestException(e);
+        catch (AuthorizationException | ServerServiceException | RemoteException e) {
+            throw new ClientRequestException(e.getMessage(), e);
         }
     }
 
@@ -523,8 +641,8 @@ public class LocalClient implements Client {
             connect();
             return server.isOperationAllowed(authToken, Operations.REMOVE_ROLE.getId(), projectId, userId);
         }
-        catch (RemoteException e) {
-            throw new ClientRequestException(e);
+        catch (AuthorizationException | ServerServiceException | RemoteException e) {
+            throw new ClientRequestException(e.getMessage(), e);
         }
     }
 
@@ -534,8 +652,8 @@ public class LocalClient implements Client {
             connect();
             return server.isOperationAllowed(authToken, Operations.MODIFY_ROLE.getId(), projectId, userId);
         }
-        catch (RemoteException e) {
-            throw new ClientRequestException(e);
+        catch (AuthorizationException | ServerServiceException | RemoteException e) {
+            throw new ClientRequestException(e.getMessage(), e);
         }
     }
 
@@ -545,8 +663,8 @@ public class LocalClient implements Client {
             connect();
             return server.isOperationAllowed(authToken, Operations.ADD_OPERATION.getId(), projectId, userId);
         }
-        catch (RemoteException e) {
-            throw new ClientRequestException(e);
+        catch (AuthorizationException | ServerServiceException | RemoteException e) {
+            throw new ClientRequestException(e.getMessage(), e);
         }
     }
 
@@ -556,8 +674,8 @@ public class LocalClient implements Client {
             connect();
             return server.isOperationAllowed(authToken, Operations.REMOVE_OPERATION.getId(), projectId, userId);
         }
-        catch (RemoteException e) {
-            throw new ClientRequestException(e);
+        catch (AuthorizationException | ServerServiceException | RemoteException e) {
+            throw new ClientRequestException(e.getMessage(), e);
         }
     }
 
@@ -567,8 +685,8 @@ public class LocalClient implements Client {
             connect();
             return server.isOperationAllowed(authToken, Operations.MODIFY_OPERATION.getId(), projectId, userId);
         }
-        catch (RemoteException e) {
-            throw new ClientRequestException(e);
+        catch (AuthorizationException | ServerServiceException | RemoteException e) {
+            throw new ClientRequestException(e.getMessage(), e);
         }
     }
 
@@ -578,8 +696,8 @@ public class LocalClient implements Client {
             connect();
             return server.isOperationAllowed(authToken, Operations.ASSIGN_ROLE.getId(), projectId, userId);
         }
-        catch (RemoteException e) {
-            throw new ClientRequestException(e);
+        catch (AuthorizationException | ServerServiceException | RemoteException e) {
+            throw new ClientRequestException(e.getMessage(), e);
         }
     }
 
@@ -589,8 +707,8 @@ public class LocalClient implements Client {
             connect();
             return server.isOperationAllowed(authToken, Operations.RETRACT_ROLE.getId(), projectId, userId);
         }
-        catch (RemoteException e) {
-            throw new ClientRequestException(e);
+        catch (AuthorizationException | ServerServiceException | RemoteException e) {
+            throw new ClientRequestException(e.getMessage(), e);
         }
     }
 
@@ -600,8 +718,8 @@ public class LocalClient implements Client {
             connect();
             return server.isOperationAllowed(authToken, Operations.STOP_SERVER.getId(), projectId, userId);
         }
-        catch (RemoteException e) {
-            throw new ClientRequestException(e);
+        catch (AuthorizationException | ServerServiceException | RemoteException e) {
+            throw new ClientRequestException(e.getMessage(), e);
         }
     }
 
@@ -611,8 +729,8 @@ public class LocalClient implements Client {
             connect();
             return server.isOperationAllowed(authToken, Operations.RESTART_SERVER.getId(), projectId, userId);
         }
-        catch (RemoteException e) {
-            throw new ClientRequestException(e);
+        catch (AuthorizationException | ServerServiceException | RemoteException e) {
+            throw new ClientRequestException(e.getMessage(), e);
         }
     }
 
@@ -622,8 +740,8 @@ public class LocalClient implements Client {
             connect();
             return server.isOperationAllowed(authToken, Operations.MODIFY_SERVER_CONFIG.getId(), projectId, userId);
         }
-        catch (RemoteException e) {
-            throw new ClientRequestException(e);
+        catch (AuthorizationException | ServerServiceException | RemoteException e) {
+            throw new ClientRequestException(e.getMessage(), e);
         }
     }
 
@@ -633,107 +751,8 @@ public class LocalClient implements Client {
             connect();
             return server.isOperationAllowed(authToken, operationId, projectId, userId);
         }
-        catch (RemoteException e) {
-            throw new ClientRequestException(e);
-        }
-    }
-
-    @Override
-    public List<User> getAllUsers() throws ClientRequestException {
-        try {
-            connect();
-            return server.getAllUsers(authToken);
-        }
-        catch (RemoteException e) {
-            throw new ClientRequestException(e);
-        }
-    }
-
-    @Override
-    public List<Project> getProjects(UserId userId) throws ClientRequestException {
-        try {
-            connect();
-            return server.getProjects(authToken, userId);
-        }
-        catch (RemoteException e) {
-            throw new ClientRequestException(e);
-        }
-    }
-
-    @Override
-    public List<Project> getAllProjects() throws ClientRequestException {
-        try {
-            connect();
-            return server.getAllProjects(authToken);
-        }
-        catch (RemoteException e) {
-            throw new ClientRequestException(e);
-        }
-    }
-
-    @Override
-    public Map<ProjectId, List<Role>> getRoles(UserId userId) throws ClientRequestException {
-        try {
-            connect();
-            return server.getRoles(authToken, userId);
-        }
-        catch (RemoteException e) {
-            throw new ClientRequestException(e);
-        }
-    }
-
-    @Override
-    public List<Role> getRoles(UserId userId, ProjectId projectId) throws ClientRequestException {
-        try {
-            connect();
-            return server.getRoles(authToken, userId, projectId);
-        }
-        catch (RemoteException e) {
-            throw new ClientRequestException(e);
-        }
-    }
-
-    @Override
-    public List<Role> getAllRoles() throws ClientRequestException {
-        try {
-            connect();
-            return server.getAllRoles(authToken);
-        }
-        catch (RemoteException e) {
-            throw new ClientRequestException(e);
-        }
-    }
-
-    @Override
-    public Map<ProjectId, List<Operation>> getOperations(UserId userId) throws ClientRequestException {
-        try {
-            connect();
-            return server.getOperations(authToken, userId);
-        }
-        catch (RemoteException e) {
-            throw new ClientRequestException(e);
-        }
-    }
-
-    @Override
-    public List<Operation> getOperations(UserId userId, ProjectId projectId) throws ClientRequestException {
-        try {
-            connect();
-            return server.getOperations(authToken, userId, projectId);
-        }
-        catch (RemoteException e) {
-            throw new ClientRequestException(e);
-        }
-    }
-
-    @Override
-    public List<Operation> getAllOperations() throws ClientRequestException {
-        try {
-            connect();
-            return server.getAllOperations(authToken);
-        }
-        catch (RemoteException e) {
-            throw new ClientRequestException(e);
+        catch (AuthorizationException | ServerServiceException | RemoteException e) {
+            throw new ClientRequestException(e.getMessage(), e);
         }
     }
 }

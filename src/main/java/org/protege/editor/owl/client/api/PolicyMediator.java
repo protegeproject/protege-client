@@ -18,7 +18,7 @@ public interface PolicyMediator {
     // ------------------------------------------------
 
     /**
-     * Checks if the user has the permission to create a new axiom to the
+     * Checks if the user has the permission to add a new axiom to the
      * ontology.
      *
      * @return Returns <code>true</code> if the user has the permission, or
@@ -40,7 +40,7 @@ public interface PolicyMediator {
     boolean canRemoveAxiom() throws ClientRequestException;
 
     /**
-     * Checks if the user has the permission to create a new annotation to the
+     * Checks if the user has the permission to add a new annotation to the
      * ontology.
      *
      * @return Returns <code>true</code> if the user has the permission, or
@@ -48,7 +48,7 @@ public interface PolicyMediator {
      * @throws ClientRequestException
      *             If a failure happened when answering this query request.
      */
-    boolean canAddAnnotatation() throws ClientRequestException;
+    boolean canAddAnnotation() throws ClientRequestException;
 
     /**
      * Checks if the user has the permission to remove an existing annotation
@@ -62,7 +62,7 @@ public interface PolicyMediator {
     boolean canRemoveAnnotation() throws ClientRequestException;
 
     /**
-     * Checks if the user has the permission to create a new import declaration
+     * Checks if the user has the permission to add a new import declaration
      * to an ontology.
      *
      * @return Returns <code>true</code> if the user has the permission, or
@@ -105,7 +105,7 @@ public interface PolicyMediator {
      * @throws ClientRequestException
      *             If a failure happened when answering this query request.
      */
-    boolean canModifyServerConfig() throws ClientRequestException;
+    boolean canUpdateServerConfig() throws ClientRequestException;
 
     /**
      * Checks if the user has the permission to create a new user to the server.
@@ -115,7 +115,7 @@ public interface PolicyMediator {
      * @throws ClientRequestException
      *             If a failure happened when answering this query request.
      */
-    boolean canAddUser() throws ClientRequestException;
+    boolean canCreateUser() throws ClientRequestException;
 
     /**
      * Checks if the user has the permission to remove an existing user from the
@@ -126,7 +126,7 @@ public interface PolicyMediator {
      * @throws ClientRequestException
      *             If a failure happened when answering this query request.
      */
-    boolean canRemoveUser() throws ClientRequestException;
+    boolean canDeleteUser() throws ClientRequestException;
 
     /**
      * Checks if the user has the permission to update an existing user.
@@ -136,7 +136,7 @@ public interface PolicyMediator {
      * @throws ClientRequestException
      *             If a failure happened when answering this query request.
      */
-    boolean canModifyUser() throws ClientRequestException;
+    boolean canUpdateUser() throws ClientRequestException;
 
     /**
      * Checks if the user has the permission to create a new project to the
@@ -147,7 +147,7 @@ public interface PolicyMediator {
      * @throws ClientRequestException
      *             If a failure happened when answering this query request.
      */
-    boolean canAddProject() throws ClientRequestException;
+    boolean canCreateProject() throws ClientRequestException;
 
     /**
      * Checks if the user has the permission to remove an existing project from
@@ -158,7 +158,7 @@ public interface PolicyMediator {
      * @throws ClientRequestException
      *             If a failure happened when answering this query request.
      */
-    boolean canRemoveProject() throws ClientRequestException;
+    boolean canDeleteProject() throws ClientRequestException;
 
     /**
      * Checks if the user has the permission to update an existing project.
@@ -168,7 +168,7 @@ public interface PolicyMediator {
      * @throws ClientRequestException
      *             If a failure happened when answering this query request.
      */
-    boolean canModifyProject() throws ClientRequestException;
+    boolean canUpdateProject() throws ClientRequestException;
 
     /**
      * Checks if the user has the permission to open a project from the server.
@@ -189,7 +189,7 @@ public interface PolicyMediator {
      * @throws ClientRequestException
      *             If a failure happened when answering this query request.
      */
-    boolean canAddRole() throws ClientRequestException;
+    boolean canCreateRole() throws ClientRequestException;
 
     /**
      * Checks if the user has the permission to remove an existing user's role
@@ -200,7 +200,7 @@ public interface PolicyMediator {
      * @throws ClientRequestException
      *             If a failure happened when answering this query request.
      */
-    boolean canRemoveRole() throws ClientRequestException;
+    boolean canDeleteRole() throws ClientRequestException;
 
     /**
      * Checks if the user has the permission to update an existing user's role.
@@ -210,7 +210,7 @@ public interface PolicyMediator {
      * @throws ClientRequestException
      *             If a failure happened when answering this query request.
      */
-    boolean canModifyRole() throws ClientRequestException;
+    boolean canUpdateRole() throws ClientRequestException;
 
     /**
      * Checks if the user has the permission to create a new user's operation to
@@ -221,7 +221,7 @@ public interface PolicyMediator {
      * @throws ClientRequestException
      *             If a failure happened when answering this query request.
      */
-    boolean canAddOperation() throws ClientRequestException;
+    boolean canCreateOperation() throws ClientRequestException;
 
     /**
      * Checks if the user has the permission to remove an existing user's
@@ -232,7 +232,7 @@ public interface PolicyMediator {
      * @throws ClientRequestException
      *             If a failure happened when answering this query request.
      */
-    boolean canRemoveOperation() throws ClientRequestException;
+    boolean canDeleteOperation() throws ClientRequestException;
 
     /**
      * Checks if the user has the permission to update an existing user's
@@ -243,7 +243,7 @@ public interface PolicyMediator {
      * @throws ClientRequestException
      *             If a failure happened when answering this query request.
      */
-    boolean canModifyOperation() throws ClientRequestException;
+    boolean canUpdateOperation() throws ClientRequestException;
 
     /**
      * Checks if the user has the permission to assign roles to other users.

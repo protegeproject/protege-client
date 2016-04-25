@@ -488,7 +488,7 @@ public class LocalClient implements Client {
     }
 
     @Override
-    public boolean canAddAnnotatation() throws ClientRequestException {
+    public boolean canAddAnnotation() throws ClientRequestException {
         try {
             connect();
             return server.isOperationAllowed(authToken, Operations.ADD_ONTOLOGY_ANNOTATION.getId(), projectId, userId);
@@ -543,7 +543,7 @@ public class LocalClient implements Client {
     }
 
     @Override
-    public boolean canAddUser() throws ClientRequestException {
+    public boolean canCreateUser() throws ClientRequestException {
         try {
             connect();
             return server.isOperationAllowed(authToken, Operations.ADD_USER.getId(), projectId, userId);
@@ -554,7 +554,7 @@ public class LocalClient implements Client {
     }
 
     @Override
-    public boolean canRemoveUser() throws ClientRequestException {
+    public boolean canDeleteUser() throws ClientRequestException {
         try {
             connect();
             return server.isOperationAllowed(authToken, Operations.REMOVE_USER.getId(), projectId, userId);
@@ -565,7 +565,7 @@ public class LocalClient implements Client {
     }
 
     @Override
-    public boolean canModifyUser() throws ClientRequestException {
+    public boolean canUpdateUser() throws ClientRequestException {
         try {
             connect();
             return server.isOperationAllowed(authToken, Operations.MODIFY_USER.getId(), projectId, userId);
@@ -576,7 +576,7 @@ public class LocalClient implements Client {
     }
 
     @Override
-    public boolean canAddProject() throws ClientRequestException {
+    public boolean canCreateProject() throws ClientRequestException {
         try {
             connect();
             return server.isOperationAllowed(authToken, Operations.ADD_PROJECT.getId(), projectId, userId);
@@ -587,7 +587,7 @@ public class LocalClient implements Client {
     }
 
     @Override
-    public boolean canRemoveProject() throws ClientRequestException {
+    public boolean canDeleteProject() throws ClientRequestException {
         try {
             connect();
             return server.isOperationAllowed(authToken, Operations.REMOVE_PROJECT.getId(), projectId, userId);
@@ -598,7 +598,7 @@ public class LocalClient implements Client {
     }
 
     @Override
-    public boolean canModifyProject() throws ClientRequestException {
+    public boolean canUpdateProject() throws ClientRequestException {
         try {
             connect();
             return server.isOperationAllowed(authToken, Operations.MODIFY_PROJECT.getId(), projectId, userId);
@@ -620,7 +620,7 @@ public class LocalClient implements Client {
     }
 
     @Override
-    public boolean canAddRole() throws ClientRequestException {
+    public boolean canCreateRole() throws ClientRequestException {
         try {
             connect();
             return server.isOperationAllowed(authToken, Operations.ADD_ROLE.getId(), projectId, userId);
@@ -631,7 +631,7 @@ public class LocalClient implements Client {
     }
 
     @Override
-    public boolean canRemoveRole() throws ClientRequestException {
+    public boolean canDeleteRole() throws ClientRequestException {
         try {
             connect();
             return server.isOperationAllowed(authToken, Operations.REMOVE_ROLE.getId(), projectId, userId);
@@ -642,7 +642,7 @@ public class LocalClient implements Client {
     }
 
     @Override
-    public boolean canModifyRole() throws ClientRequestException {
+    public boolean canUpdateRole() throws ClientRequestException {
         try {
             connect();
             return server.isOperationAllowed(authToken, Operations.MODIFY_ROLE.getId(), projectId, userId);
@@ -653,7 +653,7 @@ public class LocalClient implements Client {
     }
 
     @Override
-    public boolean canAddOperation() throws ClientRequestException {
+    public boolean canCreateOperation() throws ClientRequestException {
         try {
             connect();
             return server.isOperationAllowed(authToken, Operations.ADD_OPERATION.getId(), projectId, userId);
@@ -664,7 +664,7 @@ public class LocalClient implements Client {
     }
 
     @Override
-    public boolean canRemoveOperation() throws ClientRequestException {
+    public boolean canDeleteOperation() throws ClientRequestException {
         try {
             connect();
             return server.isOperationAllowed(authToken, Operations.REMOVE_OPERATION.getId(), projectId, userId);
@@ -675,7 +675,7 @@ public class LocalClient implements Client {
     }
 
     @Override
-    public boolean canModifyOperation() throws ClientRequestException {
+    public boolean canUpdateOperation() throws ClientRequestException {
         try {
             connect();
             return server.isOperationAllowed(authToken, Operations.MODIFY_OPERATION.getId(), projectId, userId);
@@ -730,7 +730,7 @@ public class LocalClient implements Client {
     }
 
     @Override
-    public boolean canModifyServerConfig() throws ClientRequestException {
+    public boolean canUpdateServerConfig() throws ClientRequestException {
         try {
             connect();
             return server.isOperationAllowed(authToken, Operations.MODIFY_SERVER_CONFIG.getId(), projectId, userId);

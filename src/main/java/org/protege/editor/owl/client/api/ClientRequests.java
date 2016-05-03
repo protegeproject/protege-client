@@ -9,12 +9,16 @@ import java.net.URI;
 import java.rmi.RemoteException;
 import java.util.List;
 import java.util.Map;
+import java.util.Optional;
 
+import edu.stanford.protege.metaproject.api.Description;
 import edu.stanford.protege.metaproject.api.Host;
+import edu.stanford.protege.metaproject.api.Name;
 import edu.stanford.protege.metaproject.api.Operation;
 import edu.stanford.protege.metaproject.api.OperationId;
 import edu.stanford.protege.metaproject.api.Project;
 import edu.stanford.protege.metaproject.api.ProjectId;
+import edu.stanford.protege.metaproject.api.ProjectOptions;
 import edu.stanford.protege.metaproject.api.Role;
 import edu.stanford.protege.metaproject.api.RoleId;
 import edu.stanford.protege.metaproject.api.User;
@@ -134,9 +138,18 @@ public interface ClientRequests {
 
     /**
      * Creating a new project to the server.
-     *
-     * @param newProject
-     *            The new project to add.
+     * 
+     * @param projectId
+     *            The project identifier object
+     * @param projectName
+     *            The name of the project
+     * @param description
+     *            The description of the project
+     * @param owner
+     *            The owner of the project
+     * @param options
+     *            An optional of project options
+     * @return A server document that provide the link information to remote resources
      * @throws AuthorizationException
      *             If the user doesn't have the permission to request this
      *             service.
@@ -147,7 +160,8 @@ public interface ClientRequests {
      *             communication problems, failure during parameter or return
      *             value marshalling or unmarshalling, protocol errors.
      */
-    void createProject(Project newProject) throws AuthorizationException, ClientRequestException, RemoteException;
+    ServerDocument createProject(ProjectId projectId, Name projectName, Description description, UserId owner,
+            Optional<ProjectOptions> options) throws AuthorizationException, ClientRequestException, RemoteException;
 
     /**
      * Deleting an existing project from the server.

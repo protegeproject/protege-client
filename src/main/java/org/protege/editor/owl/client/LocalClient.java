@@ -13,13 +13,17 @@ import java.net.URI;
 import java.rmi.RemoteException;
 import java.util.List;
 import java.util.Map;
+import java.util.Optional;
 
 import edu.stanford.protege.metaproject.api.AuthToken;
+import edu.stanford.protege.metaproject.api.Description;
 import edu.stanford.protege.metaproject.api.Host;
+import edu.stanford.protege.metaproject.api.Name;
 import edu.stanford.protege.metaproject.api.Operation;
 import edu.stanford.protege.metaproject.api.OperationId;
 import edu.stanford.protege.metaproject.api.Project;
 import edu.stanford.protege.metaproject.api.ProjectId;
+import edu.stanford.protege.metaproject.api.ProjectOptions;
 import edu.stanford.protege.metaproject.api.Role;
 import edu.stanford.protege.metaproject.api.RoleId;
 import edu.stanford.protege.metaproject.api.User;
@@ -134,10 +138,11 @@ public class LocalClient implements Client {
     }
 
     @Override
-    public void createProject(Project newProject) throws AuthorizationException, ClientRequestException, RemoteException {
+    public ServerDocument createProject(ProjectId projectId, Name projectName, Description description, UserId owner,
+            Optional<ProjectOptions> options) throws AuthorizationException, ClientRequestException, RemoteException {
         try {
             connect();
-            server.createProject(authToken, newProject);
+            return server.createProject(authToken, projectId, projectName, description, owner, options);
         }
         catch (ServerServiceException e) {
             throw new ClientRequestException(e.getMessage(), e);

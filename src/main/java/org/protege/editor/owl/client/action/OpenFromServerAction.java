@@ -1,8 +1,18 @@
 package org.protege.editor.owl.client.action;
 
-import org.protege.editor.owl.client.ui.OpenFromServerDialog;
+import org.protege.editor.owl.client.ui.OpenFromServerPanel;
+import org.protege.editor.owl.model.OWLWorkspace;
 
+import java.awt.Dialog;
 import java.awt.event.ActionEvent;
+import java.awt.event.KeyEvent;
+import java.awt.event.WindowAdapter;
+import java.awt.event.WindowEvent;
+
+import javax.swing.AbstractAction;
+import javax.swing.JComponent;
+import javax.swing.JDialog;
+import javax.swing.KeyStroke;
 
 public class OpenFromServerAction extends AbstractClientAction {
 
@@ -20,8 +30,36 @@ public class OpenFromServerAction extends AbstractClientAction {
 
     @Override
     public void actionPerformed(ActionEvent e) {
-        OpenFromServerDialog dialog = new OpenFromServerDialog(getClientRegistry());
-        dialog.setLocationRelativeTo(getOWLWorkspace());
+        final OWLWorkspace editorWindow = getOWLEditorKit().getOWLWorkspace();
+        JDialog dialog = createDialog();
+        dialog.setLocationRelativeTo(editorWindow);
         dialog.setVisible(true);
+    }
+
+    private JDialog createDialog() {
+        final JDialog dialog = new JDialog(null, "Open from Protege OWL Server", Dialog.ModalityType.MODELESS);
+        OpenFromServerPanel openDialogPanel = new OpenFromServerPanel(getClientRegistry());
+        openDialogPanel.getInputMap(JComponent.WHEN_ANCESTOR_OF_FOCUSED_COMPONENT).put(KeyStroke.getKeyStroke(KeyEvent.VK_ESCAPE, 0), "CLOSE_DIALOG");
+        openDialogPanel.getActionMap().put("CLOSE_DIALOG", new AbstractAction()
+        {
+           private static final long serialVersionUID = 1L;
+           @Override
+           public void actionPerformed(ActionEvent e)
+           {
+               dialog.setVisible(false);
+           }
+        });
+        dialog.addWindowListener(new WindowAdapter()
+        {
+           @Override
+           public void windowClosing(WindowEvent e)
+           {
+               dialog.setVisible(false);
+           }
+        });
+        dialog.setContentPane(openDialogPanel);
+        dialog.setSize(650, 650);
+        dialog.setResizable(true);
+        return dialog;
     }
 }

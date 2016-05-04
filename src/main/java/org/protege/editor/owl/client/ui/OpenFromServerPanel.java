@@ -21,7 +21,6 @@ import org.semanticweb.owlapi.model.OWLOntologyCreationException;
 
 import java.awt.BorderLayout;
 import java.awt.Color;
-import java.awt.Dimension;
 import java.awt.FlowLayout;
 import java.awt.GridBagConstraints;
 import java.awt.GridBagLayout;
@@ -37,7 +36,6 @@ import javax.swing.BorderFactory;
 import javax.swing.DefaultComboBoxModel;
 import javax.swing.JButton;
 import javax.swing.JComboBox;
-import javax.swing.JDialog;
 import javax.swing.JLabel;
 import javax.swing.JOptionPane;
 import javax.swing.JPanel;
@@ -54,7 +52,7 @@ import edu.stanford.protege.metaproject.api.PlainPassword;
 import edu.stanford.protege.metaproject.api.ProjectId;
 import edu.stanford.protege.metaproject.api.UserId;
 
-public class OpenFromServerDialog extends JDialog {
+public class OpenFromServerPanel extends JPanel {
 
     private static final long serialVersionUID = -6710802337675443598L;
 
@@ -65,7 +63,6 @@ public class OpenFromServerDialog extends JDialog {
     private JButton connectButton;
     private JButton openButton;
     private JComboBox<String> serverLocationsList;
-    private JPanel mainPanel;
     private AugmentedJTextField registryPort;
     private JPasswordField password;
     private JTable serverContentTable;
@@ -73,29 +70,22 @@ public class OpenFromServerDialog extends JDialog {
     private OWLEditorKit editorKit;
     private ServerTableModel tableModel;
 
-    public OpenFromServerDialog(ClientSession clientRegistry) {
+    public OpenFromServerPanel(ClientSession clientRegistry) {
         this.clientRegistry = clientRegistry;
-        setTitle("Open from Protege OWL Server");
-        setPreferredSize(new Dimension(650, 650));
-        setModal(true);
-        setResizable(true);
-        initUI();
-    }
 
-    private void initUI() {
-        mainPanel = new JPanel(new GridBagLayout());
+        setLayout(new GridBagLayout());
 
         // gridx, gridy, gridwidth, gridheight, weightx, weighty, anchor, fill, insets, ipadx, ipady
         GridBagConstraints c = new GridBagConstraints(0, 0, 1, 1, 0, 0, GridBagConstraints.LINE_START,
                 GridBagConstraints.NONE, new Insets(12, 12, 0, 11), 0, 0);
         JLabel serverIRILabel = new JLabel("Server address:");
-        mainPanel.add(serverIRILabel, c);
+        add(serverIRILabel, c);
 
         c.gridx = 1;
         c.weightx = 1.0;
         c.fill = GridBagConstraints.HORIZONTAL;
         c.insets = new Insets(12, 0, 0, 12);
-        mainPanel.add(getServerLocationsList(), c);
+        add(getServerLocationsList(), c);
 
         JLabel registryPortLabel = new JLabel("Registry port:");
         c.gridx = 0;
@@ -103,14 +93,14 @@ public class OpenFromServerDialog extends JDialog {
         c.weightx = 0;
         c.fill = GridBagConstraints.NONE;
         c.insets = new Insets(11, 12, 0, 11);
-        mainPanel.add(registryPortLabel, c);
+        add(registryPortLabel, c);
 
         registryPort = new AugmentedJTextField(70, "(optional)");
         c.gridx = 1;
         c.weightx = 1.0;
         c.fill = GridBagConstraints.HORIZONTAL;
         c.insets = new Insets(11, 0, 0, 12);
-        mainPanel.add(registryPort, c);
+        add(registryPort, c);
 
         JLabel usernameLabel = new JLabel("Username:");
         c.gridx = 0;
@@ -118,7 +108,7 @@ public class OpenFromServerDialog extends JDialog {
         c.weightx = 0;
         c.fill = GridBagConstraints.NONE;
         c.insets = new Insets(11, 12, 0, 11);
-        mainPanel.add(usernameLabel, c);
+        add(usernameLabel, c);
 
         username = new JTextField("");
         username.setColumns(50);
@@ -131,7 +121,7 @@ public class OpenFromServerDialog extends JDialog {
         c.weightx = 1.0;
         c.fill = GridBagConstraints.HORIZONTAL;
         c.insets = new Insets(11, 0, 0, 12);
-        mainPanel.add(username, c);
+        add(username, c);
 
         JLabel passwordlabel = new JLabel("Password:");
         c.gridx = 0;
@@ -139,7 +129,7 @@ public class OpenFromServerDialog extends JDialog {
         c.weightx = 0;
         c.fill = GridBagConstraints.NONE;
         c.insets = new Insets(11, 12, 0, 11);
-        mainPanel.add(passwordlabel, c);
+        add(passwordlabel, c);
 
         password = new JPasswordField("");
         password.setColumns(50);
@@ -150,15 +140,16 @@ public class OpenFromServerDialog extends JDialog {
         c.weightx = 1.0;
         c.fill = GridBagConstraints.HORIZONTAL;
         c.insets = new Insets(11, 0, 0, 12);
-        mainPanel.add(password, c);
+        add(password, c);
 
         connectButton = new JButton("Connect to server");
+        connectButton.setSelected(true);
         connectButton.addActionListener(new ConnectServerActionListener());
         c.gridy = 4;
         c.weightx = 0;
         c.fill = GridBagConstraints.NONE;
         c.insets = new Insets(11, 0, 0, 0);
-        mainPanel.add(connectButton, c);
+        add(connectButton, c);
 
         c.gridx = 0;
         c.gridy = 5;
@@ -167,16 +158,12 @@ public class OpenFromServerDialog extends JDialog {
         c.insets = new Insets(11, 12, 12, 12);
         c.weightx = 1.0;
         c.weighty = 1.0;
-        mainPanel.add(getServerContentPanel(), c);
+        add(getServerContentPanel(), c);
 
         c.gridy = 6;
         c.fill = GridBagConstraints.HORIZONTAL;
         c.weighty = 0;
-        mainPanel.add(getButtonPanel(), c);
-
-        getRootPane().setDefaultButton(connectButton);
-        pack();
-        getContentPane().add(mainPanel);
+        add(getButtonPanel(), c);
 
         if (password.getPassword().length == 0) {
             password.requestFocus();
@@ -240,7 +227,7 @@ public class OpenFromServerDialog extends JDialog {
         cancelButton.addActionListener(new ActionListener() {
             @Override
             public void actionPerformed(ActionEvent e) {
-                OpenFromServerDialog.this.setVisible(false);
+                OpenFromServerPanel.this.setVisible(false);
             }
         });
         panel.add(cancelButton);
@@ -322,10 +309,10 @@ public class OpenFromServerDialog extends JDialog {
                 VersionedOWLOntology vont = ClientUtils.constructVersionedOntology(serverDocument, ontology);
                 clientRegistry.addVersionedOntology(vont);
                 editorKit.getOWLModelManager().setActiveOntology(ontology);
-                OpenFromServerDialog.this.setVisible(false);
+                OpenFromServerPanel.this.setVisible(false);
             }
             else {
-                JOptionPane.showMessageDialog(mainPanel, "No project was selected", "Error", JOptionPane.ERROR_MESSAGE);
+                JOptionPane.showMessageDialog(this, "No project was selected", "Error", JOptionPane.ERROR_MESSAGE);
             }
         }
         catch (Exception ex) {

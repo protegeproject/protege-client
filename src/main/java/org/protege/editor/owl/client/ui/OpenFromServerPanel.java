@@ -7,6 +7,7 @@ import org.protege.editor.owl.client.ClientPreferences;
 import org.protege.editor.owl.client.ClientSession;
 import org.protege.editor.owl.client.LocalClient;
 import org.protege.editor.owl.client.api.Client;
+import org.protege.editor.owl.client.api.exception.OWLClientException;
 import org.protege.editor.owl.client.util.ClientUtils;
 import org.protege.editor.owl.client.util.ServerUtils;
 import org.protege.editor.owl.server.transport.rmi.RemoteLoginService;
@@ -258,6 +259,17 @@ public class OpenFromServerPanel extends JPanel {
         prefs.setCurrentUsername(username.getText());
     }
 
+    private void loadProjectList(Client client) {
+        try {
+            tableModel.initialize(client);
+        }
+        catch (OWLClientException e) {
+            ErrorLogPanel.showErrorDialog(e);
+            UIHelper ui = new UIHelper(editorKit);
+            ui.showDialog("Error opening project", new JLabel("Could not retrieve remote projects: " + e.getMessage()));
+        }
+    }
+
     private class ConnectServerActionListener implements ActionListener {
 
         @Override
@@ -282,6 +294,7 @@ public class OpenFromServerPanel extends JPanel {
                 clientRegistry.setActiveClient(client);
 
                 saveServerConnectionData();
+                loadProjectList(client);
             }
             catch (Exception e) {
                 ErrorLogPanel.showErrorDialog(e);

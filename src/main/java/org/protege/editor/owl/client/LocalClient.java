@@ -7,6 +7,7 @@ import org.protege.editor.owl.server.api.CommitBundle;
 import org.protege.editor.owl.server.api.exception.AuthorizationException;
 import org.protege.editor.owl.server.api.exception.OutOfSyncException;
 import org.protege.editor.owl.server.api.exception.ServerServiceException;
+import org.protege.editor.owl.server.transport.rmi.RemoteServer;
 import org.protege.editor.owl.server.transport.rmi.RmiServer;
 import org.protege.editor.owl.server.versioning.ServerDocument;
 
@@ -45,7 +46,7 @@ public class LocalClient implements Client {
     private ProjectId projectId;
     private UserId userId;
 
-    private RmiServer server;
+    private RemoteServer server;
 
     public LocalClient(AuthToken authToken, String hostname, int registryPort) {
         this.authToken = authToken;
@@ -100,7 +101,7 @@ public class LocalClient implements Client {
 
     protected void connect() throws RemoteException {
         if (server == null) {
-            server = (RmiServer) ServerUtils.getRemoteService(hostname, registryPort, RmiServer.SERVER_SERVICE);
+            server = (RemoteServer) ServerUtils.getRemoteService(hostname, registryPort, RmiServer.SERVER_SERVICE);
         }
     }
 

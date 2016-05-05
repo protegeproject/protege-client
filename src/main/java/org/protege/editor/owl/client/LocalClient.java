@@ -27,6 +27,7 @@ import edu.stanford.protege.metaproject.api.ProjectId;
 import edu.stanford.protege.metaproject.api.ProjectOptions;
 import edu.stanford.protege.metaproject.api.Role;
 import edu.stanford.protege.metaproject.api.RoleId;
+import edu.stanford.protege.metaproject.api.SaltedPasswordDigest;
 import edu.stanford.protege.metaproject.api.User;
 import edu.stanford.protege.metaproject.api.UserId;
 import edu.stanford.protege.metaproject.impl.Operations;
@@ -108,10 +109,10 @@ public class LocalClient implements Client {
     }
 
     @Override
-    public void createUser(User newUser) throws AuthorizationException, ClientRequestException, RemoteException {
+    public void createUser(User newUser, Optional<SaltedPasswordDigest> password) throws AuthorizationException, ClientRequestException, RemoteException {
         try {
             connect();
-            server.createUser(authToken, newUser);
+            server.createUser(authToken, newUser, password);
         }
         catch (ServerServiceException e) {
             throw new ClientRequestException(e.getMessage(), e);

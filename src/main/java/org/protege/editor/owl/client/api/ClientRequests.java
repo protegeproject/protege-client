@@ -3,6 +3,7 @@ package org.protege.editor.owl.client.api;
 import org.protege.editor.owl.client.api.exception.ClientRequestException;
 import org.protege.editor.owl.server.api.CommitBundle;
 import org.protege.editor.owl.server.api.exception.AuthorizationException;
+import org.protege.editor.owl.server.api.exception.OutOfSyncException;
 import org.protege.editor.owl.server.versioning.ServerDocument;
 
 import java.net.URI;
@@ -21,6 +22,7 @@ import edu.stanford.protege.metaproject.api.ProjectId;
 import edu.stanford.protege.metaproject.api.ProjectOptions;
 import edu.stanford.protege.metaproject.api.Role;
 import edu.stanford.protege.metaproject.api.RoleId;
+import edu.stanford.protege.metaproject.api.SaltedPasswordDigest;
 import edu.stanford.protege.metaproject.api.User;
 import edu.stanford.protege.metaproject.api.UserId;
 
@@ -53,6 +55,8 @@ public interface ClientRequests {
      *
      * @param newUser
      *            The new user to add.
+     * @param password
+     *            The password associated to the new user.
      * @throws AuthorizationException
      *             If the user doesn't have the permission to request this
      *             service.
@@ -63,7 +67,8 @@ public interface ClientRequests {
      *             communication problems, failure during parameter or return
      *             value marshalling or unmarshalling, protocol errors.
      */
-    void createUser(User newUser) throws AuthorizationException, ClientRequestException, RemoteException;
+    void createUser(User newUser, Optional<SaltedPasswordDigest> password)
+            throws AuthorizationException, ClientRequestException, RemoteException;
 
     /**
      * Deleting an existing user from the server.
@@ -635,6 +640,8 @@ public interface ClientRequests {
      * @throws AuthorizationException
      *             If the user doesn't have the permission to request this
      *             service.
+     * @throws OutOfSyncException
+     *             If the incoming changes are out-of-date.
      * @throws ClientRequestException
      *             If the server failed to fulfill the user request.
      * @throws RemoteException
@@ -643,5 +650,5 @@ public interface ClientRequests {
      *             value marshalling or unmarshalling, protocol errors.
      */
     void commit(Project project, CommitBundle changes)
-            throws AuthorizationException, ClientRequestException, RemoteException;
+            throws AuthorizationException, OutOfSyncException, ClientRequestException, RemoteException;
 }

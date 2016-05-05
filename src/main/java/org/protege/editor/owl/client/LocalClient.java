@@ -5,6 +5,7 @@ import org.protege.editor.owl.client.api.exception.ClientRequestException;
 import org.protege.editor.owl.client.util.ServerUtils;
 import org.protege.editor.owl.server.api.CommitBundle;
 import org.protege.editor.owl.server.api.exception.AuthorizationException;
+import org.protege.editor.owl.server.api.exception.OutOfSyncException;
 import org.protege.editor.owl.server.api.exception.ServerServiceException;
 import org.protege.editor.owl.server.transport.rmi.RmiServer;
 import org.protege.editor.owl.server.versioning.ServerDocument;
@@ -37,16 +38,18 @@ import edu.stanford.protege.metaproject.impl.Operations;
 public class LocalClient implements Client {
 
     private AuthToken authToken;
-    private String serverAddress;
+    private String hostname;
+    private int registryPort;
 
     private ProjectId projectId;
     private UserId userId;
 
     private RmiServer server;
 
-    public LocalClient(AuthToken authToken, String serverAddress) {
+    public LocalClient(AuthToken authToken, String hostname, int registryPort) {
         this.authToken = authToken;
-        this.serverAddress = serverAddress;
+        this.hostname = hostname;
+        this.registryPort = registryPort;
         userId = authToken.getUser().getId();
     }
 
@@ -96,7 +99,7 @@ public class LocalClient implements Client {
 
     protected void connect() throws RemoteException {
         if (server == null) {
-            server = (RmiServer) ServerUtils.getRemoteService(serverAddress, RmiServer.SERVER_SERVICE);
+            server = (RmiServer) ServerUtils.getRemoteService(hostname, registryPort, RmiServer.SERVER_SERVICE);
         }
     }
 
@@ -359,7 +362,8 @@ public class LocalClient implements Client {
     }
 
     @Override
-    public void commit(Project project, CommitBundle commits) throws AuthorizationException, ClientRequestException, RemoteException {
+    public void commit(Project project, CommitBundle commits)
+            throws AuthorizationException, OutOfSyncException, ClientRequestException, RemoteException {
         try {
             connect();
             server.commit(authToken, project, commits);

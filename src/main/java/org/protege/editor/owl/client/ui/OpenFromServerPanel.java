@@ -30,6 +30,7 @@ import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
+import java.net.URI;
 import java.util.ArrayList;
 import java.util.Collections;
 
@@ -275,14 +276,16 @@ public class OpenFromServerPanel extends JPanel {
         @Override
         public void actionPerformed(ActionEvent evt) {
             String serverLocation = (String) serverLocationsList.getSelectedItem();
+            String registryPortStr = registryPort.getText().trim();
             try {
                 // TODO Make it switchable for different transport implementation
-                int registryPortNumber = -1;
-                if (!registryPort.getText().trim().isEmpty()) {
-                    registryPortNumber = Integer.parseInt(registryPort.getText());
+                String hostname = URI.create(serverLocation).getHost();
+                Integer registryPort = null;
+                if (!registryPortStr.isEmpty()) {
+                    registryPort = Integer.parseInt(registryPortStr);
                 }
                 RemoteLoginService loginService = (RemoteLoginService) ServerUtils
-                        .getRemoteService(serverLocation, registryPortNumber, RmiLoginService.LOGIN_SERVICE);
+                        .getRemoteService(hostname, registryPort, RmiLoginService.LOGIN_SERVICE);
                 DefaultUserAuthenticator authenticator = new DefaultUserAuthenticator(loginService);
 
                 MetaprojectFactory f = Manager.getFactory();
@@ -290,7 +293,7 @@ public class OpenFromServerPanel extends JPanel {
                 PlainPassword plainPassword = f.getPlainPassword(new String(password.getPassword()));
 
                 AuthToken authToken = authenticator.hasValidCredentials(userId, plainPassword);
-                Client client = new LocalClient(authToken, serverLocation);
+                Client client = new LocalClient(authToken, hostname, registryPort);
                 clientRegistry.setActiveClient(client);
 
                 saveServerConnectionData();

@@ -275,17 +275,16 @@ public class OpenFromServerPanel extends JPanel {
 
         @Override
         public void actionPerformed(ActionEvent evt) {
-            String serverLocation = (String) serverLocationsList.getSelectedItem();
+            String serverAddress = (String) serverLocationsList.getSelectedItem();
             String registryPortStr = registryPort.getText().trim();
             try {
                 // TODO Make it switchable for different transport implementation
-                String hostname = URI.create(serverLocation).getHost();
                 Integer registryPort = null;
                 if (!registryPortStr.isEmpty()) {
                     registryPort = Integer.parseInt(registryPortStr);
                 }
                 RemoteLoginService loginService = (RemoteLoginService) ServerUtils
-                        .getRemoteService(hostname, registryPort, RmiLoginService.LOGIN_SERVICE);
+                        .getRemoteService(serverAddress, registryPort, RmiLoginService.LOGIN_SERVICE);
                 DefaultUserAuthenticator authenticator = new DefaultUserAuthenticator(loginService);
 
                 MetaprojectFactory f = Manager.getFactory();
@@ -293,7 +292,7 @@ public class OpenFromServerPanel extends JPanel {
                 PlainPassword plainPassword = f.getPlainPassword(new String(password.getPassword()));
 
                 AuthToken authToken = authenticator.hasValidCredentials(userId, plainPassword);
-                Client client = new LocalClient(authToken, hostname, registryPort);
+                Client client = new LocalClient(authToken, serverAddress, registryPort);
                 clientRegistry.setActiveClient(client);
 
                 saveServerConnectionData();

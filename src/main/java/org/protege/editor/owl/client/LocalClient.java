@@ -40,7 +40,7 @@ import edu.stanford.protege.metaproject.impl.Operations;
 public class LocalClient implements Client {
 
     private AuthToken authToken;
-    private String hostname;
+    private String serverAddress;
     private int registryPort;
 
     private ProjectId projectId;
@@ -48,9 +48,9 @@ public class LocalClient implements Client {
 
     private RemoteServer server;
 
-    public LocalClient(AuthToken authToken, String hostname, int registryPort) {
+    public LocalClient(AuthToken authToken, String serverAddress, int registryPort) {
         this.authToken = authToken;
-        this.hostname = hostname;
+        this.serverAddress = serverAddress;
         this.registryPort = registryPort;
         userId = authToken.getUser().getId();
     }
@@ -101,7 +101,7 @@ public class LocalClient implements Client {
 
     protected void connect() throws RemoteException {
         if (server == null) {
-            server = (RemoteServer) ServerUtils.getRemoteService(hostname, registryPort, RmiServer.SERVER_SERVICE);
+            server = (RemoteServer) ServerUtils.getRemoteService(serverAddress, registryPort, RmiServer.SERVER_SERVICE);
         }
     }
 

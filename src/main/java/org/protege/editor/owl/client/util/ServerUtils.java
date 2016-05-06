@@ -10,23 +10,23 @@ import java.util.Optional;
 
 public class ServerUtils {
 
-    public static Registry getRmiRegistry(String serverLocation, Optional<Integer> registryPort) throws RemoteException {
-        URI serverLocationUri = URI.create(serverLocation);
+    public static Registry getRmiRegistry(String serverAddress, Optional<Integer> registryPort) throws RemoteException {
+        URI serverLocationUri = URI.create(serverAddress);
         return getRmiRegistry(serverLocationUri, registryPort);
     }
 
-    public static Registry getRmiRegistry(URI serverLocation, Optional<Integer> registryPort) throws RemoteException {
-        String host = serverLocation.getHost();
+    public static Registry getRmiRegistry(URI serverAddress, Optional<Integer> registryPort) throws RemoteException {
+        String host = serverAddress.getHost();
         /*
          * Use the same port number as the server port if no registry port was specified
          */
-        int port = (registryPort.isPresent()) ? registryPort.get() : serverLocation.getPort();
+        int port = (registryPort.isPresent()) ? registryPort.get() : serverAddress.getPort();
         return LocateRegistry.getRegistry(host, port);
     }
 
-    public static Remote getRemoteService(String serverLocation, int registryPort, String serviceName) throws RemoteException {
+    public static Remote getRemoteService(String serverAddress, int registryPort, String serviceName) throws RemoteException {
         try {
-            return getRmiRegistry(serverLocation, Optional.of(registryPort)).lookup(serviceName);
+            return getRmiRegistry(serverAddress, Optional.of(registryPort)).lookup(serviceName);
         }
         catch (NotBoundException e) {
             throw new RemoteException(e.getMessage(), e);

@@ -106,7 +106,6 @@
                         <Bundle-Vendor>The Protege Development Team</Bundle-Vendor>
                         <Embed-Dependency>protege-server</Embed-Dependency>
                         <Export-Package>
-                            edu.stanford.protege.metaproject.*,
                             com.fasterxml.uuid.*
                         </Export-Package>
                         <Import-Package>

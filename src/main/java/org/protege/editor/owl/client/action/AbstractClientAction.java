@@ -12,6 +12,7 @@ import org.semanticweb.owlapi.model.OWLOntology;
 import org.semanticweb.owlapi.model.OWLOntologyID;
 
 import java.util.Optional;
+import java.util.concurrent.Callable;
 import java.util.concurrent.Executors;
 import java.util.concurrent.Future;
 import java.util.concurrent.ScheduledExecutorService;
@@ -74,12 +75,25 @@ public abstract class AbstractClientAction extends ProtegeOWLAction {
     }
 
     protected ScheduledFuture<?> submit(Runnable task, long delay) {
-        return executorService.scheduleWithFixedDelay(task, delay, delay, TimeUnit.SECONDS);
+        return executorService.schedule(task, delay, TimeUnit.SECONDS);
+    }
+
+    protected Future<?> submit(Callable<?> task) {
+        return executorService.submit(task);
+    }
+
+    protected ScheduledFuture<?> submit(Callable<?> task, long delay) {
+        return executorService.schedule(task, delay, TimeUnit.SECONDS);
     }
 
     protected void showSynchronizationErrorDialog(String message, Throwable t) {
         ErrorLogPanel.showErrorDialog(t);
         UIHelper ui = new UIHelper(getOWLEditorKit());
         ui.showDialog("Synchronization error", new JLabel(message), JOptionPane.ERROR_MESSAGE);
+    }
+
+    protected void showSynchronizationInfoDialog(String message) {
+        UIHelper ui = new UIHelper(getOWLEditorKit());
+        ui.showDialog("Synchronization info", new JLabel(message), JOptionPane.INFORMATION_MESSAGE);
     }
 }

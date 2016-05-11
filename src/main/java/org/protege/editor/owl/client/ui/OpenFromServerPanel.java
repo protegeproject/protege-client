@@ -26,11 +26,11 @@ import java.awt.FlowLayout;
 import java.awt.GridBagConstraints;
 import java.awt.GridBagLayout;
 import java.awt.Insets;
+import java.awt.Window;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
-import java.net.URI;
 import java.util.ArrayList;
 import java.util.Collections;
 
@@ -45,6 +45,7 @@ import javax.swing.JPasswordField;
 import javax.swing.JScrollPane;
 import javax.swing.JTable;
 import javax.swing.JTextField;
+import javax.swing.SwingUtilities;
 import javax.swing.border.CompoundBorder;
 
 import edu.stanford.protege.metaproject.Manager;
@@ -229,7 +230,9 @@ public class OpenFromServerPanel extends JPanel {
         cancelButton.addActionListener(new ActionListener() {
             @Override
             public void actionPerformed(ActionEvent e) {
-                OpenFromServerPanel.this.setVisible(false);
+                Window window = SwingUtilities.getWindowAncestor(OpenFromServerPanel.this);
+                window.setVisible(false);
+                window.dispose();
             }
         });
         panel.add(cancelButton);

@@ -42,121 +42,121 @@ import org.semanticweb.owlapi.model.OWLOntologyID;
 
 public class ChangeHistoryPanel extends JDialog {
 
-	private static final long serialVersionUID = -372532962143290188L;
+    private static final long serialVersionUID = -372532962143290188L;
     private OWLEditorKit editorKit;
     private OWLOntology ontology;
     private ChangeHistory changes;
     private JTable changeListTable;
     private ChangeListTableModel changeListTableModel;
-    
-	public ChangeHistoryPanel(OWLEditorKit editorKit, ChangeHistory changes) {
-		this.editorKit = editorKit;
+
+    public ChangeHistoryPanel(OWLEditorKit editorKit, ChangeHistory changes) {
+        this.editorKit = editorKit;
         this.ontology = editorKit.getOWLModelManager().getActiveOntology();
-		this.changes = changes;
-		initUI();
-	}
-	
-	private void initUI() {
-		String shortOntologyName = "";
-		OWLOntologyID ontologyId = ontology.getOntologyID();
-		if (!ontologyId.isAnonymous()) {
-		    shortOntologyName = ontology.getOntologyID().getOntologyIRI().get().getRemainder().get();
-		}
-		if (shortOntologyName.isEmpty()) {
-		    shortOntologyName = ontologyId.toString();
-		}
-		setTitle("Change History for " + shortOntologyName);
+        this.changes = changes;
+        initUI();
+    }
+
+    private void initUI() {
+        String shortOntologyName = "";
+        OWLOntologyID ontologyId = ontology.getOntologyID();
+        if (!ontologyId.isAnonymous()) {
+            shortOntologyName = ontology.getOntologyID().getOntologyIRI().get().getRemainder().get();
+        }
+        if (shortOntologyName.isEmpty()) {
+            shortOntologyName = ontologyId.toString();
+        }
+        setTitle("Change History for " + shortOntologyName);
         setPreferredSize(new Dimension(800, 600));
-		setModal(true);
-		
-		JPanel wrapper = new JPanel();
-		wrapper.setLayout(new BorderLayout());
-		wrapper.setBorder(BorderFactory.createEmptyBorder(12, 12, 12, 12));
-		
-		// Changes list
-		JPanel panel = new JPanel();
-		panel.setLayout(new BoxLayout(panel, BoxLayout.Y_AXIS));
+        setModal(true);
 
-		JLabel label = new JLabel("Changes List");
-		label.setAlignmentX(Component.LEFT_ALIGNMENT);
-		Font font = label.getFont().deriveFont(Font.BOLD);
-		label.setFont(font);
-		panel.add(label);
-		panel.add(Box.createRigidArea(new Dimension(0,5)));
-		panel.add(getHistoryComponent());
-		panel.add(Box.createRigidArea(new Dimension(0,11)));
-		
-		// Change details
-		label = new JLabel("Change Details");
-		label.setAlignmentX(Component.LEFT_ALIGNMENT);
-		label.setFont(font);
-		panel.add(label);
-		panel.add(Box.createRigidArea(new Dimension(0,5)));
-		panel.add(getChangeListComponent());
-		panel.add(Box.createRigidArea(new Dimension(0,17)));
+        JPanel wrapper = new JPanel();
+        wrapper.setLayout(new BorderLayout());
+        wrapper.setBorder(BorderFactory.createEmptyBorder(12, 12, 12, 12));
 
-		wrapper.add(panel, BorderLayout.CENTER);
-		
-		// OK button
-		JButton button = new JButton("OK");
-		ActionListener listener = new ActionListener() {
+        // Changes list
+        JPanel panel = new JPanel();
+        panel.setLayout(new BoxLayout(panel, BoxLayout.Y_AXIS));
 
-			@Override
-			public void actionPerformed(ActionEvent e) {
-				setVisible(false);
-			}
-		};
-		button.addActionListener(listener);
-		button.setMargin(new Insets(button.getInsets().top, 12, button.getInsets().bottom, 12));
-		panel = new JPanel();
-		panel.add(button);
-		
-		wrapper.add(panel, BorderLayout.SOUTH);
+        JLabel label = new JLabel("Changes List");
+        label.setAlignmentX(Component.LEFT_ALIGNMENT);
+        Font font = label.getFont().deriveFont(Font.BOLD);
+        label.setFont(font);
+        panel.add(label);
+        panel.add(Box.createRigidArea(new Dimension(0, 5)));
+        panel.add(getHistoryComponent());
+        panel.add(Box.createRigidArea(new Dimension(0, 11)));
 
-		getContentPane().add(wrapper);
-		
-		// TODO Why doesn't this work?
-		//getRootPane().setDefaultButton(button);
-		
-		pack();
-		setResizable(true);
-	}
-	
-	private JComponent getHistoryComponent() {
-		HistoryTableModel model = new HistoryTableModel(changes);
+        // Change details
+        label = new JLabel("Change Details");
+        label.setAlignmentX(Component.LEFT_ALIGNMENT);
+        label.setFont(font);
+        panel.add(label);
+        panel.add(Box.createRigidArea(new Dimension(0, 5)));
+        panel.add(getChangeListComponent());
+        panel.add(Box.createRigidArea(new Dimension(0, 17)));
+
+        wrapper.add(panel, BorderLayout.CENTER);
+
+        // OK button
+        JButton button = new JButton("OK");
+        ActionListener listener = new ActionListener() {
+
+            @Override
+            public void actionPerformed(ActionEvent e) {
+                setVisible(false);
+            }
+        };
+        button.addActionListener(listener);
+        button.setMargin(new Insets(button.getInsets().top, 12, button.getInsets().bottom, 12));
+        panel = new JPanel();
+        panel.add(button);
+
+        wrapper.add(panel, BorderLayout.SOUTH);
+
+        getContentPane().add(wrapper);
+
+        // TODO Why doesn't this work?
+        // getRootPane().setDefaultButton(button);
+
+        pack();
+        setResizable(true);
+    }
+
+    private JComponent getHistoryComponent() {
+        HistoryTableModel model = new HistoryTableModel(changes);
         final JTable table = new JTable(model);
         table.getSelectionModel().addListSelectionListener(new ListSelectionListener() {
-        	
+
             @Override
             public void valueChanged(ListSelectionEvent listSelectionEvent) {
                 List<OWLOntologyChange> changesToDisplay = new ArrayList<OWLOntologyChange>();
                 for (int row : table.getSelectedRows()) {
-                	DocumentRevision start = changes.getStartRevision().next(table.convertRowIndexToModel(row));
+                    DocumentRevision start = changes.getStartRevision().next(table.convertRowIndexToModel(row));
                     changesToDisplay.addAll(changes.cropChanges(start, start.next()).getChanges(ontology));
                 }
                 changeListTableModel.setChangeList(changesToDisplay);
             }
         });
-        
+
         SimpleDateFormat format = new SimpleDateFormat("MMM dd, yyyy hh:mm a, z");
         TableCellRenderer renderer = new FormatRenderer(format);
         TableColumnModel columnModel = table.getColumnModel();
         columnModel.getColumn(0).setCellRenderer(renderer);
-        
+
         // Allow user to sort
         TableRowSorter<TableModel> sorter = new TableRowSorter<TableModel>(model);
         table.setRowSorter(sorter);
-        
+
         // Sort initially by the date column in descending order
-        List <RowSorter.SortKey> sortKeys = new ArrayList<RowSorter.SortKey>();
+        List<RowSorter.SortKey> sortKeys = new ArrayList<RowSorter.SortKey>();
         sortKeys.add(new RowSorter.SortKey(0, SortOrder.DESCENDING));
         sorter.setSortKeys(sortKeys);
-        
+
         JScrollPane scrollPane = new JScrollPane(table);
         scrollPane.setAlignmentX(Component.LEFT_ALIGNMENT);
         return scrollPane;
     }
-    
+
     private JComponent getChangeListComponent() {
         changeListTableModel = new ChangeListTableModel(new ArrayList<OWLOntologyChange>());
         changeListTable = new JTable(changeListTableModel);

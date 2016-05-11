@@ -106,7 +106,6 @@
                         <Bundle-Vendor>The Protege Development Team</Bundle-Vendor>
                         <Embed-Dependency>protege-server</Embed-Dependency>
                         <Export-Package>
-                            org.semanticweb.binaryowl.*,
                             com.fasterxml.uuid.*
                         </Export-Package>
                         <Import-Package>

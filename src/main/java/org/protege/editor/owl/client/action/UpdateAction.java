@@ -108,7 +108,7 @@ public class UpdateAction extends AbstractClientAction {
             try {
                 DocumentRevision remoteHead = ChangeUtils.getRemoteHeadRevision(vont);
                 DocumentRevision localHead = vont.getRevision();
-                return remoteHead.getRevisionDifferenceFrom(localHead) == 0;
+                return localHead.sameAs(remoteHead);
             }
             catch (OWLServerException e) {
                 showSynchronizationErrorDialog("Error while computing the remote head revision", e);

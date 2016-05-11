@@ -1,6 +1,7 @@
 package org.protege.editor.owl.client.ui;
 
 import org.protege.editor.owl.server.versioning.ChangeMetadata;
+import org.protege.editor.owl.server.versioning.DocumentRevision;
 import org.protege.editor.owl.server.versioning.api.ChangeHistory;
 
 import java.util.Date;
@@ -58,7 +59,7 @@ public class HistoryTableModel extends AbstractTableModel {
 
     @Override
     public int getRowCount() {
-        return changes.getEndRevision().getRevisionDifferenceFrom(changes.getStartRevision());
+        return DocumentRevision.delta(changes.getStartRevision(), changes.getEndRevision());
     }
 
     @Override
@@ -81,7 +82,7 @@ public class HistoryTableModel extends AbstractTableModel {
     @Override
     public Object getValueAt(int rowIndex, int columnIndex) {
         Column col = Column.values()[columnIndex];
-        ChangeMetadata metaData = changes.getChangeMetadataForRevision(changes.getStartRevision().add(rowIndex));
+        ChangeMetadata metaData = changes.getChangeMetadataForRevision(changes.getStartRevision().next(rowIndex));
         return col.getValue(metaData);
     }
 }

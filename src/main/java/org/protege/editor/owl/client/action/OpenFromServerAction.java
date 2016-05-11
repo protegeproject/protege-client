@@ -47,6 +47,7 @@ public class OpenFromServerAction extends AbstractClientAction {
            public void actionPerformed(ActionEvent e)
            {
                dialog.setVisible(false);
+               dialog.dispose();
            }
         });
         dialog.addWindowListener(new WindowAdapter()
@@ -55,6 +56,7 @@ public class OpenFromServerAction extends AbstractClientAction {
            public void windowClosing(WindowEvent e)
            {
                dialog.setVisible(false);
+               dialog.dispose();
            }
         });
         dialog.setContentPane(openDialogPanel);

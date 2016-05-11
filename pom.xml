@@ -52,6 +52,8 @@
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
         <protege.version>5.0.0-RC1</protege.version>
         <protege-server.version>3.0.0-SNAPSHOT</protege-server.version>
+        <metaproject.version>1.0.0-SNAPSHOT</metaproject.version>
+        <fasterxml-uuid.version>3.1.3</fasterxml-uuid.version>
     </properties>
 
     <dependencies>
@@ -73,12 +75,12 @@
         <dependency>
             <groupId>edu.stanford.protege</groupId>
             <artifactId>metaproject</artifactId>
-            <version>1.0.0-SNAPSHOT</version>
+            <version>${metaproject.version}</version>
         </dependency>
         <dependency>
             <groupId>com.fasterxml.uuid</groupId>
             <artifactId>java-uuid-generator</artifactId>
-            <version>3.1.3</version>
+            <version>${fasterxml-uuid.version}</version>
         </dependency>
     </dependencies>
 

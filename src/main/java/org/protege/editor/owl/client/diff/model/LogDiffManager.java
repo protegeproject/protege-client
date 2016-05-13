@@ -9,8 +9,8 @@ import org.protege.editor.owl.client.ClientSession;
 import org.protege.editor.owl.client.diff.DiffFactory;
 import org.protege.editor.owl.client.diff.DiffFactoryImpl;
 import org.protege.editor.owl.model.OWLModelManager;
-import org.protege.editor.owl.server.versioning.ChangeMetadata;
 import org.protege.editor.owl.server.versioning.DocumentRevision;
+import org.protege.editor.owl.server.versioning.RevisionMetadata;
 import org.protege.editor.owl.server.versioning.api.ChangeHistory;
 import org.protege.editor.owl.server.versioning.api.VersionedOWLOntology;
 
@@ -31,14 +31,12 @@ import java.util.Optional;
 import java.util.Set;
 import java.util.stream.Collectors;
 
-import edu.stanford.protege.metaproject.api.UserId;
-
 /**
  * @author Rafael Gonçalves <br>
  * Stanford Center for Biomedical Informatics Research
  */
 public class LogDiffManager implements Disposable {
-    public static final UserId ALL_AUTHORS = null; // new UserId("All Authors"); TODO: To reivew later
+    public static final String ALL_AUTHORS = null; // new UserId("All Authors"); TODO: To reivew later
     private static DiffFactory diffFactory = new DiffFactoryImpl();
     private Set<LogDiffListener> listeners = new HashSet<>();
     private List<Change> selectedChanges = new ArrayList<>();
@@ -46,7 +44,7 @@ public class LogDiffManager implements Disposable {
     private ReviewManager reviewManager;
     private OWLModelManager modelManager;
     private OWLEditorKit editorKit;
-    private UserId selectedAuthor;
+    private String selectedAuthor;
     private CommitMetadata selectedCommit;
     private LogDiff diff;
 
@@ -113,11 +111,11 @@ public class LogDiffManager implements Disposable {
         statusChanged(LogDiffEvent.CHANGE_SELECTION_CHANGED);
     }
 
-    public UserId getSelectedAuthor() {
+    public String getSelectedAuthor() {
         return selectedAuthor;
     }
 
-    public void setSelectedAuthor(UserId userId) {
+    public void setSelectedAuthor(String userId) {
         this.selectedAuthor = userId;
         statusChanged(LogDiffEvent.AUTHOR_SELECTION_CHANGED);
     }
@@ -139,13 +137,13 @@ public class LogDiffManager implements Disposable {
         VersionedOWLOntology vont = getVersionedOntologyDocument().get();
         ChangeHistory changes = vont.getChangeHistory();
         DocumentRevision rev = changes.getBaseRevision();
-        while (changes.getChangeMetadataForRevision(rev) != null) {
-            ChangeMetadata metaData = changes.getChangeMetadataForRevision(rev);
+        while (changes.getMetadataForRevision(rev) != null) {
+            RevisionMetadata metaData = changes.getMetadataForRevision(rev);
             if (event.equals(LogDiffEvent.AUTHOR_SELECTION_CHANGED) && getSelectedAuthor() != null &&
                     (metaData.getAuthorId().equals(getSelectedAuthor()) || getSelectedAuthor().equals(LogDiffManager.ALL_AUTHORS)) ||
                     event.equals(LogDiffEvent.ONTOLOGY_UPDATED)) {
                 CommitMetadata c = diffFactory.createCommitMetadata(diffFactory.createCommitId(metaData.hashCode()+""),
-                        metaData.getAuthorId(), metaData.getDate(), metaData.getCommitComment());
+                        metaData.getAuthorId(), metaData.getDate(), metaData.getComment());
                 if (!commits.contains(c)) {
                     commits.add(c);
                 }

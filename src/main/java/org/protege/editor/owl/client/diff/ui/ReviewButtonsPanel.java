@@ -1,23 +1,38 @@
 package org.protege.editor.owl.client.diff.ui;
 
+import static com.google.common.base.Preconditions.checkNotNull;
+
 import org.protege.editor.core.Disposable;
 import org.protege.editor.owl.OWLEditorKit;
 import org.protege.editor.owl.client.ClientSession;
 import org.protege.editor.owl.client.api.Client;
-import org.protege.editor.owl.client.diff.model.*;
+import org.protege.editor.owl.client.diff.model.Change;
+import org.protege.editor.owl.client.diff.model.LogDiffEvent;
+import org.protege.editor.owl.client.diff.model.LogDiffListener;
+import org.protege.editor.owl.client.diff.model.LogDiffManager;
+import org.protege.editor.owl.client.diff.model.ReviewManager;
+import org.protege.editor.owl.client.diff.model.ReviewStatus;
 import org.protege.editor.owl.model.OWLModelManager;
-import org.protege.editor.owl.server.versioning.ChangeMetadata;
+import org.protege.editor.owl.server.versioning.RevisionMetadata;
 import org.protege.editor.owl.server.versioning.api.VersionedOWLOntology;
 
 import org.semanticweb.owlapi.model.OWLOntologyChange;
 
-import javax.swing.*;
-import java.awt.*;
+import java.awt.Container;
+import java.awt.Dimension;
+import java.awt.FlowLayout;
+import java.awt.Frame;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.util.List;
 
-import static com.google.common.base.Preconditions.checkNotNull;
+import javax.swing.JButton;
+import javax.swing.JComponent;
+import javax.swing.JOptionPane;
+import javax.swing.JPanel;
+import javax.swing.JSeparator;
+import javax.swing.SwingConstants;
+import javax.swing.SwingUtilities;
 
 /**
  * @author Rafael Gonçalves <br>
@@ -155,7 +170,10 @@ public class ReviewButtonsPanel extends JPanel implements Disposable {
                     return; // user pressed cancel
                 }
                 Client client = ClientSession.getInstance(editorKit).getActiveClient();
-                ChangeMetadata metaData = new ChangeMetadata(client.getUser(), "[Review] " + commitComment);
+                RevisionMetadata metaData = new RevisionMetadata(
+                        client.getUserInfo().getId(),
+                        client.getUserInfo().getName(),
+                        client.getUserInfo().getEmailAddress(), "[Review] " + commitComment);
 //                try {
 //                    client.commit(client, metaData, vont); TODO: Implement commit later
 //                } catch (OWLServerException e1) {

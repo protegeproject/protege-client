@@ -2,8 +2,6 @@ package org.protege.editor.owl.client.diff.model;
 
 import java.util.Date;
 
-import edu.stanford.protege.metaproject.api.UserId;
-
 /**
  * @author Rafael Gonçalves <br>
  * Stanford Center for Biomedical Informatics Research
@@ -22,7 +20,7 @@ public interface CommitMetadata extends Comparable<CommitMetadata> {
      *
      * @return User identifier of commit author
      */
-    UserId getAuthor();
+    String getAuthor();
 
     /**
      * Get the commit date

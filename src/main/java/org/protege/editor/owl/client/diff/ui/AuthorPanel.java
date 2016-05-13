@@ -7,8 +7,8 @@ import org.protege.editor.owl.client.diff.model.LogDiffManager;
 import org.protege.editor.owl.model.OWLModelManager;
 import org.protege.editor.owl.model.event.EventType;
 import org.protege.editor.owl.model.event.OWLModelManagerListener;
-import org.protege.editor.owl.server.versioning.ChangeMetadata;
 import org.protege.editor.owl.server.versioning.DocumentRevision;
+import org.protege.editor.owl.server.versioning.RevisionMetadata;
 import org.protege.editor.owl.server.versioning.api.ChangeHistory;
 import org.protege.editor.owl.server.versioning.api.VersionedOWLOntology;
 
@@ -24,8 +24,6 @@ import javax.swing.JScrollPane;
 import javax.swing.ListSelectionModel;
 import javax.swing.event.ListSelectionListener;
 
-import edu.stanford.protege.metaproject.api.UserId;
-
 /**
  * @author Rafael Gonçalves <br>
  * Stanford Center for Biomedical Informatics Research
@@ -34,7 +32,7 @@ public class AuthorPanel extends JPanel implements Disposable {
     private static final long serialVersionUID = -211414461074963460L;
     private OWLModelManager modelManager;
     private LogDiffManager diffManager;
-    private JList<UserId> authorsList = new JList<>();
+    private JList<String> authorsList = new JList<>();
 
     /**
      * Constructor
@@ -59,7 +57,7 @@ public class AuthorPanel extends JPanel implements Disposable {
     }
 
     private ListSelectionListener listSelectionListener = e -> {
-        UserId selection = authorsList.getSelectedValue();
+        String selection = authorsList.getSelectedValue();
         if (selection != null && !e.getValueIsAdjusting()) {
             diffManager.setSelectedAuthor(selection);
         }
@@ -91,11 +89,11 @@ public class AuthorPanel extends JPanel implements Disposable {
         if(diffManager.getVersionedOntologyDocument().isPresent()) {
             VersionedOWLOntology vont = diffManager.getVersionedOntologyDocument().get();
             ChangeHistory changes = vont.getChangeHistory();
-            List<UserId> users = new ArrayList<>();
+            List<String> users = new ArrayList<>();
             DocumentRevision rev = changes.getBaseRevision();
-            while (changes.getChangeMetadataForRevision(rev) != null) {
-                ChangeMetadata metaData = changes.getChangeMetadataForRevision(rev);
-                UserId user = metaData.getAuthorId();
+            while (changes.getMetadataForRevision(rev) != null) {
+                RevisionMetadata metaData = changes.getMetadataForRevision(rev);
+                String user = metaData.getAuthorId();
                 if (!users.contains(user)) {
                     users.add(user);
                 }
@@ -103,10 +101,10 @@ public class AuthorPanel extends JPanel implements Disposable {
             }
 //            Collections.sort(users); TODO: To review later
             users.add(0, LogDiffManager.ALL_AUTHORS);
-            authorsList.setListData(users.toArray(new UserId[users.size()]));
+            authorsList.setListData(users.toArray(new String[users.size()]));
         }
         else {
-            authorsList.setListData(new UserId[0]);
+            authorsList.setListData(new String[0]);
         }
     }
 

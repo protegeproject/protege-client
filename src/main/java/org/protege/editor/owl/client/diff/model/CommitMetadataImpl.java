@@ -7,15 +7,13 @@ import java.util.Date;
 import com.google.common.base.MoreObjects;
 import com.google.common.base.Objects;
 
-import edu.stanford.protege.metaproject.api.UserId;
-
 /**
  * @author Rafael Gonçalves <br>
  * Stanford Center for Biomedical Informatics Research
  */
 public final class CommitMetadataImpl implements CommitMetadata {
     private final CommitId commitId;
-    private final UserId userId;
+    private final String userId;
     private final Date date;
     private final String comment;
 
@@ -27,7 +25,7 @@ public final class CommitMetadataImpl implements CommitMetadata {
      * @param date  Commit date
      * @param comment   Commit comment
      */
-    public CommitMetadataImpl(CommitId commitId, UserId userId, Date date, String comment) {
+    public CommitMetadataImpl(CommitId commitId, String userId, Date date, String comment) {
         this.commitId = checkNotNull(commitId);
         this.userId = checkNotNull(userId);
         this.date = checkNotNull(date);
@@ -40,7 +38,7 @@ public final class CommitMetadataImpl implements CommitMetadata {
     }
 
     @Override
-    public UserId getAuthor() {
+    public String getAuthor() {
         return userId;
     }
 

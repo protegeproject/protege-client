@@ -59,7 +59,7 @@ public class DiffFactoryImpl implements DiffFactory {
     }
 
     @Override
-    public CommitMetadata createCommitMetadata(CommitId commitId, UserId userId, Date date, String comment) {
+    public CommitMetadata createCommitMetadata(CommitId commitId, String userId, Date date, String comment) {
         return new CommitMetadataImpl(commitId, userId, date, comment);
     }
 

@@ -16,8 +16,6 @@ import javax.swing.JPanel;
 import javax.swing.SwingConstants;
 import javax.swing.border.EmptyBorder;
 
-import edu.stanford.protege.metaproject.api.UserId;
-
 /**
  * @author Rafael Gonçalves <br>
  * Stanford Center for Biomedical Informatics Research
@@ -25,7 +23,7 @@ import edu.stanford.protege.metaproject.api.UserId;
 public class ConflictingCommitPanel extends JPanel {
     private final Set<OWLOntologyChange> changes;
     private final Date commitDate;
-    private final UserId commitAuthor;
+    private final String commitAuthor;
     private final String commitComment;
     private final int conflictNr;
     private OWLEditorKit editorKit;
@@ -40,7 +38,7 @@ public class ConflictingCommitPanel extends JPanel {
      * @param commitAuthor Commit author
      * @param commitComment    Commit comment
      */
-    public ConflictingCommitPanel(OWLEditorKit editorKit, Set<OWLOntologyChange> changes, Date commitDate, UserId commitAuthor, String commitComment, int conflictNr) {
+    public ConflictingCommitPanel(OWLEditorKit editorKit, Set<OWLOntologyChange> changes, Date commitDate, String commitAuthor, String commitComment, int conflictNr) {
         this.editorKit = checkNotNull(editorKit);
         this.changes = checkNotNull(changes);
         this.commitDate = checkNotNull(commitDate);

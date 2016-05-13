@@ -66,7 +66,7 @@ public interface DiffFactory {
      * @param comment   Commit comment
      * @return Commit metadata instance
      */
-    CommitMetadata createCommitMetadata(CommitId commitId, UserId userId, Date date, String comment);
+    CommitMetadata createCommitMetadata(CommitId commitId, String userId, Date date, String comment);
 
     /**
      * Create an instance of change details

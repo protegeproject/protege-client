@@ -5,8 +5,8 @@ import static com.google.common.base.Preconditions.checkNotNull;
 import org.protege.editor.owl.client.diff.DiffFactory;
 import org.protege.editor.owl.model.OWLModelManager;
 import org.protege.editor.owl.server.versioning.ChangeHistoryUtils;
-import org.protege.editor.owl.server.versioning.ChangeMetadata;
 import org.protege.editor.owl.server.versioning.DocumentRevision;
+import org.protege.editor.owl.server.versioning.RevisionMetadata;
 import org.protege.editor.owl.server.versioning.api.ChangeHistory;
 import org.protege.editor.owl.server.versioning.api.VersionedOWLOntology;
 
@@ -50,8 +50,6 @@ import java.util.stream.Collectors;
 import com.google.common.collect.HashMultimap;
 import com.google.common.collect.Multimap;
 
-import edu.stanford.protege.metaproject.api.UserId;
-
 /**
  * @author Rafael Gonçalves <br>
  * Stanford Center for Biomedical Informatics Research
@@ -61,7 +59,7 @@ public class LogDiff {
     private final LogDiffManager diffManager;
     private final OWLModelManager modelManager;
     private Map<ChangeId, Change> changeMap = new HashMap<>();
-    private Multimap<UserId,ChangeId> changesByUser = HashMultimap.create();
+    private Multimap<String,ChangeId> changesByUser = HashMultimap.create();
     private Multimap<Date,ChangeId> changesByDate = HashMultimap.create();
     private Multimap<OWLObject,ChangeId> changesBySubject = HashMultimap.create();
     private DiffFactory diffFactory;
@@ -87,8 +85,8 @@ public class LogDiff {
             OWLOntology ontology = modelManager.getActiveOntology();
             ChangeHistory changes = vont.getChangeHistory();
             DocumentRevision rev = changes.getBaseRevision();
-            while (changes.getChangeMetadataForRevision(rev) != null) {
-                ChangeMetadata metaData = changes.getChangeMetadataForRevision(rev);
+            while (changes.getMetadataForRevision(rev) != null) {
+                RevisionMetadata metaData = changes.getMetadataForRevision(rev);
                 ChangeHistory hist = ChangeHistoryUtils.crop(changes, rev, 1);
                 findRevisionChanges(ChangeHistoryUtils.getOntologyChanges(hist, ontology), metaData);
                 if(!rev.equals(DocumentRevision.START_REVISION)) {
@@ -106,8 +104,8 @@ public class LogDiff {
      * @param ontChanges    List of OWL ontology changes
      * @param metaData  Metadata regarding the commit
      */
-    private void findRevisionChanges(List<OWLOntologyChange> ontChanges, ChangeMetadata metaData) {
-        String commitComment = (metaData.getCommitComment() != null ? metaData.getCommitComment() : "");
+    private void findRevisionChanges(List<OWLOntologyChange> ontChanges, RevisionMetadata metaData) {
+        String commitComment = (metaData.getComment() != null ? metaData.getComment() : "");
         // produce a revision tag that uses the hashcode of the commit metadata
         RevisionTag revisionTag = getRevisionTag(metaData.hashCode() + "");
         CommitMetadata commitMetadata = diffFactory.createCommitMetadata(diffFactory.createCommitId(metaData.hashCode()+""), metaData.getAuthorId(), metaData.getDate(), commitComment);
@@ -227,7 +225,7 @@ public class LogDiff {
     public List<Change> getChangesToDisplay(LogDiffEvent event) {
         List<Change> changes = new ArrayList<>();
         if (event.equals(LogDiffEvent.AUTHOR_SELECTION_CHANGED)) {
-            UserId userId = diffManager.getSelectedAuthor();
+            String userId = diffManager.getSelectedAuthor();
             changes = getChangesForUser(userId);
         }
         else if(event.equals(LogDiffEvent.COMMIT_SELECTION_CHANGED)) {
@@ -375,7 +373,7 @@ public class LogDiff {
      * @param userId    User identifier
      * @return List of changes
      */
-    public List<Change> getChangesForUser(UserId userId) {
+    public List<Change> getChangesForUser(String userId) {
         if (userId.equals(LogDiffManager.ALL_AUTHORS)) {
             return changeMap.keySet().stream().map(id -> changeMap.get(id)).collect(Collectors.toList());
         } else {

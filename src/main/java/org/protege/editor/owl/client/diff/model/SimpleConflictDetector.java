@@ -10,8 +10,6 @@ import java.util.Collection;
 import java.util.HashSet;
 import java.util.Set;
 
-import edu.stanford.protege.metaproject.api.UserId;
-
 /**
  * @author Rafael Gonçalves <br>
  * Stanford Center for Biomedical Informatics Research
@@ -34,7 +32,7 @@ public final class SimpleConflictDetector implements ConflictDetector {
         checkNotNull(seed);
         checkNotNull(strategy);
         checkNotNull(searchSpace);
-        UserId userId = seed.getCommitMetadata().getAuthor();
+        String userId = seed.getCommitMetadata().getAuthor();
         Set<ChangeId> conflictingChanges = new HashSet<>();
         // The search space is restricted to changes with the same change subject
         for (Change change : searchSpace) {

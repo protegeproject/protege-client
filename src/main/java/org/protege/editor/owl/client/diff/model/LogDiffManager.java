@@ -137,8 +137,8 @@ public class LogDiffManager implements Disposable {
 
     public List<CommitMetadata> getCommits(LogDiffEvent event) {
         VersionedOWLOntology vont = getVersionedOntologyDocument().get();
-        ChangeHistory changes = vont.getLocalHistory();
-        DocumentRevision rev = changes.getStartRevision();
+        ChangeHistory changes = vont.getChangeHistory();
+        DocumentRevision rev = changes.getBaseRevision();
         while (changes.getChangeMetadataForRevision(rev) != null) {
             ChangeMetadata metaData = changes.getChangeMetadataForRevision(rev);
             if (event.equals(LogDiffEvent.AUTHOR_SELECTION_CHANGED) && getSelectedAuthor() != null &&

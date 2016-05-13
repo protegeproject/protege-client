@@ -85,8 +85,8 @@ public class LogDiff {
         if (diffManager.getVersionedOntologyDocument().isPresent()) {
             VersionedOWLOntology vont = diffManager.getVersionedOntologyDocument().get();
             OWLOntology ontology = modelManager.getActiveOntology();
-            ChangeHistory changes = vont.getLocalHistory();
-            DocumentRevision rev = changes.getStartRevision();
+            ChangeHistory changes = vont.getChangeHistory();
+            DocumentRevision rev = changes.getBaseRevision();
             while (changes.getChangeMetadataForRevision(rev) != null) {
                 ChangeMetadata metaData = changes.getChangeMetadataForRevision(rev);
                 ChangeHistory hist = ChangeHistoryUtils.crop(changes, rev, 1);

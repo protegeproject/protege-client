@@ -53,13 +53,10 @@ public class ShowStatusAction extends AbstractClientAction {
 
             JPanel panel = new JPanel(new GridLayout(0, 2));
 
-            panel.add(new JLabel("Ontology:"));
-            panel.add(new JLabel(vont.getDisplayName()));
-
-            panel.add(new JLabel("Local Revision:"));
+            panel.add(new JLabel("Local/HEAD Revision:"));
             panel.add(new JLabel(vont.getHeadRevision().toString()));
 
-            panel.add(new JLabel("Remote Revision:"));
+            panel.add(new JLabel("Remote/HEAD Revision:"));
             panel.add(new JLabel(ChangeUtils.getRemoteHeadRevision(vont).toString()));
 
             panel.add(new JLabel("#Uncommitted Changes:"));

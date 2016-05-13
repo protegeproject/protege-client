@@ -1,5 +1,16 @@
 package org.protege.editor.owl.client.ui;
 
+import org.protege.editor.owl.OWLEditorKit;
+import org.protege.editor.owl.server.versioning.ChangeHistoryUtils;
+import org.protege.editor.owl.server.versioning.DocumentRevision;
+import org.protege.editor.owl.server.versioning.api.ChangeHistory;
+import org.protege.editor.owl.ui.renderer.OWLCellRenderer;
+
+import org.semanticweb.owlapi.model.OWLObject;
+import org.semanticweb.owlapi.model.OWLOntology;
+import org.semanticweb.owlapi.model.OWLOntologyChange;
+import org.semanticweb.owlapi.model.OWLOntologyID;
+
 import java.awt.BorderLayout;
 import java.awt.Component;
 import java.awt.Dimension;
@@ -29,16 +40,6 @@ import javax.swing.table.TableCellRenderer;
 import javax.swing.table.TableColumnModel;
 import javax.swing.table.TableModel;
 import javax.swing.table.TableRowSorter;
-
-import org.protege.editor.owl.OWLEditorKit;
-import org.protege.editor.owl.server.versioning.DocumentRevision;
-import org.protege.editor.owl.server.versioning.api.ChangeHistory;
-import org.protege.editor.owl.ui.renderer.OWLCellRenderer;
-
-import org.semanticweb.owlapi.model.OWLObject;
-import org.semanticweb.owlapi.model.OWLOntology;
-import org.semanticweb.owlapi.model.OWLOntologyChange;
-import org.semanticweb.owlapi.model.OWLOntologyID;
 
 public class ChangeHistoryPanel extends JDialog {
 
@@ -132,7 +133,9 @@ public class ChangeHistoryPanel extends JDialog {
                 List<OWLOntologyChange> changesToDisplay = new ArrayList<OWLOntologyChange>();
                 for (int row : table.getSelectedRows()) {
                     DocumentRevision start = changes.getStartRevision().next(table.convertRowIndexToModel(row));
-                    changesToDisplay.addAll(changes.cropChanges(start, start.next()).getChanges(ontology));
+                    ChangeHistory subChangeHistory = ChangeHistoryUtils.crop(changes, start, 1);
+                    List<OWLOntologyChange> subChanges = ChangeHistoryUtils.getOntologyChanges(subChangeHistory, ontology);
+                    changesToDisplay.addAll(subChanges);
                 }
                 changeListTableModel.setChangeList(changesToDisplay);
             }

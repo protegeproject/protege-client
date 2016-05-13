@@ -3,6 +3,7 @@ package org.protege.editor.owl.client.util;
 import org.protege.editor.owl.server.api.exception.OWLServerException;
 import org.protege.editor.owl.server.transport.rmi.RmiChangeService;
 import org.protege.editor.owl.server.util.GetUncommittedChangesVisitor;
+import org.protege.editor.owl.server.versioning.ChangeHistoryUtils;
 import org.protege.editor.owl.server.versioning.DocumentRevision;
 import org.protege.editor.owl.server.versioning.ServerDocument;
 import org.protege.editor.owl.server.versioning.api.ChangeHistory;
@@ -36,17 +37,9 @@ public class ChangeUtils {
     }
 
     public static List<OWLOntologyChange> getUncommittedChanges(VersionedOWLOntology versionedOntology) throws OWLServerException {
-        ChangeHistory remoteChanges = getLatestChanges(versionedOntology);
-        if (!remoteChanges.isEmpty()) {
-            versionedOntology.appendChangeHistory(remoteChanges);
-        }
-
-        final DocumentRevision startRevision = DocumentRevision.START_REVISION;
-        final DocumentRevision endRevision = remoteChanges.getEndRevision();
-        ChangeHistory uncommittedChanges = versionedOntology.getLocalHistory().cropChanges(startRevision, endRevision);
-
+        final ChangeHistory changeHistory = versionedOntology.getLocalHistory();
         final OWLOntology ontology = versionedOntology.getOntology();
-        List<OWLOntologyChange> baselineHistory = uncommittedChanges.getChanges(ontology);
+        List<OWLOntologyChange> baselineHistory = ChangeHistoryUtils.getOntologyChanges(changeHistory, ontology);
         GetUncommittedChangesVisitor visitor = new GetUncommittedChangesVisitor(ontology);
         for (OWLOntologyChange change : baselineHistory) {
             change.accept(visitor);
@@ -68,7 +61,7 @@ public class ChangeUtils {
 
     public static ChangeHistory getLatestChanges(VersionedOWLOntology versionedOntology) throws OWLServerException {
         ServerDocument serverDocument = versionedOntology.getServerDocument();
-        DocumentRevision localHeadRevision = versionedOntology.getLocalHistory().getEndRevision();
+        DocumentRevision localHeadRevision = versionedOntology.getLocalHistory().getHeadRevision();
         RmiChangeService changeService = getChangeService(serverDocument.getHost());
         try {
             ChangeHistory latestChanges = changeService.getLatestChanges(serverDocument, localHeadRevision);
@@ -80,6 +73,6 @@ public class ChangeUtils {
     }
 
     public static DocumentRevision getRemoteHeadRevision(VersionedOWLOntology versionedOntology) throws OWLServerException {
-        return getLatestChanges(versionedOntology).getEndRevision();
+        return getLatestChanges(versionedOntology).getHeadRevision();
     }
 }

@@ -1,29 +1,56 @@
 package org.protege.editor.owl.client.diff.model;
 
-import com.google.common.collect.HashMultimap;
-import com.google.common.collect.Multimap;
-
-import edu.stanford.protege.metaproject.api.UserId;
+import static com.google.common.base.Preconditions.checkNotNull;
 
 import org.protege.editor.owl.client.diff.DiffFactory;
 import org.protege.editor.owl.model.OWLModelManager;
+import org.protege.editor.owl.server.versioning.ChangeHistoryUtils;
 import org.protege.editor.owl.server.versioning.ChangeMetadata;
 import org.protege.editor.owl.server.versioning.DocumentRevision;
 import org.protege.editor.owl.server.versioning.api.ChangeHistory;
 import org.protege.editor.owl.server.versioning.api.VersionedOWLOntology;
 
-import org.semanticweb.owlapi.model.*;
+import org.semanticweb.owlapi.model.AddAxiom;
+import org.semanticweb.owlapi.model.AddImport;
+import org.semanticweb.owlapi.model.AddOntologyAnnotation;
+import org.semanticweb.owlapi.model.AnnotationChange;
+import org.semanticweb.owlapi.model.AxiomType;
+import org.semanticweb.owlapi.model.IRI;
+import org.semanticweb.owlapi.model.ImportChange;
+import org.semanticweb.owlapi.model.OWLAnnotation;
+import org.semanticweb.owlapi.model.OWLAxiom;
+import org.semanticweb.owlapi.model.OWLDeclarationAxiom;
+import org.semanticweb.owlapi.model.OWLEntity;
+import org.semanticweb.owlapi.model.OWLImportsDeclaration;
+import org.semanticweb.owlapi.model.OWLLiteral;
+import org.semanticweb.owlapi.model.OWLObject;
+import org.semanticweb.owlapi.model.OWLOntology;
+import org.semanticweb.owlapi.model.OWLOntologyChange;
+import org.semanticweb.owlapi.model.RemoveAxiom;
+import org.semanticweb.owlapi.model.RemoveImport;
+import org.semanticweb.owlapi.model.RemoveOntologyAnnotation;
+import org.semanticweb.owlapi.model.SetOntologyID;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import java.awt.*;
+import java.awt.Color;
 import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
-import java.util.*;
+import java.util.ArrayList;
+import java.util.Collection;
+import java.util.Date;
+import java.util.HashMap;
+import java.util.HashSet;
 import java.util.List;
+import java.util.Map;
+import java.util.Optional;
+import java.util.Set;
 import java.util.stream.Collectors;
 
-import static com.google.common.base.Preconditions.checkNotNull;
+import com.google.common.collect.HashMultimap;
+import com.google.common.collect.Multimap;
+
+import edu.stanford.protege.metaproject.api.UserId;
 
 /**
  * @author Rafael Gonçalves <br>
@@ -62,8 +89,8 @@ public class LogDiff {
             DocumentRevision rev = changes.getStartRevision();
             while (changes.getChangeMetadataForRevision(rev) != null) {
                 ChangeMetadata metaData = changes.getChangeMetadataForRevision(rev);
-                ChangeHistory hist = changes.cropChanges(rev, rev.next());
-                findRevisionChanges(hist.getChanges(ontology), metaData);
+                ChangeHistory hist = ChangeHistoryUtils.crop(changes, rev, 1);
+                findRevisionChanges(ChangeHistoryUtils.getOntologyChanges(hist, ontology), metaData);
                 if(!rev.equals(DocumentRevision.START_REVISION)) {
                     findBaselineMatches(changeMap.values());
                     findConflits(changeMap.values());

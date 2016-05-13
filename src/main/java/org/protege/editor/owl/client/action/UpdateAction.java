@@ -3,12 +3,12 @@ package org.protege.editor.owl.client.action;
 import org.protege.editor.owl.client.api.exception.SynchronizationException;
 import org.protege.editor.owl.client.util.ChangeUtils;
 import org.protege.editor.owl.server.api.exception.OWLServerException;
+import org.protege.editor.owl.server.versioning.ChangeHistoryUtils;
 import org.protege.editor.owl.server.versioning.CollectingChangeVisitor;
 import org.protege.editor.owl.server.versioning.DocumentRevision;
 import org.protege.editor.owl.server.versioning.api.ChangeHistory;
 import org.protege.editor.owl.server.versioning.api.VersionedOWLOntology;
 
-import org.semanticweb.owlapi.apibinding.OWLManager;
 import org.semanticweb.owlapi.model.AddImport;
 import org.semanticweb.owlapi.model.AnnotationChange;
 import org.semanticweb.owlapi.model.ImportChange;
@@ -19,7 +19,6 @@ import org.semanticweb.owlapi.model.OWLAxiomChange;
 import org.semanticweb.owlapi.model.OWLImportsDeclaration;
 import org.semanticweb.owlapi.model.OWLOntology;
 import org.semanticweb.owlapi.model.OWLOntologyChange;
-import org.semanticweb.owlapi.model.OWLOntologyCreationException;
 import org.semanticweb.owlapi.model.OWLOntologyLoaderConfiguration;
 import org.semanticweb.owlapi.model.OWLOntologyLoaderConfiguration.MissingOntologyHeaderStrategy;
 import org.semanticweb.owlapi.model.UnloadableImportException;
@@ -107,7 +106,7 @@ public class UpdateAction extends AbstractClientAction {
         private boolean isUpdated() {
             try {
                 DocumentRevision remoteHead = ChangeUtils.getRemoteHeadRevision(vont);
-                DocumentRevision localHead = vont.getRevision();
+                DocumentRevision localHead = vont.getHeadRevision();
                 return localHead.sameAs(remoteHead);
             }
             catch (OWLServerException e) {
@@ -130,15 +129,11 @@ public class UpdateAction extends AbstractClientAction {
         private List<OWLOntologyChange> getLatestChangesFromServer() {
             List<OWLOntologyChange> changes = new ArrayList<>();
             try {
-                OWLOntology placeholder = OWLManager.createOWLOntologyManager().createOntology();
-                ChangeHistory ch = ChangeUtils.getLatestChanges(vont);
-                changes = ch.getChanges(placeholder);
+                ChangeHistory remoteChangeHistory = ChangeUtils.getLatestChanges(vont);
+                changes = ChangeHistoryUtils.getOntologyChanges(remoteChangeHistory, ontology);
             }
             catch (OWLServerException e) {
                 showSynchronizationErrorDialog("Error while fetching the latest changes from server", e);
-            }
-            catch (OWLOntologyCreationException e) {
-                showSynchronizationErrorDialog("Internal error while computing changes", e);
             }
             return changes;
         }

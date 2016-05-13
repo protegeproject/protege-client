@@ -30,7 +30,7 @@ public class ClientStatusTableModel extends AbstractTableModel {
         CLIENT_REVISION("Local revision:") {
             @Override
             public String evaluate(Client client, VersionedOWLOntology vont) {
-                return vont.getRevision().toString();
+                return vont.getHeadRevision().toString();
             }
         },
         SERVER_REVISION("Remote revision:") {

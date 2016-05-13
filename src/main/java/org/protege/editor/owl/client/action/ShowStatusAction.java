@@ -57,7 +57,7 @@ public class ShowStatusAction extends AbstractClientAction {
             panel.add(new JLabel(vont.getDisplayName()));
 
             panel.add(new JLabel("Local Revision:"));
-            panel.add(new JLabel(vont.getRevision().toString()));
+            panel.add(new JLabel(vont.getHeadRevision().toString()));
 
             panel.add(new JLabel("Remote Revision:"));
             panel.add(new JLabel(ChangeUtils.getRemoteHeadRevision(vont).toString()));

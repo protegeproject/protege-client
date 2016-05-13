@@ -41,11 +41,11 @@ public class ClientUtils {
         HistoryFile remoteHistoryFile = serverDocument.getHistoryFile();
         ChangeHistory remoteChangeHistory = ChangeHistoryUtils.readChanges(remoteHistoryFile);
         
-        DocumentRevision start = remoteChangeHistory.getStartRevision();
+        DocumentRevision base = remoteChangeHistory.getBaseRevision();
         DocumentRevision head = remoteChangeHistory.getHeadRevision();
         
         VersionedOWLOntology versionedOntology = new VersionedOWLOntologyImpl(serverDocument, targetOntology);
-        for (DocumentRevision current = start; current.behind(head); current = current.next()) {
+        for (DocumentRevision current = base; current.behind(head); current = current.next()) {
             ChangeMetadata metadata = remoteChangeHistory.getChangeMetadataForRevision(current);
             List<OWLOntologyChange> changes = remoteChangeHistory.getChangesForRevision(current);
             versionedOntology.addRevision(metadata, changes);

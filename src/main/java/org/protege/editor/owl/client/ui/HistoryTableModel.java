@@ -59,7 +59,7 @@ public class HistoryTableModel extends AbstractTableModel {
 
     @Override
     public int getRowCount() {
-        return DocumentRevision.distance(changes.getStartRevision(), changes.getHeadRevision());
+        return DocumentRevision.distance(changes.getBaseRevision(), changes.getHeadRevision());
     }
 
     @Override
@@ -82,7 +82,7 @@ public class HistoryTableModel extends AbstractTableModel {
     @Override
     public Object getValueAt(int rowIndex, int columnIndex) {
         Column col = Column.values()[columnIndex];
-        ChangeMetadata metaData = changes.getChangeMetadataForRevision(changes.getStartRevision().next(rowIndex));
+        ChangeMetadata metaData = changes.getChangeMetadataForRevision(changes.getBaseRevision().next(rowIndex));
         return col.getValue(metaData);
     }
 }

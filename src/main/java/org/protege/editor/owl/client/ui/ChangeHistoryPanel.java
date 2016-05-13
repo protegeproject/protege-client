@@ -131,8 +131,9 @@ public class ChangeHistoryPanel extends JDialog {
             @Override
             public void valueChanged(ListSelectionEvent listSelectionEvent) {
                 List<OWLOntologyChange> changesToDisplay = new ArrayList<OWLOntologyChange>();
+                DocumentRevision baseRevision = changes.getBaseRevision();
                 for (int row : table.getSelectedRows()) {
-                    DocumentRevision start = changes.getStartRevision().next(table.convertRowIndexToModel(row));
+                    DocumentRevision start = baseRevision.next(table.convertRowIndexToModel(row));
                     ChangeHistory subChangeHistory = ChangeHistoryUtils.crop(changes, start, 1);
                     List<OWLOntologyChange> subChanges = ChangeHistoryUtils.getOntologyChanges(subChangeHistory, ontology);
                     changesToDisplay.addAll(subChanges);

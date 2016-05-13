@@ -37,9 +37,9 @@ public class ChangeUtils {
     }
 
     public static List<OWLOntologyChange> getUncommittedChanges(VersionedOWLOntology versionedOntology) throws OWLServerException {
-        final ChangeHistory changeHistory = versionedOntology.getLocalHistory();
+        final ChangeHistory localHistory = versionedOntology.getChangeHistory();
         final OWLOntology ontology = versionedOntology.getOntology();
-        List<OWLOntologyChange> baselineHistory = ChangeHistoryUtils.getOntologyChanges(changeHistory, ontology);
+        List<OWLOntologyChange> baselineHistory = ChangeHistoryUtils.getOntologyChanges(localHistory, ontology);
         GetUncommittedChangesVisitor visitor = new GetUncommittedChangesVisitor(ontology);
         for (OWLOntologyChange change : baselineHistory) {
             change.accept(visitor);
@@ -61,7 +61,7 @@ public class ChangeUtils {
 
     public static ChangeHistory getLatestChanges(VersionedOWLOntology versionedOntology) throws OWLServerException {
         ServerDocument serverDocument = versionedOntology.getServerDocument();
-        DocumentRevision localHeadRevision = versionedOntology.getLocalHistory().getHeadRevision();
+        DocumentRevision localHeadRevision = versionedOntology.getChangeHistory().getHeadRevision();
         RmiChangeService changeService = getChangeService(serverDocument.getHost());
         try {
             ChangeHistory latestChanges = changeService.getLatestChanges(serverDocument, localHeadRevision);

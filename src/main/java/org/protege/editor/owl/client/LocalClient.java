@@ -1,6 +1,7 @@
 package org.protege.editor.owl.client;
 
 import org.protege.editor.owl.client.api.Client;
+import org.protege.editor.owl.client.api.UserInfo;
 import org.protege.editor.owl.client.api.exception.ClientRequestException;
 import org.protege.editor.owl.client.util.ServerUtils;
 import org.protege.editor.owl.server.api.CommitBundle;
@@ -46,6 +47,7 @@ public class LocalClient implements Client {
     private ProjectId projectId;
     private UserId userId;
 
+    private UserInfo userInfo; // cache
     private RemoteServer server;
 
     public LocalClient(AuthToken authToken, String serverAddress, int registryPort) {
@@ -65,8 +67,12 @@ public class LocalClient implements Client {
     }
 
     @Override
-    public User getUser() {
-        return authToken.getUser();
+    public UserInfo getUserInfo() {
+        if (userInfo == null) {
+            User user = authToken.getUser();
+            userInfo = new UserInfo(user.getId().get(), user.getName().get(), user.getEmailAddress().get());
+        }
+        return userInfo;
     }
 
     @Override

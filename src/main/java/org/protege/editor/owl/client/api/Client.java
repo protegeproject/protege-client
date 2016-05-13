@@ -8,7 +8,6 @@ import edu.stanford.protege.metaproject.api.AuthToken;
 import edu.stanford.protege.metaproject.api.Operation;
 import edu.stanford.protege.metaproject.api.Project;
 import edu.stanford.protege.metaproject.api.Role;
-import edu.stanford.protege.metaproject.api.User;
 
 /**
  * @author Josef Hardi <johardi@stanford.edu> <br>
@@ -18,7 +17,7 @@ public interface Client extends ClientRequests, PolicyMediator {
 
     AuthToken getAuthToken();
 
-    User getUser();
+    UserInfo getUserInfo();
 
     /**
      * Gets a list of project owned by the user of this client

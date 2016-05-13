@@ -44,16 +44,19 @@ import javax.swing.table.TableRowSorter;
 public class ChangeHistoryPanel extends JDialog {
 
     private static final long serialVersionUID = -372532962143290188L;
+
     private OWLEditorKit editorKit;
     private OWLOntology ontology;
-    private ChangeHistory changes;
+
+    private ChangeHistory remoteChanges;
+
     private JTable changeListTable;
     private ChangeListTableModel changeListTableModel;
 
-    public ChangeHistoryPanel(OWLEditorKit editorKit, ChangeHistory changes) {
+    public ChangeHistoryPanel(OWLEditorKit editorKit, ChangeHistory remoteChanges) { // TODO Should we add local changes too for comparison?
         this.editorKit = editorKit;
         this.ontology = editorKit.getOWLModelManager().getActiveOntology();
-        this.changes = changes;
+        this.remoteChanges = remoteChanges;
         initUI();
     }
 
@@ -124,17 +127,17 @@ public class ChangeHistoryPanel extends JDialog {
     }
 
     private JComponent getHistoryComponent() {
-        HistoryTableModel model = new HistoryTableModel(changes);
+        HistoryTableModel model = new HistoryTableModel(remoteChanges);
         final JTable table = new JTable(model);
         table.getSelectionModel().addListSelectionListener(new ListSelectionListener() {
 
             @Override
             public void valueChanged(ListSelectionEvent listSelectionEvent) {
                 List<OWLOntologyChange> changesToDisplay = new ArrayList<OWLOntologyChange>();
-                DocumentRevision baseRevision = changes.getBaseRevision();
+                DocumentRevision baseRevision = remoteChanges.getBaseRevision();
                 for (int row : table.getSelectedRows()) {
                     DocumentRevision start = baseRevision.next(table.convertRowIndexToModel(row));
-                    ChangeHistory subChangeHistory = ChangeHistoryUtils.crop(changes, start, 1);
+                    ChangeHistory subChangeHistory = ChangeHistoryUtils.crop(remoteChanges, start, 1);
                     List<OWLOntologyChange> subChanges = ChangeHistoryUtils.getOntologyChanges(subChangeHistory, ontology);
                     changesToDisplay.addAll(subChanges);
                 }

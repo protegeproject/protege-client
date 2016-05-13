@@ -27,8 +27,8 @@ public class ShowHistoryAction extends AbstractClientAction {
     public void actionPerformed(ActionEvent event) {
         try {
             final VersionedOWLOntology vont = getActiveVersionedOntology();
-            ChangeHistory changes = ChangeUtils.getAllChanges(vont);
-            ChangeHistoryPanel changeHistoryPanel = new ChangeHistoryPanel(getOWLEditorKit(), changes);
+            ChangeHistory remoteChanges = ChangeUtils.getAllChanges(vont);
+            ChangeHistoryPanel changeHistoryPanel = new ChangeHistoryPanel(getOWLEditorKit(), remoteChanges);
             changeHistoryPanel.setLocationRelativeTo(getOWLWorkspace());
             changeHistoryPanel.setVisible(true);
         }

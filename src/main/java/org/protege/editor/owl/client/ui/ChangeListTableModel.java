@@ -1,6 +1,6 @@
 package org.protege.editor.owl.client.ui;
 
-import org.protege.editor.owl.server.versioning.ChangeMetadata;
+import org.protege.editor.owl.server.versioning.RevisionMetadata;
 
 import org.semanticweb.owlapi.model.AddAxiom;
 import org.semanticweb.owlapi.model.AddImport;
@@ -25,14 +25,14 @@ public class ChangeListTableModel extends AbstractTableModel {
     public enum Column {
         CHANGE_TYPE("Type") {
             @Override
-            public Date getValue(ChangeMetadata metaData) {
+            public Date getValue(RevisionMetadata metaData) {
                 return metaData.getDate();
             }
         },
         ENTITY("Entity") {
             @Override
-            public String getValue(ChangeMetadata metaData) {
-                return metaData.getAuthorId().get();
+            public String getValue(RevisionMetadata metaData) {
+                return metaData.getAuthorId();
             }
         };
 
@@ -46,7 +46,7 @@ public class ChangeListTableModel extends AbstractTableModel {
             return name;
         }
 
-        public abstract Object getValue(ChangeMetadata metaData);
+        public abstract Object getValue(RevisionMetadata metaData);
     }
 
     private List<OWLOntologyChange> changes;

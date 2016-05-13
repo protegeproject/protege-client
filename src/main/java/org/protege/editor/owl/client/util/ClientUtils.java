@@ -1,7 +1,7 @@
 package org.protege.editor.owl.client.util;
 
 import org.protege.editor.owl.server.versioning.ChangeHistoryUtils;
-import org.protege.editor.owl.server.versioning.ChangeMetadata;
+import org.protege.editor.owl.server.versioning.RevisionMetadata;
 import org.protege.editor.owl.server.versioning.DocumentRevision;
 import org.protege.editor.owl.server.versioning.HistoryFile;
 import org.protege.editor.owl.server.versioning.ServerDocument;
@@ -46,7 +46,7 @@ public class ClientUtils {
         
         VersionedOWLOntology versionedOntology = new VersionedOWLOntologyImpl(serverDocument, targetOntology);
         for (DocumentRevision current = base; current.behind(head); current = current.next()) {
-            ChangeMetadata metadata = remoteChangeHistory.getChangeMetadataForRevision(current);
+            RevisionMetadata metadata = remoteChangeHistory.getMetadataForRevision(current);
             List<OWLOntologyChange> changes = remoteChangeHistory.getChangesForRevision(current);
             versionedOntology.addRevision(metadata, changes);
         }

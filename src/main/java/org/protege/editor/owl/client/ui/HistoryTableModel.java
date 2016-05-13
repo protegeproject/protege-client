@@ -1,6 +1,6 @@
 package org.protege.editor.owl.client.ui;
 
-import org.protege.editor.owl.server.versioning.ChangeMetadata;
+import org.protege.editor.owl.server.versioning.RevisionMetadata;
 import org.protege.editor.owl.server.versioning.DocumentRevision;
 import org.protege.editor.owl.server.versioning.api.ChangeHistory;
 
@@ -15,20 +15,20 @@ public class HistoryTableModel extends AbstractTableModel {
     public enum Column {
         DATE("Date", Date.class) {
             @Override
-            public Date getValue(ChangeMetadata metadata) {
+            public Date getValue(RevisionMetadata metadata) {
                 return metadata.getDate();
             }
         },
         USER("Author", String.class) {
             @Override
-            public String getValue(ChangeMetadata metadata) {
-                return metadata.getAuthorId().get();
+            public String getValue(RevisionMetadata metadata) {
+                return metadata.getAuthorId();
             }
         },
         COMMIT_COMMENT("Comment", String.class) {
             @Override
-            public String getValue(ChangeMetadata metadata) {
-                return metadata.getCommitComment();
+            public String getValue(RevisionMetadata metadata) {
+                return metadata.getComment();
             }
         };
 
@@ -48,7 +48,7 @@ public class HistoryTableModel extends AbstractTableModel {
             return clazz;
         }
 
-        public abstract Object getValue(ChangeMetadata metadata);
+        public abstract Object getValue(RevisionMetadata metadata);
     }
 
     private ChangeHistory changes;
@@ -82,7 +82,7 @@ public class HistoryTableModel extends AbstractTableModel {
     @Override
     public Object getValueAt(int rowIndex, int columnIndex) {
         Column col = Column.values()[columnIndex];
-        ChangeMetadata metaData = changes.getChangeMetadataForRevision(changes.getBaseRevision().next(rowIndex));
+        RevisionMetadata metaData = changes.getMetadataForRevision(changes.getBaseRevision().next(rowIndex));
         return col.getValue(metaData);
     }
 }

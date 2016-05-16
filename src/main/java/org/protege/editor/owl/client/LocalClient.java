@@ -10,7 +10,7 @@ import org.protege.editor.owl.server.api.exception.OutOfSyncException;
 import org.protege.editor.owl.server.api.exception.ServerServiceException;
 import org.protege.editor.owl.server.transport.rmi.RemoteServer;
 import org.protege.editor.owl.server.transport.rmi.RmiServer;
-import org.protege.editor.owl.server.versioning.ServerDocument;
+import org.protege.editor.owl.server.versioning.api.ServerDocument;
 
 import java.net.URI;
 import java.rmi.RemoteException;

@@ -13,7 +13,7 @@ import org.protege.editor.owl.client.diff.model.LogDiffManager;
 import org.protege.editor.owl.client.diff.model.ReviewManager;
 import org.protege.editor.owl.client.diff.model.ReviewStatus;
 import org.protege.editor.owl.model.OWLModelManager;
-import org.protege.editor.owl.server.versioning.RevisionMetadata;
+import org.protege.editor.owl.server.versioning.api.RevisionMetadata;
 import org.protege.editor.owl.server.versioning.api.VersionedOWLOntology;
 
 import org.semanticweb.owlapi.model.OWLOntologyChange;

@@ -1,12 +1,12 @@
 package org.protege.editor.owl.client.util;
 
 import org.protege.editor.owl.server.versioning.ChangeHistoryUtils;
-import org.protege.editor.owl.server.versioning.RevisionMetadata;
-import org.protege.editor.owl.server.versioning.DocumentRevision;
-import org.protege.editor.owl.server.versioning.HistoryFile;
-import org.protege.editor.owl.server.versioning.ServerDocument;
 import org.protege.editor.owl.server.versioning.VersionedOWLOntologyImpl;
 import org.protege.editor.owl.server.versioning.api.ChangeHistory;
+import org.protege.editor.owl.server.versioning.api.DocumentRevision;
+import org.protege.editor.owl.server.versioning.api.HistoryFile;
+import org.protege.editor.owl.server.versioning.api.RevisionMetadata;
+import org.protege.editor.owl.server.versioning.api.ServerDocument;
 import org.protege.editor.owl.server.versioning.api.VersionedOWLOntology;
 
 import org.semanticweb.owlapi.model.AddImport;

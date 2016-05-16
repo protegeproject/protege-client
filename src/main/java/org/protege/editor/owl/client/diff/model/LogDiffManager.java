@@ -9,9 +9,9 @@ import org.protege.editor.owl.client.ClientSession;
 import org.protege.editor.owl.client.diff.DiffFactory;
 import org.protege.editor.owl.client.diff.DiffFactoryImpl;
 import org.protege.editor.owl.model.OWLModelManager;
-import org.protege.editor.owl.server.versioning.DocumentRevision;
-import org.protege.editor.owl.server.versioning.RevisionMetadata;
 import org.protege.editor.owl.server.versioning.api.ChangeHistory;
+import org.protege.editor.owl.server.versioning.api.DocumentRevision;
+import org.protege.editor.owl.server.versioning.api.RevisionMetadata;
 import org.protege.editor.owl.server.versioning.api.VersionedOWLOntology;
 
 import org.semanticweb.owlapi.model.AddAxiom;

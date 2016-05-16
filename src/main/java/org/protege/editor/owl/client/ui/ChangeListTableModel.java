@@ -1,6 +1,6 @@
 package org.protege.editor.owl.client.ui;
 
-import org.protege.editor.owl.server.versioning.RevisionMetadata;
+import org.protege.editor.owl.server.versioning.api.RevisionMetadata;
 
 import org.semanticweb.owlapi.model.AddAxiom;
 import org.semanticweb.owlapi.model.AddImport;

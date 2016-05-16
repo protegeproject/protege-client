@@ -12,7 +12,7 @@ import org.protege.editor.owl.client.util.ClientUtils;
 import org.protege.editor.owl.client.util.ServerUtils;
 import org.protege.editor.owl.server.transport.rmi.RemoteLoginService;
 import org.protege.editor.owl.server.transport.rmi.RmiLoginService;
-import org.protege.editor.owl.server.versioning.ServerDocument;
+import org.protege.editor.owl.server.versioning.api.ServerDocument;
 import org.protege.editor.owl.server.versioning.api.VersionedOWLOntology;
 import org.protege.editor.owl.ui.UIHelper;
 

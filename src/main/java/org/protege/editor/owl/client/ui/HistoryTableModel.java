@@ -1,8 +1,8 @@
 package org.protege.editor.owl.client.ui;
 
-import org.protege.editor.owl.server.versioning.RevisionMetadata;
-import org.protege.editor.owl.server.versioning.DocumentRevision;
 import org.protege.editor.owl.server.versioning.api.ChangeHistory;
+import org.protege.editor.owl.server.versioning.api.DocumentRevision;
+import org.protege.editor.owl.server.versioning.api.RevisionMetadata;
 
 import java.util.Date;
 

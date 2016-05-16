@@ -2,8 +2,8 @@ package org.protege.editor.owl.client.ui;
 
 import org.protege.editor.owl.OWLEditorKit;
 import org.protege.editor.owl.server.versioning.ChangeHistoryUtils;
-import org.protege.editor.owl.server.versioning.DocumentRevision;
 import org.protege.editor.owl.server.versioning.api.ChangeHistory;
+import org.protege.editor.owl.server.versioning.api.DocumentRevision;
 import org.protege.editor.owl.ui.renderer.OWLCellRenderer;
 
 import org.semanticweb.owlapi.model.OWLObject;

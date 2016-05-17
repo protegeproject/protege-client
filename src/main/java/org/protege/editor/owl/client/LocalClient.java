@@ -119,7 +119,8 @@ public class LocalClient implements Client {
     public void createUser(User newUser, Optional<SaltedPasswordDigest> password) throws AuthorizationException, ClientRequestException, RemoteException {
         try {
             connect();
-            server.createUser(authToken, newUser, password);
+            SaltedPasswordDigest passwordValue = (password.isPresent()) ? password.get() : null;
+            server.createUser(authToken, newUser, passwordValue);
         }
         catch (ServerServiceException e) {
             throw new ClientRequestException(e.getMessage(), e);
@@ -153,7 +154,8 @@ public class LocalClient implements Client {
             Optional<ProjectOptions> options) throws AuthorizationException, ClientRequestException, RemoteException {
         try {
             connect();
-            return server.createProject(authToken, projectId, projectName, description, owner, options);
+            ProjectOptions optionsValue = (options.isPresent()) ? options.get() : null;
+            return server.createProject(authToken, projectId, projectName, description, owner, optionsValue);
         }
         catch (ServerServiceException e) {
             throw new ClientRequestException(e.getMessage(), e);

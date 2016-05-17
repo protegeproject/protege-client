@@ -633,9 +633,9 @@ public interface ClientRequests {
     /**
      * Committing the given ontology changes to be applied in the server.
      *
-     * @param project
+     * @param projectId
      *            The target project for such changes
-     * @param changes
+     * @param commitBundle
      *            A list of changes coming from the client
      * @throws AuthorizationException
      *             If the user doesn't have the permission to request this
@@ -649,6 +649,6 @@ public interface ClientRequests {
      *             communication problems, failure during parameter or return
      *             value marshalling or unmarshalling, protocol errors.
      */
-    void commit(Project project, CommitBundle changes)
+    void commit(ProjectId projectId, CommitBundle commitBundle)
             throws AuthorizationException, OutOfSyncException, ClientRequestException, RemoteException;
 }

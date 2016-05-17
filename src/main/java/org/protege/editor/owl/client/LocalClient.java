@@ -372,11 +372,11 @@ public class LocalClient implements Client {
     }
 
     @Override
-    public void commit(Project project, CommitBundle commits)
+    public void commit(ProjectId projectId, CommitBundle commitBundle)
             throws AuthorizationException, OutOfSyncException, ClientRequestException, RemoteException {
         try {
             connect();
-            server.commit(authToken, project, commits);
+            server.commit(authToken, projectId, commitBundle);
         }
         catch (ServerServiceException e) {
             throw new ClientRequestException(e.getMessage(), e);

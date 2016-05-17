@@ -19,14 +19,11 @@ import java.rmi.registry.LocateRegistry;
 import java.rmi.registry.Registry;
 import java.util.List;
 
-import edu.stanford.protege.metaproject.api.Host;
-
 public class ChangeUtils {
 
-    private static RmiChangeService getChangeService(Host remoteHost) throws OWLServerException {
-        URI remoteUri = remoteHost.getUri();
-        String host = remoteUri.getHost();
-        int port = remoteHost.getSecondaryPort().isPresent() ? remoteHost.getSecondaryPort().get().get() : remoteUri.getPort();
+    private static RmiChangeService getChangeService(URI serverAddress, int registryPort) throws OWLServerException {
+        String host = serverAddress.getHost();
+        int port = registryPort != -1 ? registryPort : serverAddress.getPort();
         try {
             Registry registry = LocateRegistry.getRegistry(host, port);
             return (RmiChangeService) registry.lookup(RmiChangeService.CHANGE_SERVICE);
@@ -49,7 +46,7 @@ public class ChangeUtils {
 
     public static ChangeHistory getAllChanges(VersionedOWLOntology versionedOntology) throws OWLServerException {
         ServerDocument serverDocument = versionedOntology.getServerDocument();
-        RmiChangeService changeService = getChangeService(serverDocument.getHost());
+        RmiChangeService changeService = getChangeService(serverDocument.getServerAddress(), serverDocument.getRegistryPort());
         try {
             ChangeHistory allChanges = changeService.getAllChanges(serverDocument);
             return allChanges;
@@ -62,7 +59,7 @@ public class ChangeUtils {
     public static ChangeHistory getLatestChanges(VersionedOWLOntology versionedOntology) throws OWLServerException {
         ServerDocument serverDocument = versionedOntology.getServerDocument();
         DocumentRevision localHeadRevision = versionedOntology.getChangeHistory().getHeadRevision();
-        RmiChangeService changeService = getChangeService(serverDocument.getHost());
+        RmiChangeService changeService = getChangeService(serverDocument.getServerAddress(), serverDocument.getRegistryPort());
         try {
             ChangeHistory latestChanges = changeService.getLatestChanges(serverDocument, localHeadRevision);
             return latestChanges;

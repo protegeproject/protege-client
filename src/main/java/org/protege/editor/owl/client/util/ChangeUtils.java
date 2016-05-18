@@ -45,7 +45,10 @@ public class ChangeUtils {
     }
 
     public static ChangeHistory getAllChanges(VersionedOWLOntology versionedOntology) throws OWLServerException {
-        ServerDocument serverDocument = versionedOntology.getServerDocument();
+        return getAllChanges(versionedOntology.getServerDocument());
+    }
+
+    public static ChangeHistory getAllChanges(ServerDocument serverDocument) throws OWLServerException {
         RmiChangeService changeService = getChangeService(serverDocument.getServerAddress(), serverDocument.getRegistryPort());
         try {
             ChangeHistory allChanges = changeService.getAllChanges(serverDocument);
@@ -57,11 +60,13 @@ public class ChangeUtils {
     }
 
     public static ChangeHistory getLatestChanges(VersionedOWLOntology versionedOntology) throws OWLServerException {
-        ServerDocument serverDocument = versionedOntology.getServerDocument();
-        DocumentRevision localHeadRevision = versionedOntology.getChangeHistory().getHeadRevision();
+        return getLatestChanges(versionedOntology.getServerDocument(), versionedOntology.getChangeHistory().getHeadRevision());
+    }
+
+    public static ChangeHistory getLatestChanges(ServerDocument serverDocument, DocumentRevision headRevision) throws OWLServerException {
         RmiChangeService changeService = getChangeService(serverDocument.getServerAddress(), serverDocument.getRegistryPort());
         try {
-            ChangeHistory latestChanges = changeService.getLatestChanges(serverDocument, localHeadRevision);
+            ChangeHistory latestChanges = changeService.getLatestChanges(serverDocument, headRevision);
             return latestChanges;
         }
         catch (RemoteException e) {

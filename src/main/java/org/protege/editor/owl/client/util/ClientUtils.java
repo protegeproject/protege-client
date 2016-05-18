@@ -1,10 +1,10 @@
 package org.protege.editor.owl.client.util;
 
+import org.protege.editor.owl.server.api.exception.OWLServerException;
 import org.protege.editor.owl.server.versioning.ChangeHistoryUtils;
 import org.protege.editor.owl.server.versioning.VersionedOWLOntologyImpl;
 import org.protege.editor.owl.server.versioning.api.ChangeHistory;
 import org.protege.editor.owl.server.versioning.api.DocumentRevision;
-import org.protege.editor.owl.server.versioning.api.HistoryFile;
 import org.protege.editor.owl.server.versioning.api.RevisionMetadata;
 import org.protege.editor.owl.server.versioning.api.ServerDocument;
 import org.protege.editor.owl.server.versioning.api.VersionedOWLOntology;
@@ -26,10 +26,9 @@ import java.util.TreeSet;
 
 public class ClientUtils {
 
-    public static OWLOntology buildOntology(ServerDocument serverDocument, OWLMutableOntology targetOntology) throws IOException {
-        HistoryFile remoteHistoryFile = serverDocument.getHistoryFile();
-        ChangeHistory remoteChangeHistory = ChangeHistoryUtils.readChanges(remoteHistoryFile);
-        
+    public static OWLOntology buildOntology(ServerDocument serverDocument, OWLMutableOntology targetOntology)
+            throws IOException, OWLServerException {
+        ChangeHistory remoteChangeHistory = ChangeUtils.getAllChanges(serverDocument);
         List<OWLOntologyChange> changes = ChangeHistoryUtils.getOntologyChanges(remoteChangeHistory, targetOntology);
         targetOntology.applyChanges(changes);
         fixMissingImports(targetOntology, changes);
@@ -37,9 +36,8 @@ public class ClientUtils {
     }
 
     public static VersionedOWLOntology constructVersionedOntology(ServerDocument serverDocument, OWLOntology targetOntology)
-            throws IOException {
-        HistoryFile remoteHistoryFile = serverDocument.getHistoryFile();
-        ChangeHistory remoteChangeHistory = ChangeHistoryUtils.readChanges(remoteHistoryFile);
+            throws IOException, OWLServerException {
+        ChangeHistory remoteChangeHistory = ChangeUtils.getAllChanges(serverDocument);
         
         DocumentRevision base = remoteChangeHistory.getBaseRevision();
         DocumentRevision head = remoteChangeHistory.getHeadRevision();

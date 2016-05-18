@@ -1,6 +1,7 @@
 package org.protege.editor.owl.client.util;
 
 import org.protege.editor.owl.server.api.exception.OWLServerException;
+import org.protege.editor.owl.server.transport.rmi.RemoteChangeService;
 import org.protege.editor.owl.server.transport.rmi.RmiChangeService;
 import org.protege.editor.owl.server.util.GetUncommittedChangesVisitor;
 import org.protege.editor.owl.server.versioning.ChangeHistoryUtils;
@@ -12,26 +13,10 @@ import org.protege.editor.owl.server.versioning.api.VersionedOWLOntology;
 import org.semanticweb.owlapi.model.OWLOntology;
 import org.semanticweb.owlapi.model.OWLOntologyChange;
 
-import java.net.URI;
-import java.rmi.NotBoundException;
 import java.rmi.RemoteException;
-import java.rmi.registry.LocateRegistry;
-import java.rmi.registry.Registry;
 import java.util.List;
 
 public class ChangeUtils {
-
-    private static RmiChangeService getChangeService(URI serverAddress, int registryPort) throws OWLServerException {
-        String host = serverAddress.getHost();
-        int port = registryPort != -1 ? registryPort : serverAddress.getPort();
-        try {
-            Registry registry = LocateRegistry.getRegistry(host, port);
-            return (RmiChangeService) registry.lookup(RmiChangeService.CHANGE_SERVICE);
-        }
-        catch (RemoteException | NotBoundException e) {
-            throw new OWLServerException(e);
-        }
-    }
 
     public static List<OWLOntologyChange> getUncommittedChanges(VersionedOWLOntology versionedOntology) throws OWLServerException {
         final ChangeHistory localHistory = versionedOntology.getChangeHistory();
@@ -49,12 +34,16 @@ public class ChangeUtils {
     }
 
     public static ChangeHistory getAllChanges(ServerDocument serverDocument) throws OWLServerException {
-        RmiChangeService changeService = getChangeService(serverDocument.getServerAddress(), serverDocument.getRegistryPort());
         try {
-            ChangeHistory allChanges = changeService.getAllChanges(serverDocument);
+            RemoteChangeService changeService = (RemoteChangeService) ServerUtils.getRemoteService(
+                serverDocument.getServerAddress(), serverDocument.getRegistryPort(), RmiChangeService.CHANGE_SERVICE);
+            ChangeHistory allChanges = changeService.getAllChanges(serverDocument.getHistoryFile());
             return allChanges;
         }
         catch (RemoteException e) {
+            throw new OWLServerException(e);
+        }
+        catch (Exception e) { // TODO Make as OWLServerServiceException
             throw new OWLServerException(e);
         }
     }
@@ -64,12 +53,16 @@ public class ChangeUtils {
     }
 
     public static ChangeHistory getLatestChanges(ServerDocument serverDocument, DocumentRevision headRevision) throws OWLServerException {
-        RmiChangeService changeService = getChangeService(serverDocument.getServerAddress(), serverDocument.getRegistryPort());
         try {
-            ChangeHistory latestChanges = changeService.getLatestChanges(serverDocument, headRevision);
+            RemoteChangeService changeService = (RemoteChangeService) ServerUtils.getRemoteService(
+                serverDocument.getServerAddress(), serverDocument.getRegistryPort(), RmiChangeService.CHANGE_SERVICE);
+            ChangeHistory latestChanges = changeService.getLatestChanges(serverDocument.getHistoryFile(), headRevision);
             return latestChanges;
         }
         catch (RemoteException e) {
+            throw new OWLServerException(e);
+        }
+        catch (Exception e) { // TODO Make as OWLServerServiceException
             throw new OWLServerException(e);
         }
     }

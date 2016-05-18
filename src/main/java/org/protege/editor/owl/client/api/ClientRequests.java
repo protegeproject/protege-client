@@ -154,6 +154,8 @@ public interface ClientRequests {
      *            The owner of the project
      * @param options
      *            An optional of project options
+     * @param initialCommit
+     *            An optional initial commit bundle when creating this project
      * @return A server document that provide the link information to remote resources
      * @throws AuthorizationException
      *             If the user doesn't have the permission to request this
@@ -166,7 +168,8 @@ public interface ClientRequests {
      *             value marshalling or unmarshalling, protocol errors.
      */
     ServerDocument createProject(ProjectId projectId, Name projectName, Description description, UserId owner,
-            Optional<ProjectOptions> options) throws AuthorizationException, ClientRequestException, RemoteException;
+            Optional<ProjectOptions> options, Optional<CommitBundle> initialCommit)
+                    throws AuthorizationException, ClientRequestException, RemoteException;
 
     /**
      * Deleting an existing project from the server.

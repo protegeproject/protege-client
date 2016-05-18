@@ -33,9 +33,18 @@ public class ServerUtils {
         }
     }
 
-    public static Remote getRemoteService(String serverLocation, String serviceName) throws RemoteException {
+    public static Remote getRemoteService(String serverAddress, String serviceName) throws RemoteException {
         try {
-            return getRmiRegistry(serverLocation, Optional.empty()).lookup(serviceName);
+            return getRmiRegistry(serverAddress, Optional.empty()).lookup(serviceName);
+        }
+        catch (NotBoundException e) {
+            throw new RemoteException(e.getMessage(), e);
+        }
+    }
+
+    public static Remote getRemoteService(URI serverAddress, int registryPort, String serviceName) throws RemoteException {
+        try {
+            return getRmiRegistry(serverAddress, Optional.of(registryPort)).lookup(serviceName);
         }
         catch (NotBoundException e) {
             throw new RemoteException(e.getMessage(), e);

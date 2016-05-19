@@ -10,6 +10,7 @@ import org.protege.editor.owl.server.api.exception.OutOfSyncException;
 import org.protege.editor.owl.server.api.exception.ServerServiceException;
 import org.protege.editor.owl.server.transport.rmi.RemoteServer;
 import org.protege.editor.owl.server.transport.rmi.RmiServer;
+import org.protege.editor.owl.server.versioning.api.ChangeHistory;
 import org.protege.editor.owl.server.versioning.api.ServerDocument;
 
 import java.net.URI;
@@ -374,11 +375,11 @@ public class LocalClient implements Client {
     }
 
     @Override
-    public void commit(ProjectId projectId, CommitBundle commitBundle)
+    public ChangeHistory commit(ProjectId projectId, CommitBundle commitBundle)
             throws AuthorizationException, OutOfSyncException, ClientRequestException, RemoteException {
         try {
             connect();
-            server.commit(authToken, projectId, commitBundle);
+            return server.commit(authToken, projectId, commitBundle);
         }
         catch (ServerServiceException e) {
             throw new ClientRequestException(e.getMessage(), e);

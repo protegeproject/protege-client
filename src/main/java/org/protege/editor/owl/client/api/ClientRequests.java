@@ -4,6 +4,7 @@ import org.protege.editor.owl.client.api.exception.ClientRequestException;
 import org.protege.editor.owl.server.api.CommitBundle;
 import org.protege.editor.owl.server.api.exception.AuthorizationException;
 import org.protege.editor.owl.server.api.exception.OutOfSyncException;
+import org.protege.editor.owl.server.versioning.api.ChangeHistory;
 import org.protege.editor.owl.server.versioning.api.ServerDocument;
 
 import java.net.URI;
@@ -640,6 +641,8 @@ public interface ClientRequests {
      *            The target project for such changes
      * @param commitBundle
      *            A list of changes coming from the client
+     * @return Returns the change history that contains the changes that are
+     *         accepted by the server.
      * @throws AuthorizationException
      *             If the user doesn't have the permission to request this
      *             service.
@@ -652,6 +655,6 @@ public interface ClientRequests {
      *             communication problems, failure during parameter or return
      *             value marshalling or unmarshalling, protocol errors.
      */
-    void commit(ProjectId projectId, CommitBundle commitBundle)
+    ChangeHistory commit(ProjectId projectId, CommitBundle commitBundle)
             throws AuthorizationException, OutOfSyncException, ClientRequestException, RemoteException;
 }

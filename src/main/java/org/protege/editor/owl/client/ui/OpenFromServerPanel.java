@@ -16,9 +16,7 @@ import org.protege.editor.owl.server.versioning.api.ServerDocument;
 import org.protege.editor.owl.server.versioning.api.VersionedOWLOntology;
 import org.protege.editor.owl.ui.UIHelper;
 
-import org.semanticweb.owlapi.model.OWLMutableOntology;
 import org.semanticweb.owlapi.model.OWLOntology;
-import org.semanticweb.owlapi.model.OWLOntologyCreationException;
 
 import java.awt.BorderLayout;
 import java.awt.Color;
@@ -323,7 +321,7 @@ public class OpenFromServerPanel extends JPanel {
                 ProjectId pid = tableModel.getValueAt(row);
                 Client client = clientRegistry.getActiveClient();
                 ServerDocument serverDocument = client.openProject(pid);
-                OWLOntology ontology = ClientUtils.buildOntology(serverDocument, createEmptyMutableOntology());
+                OWLOntology ontology = ClientUtils.buildOntology(serverDocument);
                 VersionedOWLOntology vont = ClientUtils.constructVersionedOntology(serverDocument, ontology);
                 clientRegistry.addVersionedOntology(vont);
                 editorKit.getOWLModelManager().setActiveOntology(ontology);
@@ -336,9 +334,5 @@ public class OpenFromServerPanel extends JPanel {
         catch (Exception ex) {
             ErrorLogPanel.showErrorDialog(ex);
         }
-    }
-
-    private OWLMutableOntology createEmptyMutableOntology() throws OWLOntologyCreationException {
-        return (OWLMutableOntology) editorKit.getOWLModelManager().getOWLOntologyManager().createOntology();
     }
 }

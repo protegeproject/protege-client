@@ -7,12 +7,14 @@ import org.protege.editor.owl.server.versioning.api.ChangeHistory;
 import org.protege.editor.owl.server.versioning.api.ServerDocument;
 import org.protege.editor.owl.server.versioning.api.VersionedOWLOntology;
 
+import org.semanticweb.owlapi.apibinding.OWLManager;
 import org.semanticweb.owlapi.model.AddImport;
 import org.semanticweb.owlapi.model.MissingImportHandlingStrategy;
 import org.semanticweb.owlapi.model.OWLImportsDeclaration;
 import org.semanticweb.owlapi.model.OWLMutableOntology;
 import org.semanticweb.owlapi.model.OWLOntology;
 import org.semanticweb.owlapi.model.OWLOntologyChange;
+import org.semanticweb.owlapi.model.OWLOntologyCreationException;
 import org.semanticweb.owlapi.model.OWLOntologyLoaderConfiguration;
 import org.semanticweb.owlapi.model.OWLOntologyLoaderConfiguration.MissingOntologyHeaderStrategy;
 import org.semanticweb.owlapi.model.OWLOntologyManager;
@@ -24,8 +26,9 @@ import java.util.TreeSet;
 
 public class ClientUtils {
 
-    public static OWLOntology buildOntology(ServerDocument serverDocument, OWLMutableOntology targetOntology)
-            throws IOException, OWLServerException {
+    public static OWLOntology buildOntology(ServerDocument serverDocument)
+            throws IOException, OWLServerException, OWLOntologyCreationException {
+        OWLMutableOntology targetOntology = createEmptyMutableOntology();
         ChangeHistory remoteChangeHistory = ChangeUtils.getAllChanges(serverDocument);
         List<OWLOntologyChange> changes = ChangeHistoryUtils.getOntologyChanges(remoteChangeHistory, targetOntology);
         targetOntology.applyChanges(changes);
@@ -39,6 +42,14 @@ public class ClientUtils {
         ChangeHistory remoteChangeHistory = ChangeUtils.getAllChanges(serverDocument);
         versionedOntology.update(remoteChangeHistory);
         return versionedOntology;
+    }
+
+    /*
+     * Private utility methods
+     */
+
+    private static OWLMutableOntology createEmptyMutableOntology() throws OWLOntologyCreationException {
+        return (OWLMutableOntology) OWLManager.createOWLOntologyManager().createOntology();
     }
 
     private static void fixMissingImports(OWLMutableOntology targetOntology, List<OWLOntologyChange> changes) {

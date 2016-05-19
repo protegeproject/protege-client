@@ -73,11 +73,10 @@ public class ClientUtils {
      */
 
     private static OWLMutableOntology createEmptyMutableOntology() throws OWLOntologyCreationException {
-        return (OWLMutableOntology) OWLManager.createOWLOntologyManager().createOntology();
+        return (OWLMutableOntology) owlManager.createOntology();
     }
 
     private static void fixMissingImports(OWLMutableOntology targetOntology, List<OWLOntologyChange> changes) {
-        OWLOntologyManager manager = targetOntology.getOWLOntologyManager();
         OWLOntologyLoaderConfiguration configuration = new OWLOntologyLoaderConfiguration();
         configuration = configuration.setMissingImportHandlingStrategy(MissingImportHandlingStrategy.SILENT);
         configuration = configuration.setMissingOntologyHeaderStrategy(MissingOntologyHeaderStrategy.IMPORT_GRAPH);
@@ -87,13 +86,13 @@ public class ClientUtils {
         for (OWLOntologyChange change : changes) {
             if (change instanceof AddImport) {
                 OWLImportsDeclaration importDecl = ((AddImport) change).getImportDeclaration();
-                if (declaredImports.contains(importDecl) && manager.getImportedOntology(importDecl) == null) {
+                if (declaredImports.contains(importDecl) && owlManager.getImportedOntology(importDecl) == null) {
                     missingImports.add(importDecl);
                 }
             }
         }
         for (OWLImportsDeclaration importDecl : missingImports) {
-            manager.makeLoadImportRequest(importDecl, configuration);
+            owlManager.makeLoadImportRequest(importDecl, configuration);
         }
     }
 }

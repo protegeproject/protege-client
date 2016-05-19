@@ -4,8 +4,6 @@ import org.protege.editor.owl.server.api.exception.OWLServerException;
 import org.protege.editor.owl.server.versioning.ChangeHistoryUtils;
 import org.protege.editor.owl.server.versioning.VersionedOWLOntologyImpl;
 import org.protege.editor.owl.server.versioning.api.ChangeHistory;
-import org.protege.editor.owl.server.versioning.api.DocumentRevision;
-import org.protege.editor.owl.server.versioning.api.RevisionMetadata;
 import org.protege.editor.owl.server.versioning.api.ServerDocument;
 import org.protege.editor.owl.server.versioning.api.VersionedOWLOntology;
 
@@ -37,17 +35,9 @@ public class ClientUtils {
 
     public static VersionedOWLOntology constructVersionedOntology(ServerDocument serverDocument, OWLOntology targetOntology)
             throws IOException, OWLServerException {
-        ChangeHistory remoteChangeHistory = ChangeUtils.getAllChanges(serverDocument);
-        
-        DocumentRevision base = remoteChangeHistory.getBaseRevision();
-        DocumentRevision head = remoteChangeHistory.getHeadRevision();
-        
         VersionedOWLOntology versionedOntology = new VersionedOWLOntologyImpl(serverDocument, targetOntology);
-        for (DocumentRevision current = base; current.behind(head); current = current.next()) {
-            RevisionMetadata metadata = remoteChangeHistory.getMetadataForRevision(current);
-            List<OWLOntologyChange> changes = remoteChangeHistory.getChangesForRevision(current);
-            versionedOntology.addRevision(metadata, changes);
-        }
+        ChangeHistory remoteChangeHistory = ChangeUtils.getAllChanges(serverDocument);
+        versionedOntology.update(remoteChangeHistory);
         return versionedOntology;
     }
 

@@ -36,8 +36,9 @@ public class ClientUtils {
         return targetOntology;
     }
 
-    public static VersionedOWLOntology constructVersionedOntology(ServerDocument serverDocument, OWLOntology targetOntology)
-            throws IOException, OWLServerException {
+    public static VersionedOWLOntology buildVersionedOntology(ServerDocument serverDocument)
+            throws IOException, OWLServerException, OWLOntologyCreationException {
+        OWLOntology targetOntology = buildOntology(serverDocument);
         VersionedOWLOntology versionedOntology = new VersionedOWLOntologyImpl(serverDocument, targetOntology);
         ChangeHistory remoteChangeHistory = ChangeUtils.getAllChanges(serverDocument);
         versionedOntology.update(remoteChangeHistory);

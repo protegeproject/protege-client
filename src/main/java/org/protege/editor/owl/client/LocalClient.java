@@ -152,13 +152,11 @@ public class LocalClient implements Client {
 
     @Override
     public ServerDocument createProject(ProjectId projectId, Name projectName, Description description, UserId owner,
-            Optional<ProjectOptions> options, Optional<CommitBundle> initialCommit)
-                    throws AuthorizationException, ClientRequestException, RemoteException {
+            Optional<ProjectOptions> options) throws AuthorizationException, ClientRequestException, RemoteException {
         try {
             connect();
             ProjectOptions projectOptions = (options.isPresent()) ? options.get() : null;
-            CommitBundle initialCommitBundle = (initialCommit.isPresent()) ? initialCommit.get() : null;
-            return server.createProject(authToken, projectId, projectName, description, owner, projectOptions, initialCommitBundle);
+            return server.createProject(authToken, projectId, projectName, description, owner, projectOptions);
         }
         catch (ServerServiceException e) {
             throw new ClientRequestException(e.getMessage(), e);

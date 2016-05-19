@@ -4,6 +4,7 @@ import org.protege.editor.owl.server.api.exception.OWLServerException;
 import org.protege.editor.owl.server.versioning.ChangeHistoryUtils;
 import org.protege.editor.owl.server.versioning.VersionedOWLOntologyImpl;
 import org.protege.editor.owl.server.versioning.api.ChangeHistory;
+import org.protege.editor.owl.server.versioning.api.DocumentRevision;
 import org.protege.editor.owl.server.versioning.api.ServerDocument;
 import org.protege.editor.owl.server.versioning.api.VersionedOWLOntology;
 
@@ -18,6 +19,7 @@ import org.semanticweb.owlapi.model.OWLOntologyCreationException;
 import org.semanticweb.owlapi.model.OWLOntologyLoaderConfiguration;
 import org.semanticweb.owlapi.model.OWLOntologyLoaderConfiguration.MissingOntologyHeaderStrategy;
 import org.semanticweb.owlapi.model.OWLOntologyManager;
+import org.semanticweb.owlapi.model.parameters.OntologyCopy;
 
 import java.io.IOException;
 import java.util.List;
@@ -25,6 +27,8 @@ import java.util.Set;
 import java.util.TreeSet;
 
 public class ClientUtils {
+
+    private static OWLOntologyManager owlManager = OWLManager.createOWLOntologyManager();
 
     public static OWLOntology buildOntology(ServerDocument serverDocument)
             throws IOException, OWLServerException, OWLOntologyCreationException {
@@ -36,9 +40,28 @@ public class ClientUtils {
         return targetOntology;
     }
 
+    public static OWLOntology rebuildOntology(ServerDocument serverDocument, DocumentRevision localHead,
+            final OWLOntology currentOntology) throws IOException, OWLServerException, OWLOntologyCreationException {
+        OWLMutableOntology copyOntology = (OWLMutableOntology) owlManager.copyOntology(currentOntology, OntologyCopy.DEEP);
+        ChangeHistory remoteChangeHistory = ChangeUtils.getLatestChanges(serverDocument, localHead);
+        List<OWLOntologyChange> changes = ChangeHistoryUtils.getOntologyChanges(remoteChangeHistory, copyOntology);
+        copyOntology.applyChanges(changes);
+        fixMissingImports(copyOntology, changes);
+        return copyOntology;
+    }
+
     public static VersionedOWLOntology buildVersionedOntology(ServerDocument serverDocument)
             throws IOException, OWLServerException, OWLOntologyCreationException {
         OWLOntology targetOntology = buildOntology(serverDocument);
+        VersionedOWLOntology versionedOntology = new VersionedOWLOntologyImpl(serverDocument, targetOntology);
+        ChangeHistory remoteChangeHistory = ChangeUtils.getAllChanges(serverDocument);
+        versionedOntology.update(remoteChangeHistory);
+        return versionedOntology;
+    }
+
+    public static VersionedOWLOntology rebuildVersionedOntology(ServerDocument serverDocument, DocumentRevision localHead,
+            final OWLOntology currentOntology) throws IOException, OWLServerException, OWLOntologyCreationException {
+        OWLOntology targetOntology = rebuildOntology(serverDocument, localHead, currentOntology);
         VersionedOWLOntology versionedOntology = new VersionedOWLOntologyImpl(serverDocument, targetOntology);
         ChangeHistory remoteChangeHistory = ChangeUtils.getAllChanges(serverDocument);
         versionedOntology.update(remoteChangeHistory);

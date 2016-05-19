@@ -16,8 +16,6 @@ import org.protege.editor.owl.server.versioning.api.ServerDocument;
 import org.protege.editor.owl.server.versioning.api.VersionedOWLOntology;
 import org.protege.editor.owl.ui.UIHelper;
 
-import org.semanticweb.owlapi.model.OWLOntology;
-
 import java.awt.BorderLayout;
 import java.awt.Color;
 import java.awt.FlowLayout;
@@ -321,10 +319,9 @@ public class OpenFromServerPanel extends JPanel {
                 ProjectId pid = tableModel.getValueAt(row);
                 Client client = clientRegistry.getActiveClient();
                 ServerDocument serverDocument = client.openProject(pid);
-                OWLOntology ontology = ClientUtils.buildOntology(serverDocument);
-                VersionedOWLOntology vont = ClientUtils.constructVersionedOntology(serverDocument, ontology);
+                VersionedOWLOntology vont = ClientUtils.buildVersionedOntology(serverDocument);
                 clientRegistry.addVersionedOntology(vont);
-                editorKit.getOWLModelManager().setActiveOntology(ontology);
+                editorKit.getOWLModelManager().setActiveOntology(vont.getOntology());
                 OpenFromServerPanel.this.setVisible(false);
             }
             else {

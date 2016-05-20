@@ -84,12 +84,12 @@ public class ShowUncommittedChangesAction extends AbstractClientAction {
 
         @Override
         public void run() {
-            try {
-                vont.saveLocalHistory();
-            }
-            catch (Exception e) {
-                showSynchronizationErrorDialog("Save local history failed: " + e.getMessage(), e);
-            }
+//            try {
+//                vont.saveLocalHistory();
+//            }
+//            catch (Exception e) {
+//                showSynchronizationErrorDialog("Save local history failed: " + e.getMessage(), e);
+//            }
         }
     }
 }

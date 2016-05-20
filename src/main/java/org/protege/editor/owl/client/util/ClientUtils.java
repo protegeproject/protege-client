@@ -30,6 +30,17 @@ public class ClientUtils {
 
     private static OWLOntologyManager owlManager = OWLManager.createOWLOntologyManager();
 
+    /**
+     * Create a new OWL ontology instance by applying all the changes from the remote change history
+     * specified in the <code>serverDocument</code> reference.
+     *
+     * @param serverDocument
+     *          The input server document.
+     * @return A new OWL ontology instance.
+     * @throws IOException
+     * @throws OWLServerException
+     * @throws OWLOntologyCreationException
+     */
     public static OWLOntology buildOntology(ServerDocument serverDocument)
             throws IOException, OWLServerException, OWLOntologyCreationException {
         OWLMutableOntology targetOntology = createEmptyMutableOntology();
@@ -40,7 +51,24 @@ public class ClientUtils {
         return targetOntology;
     }
 
-    public static OWLOntology rebuildOntology(ServerDocument serverDocument, DocumentRevision localHead,
+    /**
+     * Update an existing <code>currentOntology</code> with recent changes from the remote change
+     * history specified by the last local revision <code>localHead</code> and the
+     * <code>serverDocument</code> reference. The method will return a new copy rather than
+     * overriding the input <code>currentOntology</code>.
+     *
+     * @param serverDocument
+     *          The input server document.
+     * @param localHead
+     *          The local HEAD reference.
+     * @param currentOntology
+     *          The target ontology to be updated
+     * @return An updated OWL ontology instance.
+     * @throws IOException
+     * @throws OWLServerException
+     * @throws OWLOntologyCreationException
+     */
+    public static OWLOntology refreshOntology(ServerDocument serverDocument, DocumentRevision localHead,
             final OWLOntology currentOntology) throws IOException, OWLServerException, OWLOntologyCreationException {
         OWLMutableOntology copyOntology = (OWLMutableOntology) owlManager.copyOntology(currentOntology, OntologyCopy.DEEP);
         ChangeHistory remoteChangeHistory = ChangeUtils.getLatestChanges(serverDocument, localHead);
@@ -50,6 +78,17 @@ public class ClientUtils {
         return copyOntology;
     }
 
+    /**
+     * Create a new versioned ontology by restoring all the changes from the remote change history
+     * specified in the <code>serverDocument</code> reference.
+     *
+     * @param serverDocument
+     *          The input server document
+     * @return A new version ontology instance.
+     * @throws IOException
+     * @throws OWLServerException
+     * @throws OWLOntologyCreationException
+     */
     public static VersionedOWLOntology buildVersionedOntology(ServerDocument serverDocument)
             throws IOException, OWLServerException, OWLOntologyCreationException {
         OWLOntology targetOntology = buildOntology(serverDocument);
@@ -59,9 +98,25 @@ public class ClientUtils {
         return versionedOntology;
     }
 
-    public static VersionedOWLOntology rebuildVersionedOntology(ServerDocument serverDocument, DocumentRevision localHead,
+    /**
+     * Create a new versioned ontology by restoring all recent changes from the remote change history
+     * specified by the last local revision <code>localHead</code> and the <code>serverDocument</code>
+     * reference.
+     *
+     * @param serverDocument
+     *          The input server document.
+     * @param localHead
+     *          The local HEAD reference.
+     * @param currentOntology
+     *          The target ontology that will be updated
+     * @return A new version ontology instance
+     * @throws IOException
+     * @throws OWLServerException
+     * @throws OWLOntologyCreationException
+     */
+    public static VersionedOWLOntology buildVersionedOntology(ServerDocument serverDocument, DocumentRevision localHead,
             final OWLOntology currentOntology) throws IOException, OWLServerException, OWLOntologyCreationException {
-        OWLOntology targetOntology = rebuildOntology(serverDocument, localHead, currentOntology);
+        OWLOntology targetOntology = refreshOntology(serverDocument, localHead, currentOntology);
         VersionedOWLOntology versionedOntology = new VersionedOWLOntologyImpl(serverDocument, targetOntology);
         ChangeHistory remoteChangeHistory = ChangeUtils.getAllChanges(serverDocument);
         versionedOntology.update(remoteChangeHistory);

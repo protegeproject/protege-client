@@ -5,6 +5,7 @@ import org.protege.editor.owl.server.api.CommitBundle;
 import org.protege.editor.owl.server.api.exception.AuthorizationException;
 import org.protege.editor.owl.server.api.exception.OutOfSyncException;
 import org.protege.editor.owl.server.versioning.api.ChangeHistory;
+import org.protege.editor.owl.server.versioning.api.ServerDocument;
 import org.protege.editor.owl.server.versioning.api.VersionedOWLOntology;
 
 import java.net.URI;
@@ -157,6 +158,7 @@ public interface ClientRequests {
      *            An optional of project options
      * @param initialCommit
      *            An optional initial commit bundle when creating this project
+     * @return A server document that provide the link information to remote resources
      * @throws AuthorizationException
      *             If the user doesn't have the permission to request this
      *             service.
@@ -167,7 +169,7 @@ public interface ClientRequests {
      *             communication problems, failure during parameter or return
      *             value marshalling or unmarshalling, protocol errors.
      */
-    void createProject(ProjectId projectId, Name projectName, Description description, UserId owner,
+    ServerDocument createProject(ProjectId projectId, Name projectName, Description description, UserId owner,
             Optional<ProjectOptions> options, Optional<CommitBundle> initialCommit)
                     throws AuthorizationException, ClientRequestException, RemoteException;
 

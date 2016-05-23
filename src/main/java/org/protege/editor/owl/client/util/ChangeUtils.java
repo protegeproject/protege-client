@@ -1,6 +1,6 @@
 package org.protege.editor.owl.client.util;
 
-import org.protege.editor.owl.server.api.exception.OWLServerException;
+import org.protege.editor.owl.client.api.exception.ClientRequestException;
 import org.protege.editor.owl.server.transport.rmi.RemoteChangeService;
 import org.protege.editor.owl.server.transport.rmi.RmiChangeService;
 import org.protege.editor.owl.server.util.GetUncommittedChangesVisitor;
@@ -18,7 +18,7 @@ import java.util.List;
 
 public class ChangeUtils {
 
-    public static List<OWLOntologyChange> getUncommittedChanges(VersionedOWLOntology versionedOntology) throws OWLServerException {
+    public static List<OWLOntologyChange> getUncommittedChanges(VersionedOWLOntology versionedOntology) {
         final ChangeHistory localHistory = versionedOntology.getChangeHistory();
         final OWLOntology ontology = versionedOntology.getOntology();
         List<OWLOntologyChange> baselineHistory = ChangeHistoryUtils.getOntologyChanges(localHistory, ontology);
@@ -29,11 +29,11 @@ public class ChangeUtils {
         return visitor.getChanges();
     }
 
-    public static ChangeHistory getAllChanges(VersionedOWLOntology versionedOntology) throws OWLServerException {
+    public static ChangeHistory getAllChanges(VersionedOWLOntology versionedOntology) throws ClientRequestException {
         return getAllChanges(versionedOntology.getServerDocument());
     }
 
-    public static ChangeHistory getAllChanges(ServerDocument serverDocument) throws OWLServerException {
+    public static ChangeHistory getAllChanges(ServerDocument serverDocument) throws ClientRequestException {
         try {
             RemoteChangeService changeService = (RemoteChangeService) ServerUtils.getRemoteService(
                 serverDocument.getServerAddress(), serverDocument.getRegistryPort(), RmiChangeService.CHANGE_SERVICE);
@@ -41,33 +41,29 @@ public class ChangeUtils {
             return allChanges;
         }
         catch (RemoteException e) {
-            throw new OWLServerException(e);
-        }
-        catch (Exception e) { // TODO Make as OWLServerServiceException
-            throw new OWLServerException(e);
+            throw new ClientRequestException(e.getCause());
         }
     }
 
-    public static ChangeHistory getLatestChanges(VersionedOWLOntology versionedOntology) throws OWLServerException {
-        return getLatestChanges(versionedOntology.getServerDocument(), versionedOntology.getChangeHistory().getHeadRevision());
+    public static ChangeHistory getLatestChanges(VersionedOWLOntology versionedOntology) throws ClientRequestException {
+        DocumentRevision headRevision = versionedOntology.getChangeHistory().getHeadRevision();
+        return getLatestChanges(versionedOntology.getServerDocument(), headRevision);
     }
 
-    public static ChangeHistory getLatestChanges(ServerDocument serverDocument, DocumentRevision headRevision) throws OWLServerException {
+    public static ChangeHistory getLatestChanges(ServerDocument serverDocument, DocumentRevision startRevision)
+            throws ClientRequestException {
         try {
             RemoteChangeService changeService = (RemoteChangeService) ServerUtils.getRemoteService(
                 serverDocument.getServerAddress(), serverDocument.getRegistryPort(), RmiChangeService.CHANGE_SERVICE);
-            ChangeHistory latestChanges = changeService.getLatestChanges(serverDocument.getHistoryFile(), headRevision);
+            ChangeHistory latestChanges = changeService.getLatestChanges(serverDocument.getHistoryFile(), startRevision);
             return latestChanges;
         }
         catch (RemoteException e) {
-            throw new OWLServerException(e);
-        }
-        catch (Exception e) { // TODO Make as OWLServerServiceException
-            throw new OWLServerException(e);
+            throw new ClientRequestException(e.getCause());
         }
     }
 
-    public static DocumentRevision getRemoteHeadRevision(VersionedOWLOntology versionedOntology) throws OWLServerException {
+    public static DocumentRevision getRemoteHeadRevision(VersionedOWLOntology versionedOntology) throws ClientRequestException {
         return getLatestChanges(versionedOntology).getHeadRevision();
     }
 }

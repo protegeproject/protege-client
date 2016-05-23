@@ -1,10 +1,10 @@
 package org.protege.editor.owl.client.action;
 
+import org.protege.editor.owl.client.api.exception.ClientRequestException;
 import org.protege.editor.owl.client.api.exception.SynchronizationException;
 import org.protege.editor.owl.client.util.ChangeUtils;
 import org.protege.editor.owl.model.event.OWLModelManagerChangeEvent;
 import org.protege.editor.owl.model.event.OWLModelManagerListener;
-import org.protege.editor.owl.server.api.exception.OWLServerException;
 import org.protege.editor.owl.server.versioning.api.VersionedOWLOntology;
 
 import java.awt.BorderLayout;
@@ -71,7 +71,7 @@ public class ShowStatusAction extends AbstractClientAction {
         catch (SynchronizationException e) {
             showSynchronizationErrorDialog(e.getMessage(), e);
         }
-        catch (OWLServerException e) {
+        catch (ClientRequestException e) {
             showSynchronizationErrorDialog("Show change status failed: " + e.getMessage(), e);
         }
     }

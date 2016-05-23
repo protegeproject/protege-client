@@ -1,9 +1,9 @@
 package org.protege.editor.owl.client.action;
 
+import org.protege.editor.owl.client.api.exception.ClientRequestException;
 import org.protege.editor.owl.client.api.exception.SynchronizationException;
 import org.protege.editor.owl.client.ui.ChangeHistoryPanel;
 import org.protege.editor.owl.client.util.ChangeUtils;
-import org.protege.editor.owl.server.api.exception.OWLServerException;
 import org.protege.editor.owl.server.versioning.api.ChangeHistory;
 import org.protege.editor.owl.server.versioning.api.VersionedOWLOntology;
 
@@ -35,7 +35,7 @@ public class ShowHistoryAction extends AbstractClientAction {
         catch (SynchronizationException e) {
             showSynchronizationErrorDialog(e.getMessage(), e);
         }
-        catch (OWLServerException e) {
+        catch (ClientRequestException e) {
             showSynchronizationErrorDialog("Show history failed: " + e.getMessage(), e);
         }
     }

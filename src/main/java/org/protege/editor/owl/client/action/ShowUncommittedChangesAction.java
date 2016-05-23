@@ -3,7 +3,6 @@ package org.protege.editor.owl.client.action;
 import org.protege.editor.owl.client.api.exception.SynchronizationException;
 import org.protege.editor.owl.client.ui.ChangeListTableModel;
 import org.protege.editor.owl.client.util.ChangeUtils;
-import org.protege.editor.owl.server.api.exception.OWLServerException;
 import org.protege.editor.owl.server.versioning.api.VersionedOWLOntology;
 import org.protege.editor.owl.ui.renderer.OWLCellRenderer;
 
@@ -51,9 +50,6 @@ public class ShowUncommittedChangesAction extends AbstractClientAction {
         }
         catch (SynchronizationException e) {
             showSynchronizationErrorDialog(e.getMessage(), e);
-        }
-        catch (OWLServerException e) {
-            showSynchronizationErrorDialog("Show uncommitted changes failed: " + e.getMessage(), e);
         }
     }
 

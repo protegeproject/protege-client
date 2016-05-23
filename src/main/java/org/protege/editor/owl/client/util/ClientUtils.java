@@ -1,7 +1,6 @@
 package org.protege.editor.owl.client.util;
 
-import org.protege.editor.owl.server.api.exception.OWLServerException;
-import org.protege.editor.owl.server.api.exception.ServerServiceException;
+import org.protege.editor.owl.client.api.exception.ClientRequestException;
 import org.protege.editor.owl.server.versioning.ChangeHistoryUtils;
 import org.protege.editor.owl.server.versioning.VersionedOWLOntologyImpl;
 import org.protege.editor.owl.server.versioning.api.ChangeHistory;
@@ -37,11 +36,11 @@ public class ClientUtils {
      * @param serverDocument
      *          The input server document.
      * @return A new OWL ontology instance.
-     * @throws OWLServerException
+     * @throws ClientRequestException
      * @throws OWLOntologyCreationException
      */
     public static OWLOntology buildOntology(ServerDocument serverDocument)
-            throws ServerServiceException, OWLOntologyCreationException {
+            throws ClientRequestException, OWLOntologyCreationException {
         ChangeHistory remoteChangeHistory = ChangeUtils.getAllChanges(serverDocument);
         OWLMutableOntology targetOntology = createEmptyMutableOntology();
         updateOntology(targetOntology, remoteChangeHistory);
@@ -61,11 +60,11 @@ public class ClientUtils {
      * @param currentOntology
      *          The target ontology to be updated
      * @return An updated OWL ontology instance.
-     * @throws OWLServerException
+     * @throws ClientRequestException
      * @throws OWLOntologyCreationException
      */
     public static OWLOntology updateOntology(ServerDocument serverDocument, DocumentRevision localHead,
-            final OWLOntology currentOntology) throws OWLServerException, OWLOntologyCreationException {
+            final OWLOntology currentOntology) throws ClientRequestException, OWLOntologyCreationException {
         ChangeHistory remoteChangeHistory = ChangeUtils.getLatestChanges(serverDocument, localHead);
         if (currentOntology instanceof OWLMutableOntology) {
             OWLMutableOntology targetOntology = (OWLMutableOntology) currentOntology;
@@ -82,11 +81,11 @@ public class ClientUtils {
      * @param serverDocument
      *          The input server document
      * @return A new version ontology instance.
-     * @throws OWLServerException
+     * @throws ClientRequestException
      * @throws OWLOntologyCreationException
      */
     public static VersionedOWLOntology buildVersionedOntology(ServerDocument serverDocument)
-            throws OWLServerException, OWLOntologyCreationException {
+            throws ClientRequestException, OWLOntologyCreationException {
         ChangeHistory remoteChangeHistory = ChangeUtils.getAllChanges(serverDocument);
         OWLMutableOntology targetOntology = createEmptyMutableOntology();
         updateOntology(targetOntology, remoteChangeHistory);
@@ -105,12 +104,12 @@ public class ClientUtils {
      * @param currentOntology
      *            The target ontology that will be updated
      * @return A new version ontology instance
-     * @throws OWLServerException
+     * @throws ClientRequestException
      * @throws OWLOntologyCreationException
      */
     public static VersionedOWLOntology buildVersionedOntology(ServerDocument serverDocument, DocumentRevision localHead,
             ChangeHistory localHistory, OWLOntology currentOntology)
-                    throws OWLServerException, OWLOntologyCreationException {
+                    throws ClientRequestException, OWLOntologyCreationException {
         ChangeHistory remoteChangeHistory = ChangeUtils.getLatestChanges(serverDocument, localHead);
         if (currentOntology instanceof OWLMutableOntology) {
             OWLMutableOntology targetOntology = (OWLMutableOntology) currentOntology;
@@ -129,13 +128,13 @@ public class ClientUtils {
         return (OWLMutableOntology) owlManager.createOntology();
     }
 
-    public static void updateOntology(OWLMutableOntology placeholder, ChangeHistory changeHistory) {
+    private static void updateOntology(OWLMutableOntology placeholder, ChangeHistory changeHistory) {
         List<OWLOntologyChange> changes = ChangeHistoryUtils.getOntologyChanges(changeHistory, placeholder);
         placeholder.applyChanges(changes);
         fixMissingImports(placeholder, changes);
     }
 
-    public static void updateChangeHistory(ChangeHistory changeHistory, ChangeHistory incomingChangeHistory) {
+    private static void updateChangeHistory(ChangeHistory changeHistory, ChangeHistory incomingChangeHistory) {
         final DocumentRevision base = incomingChangeHistory.getBaseRevision();
         final DocumentRevision end = incomingChangeHistory.getHeadRevision();
         for (DocumentRevision current = base; current.behind(end);) {

@@ -1,8 +1,8 @@
 package org.protege.editor.owl.client.action;
 
+import org.protege.editor.owl.client.api.exception.ClientRequestException;
 import org.protege.editor.owl.client.api.exception.SynchronizationException;
 import org.protege.editor.owl.client.util.ChangeUtils;
-import org.protege.editor.owl.server.api.exception.OWLServerException;
 import org.protege.editor.owl.server.versioning.ChangeHistoryUtils;
 import org.protege.editor.owl.server.versioning.CollectingChangeVisitor;
 import org.protege.editor.owl.server.versioning.api.ChangeHistory;
@@ -109,20 +109,14 @@ public class UpdateAction extends AbstractClientAction {
                 DocumentRevision localHead = vont.getHeadRevision();
                 return localHead.sameAs(remoteHead);
             }
-            catch (OWLServerException e) {
+            catch (ClientRequestException e) {
                 showSynchronizationErrorDialog("Error while computing the remote head revision", e);
                 return false;
             }
         }
 
         public List<OWLOntologyChange> getLatestChangesFromClient() {
-            List<OWLOntologyChange> changes = new ArrayList<>();
-            try {
-                changes = ChangeUtils.getUncommittedChanges(vont);
-            }
-            catch (OWLServerException e) {
-                showSynchronizationErrorDialog("Error while fetching the latest changes from client", e);
-            }
+            List<OWLOntologyChange> changes = ChangeUtils.getUncommittedChanges(vont);
             return changes;
         }
 
@@ -132,7 +126,7 @@ public class UpdateAction extends AbstractClientAction {
                 ChangeHistory remoteChangeHistory = ChangeUtils.getLatestChanges(vont);
                 changes = ChangeHistoryUtils.getOntologyChanges(remoteChangeHistory, ontology);
             }
-            catch (OWLServerException e) {
+            catch (ClientRequestException e) {
                 showSynchronizationErrorDialog("Error while fetching the latest changes from server", e);
             }
             return changes;

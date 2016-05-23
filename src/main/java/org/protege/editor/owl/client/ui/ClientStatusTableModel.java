@@ -1,8 +1,8 @@
 package org.protege.editor.owl.client.ui;
 
 import org.protege.editor.owl.client.api.Client;
+import org.protege.editor.owl.client.api.exception.ClientRequestException;
 import org.protege.editor.owl.client.util.ChangeUtils;
-import org.protege.editor.owl.server.api.exception.OWLServerException;
 import org.protege.editor.owl.server.versioning.api.VersionedOWLOntology;
 
 import org.semanticweb.owlapi.model.OWLOntologyChange;
@@ -35,13 +35,13 @@ public class ClientStatusTableModel extends AbstractTableModel {
         },
         SERVER_REVISION("Remote revision:") {
             @Override
-            public String evaluate(Client client, VersionedOWLOntology vont) throws OWLServerException {
+            public String evaluate(Client client, VersionedOWLOntology vont) throws ClientRequestException {
                 return ChangeUtils.getRemoteHeadRevision(vont).toString();
             }
         },
         UNCOMMITTED_CHANGES("#Uncommitted Changes:") {
             @Override
-            public String evaluate(Client client, VersionedOWLOntology vont) throws OWLServerException {
+            public String evaluate(Client client, VersionedOWLOntology vont) throws ClientRequestException {
                 List<OWLOntologyChange> changes = ChangeUtils.getUncommittedChanges(vont);
                 return changes.size()+"";
             }
@@ -57,7 +57,7 @@ public class ClientStatusTableModel extends AbstractTableModel {
             return name;
         }
 
-        public abstract Object evaluate(Client client, VersionedOWLOntology vont) throws OWLServerException;
+        public abstract Object evaluate(Client client, VersionedOWLOntology vont) throws ClientRequestException;
     }
 
     private Client client;
@@ -92,7 +92,7 @@ public class ClientStatusTableModel extends AbstractTableModel {
                 return "Unknown column type";
             }
         }
-        catch (OWLServerException e) {
+        catch (ClientRequestException e) {
             return "Error: " + e.getMessage();
         }
     }

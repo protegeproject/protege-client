@@ -1,10 +1,12 @@
 package org.protege.editor.owl.client.util;
 
 import org.protege.editor.owl.server.api.exception.OWLServerException;
+import org.protege.editor.owl.server.api.exception.ServerServiceException;
 import org.protege.editor.owl.server.versioning.ChangeHistoryUtils;
 import org.protege.editor.owl.server.versioning.VersionedOWLOntologyImpl;
 import org.protege.editor.owl.server.versioning.api.ChangeHistory;
 import org.protege.editor.owl.server.versioning.api.DocumentRevision;
+import org.protege.editor.owl.server.versioning.api.RevisionMetadata;
 import org.protege.editor.owl.server.versioning.api.ServerDocument;
 import org.protege.editor.owl.server.versioning.api.VersionedOWLOntology;
 
@@ -19,9 +21,7 @@ import org.semanticweb.owlapi.model.OWLOntologyCreationException;
 import org.semanticweb.owlapi.model.OWLOntologyLoaderConfiguration;
 import org.semanticweb.owlapi.model.OWLOntologyLoaderConfiguration.MissingOntologyHeaderStrategy;
 import org.semanticweb.owlapi.model.OWLOntologyManager;
-import org.semanticweb.owlapi.model.parameters.OntologyCopy;
 
-import java.io.IOException;
 import java.util.List;
 import java.util.Set;
 import java.util.TreeSet;
@@ -37,17 +37,14 @@ public class ClientUtils {
      * @param serverDocument
      *          The input server document.
      * @return A new OWL ontology instance.
-     * @throws IOException
      * @throws OWLServerException
      * @throws OWLOntologyCreationException
      */
     public static OWLOntology buildOntology(ServerDocument serverDocument)
-            throws IOException, OWLServerException, OWLOntologyCreationException {
-        OWLMutableOntology targetOntology = createEmptyMutableOntology();
+            throws ServerServiceException, OWLOntologyCreationException {
         ChangeHistory remoteChangeHistory = ChangeUtils.getAllChanges(serverDocument);
-        List<OWLOntologyChange> changes = ChangeHistoryUtils.getOntologyChanges(remoteChangeHistory, targetOntology);
-        targetOntology.applyChanges(changes);
-        fixMissingImports(targetOntology, changes);
+        OWLMutableOntology targetOntology = createEmptyMutableOntology();
+        updateOntology(targetOntology, remoteChangeHistory);
         return targetOntology;
     }
 
@@ -64,18 +61,18 @@ public class ClientUtils {
      * @param currentOntology
      *          The target ontology to be updated
      * @return An updated OWL ontology instance.
-     * @throws IOException
      * @throws OWLServerException
      * @throws OWLOntologyCreationException
      */
     public static OWLOntology updateOntology(ServerDocument serverDocument, DocumentRevision localHead,
-            final OWLOntology currentOntology) throws IOException, OWLServerException, OWLOntologyCreationException {
-        OWLMutableOntology copyOntology = (OWLMutableOntology) owlManager.copyOntology(currentOntology, OntologyCopy.DEEP);
+            final OWLOntology currentOntology) throws OWLServerException, OWLOntologyCreationException {
         ChangeHistory remoteChangeHistory = ChangeUtils.getLatestChanges(serverDocument, localHead);
-        List<OWLOntologyChange> changes = ChangeHistoryUtils.getOntologyChanges(remoteChangeHistory, copyOntology);
-        copyOntology.applyChanges(changes);
-        fixMissingImports(copyOntology, changes);
-        return copyOntology;
+        if (currentOntology instanceof OWLMutableOntology) {
+            OWLMutableOntology targetOntology = (OWLMutableOntology) currentOntology;
+            updateOntology(targetOntology, remoteChangeHistory);
+            return targetOntology;
+        }
+        throw new RuntimeException("Unable to update the ontology. The input ontology is immutable");
     }
 
     /**
@@ -85,17 +82,15 @@ public class ClientUtils {
      * @param serverDocument
      *          The input server document
      * @return A new version ontology instance.
-     * @throws IOException
      * @throws OWLServerException
      * @throws OWLOntologyCreationException
      */
     public static VersionedOWLOntology buildVersionedOntology(ServerDocument serverDocument)
-            throws IOException, OWLServerException, OWLOntologyCreationException {
-        OWLOntology targetOntology = buildOntology(serverDocument);
-        VersionedOWLOntology versionedOntology = new VersionedOWLOntologyImpl(serverDocument, targetOntology);
+            throws OWLServerException, OWLOntologyCreationException {
         ChangeHistory remoteChangeHistory = ChangeUtils.getAllChanges(serverDocument);
-        versionedOntology.update(remoteChangeHistory);
-        return versionedOntology;
+        OWLMutableOntology targetOntology = createEmptyMutableOntology();
+        updateOntology(targetOntology, remoteChangeHistory);
+        return new VersionedOWLOntologyImpl(serverDocument, targetOntology, remoteChangeHistory);
     }
 
     /**
@@ -110,18 +105,20 @@ public class ClientUtils {
      * @param currentOntology
      *            The target ontology that will be updated
      * @return A new version ontology instance
-     * @throws IOException
      * @throws OWLServerException
      * @throws OWLOntologyCreationException
      */
     public static VersionedOWLOntology buildVersionedOntology(ServerDocument serverDocument, DocumentRevision localHead,
-            final ChangeHistory localHistory, final OWLOntology currentOntology)
-                    throws IOException, OWLServerException, OWLOntologyCreationException {
-        OWLOntology targetOntology = updateOntology(serverDocument, localHead, currentOntology);
-        VersionedOWLOntology versionedOntology = new VersionedOWLOntologyImpl(serverDocument, targetOntology, localHistory);
+            ChangeHistory localHistory, OWLOntology currentOntology)
+                    throws OWLServerException, OWLOntologyCreationException {
         ChangeHistory remoteChangeHistory = ChangeUtils.getLatestChanges(serverDocument, localHead);
-        versionedOntology.update(remoteChangeHistory);
-        return versionedOntology;
+        if (currentOntology instanceof OWLMutableOntology) {
+            OWLMutableOntology targetOntology = (OWLMutableOntology) currentOntology;
+            updateOntology(targetOntology, remoteChangeHistory);
+            updateChangeHistory(localHistory, remoteChangeHistory);
+            return new VersionedOWLOntologyImpl(serverDocument, targetOntology, localHistory);
+        }
+        throw new RuntimeException("Unable to update the ontology. The input ontology is immutable");
     }
 
     /*
@@ -130,6 +127,23 @@ public class ClientUtils {
 
     private static OWLMutableOntology createEmptyMutableOntology() throws OWLOntologyCreationException {
         return (OWLMutableOntology) owlManager.createOntology();
+    }
+
+    public static void updateOntology(OWLMutableOntology placeholder, ChangeHistory changeHistory) {
+        List<OWLOntologyChange> changes = ChangeHistoryUtils.getOntologyChanges(changeHistory, placeholder);
+        placeholder.applyChanges(changes);
+        fixMissingImports(placeholder, changes);
+    }
+
+    public static void updateChangeHistory(ChangeHistory changeHistory, ChangeHistory incomingChangeHistory) {
+        final DocumentRevision base = incomingChangeHistory.getBaseRevision();
+        final DocumentRevision end = incomingChangeHistory.getHeadRevision();
+        for (DocumentRevision current = base; current.behind(end);) {
+            current = current.next();
+            RevisionMetadata metadata = incomingChangeHistory.getMetadataForRevision(current);
+            List<OWLOntologyChange> changes = incomingChangeHistory.getChangesForRevision(current);
+            changeHistory.addRevision(metadata, changes);
+        }
     }
 
     private static void fixMissingImports(OWLMutableOntology targetOntology, List<OWLOntologyChange> changes) {

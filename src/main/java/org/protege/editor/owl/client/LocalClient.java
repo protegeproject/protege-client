@@ -3,15 +3,20 @@ package org.protege.editor.owl.client;
 import org.protege.editor.owl.client.api.Client;
 import org.protege.editor.owl.client.api.UserInfo;
 import org.protege.editor.owl.client.api.exception.ClientRequestException;
+import org.protege.editor.owl.client.util.ClientUtils;
 import org.protege.editor.owl.client.util.ServerUtils;
 import org.protege.editor.owl.server.api.CommitBundle;
 import org.protege.editor.owl.server.api.exception.AuthorizationException;
+import org.protege.editor.owl.server.api.exception.OWLServerException;
 import org.protege.editor.owl.server.api.exception.OutOfSyncException;
 import org.protege.editor.owl.server.api.exception.ServerServiceException;
 import org.protege.editor.owl.server.transport.rmi.RemoteServer;
 import org.protege.editor.owl.server.transport.rmi.RmiServer;
 import org.protege.editor.owl.server.versioning.api.ChangeHistory;
 import org.protege.editor.owl.server.versioning.api.ServerDocument;
+import org.protege.editor.owl.server.versioning.api.VersionedOWLOntology;
+
+import org.semanticweb.owlapi.model.OWLOntologyCreationException;
 
 import java.net.URI;
 import java.rmi.RemoteException;
@@ -33,6 +38,7 @@ import edu.stanford.protege.metaproject.api.RoleId;
 import edu.stanford.protege.metaproject.api.SaltedPasswordDigest;
 import edu.stanford.protege.metaproject.api.User;
 import edu.stanford.protege.metaproject.api.UserId;
+import edu.stanford.protege.metaproject.api.exception.IdAlreadyInUseException;
 import edu.stanford.protege.metaproject.impl.Operations;
 
 /**
@@ -151,15 +157,28 @@ public class LocalClient implements Client {
     }
 
     @Override
-    public ServerDocument createProject(ProjectId projectId, Name projectName, Description description, UserId owner,
-            Optional<ProjectOptions> options) throws AuthorizationException, ClientRequestException, RemoteException {
+    public void createProject(ProjectId projectId, Name projectName, Description description,
+            UserId owner, Optional<ProjectOptions> options, Optional<CommitBundle> initialCommit)
+                    throws AuthorizationException, ClientRequestException, RemoteException {
         try {
             connect();
             ProjectOptions projectOptions = (options.isPresent()) ? options.get() : null;
-            return server.createProject(authToken, projectId, projectName, description, owner, projectOptions);
+            server.createProject(authToken, projectId, projectName, description, owner, projectOptions);
+            if (initialCommit.isPresent()) {
+                server.commit(authToken, projectId, initialCommit.get());
+            }
         }
         catch (ServerServiceException e) {
-            throw new ClientRequestException(e.getMessage(), e);
+            Throwable cause = e.getCause();
+            if (cause instanceof IdAlreadyInUseException) {
+                throw new ClientRequestException("Project ID is already used. Please use different name");
+            }
+            else {
+                throw new ClientRequestException("Failed to create a new project. Please try again.", e.getCause());
+            }
+        }
+        catch (OutOfSyncException e) {
+            throw new ClientRequestException("Bad error. The server should not have the project history during initial creation.");
         }
     }
 
@@ -186,12 +205,19 @@ public class LocalClient implements Client {
     }
 
     @Override
-    public ServerDocument openProject(ProjectId projectId) throws AuthorizationException, ClientRequestException, RemoteException {
+    public VersionedOWLOntology openProject(ProjectId projectId) throws AuthorizationException, ClientRequestException, RemoteException {
         try {
             connect();
-            return server.openProject(authToken, projectId);
+            ServerDocument serverDocument = server.openProject(authToken, projectId);
+            return ClientUtils.buildVersionedOntology(serverDocument);
         }
         catch (ServerServiceException e) {
+            throw new ClientRequestException(e.getMessage(), e);
+        }
+        catch (OWLOntologyCreationException e) {
+            throw new RuntimeException("Unable to load the ontology at the local client", e);
+        }
+        catch (OWLServerException e) {
             throw new ClientRequestException(e.getMessage(), e);
         }
     }

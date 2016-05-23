@@ -5,7 +5,7 @@ import org.protege.editor.owl.server.api.CommitBundle;
 import org.protege.editor.owl.server.api.exception.AuthorizationException;
 import org.protege.editor.owl.server.api.exception.OutOfSyncException;
 import org.protege.editor.owl.server.versioning.api.ChangeHistory;
-import org.protege.editor.owl.server.versioning.api.ServerDocument;
+import org.protege.editor.owl.server.versioning.api.VersionedOWLOntology;
 
 import java.net.URI;
 import java.rmi.RemoteException;
@@ -155,7 +155,8 @@ public interface ClientRequests {
      *            The owner of the project
      * @param options
      *            An optional of project options
-     * @return A server document that provide the link information to remote resources
+     * @param initialCommit
+     *            An optional initial commit bundle when creating this project
      * @throws AuthorizationException
      *             If the user doesn't have the permission to request this
      *             service.
@@ -166,8 +167,9 @@ public interface ClientRequests {
      *             communication problems, failure during parameter or return
      *             value marshalling or unmarshalling, protocol errors.
      */
-    ServerDocument createProject(ProjectId projectId, Name projectName, Description description, UserId owner,
-            Optional<ProjectOptions> options) throws AuthorizationException, ClientRequestException, RemoteException;
+    void createProject(ProjectId projectId, Name projectName, Description description, UserId owner,
+            Optional<ProjectOptions> options, Optional<CommitBundle> initialCommit)
+                    throws AuthorizationException, ClientRequestException, RemoteException;
 
     /**
      * Deleting an existing project from the server.
@@ -223,7 +225,7 @@ public interface ClientRequests {
      *             communication problems, failure during parameter or return
      *             value marshalling or unmarshalling, protocol errors.
      */
-    ServerDocument openProject(ProjectId projectId)
+    VersionedOWLOntology openProject(ProjectId projectId)
             throws AuthorizationException, ClientRequestException, RemoteException;
 
     /**

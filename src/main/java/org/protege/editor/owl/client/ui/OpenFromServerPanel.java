@@ -318,8 +318,7 @@ public class OpenFromServerPanel extends JPanel {
             if (row != -1) {
                 ProjectId pid = tableModel.getValueAt(row);
                 Client client = clientRegistry.getActiveClient();
-                ServerDocument serverDocument = client.openProject(pid);
-                VersionedOWLOntology vont = ClientUtils.buildVersionedOntology(serverDocument);
+                VersionedOWLOntology vont = client.openProject(pid);
                 clientRegistry.addVersionedOntology(vont);
                 editorKit.getOWLModelManager().setActiveOntology(vont.getOntology());
                 OpenFromServerPanel.this.setVisible(false);

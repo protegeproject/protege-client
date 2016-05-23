@@ -25,7 +25,7 @@ public final class DefaultUserAuthenticator implements UserAuthenticator {
 
     @Override
     public AuthToken hasValidCredentials(UserId userId, PlainPassword password) throws Exception {
-        Salt userSalt = (Salt) loginService.getEncryptionKey(userId);
+        Salt userSalt = loginService.getSalt(userId);
         MetaprojectFactory f = Manager.getFactory();
         SaltedPasswordDigest passwordDigest = f.getPasswordHasher().hash(password, userSalt);
         AuthToken authToken = loginService.login(userId, passwordDigest);

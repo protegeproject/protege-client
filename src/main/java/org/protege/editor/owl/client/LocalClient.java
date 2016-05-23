@@ -160,34 +160,51 @@ public class LocalClient implements Client {
     public ServerDocument createProject(ProjectId projectId, Name projectName, Description description,
             UserId owner, Optional<ProjectOptions> options, Optional<CommitBundle> initialCommit)
                     throws AuthorizationException, ClientRequestException, RemoteException {
+        ServerDocument serverDocument = null;
         try {
             connect();
             ProjectOptions projectOptions = (options.isPresent()) ? options.get() : null;
-            ServerDocument serverDocument = server.createProject(authToken, projectId, projectName, description, owner, projectOptions);
-            if (initialCommit.isPresent()) {
-                server.commit(authToken, projectId, initialCommit.get());
-            }
-            return serverDocument;
+            serverDocument = server.createProject(authToken, projectId, projectName, description, owner, projectOptions);
         }
         catch (ServerServiceException e) {
-            Throwable cause = e.getCause();
-            if (cause instanceof IdAlreadyInUseException) {
-                throw new ClientRequestException("Project ID is already used. Please use different name");
+            Throwable t = e.getCause();
+            if (t instanceof IdAlreadyInUseException) {
+                throw new ClientRequestException("Project ID is already used. Please use different name.");
             }
             else {
+                try {
+                    server.deleteProject(authToken, projectId, true);
+                }
+                catch (ServerServiceException ee) {
+                    throw new ClientRequestException("Failed to create a new project. Please try again.", ee.getCause());
+                }
                 throw new ClientRequestException("Failed to create a new project. Please try again.", e.getCause());
             }
         }
-        catch (OutOfSyncException e) {
-            throw new ClientRequestException("Bad error. The server should not have the project history during initial creation.");
+        
+        // Do initial commit if the commit bundle is not empty
+        if (initialCommit.isPresent()) {
+            try {
+                server.commit(authToken, projectId, initialCommit.get());
+            }
+            catch (ServerServiceException | OutOfSyncException e) {
+                try {
+                    server.deleteProject(authToken, projectId, true);
+                }
+                catch (ServerServiceException ee) {
+                    throw new ClientRequestException("Failed to create a new project. Please try again.", ee.getCause());
+                }
+                throw new ClientRequestException("Failed to create a new project. Please try again.", e.getCause());
+            }
         }
+        return serverDocument;
     }
 
     @Override
-    public void deleteProject(ProjectId projectId) throws AuthorizationException, ClientRequestException, RemoteException {
+    public void deleteProject(ProjectId projectId, boolean includeFile) throws AuthorizationException, ClientRequestException, RemoteException {
         try {
             connect();
-            server.deleteProject(authToken, projectId);
+            server.deleteProject(authToken, projectId, includeFile);
         }
         catch (ServerServiceException e) {
             throw new ClientRequestException(e.getMessage(), e);

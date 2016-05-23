@@ -178,6 +178,8 @@ public interface ClientRequests {
      *
      * @param projectId
      *            The project to remove identified by its ID.
+     * @param includeFile
+     *            Remove the associated files
      * @throws AuthorizationException
      *             If the user doesn't have the permission to request this
      *             service.
@@ -188,7 +190,8 @@ public interface ClientRequests {
      *             communication problems, failure during parameter or return
      *             value marshalling or unmarshalling, protocol errors.
      */
-    void deleteProject(ProjectId projectId) throws AuthorizationException, ClientRequestException, RemoteException;
+    void deleteProject(ProjectId projectId, boolean includeFile)
+            throws AuthorizationException, ClientRequestException, RemoteException;
 
     /**
      * Updating information of an existing project in the server.

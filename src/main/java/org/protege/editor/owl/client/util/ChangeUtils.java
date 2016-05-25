@@ -18,6 +18,10 @@ import java.util.List;
 
 public class ChangeUtils {
 
+    /**
+     * @deprecated Use ClientUtils.getUncommittedChanges(OWLOntology, ChangeHistory) instead.
+     */
+    @Deprecated
     public static List<OWLOntologyChange> getUncommittedChanges(VersionedOWLOntology versionedOntology) {
         final ChangeHistory localHistory = versionedOntology.getChangeHistory();
         final OWLOntology ontology = versionedOntology.getOntology();

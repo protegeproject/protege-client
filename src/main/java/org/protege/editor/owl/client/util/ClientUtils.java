@@ -1,6 +1,8 @@
 package org.protege.editor.owl.client.util;
 
 import org.protege.editor.owl.client.api.exception.ClientRequestException;
+import org.protege.editor.owl.server.util.GetUncommittedChangesVisitor;
+import org.protege.editor.owl.server.versioning.ChangeHistoryImpl;
 import org.protege.editor.owl.server.versioning.ChangeHistoryUtils;
 import org.protege.editor.owl.server.versioning.VersionedOWLOntologyImpl;
 import org.protege.editor.owl.server.versioning.api.ChangeHistory;
@@ -27,7 +29,41 @@ import java.util.TreeSet;
 
 public class ClientUtils {
 
-    private static OWLOntologyManager owlManager = OWLManager.createOWLOntologyManager();
+    /**
+     * Compute the uncommitted changes given the input <code>ontology</code>. This method will use an
+     * empty baseline for comparison and therefore will return all add operations that construct
+     * this ontology.
+     *
+     * @param ontology
+     *          The target ontology to check for uncommitted changes.
+     * @param baseline
+     *          The existing change history as the baseline for comparison.
+     * @return A list of ontology changes
+     */
+    public static List<OWLOntologyChange> getUncommittedChanges(OWLOntology ontology) {
+        return getUncommittedChanges(ontology, ChangeHistoryImpl.createEmptyChangeHistory());
+    }
+
+    /**
+     * Compute the uncommitted changes given the input <code>ontology</code> and the initial change history
+     * <code>baseline</code>. The baseline contains changes that are already committed. By comparing the
+     * baseline and the new changes in the ontology, the method will be able to determine the uncommitted
+     * changes.
+     *
+     * @param ontology
+     *          The target ontology to check for uncommitted changes.
+     * @param baseline
+     *          The existing change history as the baseline for comparison.
+     * @return A list of ontology changes
+     */
+    public static List<OWLOntologyChange> getUncommittedChanges(OWLOntology ontology, ChangeHistory baseline) {
+        List<OWLOntologyChange> baselineHistory = ChangeHistoryUtils.getOntologyChanges(baseline, ontology);
+        GetUncommittedChangesVisitor visitor = new GetUncommittedChangesVisitor(ontology);
+        for (OWLOntologyChange change : baselineHistory) {
+            change.accept(visitor);
+        }
+        return visitor.getChanges();
+    }
 
     /**
      * Create a new OWL ontology instance by applying all the changes from the remote change history
@@ -125,7 +161,7 @@ public class ClientUtils {
      */
 
     private static OWLMutableOntology createEmptyMutableOntology() throws OWLOntologyCreationException {
-        return (OWLMutableOntology) owlManager.createOntology();
+        return (OWLMutableOntology) OWLManager.createOWLOntologyManager().createOntology();
     }
 
     private static void updateOntology(OWLMutableOntology placeholder, ChangeHistory changeHistory) {
@@ -145,6 +181,7 @@ public class ClientUtils {
     }
 
     private static void fixMissingImports(OWLMutableOntology targetOntology, List<OWLOntologyChange> changes) {
+        OWLOntologyManager owlManager = targetOntology.getOWLOntologyManager();
         OWLOntologyLoaderConfiguration configuration = new OWLOntologyLoaderConfiguration();
         configuration = configuration.setMissingImportHandlingStrategy(MissingImportHandlingStrategy.SILENT);
         configuration = configuration.setMissingOntologyHeaderStrategy(MissingOntologyHeaderStrategy.IMPORT_GRAPH);

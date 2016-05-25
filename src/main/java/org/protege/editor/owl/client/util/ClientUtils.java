@@ -1,9 +1,11 @@
 package org.protege.editor.owl.client.util;
 
+import org.protege.editor.owl.client.api.Client;
 import org.protege.editor.owl.client.api.exception.ClientRequestException;
 import org.protege.editor.owl.server.util.GetUncommittedChangesVisitor;
 import org.protege.editor.owl.server.versioning.ChangeHistoryImpl;
 import org.protege.editor.owl.server.versioning.ChangeHistoryUtils;
+import org.protege.editor.owl.server.versioning.Commit;
 import org.protege.editor.owl.server.versioning.VersionedOWLOntologyImpl;
 import org.protege.editor.owl.server.versioning.api.ChangeHistory;
 import org.protege.editor.owl.server.versioning.api.DocumentRevision;
@@ -63,6 +65,26 @@ public class ClientUtils {
             change.accept(visitor);
         }
         return visitor.getChanges();
+    }
+
+    /**
+     * Create a commit object by specifying the <code>author</code>, <code>comment</code> string and
+     * the list of <code>changes</code>.
+     *
+     * @param author
+     *          The committer
+     * @param comment
+     *          The commit comment
+     * @param changes
+     *          The list of changes inside a commit
+     * @return A commit object
+     */
+    public static Commit createCommit(Client author, String comment, List<OWLOntologyChange> changes) {
+        RevisionMetadata metadata = new RevisionMetadata(
+                author.getUserInfo().getId(),
+                author.getUserInfo().getName(),
+                author.getUserInfo().getEmailAddress(), comment);
+        return new Commit(metadata, changes);
     }
 
     /**

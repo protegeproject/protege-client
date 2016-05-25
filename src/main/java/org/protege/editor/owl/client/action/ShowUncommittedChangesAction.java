@@ -2,7 +2,7 @@ package org.protege.editor.owl.client.action;
 
 import org.protege.editor.owl.client.api.exception.SynchronizationException;
 import org.protege.editor.owl.client.ui.ChangeListTableModel;
-import org.protege.editor.owl.client.util.ChangeUtils;
+import org.protege.editor.owl.client.util.ClientUtils;
 import org.protege.editor.owl.server.versioning.api.VersionedOWLOntology;
 import org.protege.editor.owl.ui.renderer.OWLCellRenderer;
 
@@ -38,7 +38,7 @@ public class ShowUncommittedChangesAction extends AbstractClientAction {
     public void actionPerformed(ActionEvent arg0) {
         try {
             final VersionedOWLOntology vont = getActiveVersionedOntology();
-            List<OWLOntologyChange> uncommitted = ChangeUtils.getUncommittedChanges(vont);
+            List<OWLOntologyChange> uncommitted = ClientUtils.getUncommittedChanges(vont.getOntology(), vont.getChangeHistory());
             if (uncommitted.isEmpty()) {
                 Container container = SwingUtilities.getAncestorOfClass(Frame.class, getOWLWorkspace());
                 JOptionPane.showMessageDialog(container, "No uncommitted changes");

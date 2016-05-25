@@ -3,11 +3,8 @@ package org.protege.editor.owl.client.ui;
 import org.protege.editor.owl.client.api.Client;
 import org.protege.editor.owl.client.api.exception.ClientRequestException;
 import org.protege.editor.owl.client.util.ChangeUtils;
+import org.protege.editor.owl.client.util.ClientUtils;
 import org.protege.editor.owl.server.versioning.api.VersionedOWLOntology;
-
-import org.semanticweb.owlapi.model.OWLOntologyChange;
-
-import java.util.List;
 
 import javax.annotation.Nonnull;
 import javax.swing.table.AbstractTableModel;
@@ -42,8 +39,7 @@ public class ClientStatusTableModel extends AbstractTableModel {
         UNCOMMITTED_CHANGES("#Uncommitted Changes:") {
             @Override
             public String evaluate(Client client, VersionedOWLOntology vont) throws ClientRequestException {
-                List<OWLOntologyChange> changes = ChangeUtils.getUncommittedChanges(vont);
-                return changes.size()+"";
+                return ClientUtils.getUncommittedChanges(vont.getOntology(), vont.getChangeHistory()).size()+"";
             }
         };
 

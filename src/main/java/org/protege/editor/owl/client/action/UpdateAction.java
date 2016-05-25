@@ -3,6 +3,7 @@ package org.protege.editor.owl.client.action;
 import org.protege.editor.owl.client.api.exception.ClientRequestException;
 import org.protege.editor.owl.client.api.exception.SynchronizationException;
 import org.protege.editor.owl.client.util.ChangeUtils;
+import org.protege.editor.owl.client.util.ClientUtils;
 import org.protege.editor.owl.server.versioning.ChangeHistoryUtils;
 import org.protege.editor.owl.server.versioning.CollectingChangeVisitor;
 import org.protege.editor.owl.server.versioning.api.ChangeHistory;
@@ -116,8 +117,7 @@ public class UpdateAction extends AbstractClientAction {
         }
 
         public List<OWLOntologyChange> getLatestChangesFromClient() {
-            List<OWLOntologyChange> changes = ChangeUtils.getUncommittedChanges(vont);
-            return changes;
+            return ClientUtils.getUncommittedChanges(vont.getOntology(), vont.getChangeHistory());
         }
 
         private List<OWLOntologyChange> getLatestChangesFromServer() {

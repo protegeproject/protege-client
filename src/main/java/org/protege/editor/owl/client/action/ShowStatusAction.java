@@ -3,9 +3,13 @@ package org.protege.editor.owl.client.action;
 import org.protege.editor.owl.client.api.exception.ClientRequestException;
 import org.protege.editor.owl.client.api.exception.SynchronizationException;
 import org.protege.editor.owl.client.util.ChangeUtils;
+import org.protege.editor.owl.client.util.ClientUtils;
 import org.protege.editor.owl.model.event.OWLModelManagerChangeEvent;
 import org.protege.editor.owl.model.event.OWLModelManagerListener;
+import org.protege.editor.owl.server.versioning.api.ChangeHistory;
 import org.protege.editor.owl.server.versioning.api.VersionedOWLOntology;
+
+import org.semanticweb.owlapi.model.OWLOntology;
 
 import java.awt.BorderLayout;
 import java.awt.GridLayout;
@@ -46,7 +50,7 @@ public class ShowStatusAction extends AbstractClientAction {
     public void actionPerformed(ActionEvent arg0) {
         try {
             final VersionedOWLOntology vont = getActiveVersionedOntology();
-
+            
             JDialog dialog = new JDialog();
             dialog.setTitle("Client status");
             dialog.setLocationRelativeTo(getOWLWorkspace());
@@ -60,7 +64,7 @@ public class ShowStatusAction extends AbstractClientAction {
             panel.add(new JLabel(ChangeUtils.getRemoteHeadRevision(vont).toString()));
 
             panel.add(new JLabel("#Uncommitted Changes:"));
-            panel.add(new JLabel(ChangeUtils.getUncommittedChanges(vont).size()+""));
+            panel.add(new JLabel(ClientUtils.getUncommittedChanges(vont.getOntology(), vont.getChangeHistory()).size()+""));
 
             dialog.getContentPane().setLayout(new BorderLayout());
             dialog.getContentPane().add(panel, BorderLayout.CENTER);

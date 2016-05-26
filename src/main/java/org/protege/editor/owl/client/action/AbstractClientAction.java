@@ -1,6 +1,7 @@
 package org.protege.editor.owl.client.action;
 
 import org.protege.editor.core.ui.error.ErrorLogPanel;
+import org.protege.editor.core.ui.util.JOptionPaneEx;
 import org.protege.editor.owl.client.ClientSession;
 import org.protege.editor.owl.client.api.Client;
 import org.protege.editor.owl.client.api.exception.SynchronizationException;
@@ -82,18 +83,17 @@ public abstract class AbstractClientAction extends ProtegeOWLAction {
     }
 
     protected void showErrorDialog(String title, String message, Throwable t) {
-        ErrorLogPanel.showErrorDialog(t);
-        UIHelper ui = new UIHelper(getOWLEditorKit());
-        ui.showDialog(title, new JLabel(message), JOptionPane.ERROR_MESSAGE);
+        JOptionPaneEx.showConfirmDialog(getOWLEditorKit().getWorkspace(), title, new JLabel(message),
+                JOptionPane.ERROR_MESSAGE, JOptionPane.OK_OPTION, null);
     }
 
     protected void showWarningDialog(String title, String message) {
-        UIHelper ui = new UIHelper(getOWLEditorKit());
-        ui.showDialog(title, new JLabel(message), JOptionPane.WARNING_MESSAGE);
+        JOptionPaneEx.showConfirmDialog(getOWLEditorKit().getWorkspace(), title, new JLabel(message),
+                JOptionPane.WARNING_MESSAGE, JOptionPane.OK_OPTION, null);
     }
 
     protected void showInfoDialog(String title, String message) {
-        UIHelper ui = new UIHelper(getOWLEditorKit());
-        ui.showDialog(title, new JLabel(message), JOptionPane.INFORMATION_MESSAGE);
+        JOptionPaneEx.showConfirmDialog(getOWLEditorKit().getWorkspace(), title, new JLabel(message),
+                JOptionPane.INFORMATION_MESSAGE, JOptionPane.OK_OPTION, null);
     }
 }

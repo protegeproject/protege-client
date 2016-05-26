@@ -10,6 +10,8 @@ import org.semanticweb.owlapi.model.OWLOntologyID;
 import java.util.Map;
 import java.util.TreeMap;
 
+import edu.stanford.protege.metaproject.api.ProjectId;
+
 public class ClientSession extends OWLEditorKitHook {
 
     public static String ID = "org.protege.editor.owl.client.ClientSession";
@@ -17,6 +19,8 @@ public class ClientSession extends OWLEditorKitHook {
     private Client activeClient;
 
     private Map<OWLOntologyID, VersionedOWLOntology> ontologyMap = new TreeMap<>();
+
+    private Map<OWLOntologyID, ProjectId> projectMap = new TreeMap<>();
 
     public static ClientSession getInstance(OWLEditorKit editorKit) {
         return (ClientSession) editorKit.get(ID);
@@ -36,25 +40,46 @@ public class ClientSession extends OWLEditorKitHook {
         return activeClient;
     }
 
-    public VersionedOWLOntology getVersionedOntology(OWLOntologyID ontologyId) {
-        return ontologyMap.get(ontologyId);
-    }
-
-    public void addVersionedOntology(VersionedOWLOntology versionOntology) {
-        OWLOntologyID ontologyId = versionOntology.getOntology().getOntologyID();
+    public void registerProject(ProjectId projectId, VersionedOWLOntology versionOntology) {
+        OWLOntologyID ontologyId = getEditorKit().getOWLModelManager().getActiveOntology().getOntologyID();
+        projectMap.put(ontologyId, projectId);
         ontologyMap.put(ontologyId, versionOntology);
     }
 
-    private void changeActiveClient() {
-        for (VersionedOWLOntology vont : ontologyMap.values()) {
-            getEditorKit().getOWLModelManager().removeOntology(vont.getOntology()); // TODO How to close ontology properly?
+    public void unregisterProject(ProjectId projectId) {
+        OWLOntologyID ontologyToRemove = null;
+        for (OWLOntologyID ontologyId : projectMap.keySet()) {
+            if (projectMap.get(ontologyId).equals(projectId)) {
+                ontologyToRemove = ontologyId;
+                break;
+            }
         }
+        if (ontologyToRemove != null) {
+            projectMap.remove(ontologyToRemove);
+            ontologyMap.remove(ontologyToRemove);
+        }
+    }
+
+    public ProjectId getActiveProject() {
+        OWLOntologyID ontologyId = getEditorKit().getOWLModelManager().getActiveOntology().getOntologyID();
+        return projectMap.get(ontologyId);
+    }
+
+    public VersionedOWLOntology getActiveVersionOntology() {
+        OWLOntologyID ontologyId = getEditorKit().getOWLModelManager().getActiveOntology().getOntologyID();
+        return ontologyMap.get(ontologyId);
+    }
+
+    private void changeActiveClient() {
+        // TODO How to close ontology properly?
+        projectMap.clear();
         ontologyMap.clear();
     }
 
     @Override
     public void dispose() throws Exception {
         activeClient = null;
+        projectMap.clear();
         ontologyMap.clear();
     }
 }

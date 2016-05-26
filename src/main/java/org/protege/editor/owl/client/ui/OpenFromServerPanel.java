@@ -55,7 +55,7 @@ public class OpenFromServerPanel extends JPanel {
 
     private static String currentPassword = null;
 
-    private ClientSession clientRegistry;
+    private ClientSession clientSession;
     private JButton cancelButton;
     private JButton connectButton;
     private JButton openButton;
@@ -67,8 +67,8 @@ public class OpenFromServerPanel extends JPanel {
     private OWLEditorKit editorKit;
     private ServerTableModel tableModel;
 
-    public OpenFromServerPanel(ClientSession clientRegistry) {
-        this.clientRegistry = clientRegistry;
+    public OpenFromServerPanel(ClientSession clientSession) {
+        this.clientSession = clientSession;
 
         setLayout(new GridBagLayout());
 
@@ -290,7 +290,7 @@ public class OpenFromServerPanel extends JPanel {
 
                 AuthToken authToken = authenticator.hasValidCredentials(userId, plainPassword);
                 Client client = new LocalClient(authToken, serverAddress, registryPort);
-                clientRegistry.setActiveClient(client);
+                clientSession.setActiveClient(client);
 
                 saveServerConnectionData();
                 loadProjectList(client);
@@ -315,10 +315,9 @@ public class OpenFromServerPanel extends JPanel {
             int row = serverContentTable.getSelectedRow();
             if (row != -1) {
                 ProjectId pid = tableModel.getValueAt(row);
-                Client client = clientRegistry.getActiveClient();
-                VersionedOWLOntology vont = client.openProject(pid);
-                clientRegistry.addVersionedOntology(vont);
+                VersionedOWLOntology vont = clientSession.getActiveClient().openProject(pid);
                 editorKit.getOWLModelManager().setActiveOntology(vont.getOntology());
+                clientSession.registerProject(pid, vont);
                 OpenFromServerPanel.this.setVisible(false);
             }
             else {

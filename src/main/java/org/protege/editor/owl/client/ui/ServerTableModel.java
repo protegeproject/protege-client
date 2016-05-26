@@ -9,6 +9,7 @@ import java.util.List;
 
 import javax.swing.table.AbstractTableModel;
 
+import edu.stanford.protege.metaproject.api.Name;
 import edu.stanford.protege.metaproject.api.Project;
 import edu.stanford.protege.metaproject.api.ProjectId;
 
@@ -52,10 +53,35 @@ public class ServerTableModel extends AbstractTableModel {
     @Override
     public Object getValueAt(int row, int col) {
         Project project = remoteProjects.get(row);
-        return project.getName().get();
+        return new ProjectItem(project.getId(), project.getName());
     }
 
     public ProjectId getValueAt(int row) {
-        return (ProjectId) getValueAt(row, -1);
+        ProjectItem projectItem = (ProjectItem) getValueAt(row, -1);
+        return projectItem.getId();
+    }
+
+    class ProjectItem {
+
+        private ProjectId projectId;
+        private Name projectName;
+
+        ProjectItem(ProjectId projectId, Name projectName) {
+            this.projectId = projectId;
+            this.projectName = projectName;
+        }
+
+        public ProjectId getId() {
+            return projectId;
+        }
+
+        public Name getName() {
+            return projectName;
+        }
+
+        @Override
+        public String toString() {
+            return projectName.get();
+        }
     }
 }

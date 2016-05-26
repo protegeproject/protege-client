@@ -67,8 +67,9 @@ public class OpenFromServerPanel extends JPanel {
     private OWLEditorKit editorKit;
     private ServerTableModel tableModel;
 
-    public OpenFromServerPanel(ClientSession clientSession) {
+    public OpenFromServerPanel(ClientSession clientSession, OWLEditorKit editorKit) {
         this.clientSession = clientSession;
+        this.editorKit = editorKit;
 
         setLayout(new GridBagLayout());
 

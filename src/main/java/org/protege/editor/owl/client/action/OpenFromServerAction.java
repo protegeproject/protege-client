@@ -38,7 +38,7 @@ public class OpenFromServerAction extends AbstractClientAction {
 
     private JDialog createDialog() {
         final JDialog dialog = new JDialog(null, "Open from Protege OWL Server", Dialog.ModalityType.MODELESS);
-        OpenFromServerPanel openDialogPanel = new OpenFromServerPanel(getClientRegistry());
+        OpenFromServerPanel openDialogPanel = new OpenFromServerPanel(getClientRegistry(), getOWLEditorKit());
         openDialogPanel.getInputMap(JComponent.WHEN_ANCESTOR_OF_FOCUSED_COMPONENT).put(KeyStroke.getKeyStroke(KeyEvent.VK_ESCAPE, 0), "CLOSE_DIALOG");
         openDialogPanel.getActionMap().put("CLOSE_DIALOG", new AbstractAction()
         {

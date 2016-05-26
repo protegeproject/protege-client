@@ -8,9 +8,6 @@ import org.protege.editor.owl.server.versioning.api.VersionedOWLOntology;
 import org.protege.editor.owl.ui.UIHelper;
 import org.protege.editor.owl.ui.action.ProtegeOWLAction;
 
-import org.semanticweb.owlapi.model.OWLOntology;
-import org.semanticweb.owlapi.model.OWLOntologyID;
-
 import java.util.Optional;
 import java.util.concurrent.Callable;
 import java.util.concurrent.Executors;
@@ -58,12 +55,10 @@ public abstract class AbstractClientAction extends ProtegeOWLAction {
     }
 
     protected Optional<VersionedOWLOntology> getOntologyResource() {
-        OWLOntology activeOntology = getOWLEditorKit().getModelManager().getActiveOntology();
-        OWLOntologyID activeId = activeOntology.getOntologyID();
-        return Optional.ofNullable(clientRegistry.getVersionedOntology(activeId));
+        return Optional.ofNullable(clientRegistry.getActiveVersionOntology());
     }
 
-    protected VersionedOWLOntology getActiveVersionedOntology() throws SynchronizationException {
+    protected VersionedOWLOntology getActiveVersionOntology() throws SynchronizationException {
         if (getOntologyResource().isPresent()) {
             return getOntologyResource().get();
         }
@@ -86,14 +81,19 @@ public abstract class AbstractClientAction extends ProtegeOWLAction {
         return executorService.schedule(task, delay, TimeUnit.SECONDS);
     }
 
-    protected void showSynchronizationErrorDialog(String message, Throwable t) {
+    protected void showErrorDialog(String title, String message, Throwable t) {
         ErrorLogPanel.showErrorDialog(t);
         UIHelper ui = new UIHelper(getOWLEditorKit());
-        ui.showDialog("Synchronization error", new JLabel(message), JOptionPane.ERROR_MESSAGE);
+        ui.showDialog(title, new JLabel(message), JOptionPane.ERROR_MESSAGE);
     }
 
-    protected void showSynchronizationInfoDialog(String message) {
+    protected void showWarningDialog(String title, String message) {
         UIHelper ui = new UIHelper(getOWLEditorKit());
-        ui.showDialog("Synchronization info", new JLabel(message), JOptionPane.INFORMATION_MESSAGE);
+        ui.showDialog(title, new JLabel(message), JOptionPane.WARNING_MESSAGE);
+    }
+
+    protected void showInfoDialog(String title, String message) {
+        UIHelper ui = new UIHelper(getOWLEditorKit());
+        ui.showDialog(title, new JLabel(message), JOptionPane.INFORMATION_MESSAGE);
     }
 }

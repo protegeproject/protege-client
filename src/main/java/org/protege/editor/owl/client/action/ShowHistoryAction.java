@@ -26,17 +26,17 @@ public class ShowHistoryAction extends AbstractClientAction {
     @Override
     public void actionPerformed(ActionEvent event) {
         try {
-            final VersionedOWLOntology vont = getActiveVersionedOntology();
+            final VersionedOWLOntology vont = getActiveVersionOntology();
             ChangeHistory remoteChanges = ChangeUtils.getAllChanges(vont);
             ChangeHistoryPanel changeHistoryPanel = new ChangeHistoryPanel(getOWLEditorKit(), remoteChanges);
             changeHistoryPanel.setLocationRelativeTo(getOWLWorkspace());
             changeHistoryPanel.setVisible(true);
         }
         catch (SynchronizationException e) {
-            showSynchronizationErrorDialog(e.getMessage(), e);
+            showErrorDialog("Synchronization error", e.getMessage(), e);
         }
         catch (ClientRequestException e) {
-            showSynchronizationErrorDialog("Show history failed: " + e.getMessage(), e);
+            showErrorDialog("Show history error", e.getMessage(), e);
         }
     }
 }

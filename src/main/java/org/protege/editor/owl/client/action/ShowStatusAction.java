@@ -6,10 +6,7 @@ import org.protege.editor.owl.client.util.ChangeUtils;
 import org.protege.editor.owl.client.util.ClientUtils;
 import org.protege.editor.owl.model.event.OWLModelManagerChangeEvent;
 import org.protege.editor.owl.model.event.OWLModelManagerListener;
-import org.protege.editor.owl.server.versioning.api.ChangeHistory;
 import org.protege.editor.owl.server.versioning.api.VersionedOWLOntology;
-
-import org.semanticweb.owlapi.model.OWLOntology;
 
 import java.awt.BorderLayout;
 import java.awt.GridLayout;
@@ -49,7 +46,7 @@ public class ShowStatusAction extends AbstractClientAction {
     @Override
     public void actionPerformed(ActionEvent arg0) {
         try {
-            final VersionedOWLOntology vont = getActiveVersionedOntology();
+            final VersionedOWLOntology vont = getActiveVersionOntology();
             
             JDialog dialog = new JDialog();
             dialog.setTitle("Client status");
@@ -70,13 +67,12 @@ public class ShowStatusAction extends AbstractClientAction {
             dialog.getContentPane().add(panel, BorderLayout.CENTER);
             dialog.pack();
             dialog.setVisible(true);
-
         }
         catch (SynchronizationException e) {
-            showSynchronizationErrorDialog(e.getMessage(), e);
+            showErrorDialog("Synchronization error", e.getMessage(), e);
         }
         catch (ClientRequestException e) {
-            showSynchronizationErrorDialog("Show change status failed: " + e.getMessage(), e);
+            showErrorDialog("Show status error", e.getMessage(), e);
         }
     }
 }

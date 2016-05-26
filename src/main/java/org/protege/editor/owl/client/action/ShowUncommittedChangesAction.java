@@ -37,7 +37,7 @@ public class ShowUncommittedChangesAction extends AbstractClientAction {
     @Override
     public void actionPerformed(ActionEvent arg0) {
         try {
-            final VersionedOWLOntology vont = getActiveVersionedOntology();
+            final VersionedOWLOntology vont = getActiveVersionOntology();
             List<OWLOntologyChange> uncommitted = ClientUtils.getUncommittedChanges(vont.getOntology(), vont.getChangeHistory());
             if (uncommitted.isEmpty()) {
                 Container container = SwingUtilities.getAncestorOfClass(Frame.class, getOWLWorkspace());
@@ -49,7 +49,7 @@ public class ShowUncommittedChangesAction extends AbstractClientAction {
             }
         }
         catch (SynchronizationException e) {
-            showSynchronizationErrorDialog(e.getMessage(), e);
+            showErrorDialog("Synchronization error", e.getMessage(), e);
         }
     }
 

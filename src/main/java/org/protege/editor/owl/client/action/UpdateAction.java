@@ -52,24 +52,23 @@ public class UpdateAction extends AbstractClientAction {
     @Override
     public void actionPerformed(ActionEvent event) {
         try {
-            final VersionedOWLOntology vont = getActiveVersionedOntology();
+            final VersionedOWLOntology vont = getActiveVersionOntology();
             Future<?> task = submit(new DoUpdate(vont));
             @SuppressWarnings("unchecked")
             List<OWLOntologyChange> incomingChanges = (List<OWLOntologyChange>) task.get();
             if (incomingChanges.isEmpty()) {
-                showSynchronizationInfoDialog("Local copy is already up-to-date");
+                showInfoDialog("Update", "Local copy is already up-to-date");
             }
             else {
                 String template = "Local copy is succesfully updated by %d changes";
-                showSynchronizationInfoDialog(String.format(template, incomingChanges.size()));
+                showInfoDialog("Update", String.format(template, incomingChanges.size()));
             }
         }
         catch (SynchronizationException e) {
-            showSynchronizationErrorDialog(e.getMessage(), e);
-            // TODO: Implement conflict resolution module
+            showErrorDialog("Synchronization error", e.getMessage(), e);
         }
         catch (InterruptedException | ExecutionException e) {
-            showSynchronizationErrorDialog("Internal error while updating changes", e);
+            showErrorDialog("Update error", "Internal error: " + e.getMessage(), e);
         }
     }
 
@@ -111,7 +110,7 @@ public class UpdateAction extends AbstractClientAction {
                 return localHead.sameAs(remoteHead);
             }
             catch (ClientRequestException e) {
-                showSynchronizationErrorDialog("Error while computing the remote head revision", e);
+                showErrorDialog("Update error", "Error while fetching the remote head revision", e);
                 return false;
             }
         }
@@ -127,7 +126,7 @@ public class UpdateAction extends AbstractClientAction {
                 changes = ChangeHistoryUtils.getOntologyChanges(remoteChangeHistory, ontology);
             }
             catch (ClientRequestException e) {
-                showSynchronizationErrorDialog("Error while fetching the latest changes from server", e);
+                showErrorDialog("Update error", "Error while fetching the latest changes from server", e);
             }
             return changes;
         }
@@ -178,7 +177,7 @@ public class UpdateAction extends AbstractClientAction {
                 adjustImports(changes, configuration);
             }
             catch (UnloadableImportException e) {
-                showSynchronizationErrorDialog("Unexpected error when adjusting import declarations", e);
+                showErrorDialog("Update error", "Unexpected error when adjusting import declarations", e);
             }
         }
         

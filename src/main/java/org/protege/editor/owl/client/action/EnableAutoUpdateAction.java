@@ -35,11 +35,11 @@ public class EnableAutoUpdateAction extends AbstractClientAction {
         killAutoUpdate();
         if (checkBoxMenuItem.isSelected()) {
             try {
-                final VersionedOWLOntology vont = getActiveVersionedOntology();
+                final VersionedOWLOntology vont = getActiveVersionOntology();
                 autoUpdate = submit(new AutoUpdate(vont), 15); // TODO Make the auto-update timing adjustable
             }
             catch (SynchronizationException e) {
-                showSynchronizationErrorDialog(e.getMessage(), e);
+                showErrorDialog("Synchronization error", e.getMessage(), e);
             }
         }
     }
@@ -72,7 +72,7 @@ public class EnableAutoUpdateAction extends AbstractClientAction {
 //            }
             catch (Throwable t) {
                 if (!lastRunSuccessful) {
-                    showSynchronizationErrorDialog("Autoupdate failed: " + t.getMessage(), t);
+                    showErrorDialog("Synchronization error", "Auto-update failed: " + t.getMessage(), t);
                 }
                 lastRunSuccessful = false;
             }

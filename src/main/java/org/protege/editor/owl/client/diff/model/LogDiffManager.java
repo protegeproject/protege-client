@@ -82,9 +82,7 @@ public class LogDiffManager implements Disposable {
     }
 
     public Optional<VersionedOWLOntology> getVersionedOntologyDocument() {
-        OWLOntology activeOntology = editorKit.getModelManager().getActiveOntology();
-        OWLOntologyID activeId = activeOntology.getOntologyID();
-        VersionedOWLOntology vont = ClientSession.getInstance(editorKit).getVersionedOntology(activeId);
+        VersionedOWLOntology vont = ClientSession.getInstance(editorKit).getActiveVersionOntology();
         return Optional.ofNullable(vont);
     }
 

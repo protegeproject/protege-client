@@ -3,7 +3,6 @@ package org.protege.editor.owl.client;
 import org.protege.editor.owl.client.api.Client;
 import org.protege.editor.owl.client.api.UserInfo;
 import org.protege.editor.owl.client.api.exception.ClientRequestException;
-import org.protege.editor.owl.client.util.ClientUtils;
 import org.protege.editor.owl.client.util.ServerUtils;
 import org.protege.editor.owl.server.api.CommitBundle;
 import org.protege.editor.owl.server.api.exception.AuthorizationException;
@@ -14,9 +13,6 @@ import org.protege.editor.owl.server.transport.rmi.RemoteServer;
 import org.protege.editor.owl.server.transport.rmi.RmiServer;
 import org.protege.editor.owl.server.versioning.api.ChangeHistory;
 import org.protege.editor.owl.server.versioning.api.ServerDocument;
-import org.protege.editor.owl.server.versioning.api.VersionedOWLOntology;
-
-import org.semanticweb.owlapi.model.OWLOntologyCreationException;
 
 import java.net.URI;
 import java.rmi.RemoteException;
@@ -223,17 +219,14 @@ public class LocalClient implements Client {
     }
 
     @Override
-    public VersionedOWLOntology openProject(ProjectId projectId) throws AuthorizationException, ClientRequestException, RemoteException {
+    public ServerDocument openProject(ProjectId projectId) throws AuthorizationException, ClientRequestException, RemoteException {
         try {
             connect();
             ServerDocument serverDocument = server.openProject(authToken, projectId);
-            return ClientUtils.buildVersionedOntology(serverDocument);
+            return serverDocument;
         }
         catch (ServerServiceException e) {
             throw new ClientRequestException(e.getMessage(), e);
-        }
-        catch (OWLOntologyCreationException e) {
-            throw new RuntimeException("Unable to load the ontology at the local client", e);
         }
         catch (OWLServerException e) {
             throw new ClientRequestException(e.getMessage(), e);

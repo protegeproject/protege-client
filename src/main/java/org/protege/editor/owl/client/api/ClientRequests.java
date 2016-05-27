@@ -6,7 +6,6 @@ import org.protege.editor.owl.server.api.exception.AuthorizationException;
 import org.protege.editor.owl.server.api.exception.OutOfSyncException;
 import org.protege.editor.owl.server.versioning.api.ChangeHistory;
 import org.protege.editor.owl.server.versioning.api.ServerDocument;
-import org.protege.editor.owl.server.versioning.api.VersionedOWLOntology;
 
 import java.net.URI;
 import java.rmi.RemoteException;
@@ -230,7 +229,7 @@ public interface ClientRequests {
      *             communication problems, failure during parameter or return
      *             value marshalling or unmarshalling, protocol errors.
      */
-    VersionedOWLOntology openProject(ProjectId projectId)
+    ServerDocument openProject(ProjectId projectId)
             throws AuthorizationException, ClientRequestException, RemoteException;
 
     /**

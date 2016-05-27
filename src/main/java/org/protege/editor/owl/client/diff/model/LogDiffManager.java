@@ -35,7 +35,7 @@ import java.util.stream.Collectors;
  * Stanford Center for Biomedical Informatics Research
  */
 public class LogDiffManager implements Disposable {
-    public static final String ALL_AUTHORS = "All Authors"; // new UserId("All Authors"); TODO: To reivew later
+    public static final String ALL_AUTHORS = "All Authors";
     private static DiffFactory diffFactory = new DiffFactoryImpl();
     private Set<LogDiffListener> listeners = new HashSet<>();
     private List<Change> selectedChanges = new ArrayList<>();

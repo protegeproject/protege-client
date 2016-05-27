@@ -10,8 +10,6 @@ import javax.swing.JLabel;
 import javax.swing.JList;
 import javax.swing.border.EmptyBorder;
 
-import edu.stanford.protege.metaproject.api.UserId;
-
 /**
  * @author Rafael Gonçalves <br>
  * Stanford Center for Biomedical Informatics Research

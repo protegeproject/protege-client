@@ -1,12 +1,10 @@
 package org.protege.editor.owl.client.action;
 
-import org.protege.editor.core.ui.error.ErrorLogPanel;
 import org.protege.editor.core.ui.util.JOptionPaneEx;
 import org.protege.editor.owl.client.ClientSession;
 import org.protege.editor.owl.client.api.Client;
 import org.protege.editor.owl.client.api.exception.SynchronizationException;
 import org.protege.editor.owl.server.versioning.api.VersionedOWLOntology;
-import org.protege.editor.owl.ui.UIHelper;
 import org.protege.editor.owl.ui.action.ProtegeOWLAction;
 
 import java.util.Optional;

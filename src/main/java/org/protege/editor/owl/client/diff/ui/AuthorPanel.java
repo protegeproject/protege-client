@@ -90,14 +90,14 @@ public class AuthorPanel extends JPanel implements Disposable {
             VersionedOWLOntology vont = diffManager.getVersionedOntologyDocument().get();
             ChangeHistory changes = vont.getChangeHistory();
             List<String> users = new ArrayList<>();
-            DocumentRevision rev = changes.getBaseRevision();
-            while (changes.getMetadataForRevision(rev) != null) {
+            DocumentRevision base = changes.getBaseRevision();
+            DocumentRevision head = changes.getHeadRevision();
+            for (DocumentRevision rev = base.next(); rev.behindOrSameAs(head); rev = rev.next()) {
                 RevisionMetadata metaData = changes.getMetadataForRevision(rev);
                 String user = metaData.getAuthorId();
                 if (!users.contains(user)) {
                     users.add(user);
                 }
-                rev = rev.next();
             }
 //            Collections.sort(users); TODO: To review later
             users.add(0, LogDiffManager.ALL_AUTHORS);

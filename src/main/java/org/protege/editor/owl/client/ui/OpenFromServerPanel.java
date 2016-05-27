@@ -8,11 +8,15 @@ import org.protege.editor.owl.client.ClientSession;
 import org.protege.editor.owl.client.LocalClient;
 import org.protege.editor.owl.client.api.Client;
 import org.protege.editor.owl.client.api.exception.OWLClientException;
+import org.protege.editor.owl.client.util.ClientUtils;
 import org.protege.editor.owl.client.util.ServerUtils;
 import org.protege.editor.owl.server.transport.rmi.RemoteLoginService;
 import org.protege.editor.owl.server.transport.rmi.RmiLoginService;
+import org.protege.editor.owl.server.versioning.api.ServerDocument;
 import org.protege.editor.owl.server.versioning.api.VersionedOWLOntology;
 import org.protege.editor.owl.ui.UIHelper;
+
+import org.semanticweb.owlapi.model.OWLOntologyManager;
 
 import java.awt.BorderLayout;
 import java.awt.Color;
@@ -56,6 +60,10 @@ public class OpenFromServerPanel extends JPanel {
     private static String currentPassword = null;
 
     private ClientSession clientSession;
+
+    private OWLEditorKit editorKit;
+    private OWLOntologyManager owlManager;
+
     private JButton cancelButton;
     private JButton connectButton;
     private JButton openButton;
@@ -64,12 +72,12 @@ public class OpenFromServerPanel extends JPanel {
     private JPasswordField password;
     private JTable serverContentTable;
     private JTextField username;
-    private OWLEditorKit editorKit;
     private ServerTableModel tableModel;
 
     public OpenFromServerPanel(ClientSession clientSession, OWLEditorKit editorKit) {
         this.clientSession = clientSession;
         this.editorKit = editorKit;
+        owlManager = editorKit.getOWLModelManager().getOWLOntologyManager();
 
         setLayout(new GridBagLayout());
 
@@ -225,9 +233,7 @@ public class OpenFromServerPanel extends JPanel {
         cancelButton.addActionListener(new ActionListener() {
             @Override
             public void actionPerformed(ActionEvent e) {
-                Window window = SwingUtilities.getWindowAncestor(OpenFromServerPanel.this);
-                window.setVisible(false);
-                window.dispose();
+                closeDialog();
             }
         });
         panel.add(cancelButton);
@@ -270,7 +276,6 @@ public class OpenFromServerPanel extends JPanel {
     }
 
     private class ConnectServerActionListener implements ActionListener {
-
         @Override
         public void actionPerformed(ActionEvent evt) {
             String serverAddress = (String) serverLocationsList.getSelectedItem();
@@ -316,10 +321,11 @@ public class OpenFromServerPanel extends JPanel {
             int row = serverContentTable.getSelectedRow();
             if (row != -1) {
                 ProjectId pid = tableModel.getValueAt(row);
-                VersionedOWLOntology vont = clientSession.getActiveClient().openProject(pid);
+                ServerDocument serverDocument = clientSession.getActiveClient().openProject(pid);
+                VersionedOWLOntology vont = ClientUtils.buildVersionedOntology(serverDocument, owlManager);
                 editorKit.getOWLModelManager().setActiveOntology(vont.getOntology());
                 clientSession.registerProject(pid, vont);
-                OpenFromServerPanel.this.setVisible(false);
+                closeDialog();
             }
             else {
                 JOptionPane.showMessageDialog(this, "No project was selected", "Error", JOptionPane.ERROR_MESSAGE);
@@ -328,5 +334,11 @@ public class OpenFromServerPanel extends JPanel {
         catch (Exception ex) {
             ErrorLogPanel.showErrorDialog(ex);
         }
+    }
+
+    private void closeDialog() {
+        Window window = SwingUtilities.getWindowAncestor(OpenFromServerPanel.this);
+        window.setVisible(false);
+        window.dispose();
     }
 }

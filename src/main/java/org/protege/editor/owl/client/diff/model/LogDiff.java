@@ -56,6 +56,7 @@ import com.google.common.collect.Multimap;
  */
 public class LogDiff {
     private static final Logger log = LoggerFactory.getLogger(LogDiff.class);
+    private static final DocumentRevision INITIAL_COMMIT_REVISION = DocumentRevision.create(1);
     private final LogDiffManager diffManager;
     private final OWLModelManager modelManager;
     private Map<ChangeId, Change> changeMap = new HashMap<>();
@@ -84,16 +85,16 @@ public class LogDiff {
             VersionedOWLOntology vont = diffManager.getVersionedOntologyDocument().get();
             OWLOntology ontology = modelManager.getActiveOntology();
             ChangeHistory changes = vont.getChangeHistory();
-            DocumentRevision rev = changes.getBaseRevision();
-            while (changes.getMetadataForRevision(rev) != null) {
-                RevisionMetadata metaData = changes.getMetadataForRevision(rev);
-                ChangeHistory hist = ChangeHistoryUtils.crop(changes, rev, 1);
+            DocumentRevision base = changes.getBaseRevision();
+            DocumentRevision head = changes.getHeadRevision();
+            for (DocumentRevision rev = base.next(); rev.behindOrSameAs(head); rev = rev.next()) {
+                ChangeHistory hist = ChangeHistoryUtils.crop(changes, rev.previous(), 1);
+                RevisionMetadata metaData = hist.getMetadataForRevision(rev);
                 findRevisionChanges(ChangeHistoryUtils.getOntologyChanges(hist, ontology), metaData);
-                if(!rev.equals(DocumentRevision.START_REVISION)) {
+                if(!rev.equals(INITIAL_COMMIT_REVISION)) {
                     findBaselineMatches(changeMap.values());
                     findConflits(changeMap.values());
                 }
-                rev = rev.next();
             }
         }
     }

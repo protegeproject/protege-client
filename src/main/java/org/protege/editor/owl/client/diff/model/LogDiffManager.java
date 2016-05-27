@@ -20,7 +20,6 @@ import org.semanticweb.owlapi.model.OWLAnnotationProperty;
 import org.semanticweb.owlapi.model.OWLAxiom;
 import org.semanticweb.owlapi.model.OWLOntology;
 import org.semanticweb.owlapi.model.OWLOntologyChange;
-import org.semanticweb.owlapi.model.OWLOntologyID;
 import org.semanticweb.owlapi.model.RemoveAxiom;
 
 import java.util.ArrayList;
@@ -36,7 +35,7 @@ import java.util.stream.Collectors;
  * Stanford Center for Biomedical Informatics Research
  */
 public class LogDiffManager implements Disposable {
-    public static final String ALL_AUTHORS = null; // new UserId("All Authors"); TODO: To reivew later
+    public static final String ALL_AUTHORS = "All Authors"; // new UserId("All Authors"); TODO: To reivew later
     private static DiffFactory diffFactory = new DiffFactoryImpl();
     private Set<LogDiffListener> listeners = new HashSet<>();
     private List<Change> selectedChanges = new ArrayList<>();

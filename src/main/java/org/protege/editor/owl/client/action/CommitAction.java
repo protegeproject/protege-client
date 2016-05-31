@@ -116,7 +116,12 @@ public class CommitAction extends AbstractClientAction {
             Future<?> task = submit(new DoCommit(revision, client, comment, localChanges));
             ChangeHistory acceptedChanges = (ChangeHistory) task.get();
             vont.update(acceptedChanges); // update the local ontology
+
+            /*
+             * Commit confirmation
+             */
             setEnabled(false); // disable the commit menu item once the changes got committed successfully
+            showInfoDialog("Commit", "Commit success (uploaded as revision" + acceptedChanges.getHeadRevision() + ")");
         }
         catch (ExecutionException e) {
             Throwable t = e.getCause();

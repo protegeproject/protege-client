@@ -98,6 +98,7 @@ public class CommitAction extends AbstractClientAction {
                 DocumentRevision revision = getActiveVersionOntology().getHeadRevision();
                 Client client = getClientRegistry().getActiveClient();
                 submit(new DoCommit(revision, client, comment, localChanges));
+                setEnabled(false); // disable the commit menu item once the changes got committed successfully
             }
         }
         catch (SynchronizationException e) {

@@ -82,7 +82,7 @@ public class HistoryTableModel extends AbstractTableModel {
     @Override
     public Object getValueAt(int rowIndex, int columnIndex) {
         Column col = Column.values()[columnIndex];
-        RevisionMetadata metaData = changes.getMetadataForRevision(changes.getBaseRevision().next(rowIndex));
-        return col.getValue(metaData);
+        RevisionMetadata metadata = changes.getMetadataForRevision(changes.getBaseRevision().next(rowIndex + 1));
+        return col.getValue(metadata);
     }
 }

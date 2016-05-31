@@ -50,8 +50,13 @@ public class ChangeUtils {
     }
 
     public static ChangeHistory getLatestChanges(VersionedOWLOntology versionedOntology) throws ClientRequestException {
+        /*
+         * The start revision index to get the latest changes from the server is equal to local HEAD revision
+         * minus 1 (head.previous())
+         */
         DocumentRevision headRevision = versionedOntology.getChangeHistory().getHeadRevision();
-        return getLatestChanges(versionedOntology.getServerDocument(), headRevision);
+        DocumentRevision startRevision = headRevision.previous();
+        return getLatestChanges(versionedOntology.getServerDocument(), startRevision);
     }
 
     public static ChangeHistory getLatestChanges(ServerDocument serverDocument, DocumentRevision startRevision)

@@ -93,7 +93,9 @@ public class UpdateAction extends AbstractClientAction {
                     performUpdate(remoteChanges);
                     incomingChanges = remoteChanges;
                 }
-                throw new SynchronizationException("Conflict was detected and unable to merge the remote changes");
+                else {
+                    throw new SynchronizationException("Conflict was detected and unable to merge changes from the server");
+                }
             }
             return incomingChanges;
         }

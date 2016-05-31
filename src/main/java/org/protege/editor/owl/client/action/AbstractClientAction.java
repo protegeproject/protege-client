@@ -82,16 +82,16 @@ public abstract class AbstractClientAction extends ProtegeOWLAction {
 
     protected void showErrorDialog(String title, String message, Throwable t) {
         JOptionPaneEx.showConfirmDialog(getOWLEditorKit().getWorkspace(), title, new JLabel(message),
-                JOptionPane.ERROR_MESSAGE, JOptionPane.OK_OPTION, null);
+                JOptionPane.ERROR_MESSAGE, JOptionPane.DEFAULT_OPTION, null);
     }
 
     protected void showWarningDialog(String title, String message) {
         JOptionPaneEx.showConfirmDialog(getOWLEditorKit().getWorkspace(), title, new JLabel(message),
-                JOptionPane.WARNING_MESSAGE, JOptionPane.OK_OPTION, null);
+                JOptionPane.WARNING_MESSAGE, JOptionPane.DEFAULT_OPTION, null);
     }
 
     protected void showInfoDialog(String title, String message) {
         JOptionPaneEx.showConfirmDialog(getOWLEditorKit().getWorkspace(), title, new JLabel(message),
-                JOptionPane.INFORMATION_MESSAGE, JOptionPane.OK_OPTION, null);
+                JOptionPane.INFORMATION_MESSAGE, JOptionPane.DEFAULT_OPTION, null);
     }
 }

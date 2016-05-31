@@ -83,7 +83,7 @@ public class CommitAction extends AbstractClientAction {
             while (true) {
                 JTextArea commentArea = new JTextArea(4, 45);
                 Object[] message = { "Commit message (do not leave blank):", commentArea };
-                int option = JOptionPane.showConfirmDialog(null, message, "Commit", JOptionPane.OK_CANCEL_OPTION);
+                int option = JOptionPane.showConfirmDialog(null, message, "Commit", JOptionPane.OK_CANCEL_OPTION, JOptionPane.QUESTION_MESSAGE);
                 if (option == JOptionPane.CANCEL_OPTION) {
                     break;
                 }

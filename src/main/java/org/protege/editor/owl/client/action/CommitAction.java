@@ -1,5 +1,14 @@
 package org.protege.editor.owl.client.action;
 
+import java.awt.event.ActionEvent;
+import java.rmi.RemoteException;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Optional;
+
+import javax.swing.JOptionPane;
+import javax.swing.JTextArea;
+
 import org.protege.editor.owl.client.api.Client;
 import org.protege.editor.owl.client.api.exception.ClientRequestException;
 import org.protege.editor.owl.client.api.exception.SynchronizationException;
@@ -11,49 +20,62 @@ import org.protege.editor.owl.server.api.exception.AuthorizationException;
 import org.protege.editor.owl.server.api.exception.OutOfSyncException;
 import org.protege.editor.owl.server.policy.CommitBundleImpl;
 import org.protege.editor.owl.server.versioning.Commit;
+import org.protege.editor.owl.server.versioning.api.ChangeHistory;
 import org.protege.editor.owl.server.versioning.api.DocumentRevision;
 import org.protege.editor.owl.server.versioning.api.VersionedOWLOntology;
-
+import org.semanticweb.owlapi.model.OWLException;
+import org.semanticweb.owlapi.model.OWLOntology;
 import org.semanticweb.owlapi.model.OWLOntologyChange;
-
-import java.awt.event.ActionEvent;
-import java.rmi.RemoteException;
-import java.util.List;
-
-import javax.swing.JOptionPane;
-import javax.swing.JTextArea;
+import org.semanticweb.owlapi.model.OWLOntologyChangeListener;
 
 public class CommitAction extends AbstractClientAction {
 
     private static final long serialVersionUID = 4601012273632698091L;
 
-    private OWLModelManagerListener checkVersionOntology = new OWLModelManagerListener() {
+    private List<OWLOntologyChange> localChanges = new ArrayList<>();
+
+    private OWLOntologyChangeListener checkUncommittedChanges = new OWLOntologyChangeListener() {
+        @Override
+        public void ontologiesChanged(List<? extends OWLOntologyChange> changes) throws OWLException {
+            optionEnabled();
+        }
+    };
+
+    private OWLModelManagerListener checkOutstandingChanges = new OWLModelManagerListener() {
         @Override
         public void handleChange(OWLModelManagerChangeEvent event) {
-            updateEnabled();
+            optionEnabled();
         }
     };
 
     @Override
     public void initialise() throws Exception {
         super.initialise();
-        getOWLModelManager().addListener(checkVersionOntology);
-    }
-
-    private void updateEnabled() {
-        setEnabled(getOntologyResource().isPresent());
+        setEnabled(false);
+        getOWLModelManager().addOntologyChangeListener(checkUncommittedChanges);
+        getOWLModelManager().addListener(checkOutstandingChanges);
     }
 
     @Override
     public void dispose() throws Exception {
         super.dispose();
-        getOWLModelManager().removeListener(checkVersionOntology);
+        getOWLModelManager().removeOntologyChangeListener(checkUncommittedChanges);
+        getOWLModelManager().removeListener(checkOutstandingChanges);
+    }
+
+    private void optionEnabled() {
+        OWLOntology activeOntology = getOWLEditorKit().getOWLModelManager().getActiveOntology();
+        Optional<VersionedOWLOntology> vont = getOntologyResource();
+        if (vont.isPresent()) {
+            ChangeHistory baseline = vont.get().getChangeHistory();
+            localChanges = ClientUtils.getUncommittedChanges(activeOntology, baseline);
+            setEnabled(!localChanges.isEmpty());
+        }
     }
 
     @Override
     public void actionPerformed(ActionEvent arg0) {
         try {
-            VersionedOWLOntology versionOntology = getActiveVersionOntology();
             String comment = "";
             while (true) {
                 JTextArea commentArea = new JTextArea(4, 45);
@@ -69,32 +91,39 @@ public class CommitAction extends AbstractClientAction {
                     }
                 }
             }
-            Client activeClient = getClientRegistry().getActiveClient();
-            submit(new DoCommit(versionOntology, activeClient, comment));
+            /*
+             * Submit commit only if the comment is not empty
+             */
+            if (!comment.isEmpty()) {
+                DocumentRevision revision = getActiveVersionOntology().getHeadRevision();
+                Client client = getClientRegistry().getActiveClient();
+                submit(new DoCommit(revision, client, comment, localChanges));
+            }
         }
         catch (SynchronizationException e) {
-            showErrorDialog("Synchronization error", e.getMessage(), e);
+            showErrorDialog("Commit error", "Unable to commit: " + e.getMessage(), e);
         }
     }
 
     private class DoCommit implements Runnable {
 
-        private VersionedOWLOntology vont;
+        private DocumentRevision commitBaseRevision;
         private Client author;
         private String comment;
+        private List<OWLOntologyChange> changes;
 
-        public DoCommit(VersionedOWLOntology vont, Client author, String comment) {
-            this.vont = vont;
+        public DoCommit(DocumentRevision commitBaseRevision, Client author, String comment,
+                List<OWLOntologyChange> changes) {
+            this.commitBaseRevision = commitBaseRevision;
             this.author = author;
             this.comment = comment;
+            this.changes = changes;
         }
 
         @Override
         public void run() {
             try {
-                List<OWLOntologyChange> localChanges = ClientUtils.getUncommittedChanges(vont.getOntology(), vont.getChangeHistory());
-                Commit commit = ClientUtils.createCommit(author, comment, localChanges);
-                DocumentRevision commitBaseRevision = vont.getHeadRevision();
+                Commit commit = ClientUtils.createCommit(author, comment, changes);
                 CommitBundle commitBundle = new CommitBundleImpl(commitBaseRevision, commit);
                 author.commit(getClientRegistry().getActiveProject(), commitBundle);
             }

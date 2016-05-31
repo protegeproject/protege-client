@@ -5,6 +5,9 @@ import java.rmi.RemoteException;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
+import java.util.concurrent.Callable;
+import java.util.concurrent.ExecutionException;
+import java.util.concurrent.Future;
 
 import javax.swing.JOptionPane;
 import javax.swing.JTextArea;
@@ -95,18 +98,47 @@ public class CommitAction extends AbstractClientAction {
              * Submit commit only if the comment is not empty
              */
             if (!comment.isEmpty()) {
-                DocumentRevision revision = getActiveVersionOntology().getHeadRevision();
-                Client client = getClientRegistry().getActiveClient();
-                submit(new DoCommit(revision, client, comment, localChanges));
-                setEnabled(false); // disable the commit menu item once the changes got committed successfully
+                doCommit(getClient(), localChanges, comment);
             }
         }
         catch (SynchronizationException e) {
-            showErrorDialog("Commit error", "Unable to commit: " + e.getMessage(), e);
+            showErrorDialog("Synchronization error", e.getMessage(), e);
+        }
+        catch (InterruptedException e) {
+            showErrorDialog("Commit error", "Internal error: " + e.getMessage(), e);
         }
     }
 
-    private class DoCommit implements Runnable {
+    private void doCommit(Client client, List<OWLOntologyChange> localChanges, String comment) throws SynchronizationException, InterruptedException {
+        try {
+            VersionedOWLOntology vont = getActiveVersionOntology();
+            DocumentRevision revision = vont.getHeadRevision();
+            Future<?> task = submit(new DoCommit(revision, client, comment, localChanges));
+            ChangeHistory acceptedChanges = (ChangeHistory) task.get();
+            vont.update(acceptedChanges); // update the local ontology
+            setEnabled(false); // disable the commit menu item once the changes got committed successfully
+        }
+        catch (ExecutionException e) {
+            Throwable t = e.getCause();
+            if (t instanceof AuthorizationException) {
+                showErrorDialog("Authorization error", t.getMessage(), t);
+            }
+            else if (t instanceof OutOfSyncException) {
+                showErrorDialog("Synchronization error", t.getMessage(), t);
+            }
+            else if (t instanceof ClientRequestException) {
+                showErrorDialog("Commit error", t.getMessage(), t);
+            }
+            else if (t instanceof RemoteException) {
+                showErrorDialog("Network error", t.getMessage(), t);
+            }
+            else {
+                showErrorDialog("Commit error", t.getMessage(), t);
+            }
+        }
+    }
+
+    private class DoCommit implements Callable<ChangeHistory> {
 
         private DocumentRevision commitBaseRevision;
         private Client author;
@@ -122,24 +154,11 @@ public class CommitAction extends AbstractClientAction {
         }
 
         @Override
-        public void run() {
-            try {
-                Commit commit = ClientUtils.createCommit(author, comment, changes);
-                CommitBundle commitBundle = new CommitBundleImpl(commitBaseRevision, commit);
-                author.commit(getClientRegistry().getActiveProject(), commitBundle);
-            }
-            catch (AuthorizationException e) {
-                showErrorDialog("Authorization error", e.getMessage(), e);
-            }
-            catch (OutOfSyncException e) {
-                showErrorDialog("Synchronization error", e.getMessage(), e);
-            }
-            catch (ClientRequestException e) {
-                showErrorDialog("Commit error", e.getMessage(), e);
-            }
-            catch (RemoteException e) {
-                showErrorDialog("Network error", e.getMessage(), e);
-            }
+        public ChangeHistory call() throws AuthorizationException, OutOfSyncException,
+                ClientRequestException, RemoteException {
+            Commit commit = ClientUtils.createCommit(author, comment, changes);
+            CommitBundle commitBundle = new CommitBundleImpl(commitBaseRevision, commit);
+            return author.commit(getClientRegistry().getActiveProject(), commitBundle);
         }
     }
 }

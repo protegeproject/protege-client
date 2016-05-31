@@ -1,14 +1,5 @@
 package org.protege.editor.owl.client.action;
 
-import org.protege.editor.owl.client.api.exception.SynchronizationException;
-import org.protege.editor.owl.client.ui.ChangeListTableModel;
-import org.protege.editor.owl.client.util.ClientUtils;
-import org.protege.editor.owl.server.versioning.api.VersionedOWLOntology;
-import org.protege.editor.owl.ui.renderer.OWLCellRenderer;
-
-import org.semanticweb.owlapi.model.OWLObject;
-import org.semanticweb.owlapi.model.OWLOntologyChange;
-
 import java.awt.Container;
 import java.awt.Frame;
 import java.awt.event.ActionEvent;
@@ -19,6 +10,16 @@ import javax.swing.JOptionPane;
 import javax.swing.JScrollPane;
 import javax.swing.JTable;
 import javax.swing.SwingUtilities;
+
+import org.protege.editor.owl.client.api.exception.SynchronizationException;
+import org.protege.editor.owl.client.ui.ChangeListTableModel;
+import org.protege.editor.owl.client.util.ClientUtils;
+import org.protege.editor.owl.server.versioning.api.ChangeHistory;
+import org.protege.editor.owl.server.versioning.api.VersionedOWLOntology;
+import org.protege.editor.owl.ui.renderer.OWLCellRenderer;
+import org.semanticweb.owlapi.model.OWLObject;
+import org.semanticweb.owlapi.model.OWLOntology;
+import org.semanticweb.owlapi.model.OWLOntologyChange;
 
 public class ShowUncommittedChangesAction extends AbstractClientAction {
 
@@ -36,16 +37,18 @@ public class ShowUncommittedChangesAction extends AbstractClientAction {
 
     @Override
     public void actionPerformed(ActionEvent arg0) {
-        try {
-            final VersionedOWLOntology vont = getActiveVersionOntology();
-            List<OWLOntologyChange> uncommitted = ClientUtils.getUncommittedChanges(vont.getOntology(), vont.getChangeHistory());
-            if (uncommitted.isEmpty()) {
+        try { 
+            OWLOntology activeOntology = getOWLEditorKit().getOWLModelManager().getActiveOntology();
+            VersionedOWLOntology vont = getActiveVersionOntology();
+            ChangeHistory baseline = vont.getChangeHistory();
+            List<OWLOntologyChange> localChanges = ClientUtils.getUncommittedChanges(activeOntology, baseline);
+            if (localChanges.isEmpty()) {
                 Container container = SwingUtilities.getAncestorOfClass(Frame.class, getOWLWorkspace());
                 JOptionPane.showMessageDialog(container, "No uncommitted changes");
             }
             else {
                 saveLocalHistoryInBackground(vont);
-                displayUncommittedChanges(uncommitted);
+                displayUncommittedChanges(localChanges);
             }
         }
         catch (SynchronizationException e) {

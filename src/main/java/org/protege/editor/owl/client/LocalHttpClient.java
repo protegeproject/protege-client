@@ -25,6 +25,7 @@ import org.protege.editor.owl.server.http.messages.HttpAuthResponse;
 import org.protege.editor.owl.server.http.messages.LoginCreds;
 import org.protege.editor.owl.server.versioning.VersionedOWLOntologyImpl;
 import org.protege.editor.owl.server.versioning.api.ChangeHistory;
+import org.protege.editor.owl.server.versioning.api.DocumentRevision;
 import org.protege.editor.owl.server.versioning.api.ServerDocument;
 import org.protege.editor.owl.server.versioning.api.VersionedOWLOntology;
 import org.semanticweb.owlapi.model.OWLOntology;
@@ -647,6 +648,46 @@ public class LocalHttpClient implements Client {
 			ObjectOutputStream os = new ObjectOutputStream(b);
 
 			os.writeObject(sdoc.getHistoryFile());
+			RequestBody req = RequestBody.create(MediaType.parse("application"), b.toByteArray());
+
+			Response response = post(url, req, true);
+
+			ObjectInputStream ois = new ObjectInputStream(response.body().byteStream());
+
+			history = (ChangeHistory) ois.readObject();
+
+
+		} catch (Exception e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}  
+		return history;
+
+	}
+	
+	public DocumentRevision getRemoteHeadRevision(VersionedOWLOntology vont) {		
+		return getLatestChanges(vont).getHeadRevision();
+	}
+	
+	public ChangeHistory getLatestChanges(VersionedOWLOntology vont) {
+		DocumentRevision head = vont.getChangeHistory().getHeadRevision();
+		DocumentRevision start = head.previous();
+		return getLatestChanges(vont.getServerDocument(), start);
+	}
+	
+	public ChangeHistory getLatestChanges(ServerDocument sdoc, DocumentRevision start) {
+		ChangeHistory history = null;
+		try {
+
+
+			// TODO: get all changes
+			String url = HTTPServer.ALL_CHANGES;
+			ByteArrayOutputStream b = new ByteArrayOutputStream();
+			ObjectOutputStream os = new ObjectOutputStream(b);
+
+			os.writeObject(sdoc.getHistoryFile());
+			
+			os.writeObject(start);
 			RequestBody req = RequestBody.create(MediaType.parse("application"), b.toByteArray());
 
 			Response response = post(url, req, true);

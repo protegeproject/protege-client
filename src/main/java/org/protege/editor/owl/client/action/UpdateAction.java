@@ -14,9 +14,8 @@ import java.util.concurrent.Future;
 
 import org.protege.editor.owl.client.ClientSessionChangeEvent;
 import org.protege.editor.owl.client.ClientSessionListener;
-import org.protege.editor.owl.client.api.exception.ClientRequestException;
+import org.protege.editor.owl.client.LocalHttpClient;
 import org.protege.editor.owl.client.api.exception.SynchronizationException;
-import org.protege.editor.owl.client.util.ChangeUtils;
 import org.protege.editor.owl.client.util.ClientUtils;
 import org.protege.editor.owl.server.versioning.ChangeHistoryUtils;
 import org.protege.editor.owl.server.versioning.CollectingChangeVisitor;
@@ -115,11 +114,11 @@ public class UpdateAction extends AbstractClientAction implements ClientSessionL
 
         private boolean isUpdated() {
             try {
-                DocumentRevision remoteHead = ChangeUtils.getRemoteHeadRevision(vont);
+                DocumentRevision remoteHead = LocalHttpClient.current_user().getRemoteHeadRevision(vont);
                 DocumentRevision localHead = vont.getHeadRevision();
                 return localHead.sameAs(remoteHead);
             }
-            catch (ClientRequestException e) {
+            catch (Exception e) {
                 showErrorDialog("Update error", "Error while fetching the remote head revision", e);
                 return false;
             }
@@ -132,10 +131,10 @@ public class UpdateAction extends AbstractClientAction implements ClientSessionL
         private List<OWLOntologyChange> getLatestChangesFromServer() {
             List<OWLOntologyChange> changes = new ArrayList<>();
             try {
-                ChangeHistory remoteChangeHistory = ChangeUtils.getLatestChanges(vont);
+                ChangeHistory remoteChangeHistory = LocalHttpClient.current_user().getLatestChanges(vont);
                 changes = ChangeHistoryUtils.getOntologyChanges(remoteChangeHistory, ontology);
             }
-            catch (ClientRequestException e) {
+            catch (Exception e) {
                 showErrorDialog("Update error", "Error while fetching the latest changes from server", e);
             }
             return changes;

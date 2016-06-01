@@ -1,5 +1,6 @@
 package org.protege.editor.owl.client.action;
 
+
 import java.awt.BorderLayout;
 import java.awt.GridLayout;
 import java.awt.event.ActionEvent;
@@ -11,8 +12,8 @@ import javax.swing.JPanel;
 
 import org.protege.editor.owl.client.ClientSessionChangeEvent;
 import org.protege.editor.owl.client.ClientSessionListener;
+import org.protege.editor.owl.client.LocalHttpClient;
 import org.protege.editor.owl.client.api.exception.ClientRequestException;
-import org.protege.editor.owl.client.util.ChangeUtils;
 import org.protege.editor.owl.client.util.ClientUtils;
 import org.protege.editor.owl.server.versioning.api.VersionedOWLOntology;
 
@@ -55,7 +56,7 @@ public class ShowStatusAction extends AbstractClientAction implements ClientSess
             panel.add(new JLabel(vont.getHeadRevision().toString()));
 
             panel.add(new JLabel("Remote/HEAD Revision:"));
-            panel.add(new JLabel(ChangeUtils.getRemoteHeadRevision(vont).toString()));
+            panel.add(new JLabel(LocalHttpClient.current_user().getRemoteHeadRevision(vont).toString()));
 
             panel.add(new JLabel("#Uncommitted Changes:"));
             panel.add(new JLabel(ClientUtils.getUncommittedChanges(vont.getOntology(), vont.getChangeHistory()).size()+""));
@@ -65,7 +66,8 @@ public class ShowStatusAction extends AbstractClientAction implements ClientSess
             dialog.pack();
             dialog.setVisible(true);
         }
-        catch (ClientRequestException e) {
+        catch (Exception e) {
+        	//TODO: LocalHttpClient needs to throw ClientRequestException here
             showErrorDialog("Show status error", e.getMessage(), e);
         }
     }

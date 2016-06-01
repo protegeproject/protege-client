@@ -7,6 +7,7 @@ import java.util.List;
 import edu.stanford.protege.metaproject.api.AuthToken;
 import edu.stanford.protege.metaproject.api.Operation;
 import edu.stanford.protege.metaproject.api.Project;
+import edu.stanford.protege.metaproject.api.ProjectId;
 import edu.stanford.protege.metaproject.api.Role;
 
 /**
@@ -18,6 +19,11 @@ public interface Client extends ClientRequests, PolicyMediator {
     AuthToken getAuthToken();
 
     UserInfo getUserInfo();
+
+    /**
+     * Sets the active project that this client is currently working on
+     */
+    void setActiveProject(ProjectId projectId);
 
     /**
      * Gets a list of project owned by the user of this client

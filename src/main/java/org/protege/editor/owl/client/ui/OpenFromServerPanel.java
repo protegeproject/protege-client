@@ -209,7 +209,8 @@ public class OpenFromServerPanel extends JPanel {
             @Override
             public void mouseClicked(MouseEvent e) {
                 if (e.getClickCount() == 2) {
-                    openOntologyDocument();
+                    int row = serverContentTable.getSelectedRow();
+                    openOntologyDocument(row);
                 }
             }
         });
@@ -311,18 +312,18 @@ public class OpenFromServerPanel extends JPanel {
     private class OpenActionListener implements ActionListener {
         @Override
         public void actionPerformed(ActionEvent e) {
-            openOntologyDocument();
+            int row = serverContentTable.getSelectedRow();
+            openOntologyDocument(row);
         }
     }
 
-    protected void openOntologyDocument() {
+    protected void openOntologyDocument(int row) {
+        ProjectId pid = tableModel.getValueAt(row);
         try {
-            int row = serverContentTable.getSelectedRow();
-            ProjectId pid = tableModel.getValueAt(row);
             ServerDocument serverDocument = clientSession.getActiveClient().openProject(pid);
             VersionedOWLOntology vont = ClientUtils.buildVersionedOntology(serverDocument, owlManager);
-            editorKit.getOWLModelManager().setActiveOntology(vont.getOntology());
             clientSession.registerProject(pid, vont);
+            editorKit.getOWLModelManager().setActiveOntology(vont.getOntology());
             closeDialog();
         }
         catch (Exception e) {

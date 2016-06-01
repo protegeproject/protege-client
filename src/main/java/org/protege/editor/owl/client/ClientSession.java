@@ -3,6 +3,8 @@ package org.protege.editor.owl.client;
 import org.protege.editor.owl.OWLEditorKit;
 import org.protege.editor.owl.client.api.Client;
 import org.protege.editor.owl.model.OWLEditorKitHook;
+import org.protege.editor.owl.model.event.OWLModelManagerChangeEvent;
+import org.protege.editor.owl.model.event.OWLModelManagerListener;
 import org.protege.editor.owl.server.versioning.api.VersionedOWLOntology;
 
 import org.semanticweb.owlapi.model.OWLOntologyID;
@@ -22,13 +24,22 @@ public class ClientSession extends OWLEditorKitHook {
 
     private Map<OWLOntologyID, ProjectId> projectMap = new TreeMap<>();
 
+    private OWLModelManagerListener changeActiveProject = new OWLModelManagerListener() {
+        @Override
+        public void handleChange(OWLModelManagerChangeEvent event) {
+            OWLOntologyID ontologyId = event.getSource().getActiveOntology().getOntologyID();
+            ProjectId projectId = projectMap.get(ontologyId);
+            activeClient.setActiveProject(projectId);
+        }
+    };
+
     public static ClientSession getInstance(OWLEditorKit editorKit) {
         return (ClientSession) editorKit.get(ID);
     }
 
     @Override
     public void initialise() throws Exception {
-        // NO-OP
+        getEditorKit().getOWLModelManager().addListener(changeActiveProject);
     }
 
     public void setActiveClient(Client client) {
@@ -78,6 +89,7 @@ public class ClientSession extends OWLEditorKitHook {
 
     @Override
     public void dispose() throws Exception {
+        getEditorKit().getOWLModelManager().removeListener(changeActiveProject);
         activeClient = null;
         projectMap.clear();
         ontologyMap.clear();

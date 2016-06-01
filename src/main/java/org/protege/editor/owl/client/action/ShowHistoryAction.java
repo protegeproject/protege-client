@@ -39,7 +39,7 @@ public class ShowHistoryAction extends AbstractClientAction {
             dialog.setVisible(true);
         }
         catch (ClientRequestException | SynchronizationException e) {
-            showErrorDialog("Show history error", "Unable to show change history: " + e.getMessage(), e);
+            showErrorDialog("Unable to show change history", e.getMessage(), e);
         }
     }
 

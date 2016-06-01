@@ -1,24 +1,23 @@
 package org.protege.editor.owl.client;
 
+import java.net.URI;
+import java.rmi.RemoteException;
+import java.util.List;
+import java.util.Map;
+import java.util.Optional;
+
 import org.protege.editor.owl.client.api.Client;
 import org.protege.editor.owl.client.api.UserInfo;
 import org.protege.editor.owl.client.api.exception.ClientRequestException;
 import org.protege.editor.owl.client.util.ServerUtils;
 import org.protege.editor.owl.server.api.CommitBundle;
 import org.protege.editor.owl.server.api.exception.AuthorizationException;
-import org.protege.editor.owl.server.api.exception.OWLServerException;
 import org.protege.editor.owl.server.api.exception.OutOfSyncException;
 import org.protege.editor.owl.server.api.exception.ServerServiceException;
 import org.protege.editor.owl.server.transport.rmi.RemoteServer;
 import org.protege.editor.owl.server.transport.rmi.RmiServer;
 import org.protege.editor.owl.server.versioning.api.ChangeHistory;
 import org.protege.editor.owl.server.versioning.api.ServerDocument;
-
-import java.net.URI;
-import java.rmi.RemoteException;
-import java.util.List;
-import java.util.Map;
-import java.util.Optional;
 
 import edu.stanford.protege.metaproject.api.AuthToken;
 import edu.stanford.protege.metaproject.api.Description;
@@ -126,7 +125,7 @@ public class LocalClient implements Client {
             server.createUser(authToken, newUser, passwordValue);
         }
         catch (ServerServiceException e) {
-            throw new ClientRequestException(e.getMessage(), e);
+            throw new ClientRequestException(e.getMessage(), e.getCause());
         }
     }
 
@@ -137,7 +136,7 @@ public class LocalClient implements Client {
             server.deleteUser(authToken, userId);
         }
         catch (ServerServiceException e) {
-            throw new ClientRequestException(e.getMessage(), e);
+            throw new ClientRequestException(e.getMessage(), e.getCause());
         }
     }
 
@@ -148,7 +147,7 @@ public class LocalClient implements Client {
             server.updateUser(authToken, userId, updatedUser);
         }
         catch (ServerServiceException e) {
-            throw new ClientRequestException(e.getMessage(), e);
+            throw new ClientRequestException(e.getMessage(), e.getCause());
         }
     }
 
@@ -165,7 +164,7 @@ public class LocalClient implements Client {
         catch (ServerServiceException e) {
             Throwable t = e.getCause();
             if (t instanceof IdAlreadyInUseException) {
-                throw new ClientRequestException("Project ID is already used. Please use different name.");
+                throw new ClientRequestException("Project ID is already used. Please use different name.", t);
             }
             else {
                 try {
@@ -203,7 +202,7 @@ public class LocalClient implements Client {
             server.deleteProject(authToken, projectId, includeFile);
         }
         catch (ServerServiceException e) {
-            throw new ClientRequestException(e.getMessage(), e);
+            throw new ClientRequestException(e.getMessage(), e.getCause());
         }
     }
 
@@ -214,7 +213,7 @@ public class LocalClient implements Client {
             server.updateProject(authToken, projectId, updatedProject);
         }
         catch (ServerServiceException e) {
-            throw new ClientRequestException(e.getMessage(), e);
+            throw new ClientRequestException(e.getMessage(), e.getCause());
         }
     }
 
@@ -226,10 +225,7 @@ public class LocalClient implements Client {
             return serverDocument;
         }
         catch (ServerServiceException e) {
-            throw new ClientRequestException(e.getMessage(), e);
-        }
-        catch (OWLServerException e) {
-            throw new ClientRequestException(e.getMessage(), e);
+            throw new ClientRequestException(e.getMessage(), e.getCause());
         }
     }
 
@@ -240,7 +236,7 @@ public class LocalClient implements Client {
             server.createRole(authToken, newRole);
         }
         catch (ServerServiceException e) {
-            throw new ClientRequestException(e.getMessage(), e);
+            throw new ClientRequestException(e.getMessage(), e.getCause());
         }
     }
 
@@ -251,7 +247,7 @@ public class LocalClient implements Client {
             server.deleteRole(authToken, roleId);
         }
         catch (ServerServiceException e) {
-            throw new ClientRequestException(e.getMessage(), e);
+            throw new ClientRequestException(e.getMessage(), e.getCause());
         }
     }
 
@@ -262,7 +258,7 @@ public class LocalClient implements Client {
             server.updateRole(authToken, roleId, updatedRole);
         }
         catch (ServerServiceException e) {
-            throw new ClientRequestException(e.getMessage(), e);
+            throw new ClientRequestException(e.getMessage(), e.getCause());
         }
     }
 
@@ -273,7 +269,7 @@ public class LocalClient implements Client {
             server.createOperation(authToken, operation);
         }
         catch (ServerServiceException e) {
-            throw new ClientRequestException(e.getMessage(), e);
+            throw new ClientRequestException(e.getMessage(), e.getCause());
         }
     }
 
@@ -284,7 +280,7 @@ public class LocalClient implements Client {
             server.deleteOperation(authToken, operationId);
         }
         catch (ServerServiceException e) {
-            throw new ClientRequestException(e.getMessage(), e);
+            throw new ClientRequestException(e.getMessage(), e.getCause());
         }
     }
 
@@ -295,7 +291,7 @@ public class LocalClient implements Client {
             server.updateOperation(authToken, operationId, updatedOperation);
         }
         catch (ServerServiceException e) {
-            throw new ClientRequestException(e.getMessage(), e);
+            throw new ClientRequestException(e.getMessage(), e.getCause());
         }
     }
 
@@ -306,7 +302,7 @@ public class LocalClient implements Client {
             server.assignRole(authToken, userId, projectId, roleId);
         }
         catch (ServerServiceException e) {
-            throw new ClientRequestException(e.getMessage(), e);
+            throw new ClientRequestException(e.getMessage(), e.getCause());
         }
     }
 
@@ -317,7 +313,7 @@ public class LocalClient implements Client {
             server.retractRole(authToken, userId, projectId, roleId);
         }
         catch (ServerServiceException e) {
-            throw new ClientRequestException(e.getMessage(), e);
+            throw new ClientRequestException(e.getMessage(), e.getCause());
         }
     }
 
@@ -328,7 +324,7 @@ public class LocalClient implements Client {
             return server.getHost(authToken);
         }
         catch (ServerServiceException e) {
-            throw new ClientRequestException(e.getMessage(), e);
+            throw new ClientRequestException(e.getMessage());
         }
     }
 
@@ -339,7 +335,7 @@ public class LocalClient implements Client {
             server.setHostAddress(authToken, hostAddress);
         }
         catch (ServerServiceException e) {
-            throw new ClientRequestException(e.getMessage(), e);
+            throw new ClientRequestException(e.getMessage());
         }
     }
 
@@ -350,7 +346,7 @@ public class LocalClient implements Client {
             server.setSecondaryPort(authToken, portNumber);
         }
         catch (ServerServiceException e) {
-            throw new ClientRequestException(e.getMessage(), e);
+            throw new ClientRequestException(e.getMessage());
         }
     }
 
@@ -361,7 +357,7 @@ public class LocalClient implements Client {
             return server.getRootDirectory(authToken);
         }
         catch (ServerServiceException e) {
-            throw new ClientRequestException(e.getMessage(), e);
+            throw new ClientRequestException(e.getMessage());
         }
     }
 
@@ -372,7 +368,7 @@ public class LocalClient implements Client {
             server.setRootDirectory(authToken, rootDirectory);
         }
         catch (ServerServiceException e) {
-            throw new ClientRequestException(e.getMessage(), e);
+            throw new ClientRequestException(e.getMessage());
         }
     }
 
@@ -383,7 +379,7 @@ public class LocalClient implements Client {
             return server.getServerProperties(authToken);
         }
         catch (ServerServiceException e) {
-            throw new ClientRequestException(e.getMessage(), e);
+            throw new ClientRequestException(e.getMessage());
         }
     }
 
@@ -394,7 +390,7 @@ public class LocalClient implements Client {
             server.setServerProperty(authToken, property, value);
         }
         catch (ServerServiceException e) {
-            throw new ClientRequestException(e.getMessage(), e);
+            throw new ClientRequestException(e.getMessage());
         }
     }
 
@@ -405,7 +401,7 @@ public class LocalClient implements Client {
             server.unsetServerProperty(authToken, property);
         }
         catch (ServerServiceException e) {
-            throw new ClientRequestException(e.getMessage(), e);
+            throw new ClientRequestException(e.getMessage());
         }
     }
 
@@ -417,7 +413,7 @@ public class LocalClient implements Client {
             return server.commit(authToken, projectId, commitBundle);
         }
         catch (ServerServiceException e) {
-            throw new ClientRequestException(e.getMessage(), e);
+            throw new ClientRequestException(e.getMessage(), e.getCause());
         }
     }
 
@@ -428,7 +424,7 @@ public class LocalClient implements Client {
             return server.getAllUsers(authToken);
         }
         catch (ServerServiceException e) {
-            throw new ClientRequestException(e.getMessage(), e);
+            throw new ClientRequestException(e.getMessage());
         }
     }
 
@@ -439,7 +435,7 @@ public class LocalClient implements Client {
             return server.getProjects(authToken, userId);
         }
         catch (ServerServiceException e) {
-            throw new ClientRequestException(e.getMessage(), e);
+            throw new ClientRequestException(e.getMessage(), e.getCause());
         }
     }
 
@@ -450,7 +446,7 @@ public class LocalClient implements Client {
             return server.getAllProjects(authToken);
         }
         catch (ServerServiceException e) {
-            throw new ClientRequestException(e.getMessage(), e);
+            throw new ClientRequestException(e.getMessage());
         }
     }
 
@@ -461,7 +457,7 @@ public class LocalClient implements Client {
             return server.getRoles(authToken, userId);
         }
         catch (ServerServiceException e) {
-            throw new ClientRequestException(e.getMessage(), e);
+            throw new ClientRequestException(e.getMessage(), e.getCause());
         }
     }
 
@@ -472,7 +468,7 @@ public class LocalClient implements Client {
             return server.getRoles(authToken, userId, projectId);
         }
         catch (ServerServiceException e) {
-            throw new ClientRequestException(e.getMessage(), e);
+            throw new ClientRequestException(e.getMessage(), e.getCause());
         }
     }
 
@@ -483,7 +479,7 @@ public class LocalClient implements Client {
             return server.getAllRoles(authToken);
         }
         catch (ServerServiceException e) {
-            throw new ClientRequestException(e.getMessage(), e);
+            throw new ClientRequestException(e.getMessage());
         }
     }
 
@@ -494,7 +490,7 @@ public class LocalClient implements Client {
             return server.getOperations(authToken, userId);
         }
         catch (ServerServiceException e) {
-            throw new ClientRequestException(e.getMessage(), e);
+            throw new ClientRequestException(e.getMessage(), e.getCause());
         }
     }
 
@@ -505,7 +501,7 @@ public class LocalClient implements Client {
             return server.getOperations(authToken, userId, projectId);
         }
         catch (ServerServiceException e) {
-            throw new ClientRequestException(e.getMessage(), e);
+            throw new ClientRequestException(e.getMessage(), e.getCause());
         }
     }
 
@@ -516,11 +512,13 @@ public class LocalClient implements Client {
             return server.getAllOperations(authToken);
         }
         catch (ServerServiceException e) {
-            throw new ClientRequestException(e.getMessage(), e);
+            throw new ClientRequestException(e.getMessage());
         }
     }
 
-
+    /*
+     * Utility methods for querying the client permissions
+     */
 
     @Override
     public boolean canAddAxiom() throws ClientRequestException {

@@ -121,7 +121,7 @@ public class CommitAction extends AbstractClientAction {
              * Commit confirmation
              */
             setEnabled(false); // disable the commit menu item once the changes got committed successfully
-            showInfoDialog("Commit", "Commit success (uploaded as revision" + acceptedChanges.getHeadRevision() + ")");
+            showInfoDialog("Commit", "Commit success (uploaded as revision " + acceptedChanges.getHeadRevision() + ")");
         }
         catch (ExecutionException e) {
             Throwable t = e.getCause();

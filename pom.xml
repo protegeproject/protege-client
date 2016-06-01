@@ -81,6 +81,11 @@
             <artifactId>java-uuid-generator</artifactId>
             <version>${fasterxml-uuid.version}</version>
         </dependency>
+        <dependency>
+			<groupId>com.squareup.retrofit2</groupId>
+			<artifactId>retrofit</artifactId>
+			<version>2.0.0-beta3</version>
+		</dependency>
     </dependencies>
 
     <build>
@@ -107,11 +112,14 @@
                         <Bundle-Vendor>The Protege Development Team</Bundle-Vendor>
                         <Embed-Dependency>protege-server</Embed-Dependency>
                         <Export-Package>
-                            com.fasterxml.uuid.*
+                            com.fasterxml.uuid.*,
+                            okhttp3.*,
+                            android.util,
+                            okio                       
                         </Export-Package>
                         <Import-Package>
                             org.protege.editor.core.*;version="5.0", <!-- equivalent to [5.0,infinity) -->
-                            org.protege.editor.owl.*;version="5.0",
+                            org.protege.editor.owl.*;version="5.0",                            
                             *
                         </Import-Package>
                         <Include-Resource>{maven-resources}</Include-Resource>

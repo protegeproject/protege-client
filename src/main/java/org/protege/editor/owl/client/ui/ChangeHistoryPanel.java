@@ -32,6 +32,7 @@ import javax.swing.table.TableModel;
 import javax.swing.table.TableRowSorter;
 
 import org.protege.editor.owl.OWLEditorKit;
+import org.protege.editor.owl.client.LocalHttpClient;
 import org.protege.editor.owl.client.api.exception.ClientRequestException;
 import org.protege.editor.owl.client.util.ChangeUtils;
 import org.protege.editor.owl.server.versioning.ChangeHistoryUtils;
@@ -103,7 +104,7 @@ public class ChangeHistoryPanel extends JPanel {
     }
 
     private JComponent getHistoryComponent() throws ClientRequestException {
-        ChangeHistory remoteChanges = ChangeUtils.getAllChanges(vont);
+        ChangeHistory remoteChanges = LocalHttpClient.current_user().getAllChanges(vont.getServerDocument());
         HistoryTableModel model = new HistoryTableModel(remoteChanges);
         final JTable table = new JTable(model);
         table.getSelectionModel().addListSelectionListener(new ListSelectionListener() {

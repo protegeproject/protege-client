@@ -1,5 +1,9 @@
 package org.protege.editor.owl.client.util;
 
+import java.util.List;
+import java.util.Set;
+import java.util.TreeSet;
+
 import org.protege.editor.owl.client.api.Client;
 import org.protege.editor.owl.client.api.exception.ClientRequestException;
 import org.protege.editor.owl.server.util.GetUncommittedChangesVisitor;
@@ -12,7 +16,6 @@ import org.protege.editor.owl.server.versioning.api.DocumentRevision;
 import org.protege.editor.owl.server.versioning.api.RevisionMetadata;
 import org.protege.editor.owl.server.versioning.api.ServerDocument;
 import org.protege.editor.owl.server.versioning.api.VersionedOWLOntology;
-
 import org.semanticweb.owlapi.model.AddImport;
 import org.semanticweb.owlapi.model.MissingImportHandlingStrategy;
 import org.semanticweb.owlapi.model.OWLImportsDeclaration;
@@ -22,10 +25,6 @@ import org.semanticweb.owlapi.model.OWLOntologyCreationException;
 import org.semanticweb.owlapi.model.OWLOntologyLoaderConfiguration;
 import org.semanticweb.owlapi.model.OWLOntologyLoaderConfiguration.MissingOntologyHeaderStrategy;
 import org.semanticweb.owlapi.model.OWLOntologyManager;
-
-import java.util.List;
-import java.util.Set;
-import java.util.TreeSet;
 
 public class ClientUtils {
 
@@ -142,6 +141,8 @@ public class ClientUtils {
         updateOntology(targetOntology, remoteChangeHistory, owlManager);
         return new VersionedOWLOntologyImpl(serverDocument, targetOntology, remoteChangeHistory);
     }
+    
+    
 
     /**
      * Create a new versioned ontology by restoring all recent changes from the
@@ -167,11 +168,13 @@ public class ClientUtils {
         return new VersionedOWLOntologyImpl(serverDocument, targetOntology, localHistory);
     }
 
+   
     /*
      * Private utility methods
      */
 
-    private static void updateOntology(OWLOntology placeholder, ChangeHistory changeHistory, OWLOntologyManager manager) {
+    public static void updateOntology(OWLOntology placeholder, ChangeHistory changeHistory, OWLOntologyManager manager) {
+
         List<OWLOntologyChange> changes = ChangeHistoryUtils.getOntologyChanges(changeHistory, placeholder);
         manager.applyChanges(changes);
         fixMissingImports(placeholder, changes, manager);

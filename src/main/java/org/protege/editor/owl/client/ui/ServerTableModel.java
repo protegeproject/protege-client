@@ -63,6 +63,7 @@ public class ServerTableModel extends AbstractTableModel {
     public Object getValueAt(int row, int col) {
         Project project = remoteProjects.get(row);
         return new ProjectItem(project.getId(), project.getName());
+
     }
 
     public ProjectId getValueAt(int row) {

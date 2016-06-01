@@ -7,11 +7,18 @@ public class UserInfo {
     private String id;
     private String name;
     private String emailAddress;
+    // used as token for authentication of calls after login
+    private String nonce;
 
-    public UserInfo(@Nonnull String id, String name, String emailAddress) {
+    public UserInfo(@Nonnull String id, String name, String emailAddress, String tok) {
         this.id = id;
         this.name = name;
         this.emailAddress = emailAddress;
+        this.nonce = tok;
+    }
+    
+    public String getNonce() {
+    	return nonce;
     }
 
     public String getId() {

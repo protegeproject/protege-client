@@ -1,23 +1,5 @@
 package org.protege.editor.owl.client.ui;
 
-import org.protege.editor.core.ui.error.ErrorLogPanel;
-import org.protege.editor.core.ui.util.AugmentedJTextField;
-import org.protege.editor.owl.OWLEditorKit;
-import org.protege.editor.owl.client.ClientPreferences;
-import org.protege.editor.owl.client.ClientSession;
-import org.protege.editor.owl.client.LocalClient;
-import org.protege.editor.owl.client.api.Client;
-import org.protege.editor.owl.client.api.exception.OWLClientException;
-import org.protege.editor.owl.client.util.ClientUtils;
-import org.protege.editor.owl.client.util.ServerUtils;
-import org.protege.editor.owl.server.transport.rmi.RemoteLoginService;
-import org.protege.editor.owl.server.transport.rmi.RmiLoginService;
-import org.protege.editor.owl.server.versioning.api.ServerDocument;
-import org.protege.editor.owl.server.versioning.api.VersionedOWLOntology;
-import org.protege.editor.owl.ui.UIHelper;
-
-import org.semanticweb.owlapi.model.OWLOntologyManager;
-
 import java.awt.BorderLayout;
 import java.awt.Color;
 import java.awt.FlowLayout;
@@ -45,6 +27,22 @@ import javax.swing.JTable;
 import javax.swing.JTextField;
 import javax.swing.SwingUtilities;
 import javax.swing.border.CompoundBorder;
+
+import org.protege.editor.core.ui.util.AugmentedJTextField;
+import org.protege.editor.core.ui.util.JOptionPaneEx;
+import org.protege.editor.owl.OWLEditorKit;
+import org.protege.editor.owl.client.ClientPreferences;
+import org.protege.editor.owl.client.ClientSession;
+import org.protege.editor.owl.client.LocalClient;
+import org.protege.editor.owl.client.api.Client;
+import org.protege.editor.owl.client.api.exception.OWLClientException;
+import org.protege.editor.owl.client.util.ClientUtils;
+import org.protege.editor.owl.client.util.ServerUtils;
+import org.protege.editor.owl.server.transport.rmi.RemoteLoginService;
+import org.protege.editor.owl.server.transport.rmi.RmiLoginService;
+import org.protege.editor.owl.server.versioning.api.ServerDocument;
+import org.protege.editor.owl.server.versioning.api.VersionedOWLOntology;
+import org.semanticweb.owlapi.model.OWLOntologyManager;
 
 import edu.stanford.protege.metaproject.Manager;
 import edu.stanford.protege.metaproject.api.AuthToken;
@@ -267,11 +265,12 @@ public class OpenFromServerPanel extends JPanel {
     private void loadProjectList(Client client) {
         try {
             tableModel.initialize(client);
+            serverContentTable.changeSelection(0, 0, false, false); // select the first item as default
         }
         catch (OWLClientException e) {
-            ErrorLogPanel.showErrorDialog(e);
-            UIHelper ui = new UIHelper(editorKit);
-            ui.showDialog("Error opening project", new JLabel("Could not retrieve remote projects: " + e.getMessage()));
+            JOptionPaneEx.showConfirmDialog(editorKit.getWorkspace(), "Error opening project",
+                    new JLabel("Open project failed: " + e.getMessage()),
+                    JOptionPane.ERROR_MESSAGE, JOptionPane.DEFAULT_OPTION, null);
         }
     }
 
@@ -302,9 +301,9 @@ public class OpenFromServerPanel extends JPanel {
                 loadProjectList(client);
             }
             catch (Exception e) {
-                ErrorLogPanel.showErrorDialog(e);
-                UIHelper ui = new UIHelper(editorKit);
-                ui.showDialog("Error connecting to server", new JLabel("Connection failed: " + e.getMessage()));
+                JOptionPaneEx.showConfirmDialog(editorKit.getWorkspace(), "Error connecting to server",
+                        new JLabel("Connection failed: " + e.getMessage()),
+                        JOptionPane.ERROR_MESSAGE, JOptionPane.DEFAULT_OPTION, null);
             }
         }
     }
@@ -319,20 +318,17 @@ public class OpenFromServerPanel extends JPanel {
     protected void openOntologyDocument() {
         try {
             int row = serverContentTable.getSelectedRow();
-            if (row != -1) {
-                ProjectId pid = tableModel.getValueAt(row);
-                ServerDocument serverDocument = clientSession.getActiveClient().openProject(pid);
-                VersionedOWLOntology vont = ClientUtils.buildVersionedOntology(serverDocument, owlManager);
-                editorKit.getOWLModelManager().setActiveOntology(vont.getOntology());
-                clientSession.registerProject(pid, vont);
-                closeDialog();
-            }
-            else {
-                JOptionPane.showMessageDialog(this, "No project was selected", "Error", JOptionPane.ERROR_MESSAGE);
-            }
+            ProjectId pid = tableModel.getValueAt(row);
+            ServerDocument serverDocument = clientSession.getActiveClient().openProject(pid);
+            VersionedOWLOntology vont = ClientUtils.buildVersionedOntology(serverDocument, owlManager);
+            editorKit.getOWLModelManager().setActiveOntology(vont.getOntology());
+            clientSession.registerProject(pid, vont);
+            closeDialog();
         }
-        catch (Exception ex) {
-            ErrorLogPanel.showErrorDialog(ex);
+        catch (Exception e) {
+            JOptionPaneEx.showConfirmDialog(editorKit.getWorkspace(), "Error opening project",
+                    new JLabel("Open project failed: " + e.getMessage()), JOptionPane.ERROR_MESSAGE,
+                    JOptionPane.DEFAULT_OPTION, null);
         }
     }
 

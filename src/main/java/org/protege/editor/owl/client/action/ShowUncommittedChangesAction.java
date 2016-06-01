@@ -1,25 +1,19 @@
 package org.protege.editor.owl.client.action;
 
-import java.awt.Container;
-import java.awt.Frame;
+import java.awt.Dialog;
 import java.awt.event.ActionEvent;
-import java.util.List;
+import java.awt.event.KeyEvent;
+import java.awt.event.WindowAdapter;
+import java.awt.event.WindowEvent;
 
+import javax.swing.AbstractAction;
+import javax.swing.JComponent;
 import javax.swing.JDialog;
-import javax.swing.JOptionPane;
-import javax.swing.JScrollPane;
-import javax.swing.JTable;
-import javax.swing.SwingUtilities;
+import javax.swing.KeyStroke;
 
 import org.protege.editor.owl.client.api.exception.SynchronizationException;
-import org.protege.editor.owl.client.ui.ChangeListTableModel;
-import org.protege.editor.owl.client.util.ClientUtils;
-import org.protege.editor.owl.server.versioning.api.ChangeHistory;
-import org.protege.editor.owl.server.versioning.api.VersionedOWLOntology;
-import org.protege.editor.owl.ui.renderer.OWLCellRenderer;
-import org.semanticweb.owlapi.model.OWLObject;
-import org.semanticweb.owlapi.model.OWLOntology;
-import org.semanticweb.owlapi.model.OWLOntologyChange;
+import org.protege.editor.owl.client.ui.UncommittedChangesPanel;
+import org.protege.editor.owl.model.OWLWorkspace;
 
 public class ShowUncommittedChangesAction extends AbstractClientAction {
 
@@ -37,58 +31,43 @@ public class ShowUncommittedChangesAction extends AbstractClientAction {
 
     @Override
     public void actionPerformed(ActionEvent arg0) {
-        try { 
-            OWLOntology activeOntology = getOWLEditorKit().getOWLModelManager().getActiveOntology();
-            VersionedOWLOntology vont = getActiveVersionOntology();
-            ChangeHistory baseline = vont.getChangeHistory();
-            List<OWLOntologyChange> localChanges = ClientUtils.getUncommittedChanges(activeOntology, baseline);
-            if (localChanges.isEmpty()) {
-                Container container = SwingUtilities.getAncestorOfClass(Frame.class, getOWLWorkspace());
-                JOptionPane.showMessageDialog(container, "No uncommitted changes");
-            }
-            else {
-                saveLocalHistoryInBackground(vont);
-                displayUncommittedChanges(localChanges);
-            }
+        final OWLWorkspace editorWindow = getOWLEditorKit().getOWLWorkspace();
+        try {
+            JDialog dialog = createDialog();
+            dialog.setLocationRelativeTo(editorWindow);
+            dialog.setVisible(true);
         }
         catch (SynchronizationException e) {
-            showErrorDialog("Synchronization error", e.getMessage(), e);
+            showErrorDialog("Unable to show uncommitted changes", e.getMessage(), e);
         }
     }
 
-    private void saveLocalHistoryInBackground(VersionedOWLOntology vont) {
-        submit(new SaveHistory(vont));
-    }
-
-    private void displayUncommittedChanges(List<OWLOntologyChange> uncommitted) {
-        ChangeListTableModel tableModel = new ChangeListTableModel(uncommitted);
-        JTable table = new JTable(tableModel);
-        table.setDefaultRenderer(OWLObject.class, new OWLCellRenderer(getOWLEditorKit()));
-        JScrollPane pane = new JScrollPane(table);
-        JDialog dialog = new JDialog((Frame) SwingUtilities.getAncestorOfClass(Frame.class, getOWLWorkspace()));
-        dialog.setTitle("Synchronize changes");
-        dialog.getContentPane().add(pane);
+    private JDialog createDialog() throws SynchronizationException {
+        final JDialog dialog = new JDialog(null, "Browse Uncommitted Changes", Dialog.ModalityType.MODELESS);
+        UncommittedChangesPanel uncommittedChangesPanel = new UncommittedChangesPanel(getActiveVersionOntology(), getOWLEditorKit());
+        uncommittedChangesPanel.getInputMap(JComponent.WHEN_ANCESTOR_OF_FOCUSED_COMPONENT).put(KeyStroke.getKeyStroke(KeyEvent.VK_ESCAPE, 0), "CLOSE_DIALOG");
+        uncommittedChangesPanel.getActionMap().put("CLOSE_DIALOG", new AbstractAction()
+        {
+           private static final long serialVersionUID = 1L;
+           @Override
+           public void actionPerformed(ActionEvent e)
+           {
+               dialog.setVisible(false);
+               dialog.dispose();
+           }
+        });
+        dialog.addWindowListener(new WindowAdapter()
+        {
+           @Override
+           public void windowClosing(WindowEvent e)
+           {
+               dialog.setVisible(false);
+               dialog.dispose();
+           }
+        });
+        dialog.setContentPane(uncommittedChangesPanel);
+        dialog.setSize(800, 600);
         dialog.setResizable(true);
-        dialog.setModal(true);
-        dialog.pack();
-        dialog.setVisible(true);
-    }
-
-    private class SaveHistory implements Runnable {
-        private VersionedOWLOntology vont;
-
-        public SaveHistory(VersionedOWLOntology vont) {
-            this.vont = vont;
-        }
-
-        @Override
-        public void run() {
-//            try {
-//                vont.saveLocalHistory();
-//            }
-//            catch (Exception e) {
-//                showSynchronizationErrorDialog("Save local history failed: " + e.getMessage(), e);
-//            }
-        }
+        return dialog;
     }
 }

@@ -9,6 +9,7 @@ import java.util.Optional;
 import org.protege.editor.owl.client.api.Client;
 import org.protege.editor.owl.client.api.UserInfo;
 import org.protege.editor.owl.client.api.exception.ClientRequestException;
+import org.protege.editor.owl.client.api.exception.SynchronizationException;
 import org.protege.editor.owl.client.util.ServerUtils;
 import org.protege.editor.owl.server.api.CommitBundle;
 import org.protege.editor.owl.server.api.exception.AuthorizationException;
@@ -59,8 +60,16 @@ public class LocalClient implements Client {
         userId = authToken.getUser().getId();
     }
 
+    @Override
     public void setActiveProject(ProjectId projectId) {
         this.projectId = projectId;
+    }
+
+    protected ProjectId getActiveProject() throws SynchronizationException {
+        if (projectId != null) {
+            return projectId;
+        }
+        throw new SynchronizationException("The current active ontology does not link to the server");
     }
 
     @Override
@@ -90,9 +99,9 @@ public class LocalClient implements Client {
     @Override
     public List<Role> getActiveRoles() throws ClientRequestException {
         try {
-            return getRoles(userId, projectId);
+            return getRoles(userId, getActiveProject());
         }
-        catch (AuthorizationException | RemoteException e) {
+        catch (AuthorizationException | RemoteException | SynchronizationException e) {
             throw new ClientRequestException(e.getMessage(), e);
         }
     }
@@ -100,9 +109,9 @@ public class LocalClient implements Client {
     @Override
     public List<Operation> getActiveOperations() throws ClientRequestException {
         try {
-            return getOperations(userId, projectId);
+            return getOperations(userId, getActiveProject());
         }
-        catch (AuthorizationException | RemoteException e) {
+        catch (AuthorizationException | RemoteException | SynchronizationException e) {
             throw new ClientRequestException(e.getMessage(), e);
         }
     }
@@ -524,9 +533,9 @@ public class LocalClient implements Client {
     public boolean canAddAxiom() throws ClientRequestException {
         try {
             connect();
-            return server.isOperationAllowed(authToken, Operations.ADD_AXIOM.getId(), projectId, userId);
+            return server.isOperationAllowed(authToken, Operations.ADD_AXIOM.getId(), getActiveProject(), userId);
         }
-        catch (AuthorizationException | ServerServiceException | RemoteException e) {
+        catch (AuthorizationException | ServerServiceException | RemoteException | SynchronizationException e) {
             throw new ClientRequestException(e.getMessage(), e);
         }
     }
@@ -535,9 +544,9 @@ public class LocalClient implements Client {
     public boolean canRemoveAxiom() throws ClientRequestException {
         try {
             connect();
-            return server.isOperationAllowed(authToken, Operations.REMOVE_AXIOM.getId(), projectId, userId);
+            return server.isOperationAllowed(authToken, Operations.REMOVE_AXIOM.getId(), getActiveProject(), userId);
         }
-        catch (AuthorizationException | ServerServiceException | RemoteException e) {
+        catch (AuthorizationException | ServerServiceException | RemoteException | SynchronizationException e) {
             throw new ClientRequestException(e.getMessage(), e);
         }
     }
@@ -546,9 +555,9 @@ public class LocalClient implements Client {
     public boolean canAddAnnotation() throws ClientRequestException {
         try {
             connect();
-            return server.isOperationAllowed(authToken, Operations.ADD_ONTOLOGY_ANNOTATION.getId(), projectId, userId);
+            return server.isOperationAllowed(authToken, Operations.ADD_ONTOLOGY_ANNOTATION.getId(), getActiveProject(), userId);
         }
-        catch (AuthorizationException | ServerServiceException | RemoteException e) {
+        catch (AuthorizationException | ServerServiceException | RemoteException | SynchronizationException e) {
             throw new ClientRequestException(e.getMessage(), e);
         }
     }
@@ -557,9 +566,9 @@ public class LocalClient implements Client {
     public boolean canRemoveAnnotation() throws ClientRequestException {
         try {
             connect();
-            return server.isOperationAllowed(authToken, Operations.REMOVE_ONTOLOGY_ANNOTATION.getId(), projectId, userId);
+            return server.isOperationAllowed(authToken, Operations.REMOVE_ONTOLOGY_ANNOTATION.getId(), getActiveProject(), userId);
         }
-        catch (AuthorizationException | ServerServiceException | RemoteException e) {
+        catch (AuthorizationException | ServerServiceException | RemoteException | SynchronizationException e) {
             throw new ClientRequestException(e.getMessage(), e);
         }
     }
@@ -568,9 +577,9 @@ public class LocalClient implements Client {
     public boolean canAddImport() throws ClientRequestException {
         try {
             connect();
-            return server.isOperationAllowed(authToken, Operations.ADD_IMPORT.getId(), projectId, userId);
+            return server.isOperationAllowed(authToken, Operations.ADD_IMPORT.getId(), getActiveProject(), userId);
         }
-        catch (AuthorizationException | ServerServiceException | RemoteException e) {
+        catch (AuthorizationException | ServerServiceException | RemoteException | SynchronizationException e) {
             throw new ClientRequestException(e.getMessage(), e);
         }
     }
@@ -579,9 +588,9 @@ public class LocalClient implements Client {
     public boolean canRemoveImport() throws ClientRequestException {
         try {
             connect();
-            return server.isOperationAllowed(authToken, Operations.REMOVE_IMPORT.getId(), projectId, userId);
+            return server.isOperationAllowed(authToken, Operations.REMOVE_IMPORT.getId(), getActiveProject(), userId);
         }
-        catch (AuthorizationException | ServerServiceException | RemoteException e) {
+        catch (AuthorizationException | ServerServiceException | RemoteException | SynchronizationException e) {
             throw new ClientRequestException(e.getMessage(), e);
         }
     }
@@ -590,9 +599,9 @@ public class LocalClient implements Client {
     public boolean canModifyOntologyId() throws ClientRequestException {
         try {
             connect();
-            return server.isOperationAllowed(authToken, Operations.MODIFY_ONTOLOGY_IRI.getId(), projectId, userId);
+            return server.isOperationAllowed(authToken, Operations.MODIFY_ONTOLOGY_IRI.getId(), getActiveProject(), userId);
         }
-        catch (AuthorizationException | ServerServiceException | RemoteException e) {
+        catch (AuthorizationException | ServerServiceException | RemoteException | SynchronizationException e) {
             throw new ClientRequestException(e.getMessage(), e);
         }
     }
@@ -601,9 +610,9 @@ public class LocalClient implements Client {
     public boolean canCreateUser() throws ClientRequestException {
         try {
             connect();
-            return server.isOperationAllowed(authToken, Operations.ADD_USER.getId(), projectId, userId);
+            return server.isOperationAllowed(authToken, Operations.ADD_USER.getId(), getActiveProject(), userId);
         }
-        catch (AuthorizationException | ServerServiceException | RemoteException e) {
+        catch (AuthorizationException | ServerServiceException | RemoteException | SynchronizationException e) {
             throw new ClientRequestException(e.getMessage(), e);
         }
     }
@@ -612,9 +621,9 @@ public class LocalClient implements Client {
     public boolean canDeleteUser() throws ClientRequestException {
         try {
             connect();
-            return server.isOperationAllowed(authToken, Operations.REMOVE_USER.getId(), projectId, userId);
+            return server.isOperationAllowed(authToken, Operations.REMOVE_USER.getId(), getActiveProject(), userId);
         }
-        catch (AuthorizationException | ServerServiceException | RemoteException e) {
+        catch (AuthorizationException | ServerServiceException | RemoteException | SynchronizationException e) {
             throw new ClientRequestException(e.getMessage(), e);
         }
     }
@@ -623,9 +632,9 @@ public class LocalClient implements Client {
     public boolean canUpdateUser() throws ClientRequestException {
         try {
             connect();
-            return server.isOperationAllowed(authToken, Operations.MODIFY_USER.getId(), projectId, userId);
+            return server.isOperationAllowed(authToken, Operations.MODIFY_USER.getId(), getActiveProject(), userId);
         }
-        catch (AuthorizationException | ServerServiceException | RemoteException e) {
+        catch (AuthorizationException | ServerServiceException | RemoteException | SynchronizationException e) {
             throw new ClientRequestException(e.getMessage(), e);
         }
     }
@@ -634,9 +643,9 @@ public class LocalClient implements Client {
     public boolean canCreateProject() throws ClientRequestException {
         try {
             connect();
-            return server.isOperationAllowed(authToken, Operations.ADD_PROJECT.getId(), projectId, userId);
+            return server.isOperationAllowed(authToken, Operations.ADD_PROJECT.getId(), getActiveProject(), userId);
         }
-        catch (AuthorizationException | ServerServiceException | RemoteException e) {
+        catch (AuthorizationException | ServerServiceException | RemoteException | SynchronizationException e) {
             throw new ClientRequestException(e.getMessage(), e);
         }
     }
@@ -645,9 +654,9 @@ public class LocalClient implements Client {
     public boolean canDeleteProject() throws ClientRequestException {
         try {
             connect();
-            return server.isOperationAllowed(authToken, Operations.REMOVE_PROJECT.getId(), projectId, userId);
+            return server.isOperationAllowed(authToken, Operations.REMOVE_PROJECT.getId(), getActiveProject(), userId);
         }
-        catch (AuthorizationException | ServerServiceException | RemoteException e) {
+        catch (AuthorizationException | ServerServiceException | RemoteException | SynchronizationException e) {
             throw new ClientRequestException(e.getMessage(), e);
         }
     }
@@ -656,9 +665,9 @@ public class LocalClient implements Client {
     public boolean canUpdateProject() throws ClientRequestException {
         try {
             connect();
-            return server.isOperationAllowed(authToken, Operations.MODIFY_PROJECT.getId(), projectId, userId);
+            return server.isOperationAllowed(authToken, Operations.MODIFY_PROJECT.getId(), getActiveProject(), userId);
         }
-        catch (AuthorizationException | ServerServiceException | RemoteException e) {
+        catch (AuthorizationException | ServerServiceException | RemoteException | SynchronizationException e) {
             throw new ClientRequestException(e.getMessage(), e);
         }
     }
@@ -667,9 +676,9 @@ public class LocalClient implements Client {
     public boolean canOpenProject() throws ClientRequestException {
         try {
             connect();
-            return server.isOperationAllowed(authToken, Operations.OPEN_PROJECT.getId(), projectId, userId);
+            return server.isOperationAllowed(authToken, Operations.OPEN_PROJECT.getId(), getActiveProject(), userId);
         }
-        catch (AuthorizationException | ServerServiceException | RemoteException e) {
+        catch (AuthorizationException | ServerServiceException | RemoteException | SynchronizationException e) {
             throw new ClientRequestException(e.getMessage(), e);
         }
     }
@@ -678,9 +687,9 @@ public class LocalClient implements Client {
     public boolean canCreateRole() throws ClientRequestException {
         try {
             connect();
-            return server.isOperationAllowed(authToken, Operations.ADD_ROLE.getId(), projectId, userId);
+            return server.isOperationAllowed(authToken, Operations.ADD_ROLE.getId(), getActiveProject(), userId);
         }
-        catch (AuthorizationException | ServerServiceException | RemoteException e) {
+        catch (AuthorizationException | ServerServiceException | RemoteException | SynchronizationException e) {
             throw new ClientRequestException(e.getMessage(), e);
         }
     }
@@ -689,9 +698,9 @@ public class LocalClient implements Client {
     public boolean canDeleteRole() throws ClientRequestException {
         try {
             connect();
-            return server.isOperationAllowed(authToken, Operations.REMOVE_ROLE.getId(), projectId, userId);
+            return server.isOperationAllowed(authToken, Operations.REMOVE_ROLE.getId(), getActiveProject(), userId);
         }
-        catch (AuthorizationException | ServerServiceException | RemoteException e) {
+        catch (AuthorizationException | ServerServiceException | RemoteException | SynchronizationException e) {
             throw new ClientRequestException(e.getMessage(), e);
         }
     }
@@ -700,9 +709,9 @@ public class LocalClient implements Client {
     public boolean canUpdateRole() throws ClientRequestException {
         try {
             connect();
-            return server.isOperationAllowed(authToken, Operations.MODIFY_ROLE.getId(), projectId, userId);
+            return server.isOperationAllowed(authToken, Operations.MODIFY_ROLE.getId(), getActiveProject(), userId);
         }
-        catch (AuthorizationException | ServerServiceException | RemoteException e) {
+        catch (AuthorizationException | ServerServiceException | RemoteException | SynchronizationException e) {
             throw new ClientRequestException(e.getMessage(), e);
         }
     }
@@ -711,9 +720,9 @@ public class LocalClient implements Client {
     public boolean canCreateOperation() throws ClientRequestException {
         try {
             connect();
-            return server.isOperationAllowed(authToken, Operations.ADD_OPERATION.getId(), projectId, userId);
+            return server.isOperationAllowed(authToken, Operations.ADD_OPERATION.getId(), getActiveProject(), userId);
         }
-        catch (AuthorizationException | ServerServiceException | RemoteException e) {
+        catch (AuthorizationException | ServerServiceException | RemoteException | SynchronizationException e) {
             throw new ClientRequestException(e.getMessage(), e);
         }
     }
@@ -722,9 +731,9 @@ public class LocalClient implements Client {
     public boolean canDeleteOperation() throws ClientRequestException {
         try {
             connect();
-            return server.isOperationAllowed(authToken, Operations.REMOVE_OPERATION.getId(), projectId, userId);
+            return server.isOperationAllowed(authToken, Operations.REMOVE_OPERATION.getId(), getActiveProject(), userId);
         }
-        catch (AuthorizationException | ServerServiceException | RemoteException e) {
+        catch (AuthorizationException | ServerServiceException | RemoteException | SynchronizationException e) {
             throw new ClientRequestException(e.getMessage(), e);
         }
     }
@@ -733,9 +742,9 @@ public class LocalClient implements Client {
     public boolean canUpdateOperation() throws ClientRequestException {
         try {
             connect();
-            return server.isOperationAllowed(authToken, Operations.MODIFY_OPERATION.getId(), projectId, userId);
+            return server.isOperationAllowed(authToken, Operations.MODIFY_OPERATION.getId(), getActiveProject(), userId);
         }
-        catch (AuthorizationException | ServerServiceException | RemoteException e) {
+        catch (AuthorizationException | ServerServiceException | RemoteException | SynchronizationException e) {
             throw new ClientRequestException(e.getMessage(), e);
         }
     }
@@ -744,9 +753,9 @@ public class LocalClient implements Client {
     public boolean canAssignRole() throws ClientRequestException {
         try {
             connect();
-            return server.isOperationAllowed(authToken, Operations.ASSIGN_ROLE.getId(), projectId, userId);
+            return server.isOperationAllowed(authToken, Operations.ASSIGN_ROLE.getId(), getActiveProject(), userId);
         }
-        catch (AuthorizationException | ServerServiceException | RemoteException e) {
+        catch (AuthorizationException | ServerServiceException | RemoteException | SynchronizationException e) {
             throw new ClientRequestException(e.getMessage(), e);
         }
     }
@@ -755,9 +764,9 @@ public class LocalClient implements Client {
     public boolean canRetractRole() throws ClientRequestException {
         try {
             connect();
-            return server.isOperationAllowed(authToken, Operations.RETRACT_ROLE.getId(), projectId, userId);
+            return server.isOperationAllowed(authToken, Operations.RETRACT_ROLE.getId(), getActiveProject(), userId);
         }
-        catch (AuthorizationException | ServerServiceException | RemoteException e) {
+        catch (AuthorizationException | ServerServiceException | RemoteException | SynchronizationException e) {
             throw new ClientRequestException(e.getMessage(), e);
         }
     }
@@ -766,9 +775,9 @@ public class LocalClient implements Client {
     public boolean canStopServer() throws ClientRequestException {
         try {
             connect();
-            return server.isOperationAllowed(authToken, Operations.STOP_SERVER.getId(), projectId, userId);
+            return server.isOperationAllowed(authToken, Operations.STOP_SERVER.getId(), getActiveProject(), userId);
         }
-        catch (AuthorizationException | ServerServiceException | RemoteException e) {
+        catch (AuthorizationException | ServerServiceException | RemoteException | SynchronizationException e) {
             throw new ClientRequestException(e.getMessage(), e);
         }
     }
@@ -777,9 +786,9 @@ public class LocalClient implements Client {
     public boolean canRestartServer() throws ClientRequestException {
         try {
             connect();
-            return server.isOperationAllowed(authToken, Operations.RESTART_SERVER.getId(), projectId, userId);
+            return server.isOperationAllowed(authToken, Operations.RESTART_SERVER.getId(), getActiveProject(), userId);
         }
-        catch (AuthorizationException | ServerServiceException | RemoteException e) {
+        catch (AuthorizationException | ServerServiceException | RemoteException | SynchronizationException e) {
             throw new ClientRequestException(e.getMessage(), e);
         }
     }
@@ -788,9 +797,9 @@ public class LocalClient implements Client {
     public boolean canUpdateServerConfig() throws ClientRequestException {
         try {
             connect();
-            return server.isOperationAllowed(authToken, Operations.MODIFY_SERVER_CONFIG.getId(), projectId, userId);
+            return server.isOperationAllowed(authToken, Operations.MODIFY_SERVER_CONFIG.getId(), getActiveProject(), userId);
         }
-        catch (AuthorizationException | ServerServiceException | RemoteException e) {
+        catch (AuthorizationException | ServerServiceException | RemoteException | SynchronizationException e) {
             throw new ClientRequestException(e.getMessage(), e);
         }
     }
@@ -799,9 +808,9 @@ public class LocalClient implements Client {
     public boolean canPerformOperation(OperationId operationId) throws ClientRequestException {
         try {
             connect();
-            return server.isOperationAllowed(authToken, operationId, projectId, userId);
+            return server.isOperationAllowed(authToken, operationId, getActiveProject(), userId);
         }
-        catch (AuthorizationException | ServerServiceException | RemoteException e) {
+        catch (AuthorizationException | ServerServiceException | RemoteException | SynchronizationException e) {
             throw new ClientRequestException(e.getMessage(), e);
         }
     }

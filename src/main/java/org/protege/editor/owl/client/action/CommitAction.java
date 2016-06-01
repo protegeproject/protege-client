@@ -80,10 +80,12 @@ public class CommitAction extends AbstractClientAction {
     public void actionPerformed(ActionEvent arg0) {
         try {
             String comment = "";
+            VersionedOWLOntology vont = getActiveVersionOntology();
             while (true) {
                 JTextArea commentArea = new JTextArea(4, 45);
                 Object[] message = { "Commit message (do not leave blank):", commentArea };
-                int option = JOptionPane.showConfirmDialog(null, message, "Commit", JOptionPane.OK_CANCEL_OPTION, JOptionPane.QUESTION_MESSAGE);
+                int option = JOptionPane.showConfirmDialog(null, message, "Commit",
+                        JOptionPane.OK_CANCEL_OPTION, JOptionPane.PLAIN_MESSAGE);
                 if (option == JOptionPane.CANCEL_OPTION) {
                     break;
                 }
@@ -94,34 +96,33 @@ public class CommitAction extends AbstractClientAction {
                     }
                 }
             }
-            /*
-             * Submit commit only if the comment is not empty
-             */
-            if (!comment.isEmpty()) {
-                doCommit(getClient(), localChanges, comment);
-            }
+            performCommit(vont, comment);
         }
         catch (SynchronizationException e) {
             showErrorDialog("Synchronization error", e.getMessage(), e);
+        }
+    }
+
+    private void performCommit(VersionedOWLOntology vont, String comment) {
+        try {
+            Optional<ChangeHistory> acceptedChanges = commit(vont.getHeadRevision(), localChanges, comment);
+            if (acceptedChanges.isPresent()) {
+                ChangeHistory changes = acceptedChanges.get();
+                vont.update(changes); // update the local ontology
+                setEnabled(false); // disable the commit action after the changes got committed successfully
+                showInfoDialog("Commit", "Commit success (uploaded as revision " + changes.getHeadRevision() + ")");
+            }
         }
         catch (InterruptedException e) {
             showErrorDialog("Commit error", "Internal error: " + e.getMessage(), e);
         }
     }
 
-    private void doCommit(Client client, List<OWLOntologyChange> localChanges, String comment) throws SynchronizationException, InterruptedException {
+    private Optional<ChangeHistory> commit(DocumentRevision revision, List<OWLOntologyChange> localChanges, String comment) throws InterruptedException {
+        Optional<ChangeHistory> acceptedChanges = Optional.empty();
         try {
-            VersionedOWLOntology vont = getActiveVersionOntology();
-            DocumentRevision revision = vont.getHeadRevision();
-            Future<?> task = submit(new DoCommit(revision, client, comment, localChanges));
-            ChangeHistory acceptedChanges = (ChangeHistory) task.get();
-            vont.update(acceptedChanges); // update the local ontology
-
-            /*
-             * Commit confirmation
-             */
-            setEnabled(false); // disable the commit menu item once the changes got committed successfully
-            showInfoDialog("Commit", "Commit success (uploaded as revision " + acceptedChanges.getHeadRevision() + ")");
+            Future<?> task = submit(new DoCommit(revision, getClient(), comment, localChanges));
+            acceptedChanges = Optional.ofNullable((ChangeHistory) task.get());
         }
         catch (ExecutionException e) {
             Throwable t = e.getCause();
@@ -141,6 +142,7 @@ public class CommitAction extends AbstractClientAction {
                 showErrorDialog("Commit error", t.getMessage(), t);
             }
         }
+        return acceptedChanges;
     }
 
     private class DoCommit implements Callable<ChangeHistory> {

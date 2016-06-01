@@ -44,6 +44,7 @@ public class LocalClient implements Client, ClientSessionListener {
         this.serverAddress = serverAddress;
         this.registryPort = registryPort;
         userId = authToken.getUser().getId();
+        
     }
 
     @Override
@@ -72,13 +73,11 @@ public class LocalClient implements Client, ClientSessionListener {
 
     @Override
     public UserInfo getUserInfo() {
-        /**
         if (userInfo == null) {
          
             User user = authToken.getUser();
-            userInfo = new UserInfo(user.getId().get(), user.getName().get(), user.getEmailAddress().get());
+            userInfo = new UserInfo(user.getId().get(), user.getName().get(), user.getEmailAddress().get(), "");
         }
-        **/
         return userInfo;
     }
 

@@ -11,6 +11,7 @@ import java.rmi.RemoteException;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
+import java.util.concurrent.TimeUnit;
 
 import org.apache.commons.codec.binary.Base64;
 import org.protege.editor.owl.client.api.Client;
@@ -49,6 +50,7 @@ import edu.stanford.protege.metaproject.api.Role;
 import edu.stanford.protege.metaproject.api.RoleId;
 import edu.stanford.protege.metaproject.api.SaltedPasswordDigest;
 import edu.stanford.protege.metaproject.api.Serializer;
+import edu.stanford.protege.metaproject.api.ServerConfiguration;
 import edu.stanford.protege.metaproject.api.User;
 import edu.stanford.protege.metaproject.api.UserId;
 import edu.stanford.protege.metaproject.api.exception.ObjectConversionException;
@@ -74,7 +76,9 @@ public class LocalHttpClient implements Client {
 
 	private MetaprojectFactory fact = Manager.getFactory();
 
-	OkHttpClient req_client = new OkHttpClient();
+	OkHttpClient req_client = new OkHttpClient.Builder().readTimeout(180, TimeUnit.SECONDS).build();
+	
+	ServerConfiguration config;
 
 	private static LocalHttpClient current_user;
 
@@ -89,6 +93,26 @@ public class LocalHttpClient implements Client {
 		String toenc = this.userId + ":" + userInfo.getNonce();
 		this.auth_header_value = "Basic " + new String(Base64.encodeBase64(toenc.getBytes()));
 		LocalHttpClient.current_user = this;
+		//check is user is allowed to edit config
+		config = getConfig();
+	}
+	
+	private ServerConfiguration getConfig() {
+		String url = HTTPServer.METAPROJECT;
+		Response response = get(url);
+	
+		Serializer<Gson> serl = new DefaultJsonSerializer();
+		
+		ServerConfiguration scfg = null;
+		
+
+		try {
+			scfg = (ServerConfiguration) serl.parse(new InputStreamReader(response.body().byteStream()), ServerConfiguration.class);
+		} catch (FileNotFoundException | ObjectConversionException e) {
+			e.printStackTrace();
+		}
+		return scfg;
+		
 	}
 
 

@@ -1,5 +1,8 @@
 package org.protege.editor.owl.client.util;
 
+import java.rmi.RemoteException;
+import java.util.List;
+
 import org.protege.editor.owl.client.api.exception.ClientRequestException;
 import org.protege.editor.owl.server.transport.rmi.RemoteChangeService;
 import org.protege.editor.owl.server.transport.rmi.RmiChangeService;
@@ -9,12 +12,8 @@ import org.protege.editor.owl.server.versioning.api.ChangeHistory;
 import org.protege.editor.owl.server.versioning.api.DocumentRevision;
 import org.protege.editor.owl.server.versioning.api.ServerDocument;
 import org.protege.editor.owl.server.versioning.api.VersionedOWLOntology;
-
 import org.semanticweb.owlapi.model.OWLOntology;
 import org.semanticweb.owlapi.model.OWLOntologyChange;
-
-import java.rmi.RemoteException;
-import java.util.List;
 
 public class ChangeUtils {
 
@@ -50,12 +49,7 @@ public class ChangeUtils {
     }
 
     public static ChangeHistory getLatestChanges(VersionedOWLOntology versionedOntology) throws ClientRequestException {
-        /*
-         * The start revision index to get the latest changes from the server is equal to local HEAD revision
-         * minus 1 (head.previous())
-         */
-        DocumentRevision headRevision = versionedOntology.getChangeHistory().getHeadRevision();
-        DocumentRevision startRevision = headRevision.previous();
+        DocumentRevision startRevision = versionedOntology.getChangeHistory().getHeadRevision();
         return getLatestChanges(versionedOntology.getServerDocument(), startRevision);
     }
 

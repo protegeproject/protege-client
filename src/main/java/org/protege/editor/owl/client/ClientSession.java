@@ -52,7 +52,7 @@ public class ClientSession extends OWLEditorKitHook {
     }
 
     public void registerProject(ProjectId projectId, VersionedOWLOntology versionOntology) {
-        OWLOntologyID ontologyId = getEditorKit().getOWLModelManager().getActiveOntology().getOntologyID();
+        OWLOntologyID ontologyId = versionOntology.getOntology().getOntologyID();
         projectMap.put(ontologyId, projectId);
         ontologyMap.put(ontologyId, versionOntology);
     }

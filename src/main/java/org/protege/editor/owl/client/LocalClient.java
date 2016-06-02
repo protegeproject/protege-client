@@ -515,6 +515,17 @@ public class LocalClient implements Client {
     }
 
     @Override
+    public List<Operation> getOperations(RoleId roleId) throws AuthorizationException, ClientRequestException, RemoteException {
+        try {
+            connect();
+            return server.getOperations(authToken, roleId);
+        }
+        catch (ServerServiceException e) {
+            throw new ClientRequestException(e.getMessage(), e.getCause());
+        }
+    }
+
+    @Override
     public List<Operation> getAllOperations() throws AuthorizationException, ClientRequestException, RemoteException {
         try {
             connect();

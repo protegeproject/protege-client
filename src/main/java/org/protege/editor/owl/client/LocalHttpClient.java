@@ -93,7 +93,7 @@ public class LocalHttpClient implements Client {
 		String toenc = this.userId + ":" + userInfo.getNonce();
 		this.auth_header_value = "Basic " + new String(Base64.encodeBase64(toenc.getBytes()));
 		LocalHttpClient.current_user = this;
-		//check is user is allowed to edit config
+		//check if user is allowed to edit config
 		config = getConfig();
 	}
 	
@@ -694,8 +694,7 @@ public class LocalHttpClient implements Client {
 	}
 	
 	public ChangeHistory getLatestChanges(VersionedOWLOntology vont) {
-		DocumentRevision head = vont.getChangeHistory().getHeadRevision();
-		DocumentRevision start = head.previous();
+		DocumentRevision start = vont.getChangeHistory().getHeadRevision();
 		return getLatestChanges(vont.getServerDocument(), start);
 	}
 	

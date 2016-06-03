@@ -152,11 +152,12 @@ public class LocalHttpClient implements Client {
 
 	}
 
-
+	// not clearly needed
 	public void setActiveProject(ProjectId projectId) {
 		this.projectId = projectId;
 	}
 
+	// only needed for RMI version
 	@Override
 	public AuthToken getAuthToken() {
 		// need to get rid of this method
@@ -789,6 +790,13 @@ public class LocalHttpClient implements Client {
 		} catch (Exception e) {
 			e.printStackTrace();
 		}
+		return null;
+	}
+
+	@Override
+	public List<Operation> getOperations(RoleId roleId)
+			throws AuthorizationException, ClientRequestException, RemoteException {
+		// TODO Auto-generated method stub
 		return null;
 	}
 

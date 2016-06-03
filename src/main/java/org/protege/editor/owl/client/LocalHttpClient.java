@@ -114,6 +114,18 @@ public class LocalHttpClient implements Client {
 		return scfg;
 		
 	}
+	
+	private void putConfig() {
+		
+		final MediaType JSON  = MediaType.parse("application/json; charset=utf-8");
+		String url = HTTPServer.METAPROJECT;
+
+		Serializer<Gson> serl = new DefaultJsonSerializer();
+		RequestBody body = RequestBody.create(JSON, serl.write(this.config, ServerConfiguration.class));
+
+		post(url, body, true);
+		
+	}
 
 
 	private UserInfo login(String user, String pwd) {

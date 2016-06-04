@@ -279,15 +279,6 @@ public interface PolicyMediator {
      */
     boolean canStopServer() throws ClientRequestException;
 
-    /**
-     * Checks if the user has the permission to restart the server.
-     *
-     * @return Returns <code>true</code> if the user has the permission, or
-     *         <code>false</code> otherwise.
-     * @throws ClientRequestException
-     *             If a failure happened when answering this query request.
-     */
-    boolean canRestartServer() throws ClientRequestException;
 
     // ------------------------------------------------
     // A method to serve other checking operation query

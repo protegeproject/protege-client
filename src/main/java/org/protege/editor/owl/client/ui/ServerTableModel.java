@@ -1,17 +1,18 @@
 package org.protege.editor.owl.client.ui;
 
-import org.protege.editor.owl.client.api.Client;
-import org.protege.editor.owl.client.api.exception.OWLClientException;
-
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.List;
-
-import javax.swing.table.AbstractTableModel;
-
 import edu.stanford.protege.metaproject.api.Name;
 import edu.stanford.protege.metaproject.api.Project;
 import edu.stanford.protege.metaproject.api.ProjectId;
+import edu.stanford.protege.metaproject.impl.MetaprojectUtils;
+import org.protege.editor.owl.client.api.Client;
+import org.protege.editor.owl.client.api.exception.OWLClientException;
+import org.protege.editor.owl.server.api.exception.AuthorizationException;
+
+import javax.swing.table.AbstractTableModel;
+import java.rmi.RemoteException;
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.List;
 
 public class ServerTableModel extends AbstractTableModel {
 
@@ -25,6 +26,14 @@ public class ServerTableModel extends AbstractTableModel {
 
     public void initialize(Client client) throws OWLClientException {
         remoteProjects = new ArrayList<>(client.getProjects());
+        if(remoteProjects.contains(MetaprojectUtils.getUniversalProject())) {
+            remoteProjects.remove(MetaprojectUtils.getUniversalProject());
+            try {
+                remoteProjects.addAll(client.getAllProjects());
+            } catch (AuthorizationException | RemoteException e) {
+                throw new OWLClientException(e.getCause());
+            }
+        }
         Collections.sort(remoteProjects);
         fireTableStructureChanged();
     }

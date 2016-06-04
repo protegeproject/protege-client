@@ -11,18 +11,13 @@ import org.protege.editor.owl.server.versioning.api.ChangeHistory;
 import org.protege.editor.owl.server.versioning.api.DocumentRevision;
 import org.protege.editor.owl.server.versioning.api.RevisionMetadata;
 import org.protege.editor.owl.server.versioning.api.VersionedOWLOntology;
-
 import org.semanticweb.owlapi.model.OWLOntologyChangeListener;
 
-import java.awt.BorderLayout;
+import javax.swing.*;
+import javax.swing.event.ListSelectionListener;
+import java.awt.*;
 import java.util.ArrayList;
 import java.util.List;
-
-import javax.swing.JList;
-import javax.swing.JPanel;
-import javax.swing.JScrollPane;
-import javax.swing.ListSelectionModel;
-import javax.swing.event.ListSelectionListener;
 
 /**
  * @author Rafael Gonçalves <br>

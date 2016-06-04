@@ -1,11 +1,8 @@
 package org.protege.editor.owl.client;
 
-import java.net.URI;
-import java.rmi.RemoteException;
-import java.util.List;
-import java.util.Map;
-import java.util.Optional;
-
+import edu.stanford.protege.metaproject.api.*;
+import edu.stanford.protege.metaproject.api.exception.IdAlreadyInUseException;
+import edu.stanford.protege.metaproject.impl.Operations;
 import org.protege.editor.owl.client.api.Client;
 import org.protege.editor.owl.client.api.UserInfo;
 import org.protege.editor.owl.client.api.exception.ClientRequestException;
@@ -20,22 +17,11 @@ import org.protege.editor.owl.server.transport.rmi.RmiServer;
 import org.protege.editor.owl.server.versioning.api.ChangeHistory;
 import org.protege.editor.owl.server.versioning.api.ServerDocument;
 
-import edu.stanford.protege.metaproject.api.AuthToken;
-import edu.stanford.protege.metaproject.api.Description;
-import edu.stanford.protege.metaproject.api.Host;
-import edu.stanford.protege.metaproject.api.Name;
-import edu.stanford.protege.metaproject.api.Operation;
-import edu.stanford.protege.metaproject.api.OperationId;
-import edu.stanford.protege.metaproject.api.Project;
-import edu.stanford.protege.metaproject.api.ProjectId;
-import edu.stanford.protege.metaproject.api.ProjectOptions;
-import edu.stanford.protege.metaproject.api.Role;
-import edu.stanford.protege.metaproject.api.RoleId;
-import edu.stanford.protege.metaproject.api.SaltedPasswordDigest;
-import edu.stanford.protege.metaproject.api.User;
-import edu.stanford.protege.metaproject.api.UserId;
-import edu.stanford.protege.metaproject.api.exception.IdAlreadyInUseException;
-import edu.stanford.protege.metaproject.impl.Operations;
+import java.net.URI;
+import java.rmi.RemoteException;
+import java.util.List;
+import java.util.Map;
+import java.util.Optional;
 
 /**
  * @author Josef Hardi <johardi@stanford.edu> <br>
@@ -794,21 +780,10 @@ public class LocalClient implements Client {
     }
 
     @Override
-    public boolean canRestartServer() throws ClientRequestException {
-        try {
-            connect();
-            return server.isOperationAllowed(authToken, Operations.RESTART_SERVER.getId(), getActiveProject(), userId);
-        }
-        catch (AuthorizationException | ServerServiceException | RemoteException | SynchronizationException e) {
-            throw new ClientRequestException(e.getMessage(), e);
-        }
-    }
-
-    @Override
     public boolean canUpdateServerConfig() throws ClientRequestException {
         try {
             connect();
-            return server.isOperationAllowed(authToken, Operations.MODIFY_SERVER_CONFIG.getId(), getActiveProject(), userId);
+            return server.isOperationAllowed(authToken, Operations.MODIFY_SERVER_SETTINGS.getId(), getActiveProject(), userId);
         }
         catch (AuthorizationException | ServerServiceException | RemoteException | SynchronizationException e) {
             throw new ClientRequestException(e.getMessage(), e);

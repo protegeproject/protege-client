@@ -1,7 +1,5 @@
 package org.protege.editor.owl.client.diff.model;
 
-import static com.google.common.base.Preconditions.checkNotNull;
-
 import org.protege.editor.core.Disposable;
 import org.protege.editor.core.ui.error.ErrorLogPanel;
 import org.protege.editor.owl.OWLEditorKit;
@@ -13,22 +11,12 @@ import org.protege.editor.owl.server.versioning.api.ChangeHistory;
 import org.protege.editor.owl.server.versioning.api.DocumentRevision;
 import org.protege.editor.owl.server.versioning.api.RevisionMetadata;
 import org.protege.editor.owl.server.versioning.api.VersionedOWLOntology;
+import org.semanticweb.owlapi.model.*;
 
-import org.semanticweb.owlapi.model.AddAxiom;
-import org.semanticweb.owlapi.model.OWLAnnotation;
-import org.semanticweb.owlapi.model.OWLAnnotationProperty;
-import org.semanticweb.owlapi.model.OWLAxiom;
-import org.semanticweb.owlapi.model.OWLOntology;
-import org.semanticweb.owlapi.model.OWLOntologyChange;
-import org.semanticweb.owlapi.model.RemoveAxiom;
-
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.HashSet;
-import java.util.List;
-import java.util.Optional;
-import java.util.Set;
+import java.util.*;
 import java.util.stream.Collectors;
+
+import static com.google.common.base.Preconditions.checkNotNull;
 
 /**
  * @author Rafael Gonçalves <br>
@@ -133,19 +121,19 @@ public class LogDiffManager implements Disposable {
     public List<CommitMetadata> getCommits(LogDiffEvent event) {
         VersionedOWLOntology vont = getVersionedOntologyDocument().get();
         ChangeHistory changes = vont.getChangeHistory();
-        DocumentRevision rev = changes.getBaseRevision();
-        while (changes.getMetadataForRevision(rev) != null) {
+        DocumentRevision base = changes.getBaseRevision();
+        DocumentRevision head = changes.getHeadRevision();
+        for (DocumentRevision rev = base.next(); rev.behindOrSameAs(head); rev = rev.next()) {
             RevisionMetadata metaData = changes.getMetadataForRevision(rev);
             if (event.equals(LogDiffEvent.AUTHOR_SELECTION_CHANGED) && getSelectedAuthor() != null &&
                     (metaData.getAuthorId().equals(getSelectedAuthor()) || getSelectedAuthor().equals(LogDiffManager.ALL_AUTHORS)) ||
                     event.equals(LogDiffEvent.ONTOLOGY_UPDATED)) {
-                CommitMetadata c = diffFactory.createCommitMetadata(diffFactory.createCommitId(metaData.hashCode()+""),
+                CommitMetadata c = diffFactory.createCommitMetadata(diffFactory.createCommitId(metaData.hashCode() + ""),
                         metaData.getAuthorId(), metaData.getDate(), metaData.getComment());
                 if (!commits.contains(c)) {
                     commits.add(c);
                 }
             }
-            rev = rev.next();
         }
         Collections.sort(commits);
         return commits;

@@ -48,7 +48,10 @@ public class GuiUtils {
             REVIEW_CLEAR_ICON_FILENAME = "review-clear.png",
             REVIEW_COMMIT_ICON_FILENAME = "review-commit.png",
             REVIEW_PENDING_ICON_FILENAME = "review-pending.png",
-            NEW_REVIEW_ICON_FILENAME = "review-new.png";
+            NEW_REVIEW_ICON_FILENAME = "review-new.png",
+            PERMISSION_READ = "permission-read.png",
+            PERMISSION_WRITE = "permission-write.png",
+            PERMISSION_EXECUTE = "permission-execute.png";
 
 
     /* methods */

@@ -32,6 +32,11 @@
 
     <developers>
         <developer>
+            <id>rsgoncalves</id>
+            <name>Rafael Gonçalves</name>
+            <email>rafael.goncalves@stanford.edu</email>
+        </developer>
+        <developer>
             <id>johardi</id>
             <name>Josef Hardi</name>
             <email>josef.hardi@stanford.edu</email>

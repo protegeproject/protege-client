@@ -1,6 +1,7 @@
 package org.protege.editor.owl.client;
 
 import java.io.ByteArrayOutputStream;
+import java.io.File;
 import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.io.InputStreamReader;
@@ -110,6 +111,10 @@ public class LocalHttpClient implements Client {
 	public static LocalHttpClient current_user() {
 		return current_user;
 	}
+	
+	public ServerConfiguration getCurrentConfig() {
+		return config;		
+	}
 
 	public LocalHttpClient(String user, String pwd, String serverAddress) {
 		this.serverAddress = serverAddress;
@@ -211,8 +216,6 @@ public class LocalHttpClient implements Client {
         catch (UnknownMetaprojectObjectIdException e) {
         	throw new ClientRequestException(e.getMessage(), e.getCause());
         }
-		// TODO Auto-generated method stub
-
 	}
 
 	@Override
@@ -277,6 +280,20 @@ public class LocalHttpClient implements Client {
 		initConfig();
 		return serverDoc;
 
+	}
+	
+
+	@Override
+	public void deleteProject(ProjectId projectId, boolean includeFile)
+			throws AuthorizationException, ClientRequestException, RemoteException {
+		String url = HTTPServer.PROJECT + "?projectid=" + projectId.get();
+
+		try {
+			delete(url, true);
+			initConfig();
+		} catch (Exception e) {
+			throw new ClientRequestException(e.getMessage(), e.getCause());
+		} 
 	}
 
 	@Override
@@ -442,22 +459,38 @@ public class LocalHttpClient implements Client {
 	@Override
 	public void createOperation(Operation operation)
 			throws AuthorizationException, ClientRequestException, RemoteException {
-		// TODO Auto-generated method stub
-
+		try {
+            meta_agent.add(operation);
+            putConfig();
+        }
+        catch (IdAlreadyInUseException e) {
+        	throw new ClientRequestException(e.getMessage(), e.getCause());
+        }
 	}
 
 	@Override
 	public void deleteOperation(OperationId operationId)
 			throws AuthorizationException, ClientRequestException, RemoteException {
-		// TODO Auto-generated method stub
-
+		try {
+            meta_agent.remove(op_registry.get(operationId));
+            putConfig();
+        }
+        catch (UnknownMetaprojectObjectIdException e) {
+        	throw new ClientRequestException(e.getMessage(), e.getCause());
+        }
+		
 	}
 
 	@Override
 	public void updateOperation(OperationId operationId, Operation updatedOperation)
 			throws AuthorizationException, ClientRequestException, RemoteException {
-		// TODO Auto-generated method stub
-
+		try {
+            op_registry.update(operationId, updatedOperation);
+            putConfig();
+        }
+        catch (UnknownMetaprojectObjectIdException e) {
+        	throw new ClientRequestException(e.getMessage(), e.getCause());
+        }
 	}
 
 	@Override
@@ -471,14 +504,14 @@ public class LocalHttpClient implements Client {
 	@Override
 	public void retractRole(UserId userId, ProjectId projectId, RoleId roleId)
 			throws AuthorizationException, ClientRequestException, RemoteException {
-		// TODO Auto-generated method stub
+		policy.remove(userId, projectId, roleId);
+        putConfig();
 
 	}
 
 	@Override
 	public Host getHost() throws AuthorizationException, ClientRequestException, RemoteException {
-		// TODO Auto-generated method stub
-		return null;
+		return config.getHost();
 	}
 
 	@Override
@@ -496,14 +529,14 @@ public class LocalHttpClient implements Client {
 
 	@Override
 	public String getRootDirectory() throws AuthorizationException, ClientRequestException, RemoteException {
-		// TODO Auto-generated method stub
-		return null;
+		return config.getServerRoot().toString();
 	}
 
 	@Override
 	public void setRootDirectory(String rootDirectory)
 			throws AuthorizationException, ClientRequestException, RemoteException {
-		// TODO Auto-generated method stub
+		config.setServerRoot(new File(rootDirectory));
+        putConfig();
 
 	}
 
@@ -821,23 +854,11 @@ public class LocalHttpClient implements Client {
 
 
 
-
-	@Override
-	public void deleteProject(ProjectId projectId, boolean includeFile)
-			throws AuthorizationException, ClientRequestException, RemoteException {
-		String url = HTTPServer.PROJECT + "?projectid=" + projectId.get();
-
-		try {
-			delete(url, true);
-			initConfig();
-		} catch (Exception e) {
-			throw new ClientRequestException(e.getMessage(), e.getCause());
-		} 
-	}	
+	
 
 	private Response post(String url, RequestBody body, boolean cred) {
 		Request request;
-		req_client = new OkHttpClient.Builder().readTimeout(180, TimeUnit.SECONDS).build();
+		
 		if (cred) {
 			request = new Request.Builder()
 					.url(serverAddress + url)
@@ -865,7 +886,7 @@ public class LocalHttpClient implements Client {
 	
 	private Response delete(String url, boolean cred) {
 		Request request;
-		req_client = new OkHttpClient.Builder().readTimeout(180, TimeUnit.SECONDS).build();
+		
 		if (cred) {
 			request = new Request.Builder()
 					.url(serverAddress + url)
@@ -892,7 +913,6 @@ public class LocalHttpClient implements Client {
 	}
 
 	private Response get(String url) {
-		req_client = new OkHttpClient.Builder().readTimeout(180, TimeUnit.SECONDS).build();
 		Request request = new Request.Builder()
 				.url(serverAddress + url)
 				.addHeader(AUTH_HEADER, auth_header_value)

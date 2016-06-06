@@ -3,10 +3,14 @@ package org.protege.editor.owl.client.admin.ui;
 import org.protege.editor.core.Disposable;
 import org.protege.editor.core.ui.error.ErrorLogPanel;
 import org.protege.editor.owl.OWLEditorKit;
+import org.protege.editor.owl.client.LocalHttpClient;
 import org.protege.editor.owl.client.admin.AdminTabManager;
 import org.protege.editor.owl.client.admin.model.AdminTabEvent;
 import org.protege.editor.owl.client.admin.model.AdminTabListener;
 import org.protege.editor.owl.client.diff.ui.GuiUtils;
+
+import edu.stanford.protege.metaproject.api.ServerConfiguration;
+import edu.stanford.protege.metaproject.serialization.DefaultJsonSerializer;
 
 import javax.swing.*;
 import javax.swing.border.Border;
@@ -79,9 +83,8 @@ public class JsonSerializationPanel extends JPanel implements Disposable {
     }
 
     private String getJsonString() {
-//        DefaultJsonSerializer serializer = new DefaultJsonSerializer();
-//        return serializer.write(configManager.getServerConfiguration(), ServerConfiguration.class);
-        return "";
+        DefaultJsonSerializer serializer = new DefaultJsonSerializer();
+        return serializer.write(LocalHttpClient.current_user().getCurrentConfig(), ServerConfiguration.class);
     }
 
     @Override

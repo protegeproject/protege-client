@@ -137,10 +137,12 @@ public class LocalClient implements Client {
     }
 
     @Override
-    public void updateUser(UserId userId, User updatedUser) throws AuthorizationException, ClientRequestException, RemoteException {
+    public void updateUser(UserId userId, User updatedUser, Optional<? extends Password> updatedPassword)
+            throws AuthorizationException, ClientRequestException, RemoteException {
         try {
             connect();
-            server.updateUser(authToken, userId, updatedUser);
+            Password passwordValue = (updatedPassword.isPresent()) ? updatedPassword.get() : null;
+            server.updateUser(authToken, userId, updatedUser, passwordValue);
         }
         catch (ServerServiceException e) {
             throw new ClientRequestException(e.getMessage(), e.getCause());

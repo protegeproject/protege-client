@@ -95,6 +95,8 @@ public interface ClientRequests {
      *            The target user to modify identified by the ID
      * @param updatedUser
      *            The new updated user to replace with
+     * @param updatedPassword
+     *            An optional new updated password
      * @throws AuthorizationException
      *             If the user doesn't have the permission to request this
      *             service.
@@ -105,7 +107,7 @@ public interface ClientRequests {
      *             communication problems, failure during parameter or return
      *             value marshalling or unmarshalling, protocol errors.
      */
-    void updateUser(UserId userId, User updatedUser)
+    void updateUser(UserId userId, User updatedUser, Optional<? extends Password> updatedPassword)
             throws AuthorizationException, ClientRequestException, RemoteException;
 
     /**

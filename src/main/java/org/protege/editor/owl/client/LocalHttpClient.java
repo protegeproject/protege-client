@@ -24,7 +24,6 @@ import org.protege.editor.owl.client.util.ClientUtils;
 import org.protege.editor.owl.server.api.CommitBundle;
 import org.protege.editor.owl.server.api.exception.AuthorizationException;
 import org.protege.editor.owl.server.api.exception.OutOfSyncException;
-import org.protege.editor.owl.server.api.exception.ServerServiceException;
 import org.protege.editor.owl.server.http.HTTPServer;
 import org.protege.editor.owl.server.http.messages.HttpAuthResponse;
 import org.protege.editor.owl.server.http.messages.LoginCreds;
@@ -105,6 +104,9 @@ public class LocalHttpClient implements Client {
 	private Policy policy;
 	private OperationRegistry op_registry;
 	
+	private boolean save_cancel_semantics = true;
+	private boolean config_state_changed = false;
+	
 
 	private static LocalHttpClient current_user;
 
@@ -127,7 +129,7 @@ public class LocalHttpClient implements Client {
 		initConfig();
 	}
 	
-	private void initConfig() {
+	public void initConfig() {
 		config = getConfig();
 		proj_registry = config.getMetaproject().getProjectRegistry();
 		user_registry = config.getMetaproject().getUserRegistry();
@@ -136,6 +138,7 @@ public class LocalHttpClient implements Client {
 		role_registry = config.getMetaproject().getRoleRegistry();
 		op_registry = config.getMetaproject().getOperationRegistry();
 		policy = config.getMetaproject().getPolicy();
+		config_state_changed = false;
 		
 	}
 	
@@ -945,7 +948,20 @@ public class LocalHttpClient implements Client {
 		
 	}
 	
-	private void putConfig() {
+	public void putConfig() {
+		if (save_cancel_semantics) {
+			config_state_changed = true;		
+			
+		} else {
+			reallyPutConfig();
+		}		
+	}
+	
+	public boolean configStateChanged() {
+		return config_state_changed;
+	}
+	
+	public void reallyPutConfig() {
 		
 		final MediaType JSON  = MediaType.parse("application/json; charset=utf-8");
 		String url = HTTPServer.METAPROJECT;
@@ -954,8 +970,9 @@ public class LocalHttpClient implements Client {
 		RequestBody body = RequestBody.create(JSON, serl.write(this.config, ServerConfiguration.class));
 
 		post(url, body, true);
-		
+		initConfig();
 	}
+
 
 
 

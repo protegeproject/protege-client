@@ -527,277 +527,327 @@ public class LocalClient implements Client {
      */
 
     @Override
-    public boolean canAddAxiom() throws ClientRequestException {
+    public boolean canAddAxiom() {
+        boolean isAllowed = false;
         try {
             connect();
-            return server.isOperationAllowed(authToken, Operations.ADD_AXIOM.getId(), getActiveProject(), userId);
+            isAllowed = server.isOperationAllowed(authToken, Operations.ADD_AXIOM.getId(), getActiveProject(), userId);
         }
         catch (AuthorizationException | ServerServiceException | RemoteException | SynchronizationException e) {
-            throw new ClientRequestException(e.getMessage(), e);
+            // TODO Add logging
         }
+        return isAllowed;
     }
 
     @Override
-    public boolean canRemoveAxiom() throws ClientRequestException {
+    public boolean canRemoveAxiom() {
+        boolean isAllowed = false;
         try {
             connect();
-            return server.isOperationAllowed(authToken, Operations.REMOVE_AXIOM.getId(), getActiveProject(), userId);
+            isAllowed = server.isOperationAllowed(authToken, Operations.REMOVE_AXIOM.getId(), getActiveProject(), userId);
         }
         catch (AuthorizationException | ServerServiceException | RemoteException | SynchronizationException e) {
-            throw new ClientRequestException(e.getMessage(), e);
+            // TODO Add logging
         }
+        return isAllowed;
     }
 
     @Override
-    public boolean canAddAnnotation() throws ClientRequestException {
+    public boolean canAddAnnotation() {
+        boolean isAllowed = false;
         try {
             connect();
-            return server.isOperationAllowed(authToken, Operations.ADD_ONTOLOGY_ANNOTATION.getId(), getActiveProject(), userId);
+            isAllowed = server.isOperationAllowed(authToken, Operations.ADD_ONTOLOGY_ANNOTATION.getId(), getActiveProject(), userId);
         }
         catch (AuthorizationException | ServerServiceException | RemoteException | SynchronizationException e) {
-            throw new ClientRequestException(e.getMessage(), e);
+            // TODO Add logging
         }
+        return isAllowed;
     }
 
     @Override
-    public boolean canRemoveAnnotation() throws ClientRequestException {
+    public boolean canRemoveAnnotation() {
+        boolean isAllowed = false;
         try {
             connect();
-            return server.isOperationAllowed(authToken, Operations.REMOVE_ONTOLOGY_ANNOTATION.getId(), getActiveProject(), userId);
+            isAllowed = server.isOperationAllowed(authToken, Operations.REMOVE_ONTOLOGY_ANNOTATION.getId(), getActiveProject(), userId);
         }
         catch (AuthorizationException | ServerServiceException | RemoteException | SynchronizationException e) {
-            throw new ClientRequestException(e.getMessage(), e);
+            // TODO Add logging
         }
+        return isAllowed;
     }
 
     @Override
-    public boolean canAddImport() throws ClientRequestException {
+    public boolean canAddImport() {
+        boolean isAllowed = false;
         try {
             connect();
-            return server.isOperationAllowed(authToken, Operations.ADD_IMPORT.getId(), getActiveProject(), userId);
+            isAllowed = server.isOperationAllowed(authToken, Operations.ADD_IMPORT.getId(), getActiveProject(), userId);
         }
         catch (AuthorizationException | ServerServiceException | RemoteException | SynchronizationException e) {
-            throw new ClientRequestException(e.getMessage(), e);
+            // TODO Add logging
         }
+        return isAllowed;
     }
 
     @Override
-    public boolean canRemoveImport() throws ClientRequestException {
+    public boolean canRemoveImport() {
+        boolean isAllowed = false;
         try {
             connect();
-            return server.isOperationAllowed(authToken, Operations.REMOVE_IMPORT.getId(), getActiveProject(), userId);
+            isAllowed = server.isOperationAllowed(authToken, Operations.REMOVE_IMPORT.getId(), getActiveProject(), userId);
         }
         catch (AuthorizationException | ServerServiceException | RemoteException | SynchronizationException e) {
-            throw new ClientRequestException(e.getMessage(), e);
+            // TODO Add logging
         }
+        return isAllowed;
     }
 
     @Override
-    public boolean canModifyOntologyId() throws ClientRequestException {
+    public boolean canModifyOntologyId() {
+        boolean isAllowed = false;
         try {
             connect();
-            return server.isOperationAllowed(authToken, Operations.MODIFY_ONTOLOGY_IRI.getId(), getActiveProject(), userId);
+            isAllowed = server.isOperationAllowed(authToken, Operations.MODIFY_ONTOLOGY_IRI.getId(), getActiveProject(), userId);
         }
         catch (AuthorizationException | ServerServiceException | RemoteException | SynchronizationException e) {
-            throw new ClientRequestException(e.getMessage(), e);
+            // TODO Add logging
         }
+        return isAllowed;
     }
 
     @Override
-    public boolean canCreateUser() throws ClientRequestException {
+    public boolean canCreateUser() {
+        boolean isAllowed = false;
         try {
             connect();
-            return server.isOperationAllowed(authToken, Operations.ADD_USER.getId(), getActiveProject(), userId);
+            isAllowed = server.isOperationAllowed(authToken, Operations.ADD_USER.getId(), getActiveProject(), userId);
         }
         catch (AuthorizationException | ServerServiceException | RemoteException | SynchronizationException e) {
-            throw new ClientRequestException(e.getMessage(), e);
+            // TODO Add logging
         }
+        return isAllowed;
     }
 
     @Override
-    public boolean canDeleteUser() throws ClientRequestException {
+    public boolean canDeleteUser() {
+        boolean isAllowed = false;
         try {
             connect();
-            return server.isOperationAllowed(authToken, Operations.REMOVE_USER.getId(), getActiveProject(), userId);
+            isAllowed = server.isOperationAllowed(authToken, Operations.REMOVE_USER.getId(), getActiveProject(), userId);
         }
         catch (AuthorizationException | ServerServiceException | RemoteException | SynchronizationException e) {
-            throw new ClientRequestException(e.getMessage(), e);
+            // TODO Add logging
         }
+        return isAllowed;
     }
 
     @Override
-    public boolean canUpdateUser() throws ClientRequestException {
+    public boolean canUpdateUser() {
+        boolean isAllowed = false;
         try {
             connect();
-            return server.isOperationAllowed(authToken, Operations.MODIFY_USER.getId(), getActiveProject(), userId);
+            isAllowed = server.isOperationAllowed(authToken, Operations.MODIFY_USER.getId(), getActiveProject(), userId);
         }
         catch (AuthorizationException | ServerServiceException | RemoteException | SynchronizationException e) {
-            throw new ClientRequestException(e.getMessage(), e);
+            // TODO Add logging
         }
+        return isAllowed;
     }
 
     @Override
-    public boolean canCreateProject() throws ClientRequestException {
+    public boolean canCreateProject() {
+        boolean isAllowed = false;
         try {
             connect();
-            return server.isOperationAllowed(authToken, Operations.ADD_PROJECT.getId(), getActiveProject(), userId);
+            isAllowed = server.isOperationAllowed(authToken, Operations.ADD_PROJECT.getId(), getActiveProject(), userId);
         }
         catch (AuthorizationException | ServerServiceException | RemoteException | SynchronizationException e) {
-            throw new ClientRequestException(e.getMessage(), e);
+            // TODO Add logging
         }
+        return isAllowed;
     }
 
     @Override
-    public boolean canDeleteProject() throws ClientRequestException {
+    public boolean canDeleteProject() {
+        boolean isAllowed = false;
         try {
             connect();
-            return server.isOperationAllowed(authToken, Operations.REMOVE_PROJECT.getId(), getActiveProject(), userId);
+            isAllowed = server.isOperationAllowed(authToken, Operations.REMOVE_PROJECT.getId(), getActiveProject(), userId);
         }
         catch (AuthorizationException | ServerServiceException | RemoteException | SynchronizationException e) {
-            throw new ClientRequestException(e.getMessage(), e);
+            // TODO Add logging
         }
+        return isAllowed;
     }
 
     @Override
-    public boolean canUpdateProject() throws ClientRequestException {
+    public boolean canUpdateProject() {
+        boolean isAllowed = false;
         try {
             connect();
-            return server.isOperationAllowed(authToken, Operations.MODIFY_PROJECT.getId(), getActiveProject(), userId);
+            isAllowed = server.isOperationAllowed(authToken, Operations.MODIFY_PROJECT.getId(), getActiveProject(), userId);
         }
         catch (AuthorizationException | ServerServiceException | RemoteException | SynchronizationException e) {
-            throw new ClientRequestException(e.getMessage(), e);
+            // TODO Add logging
         }
+        return isAllowed;
     }
 
     @Override
-    public boolean canOpenProject() throws ClientRequestException {
+    public boolean canOpenProject() {
+        boolean isAllowed = false;
         try {
             connect();
-            return server.isOperationAllowed(authToken, Operations.OPEN_PROJECT.getId(), getActiveProject(), userId);
+            isAllowed = server.isOperationAllowed(authToken, Operations.OPEN_PROJECT.getId(), getActiveProject(), userId);
         }
         catch (AuthorizationException | ServerServiceException | RemoteException | SynchronizationException e) {
-            throw new ClientRequestException(e.getMessage(), e);
+            // TODO Add logging
         }
+        return isAllowed;
     }
 
     @Override
-    public boolean canCreateRole() throws ClientRequestException {
+    public boolean canCreateRole() {
+        boolean isAllowed = false;
         try {
             connect();
-            return server.isOperationAllowed(authToken, Operations.ADD_ROLE.getId(), getActiveProject(), userId);
+            isAllowed = server.isOperationAllowed(authToken, Operations.ADD_ROLE.getId(), getActiveProject(), userId);
         }
         catch (AuthorizationException | ServerServiceException | RemoteException | SynchronizationException e) {
-            throw new ClientRequestException(e.getMessage(), e);
+            // TODO Add logging
         }
+        return isAllowed;
     }
 
     @Override
-    public boolean canDeleteRole() throws ClientRequestException {
+    public boolean canDeleteRole() {
+        boolean isAllowed = false;
         try {
             connect();
-            return server.isOperationAllowed(authToken, Operations.REMOVE_ROLE.getId(), getActiveProject(), userId);
+            isAllowed = server.isOperationAllowed(authToken, Operations.REMOVE_ROLE.getId(), getActiveProject(), userId);
         }
         catch (AuthorizationException | ServerServiceException | RemoteException | SynchronizationException e) {
-            throw new ClientRequestException(e.getMessage(), e);
+            // TODO Add logging
         }
+        return isAllowed;
     }
 
     @Override
-    public boolean canUpdateRole() throws ClientRequestException {
+    public boolean canUpdateRole() {
+        boolean isAllowed = false;
         try {
             connect();
-            return server.isOperationAllowed(authToken, Operations.MODIFY_ROLE.getId(), getActiveProject(), userId);
+            isAllowed = server.isOperationAllowed(authToken, Operations.MODIFY_ROLE.getId(), getActiveProject(), userId);
         }
         catch (AuthorizationException | ServerServiceException | RemoteException | SynchronizationException e) {
-            throw new ClientRequestException(e.getMessage(), e);
+            // TODO Add logging
         }
+        return isAllowed;
     }
 
     @Override
-    public boolean canCreateOperation() throws ClientRequestException {
+    public boolean canCreateOperation() {
+        boolean isAllowed = false;
         try {
             connect();
-            return server.isOperationAllowed(authToken, Operations.ADD_OPERATION.getId(), getActiveProject(), userId);
+            isAllowed = server.isOperationAllowed(authToken, Operations.ADD_OPERATION.getId(), getActiveProject(), userId);
         }
         catch (AuthorizationException | ServerServiceException | RemoteException | SynchronizationException e) {
-            throw new ClientRequestException(e.getMessage(), e);
+            // TODO Add logging
         }
+        return isAllowed;
     }
 
     @Override
-    public boolean canDeleteOperation() throws ClientRequestException {
+    public boolean canDeleteOperation() {
+        boolean isAllowed = false;
         try {
             connect();
-            return server.isOperationAllowed(authToken, Operations.REMOVE_OPERATION.getId(), getActiveProject(), userId);
+            isAllowed = server.isOperationAllowed(authToken, Operations.REMOVE_OPERATION.getId(), getActiveProject(), userId);
         }
         catch (AuthorizationException | ServerServiceException | RemoteException | SynchronizationException e) {
-            throw new ClientRequestException(e.getMessage(), e);
+            // TODO Add logging
         }
+        return isAllowed;
     }
 
     @Override
-    public boolean canUpdateOperation() throws ClientRequestException {
+    public boolean canUpdateOperation() {
+        boolean isAllowed = false;
         try {
             connect();
-            return server.isOperationAllowed(authToken, Operations.MODIFY_OPERATION.getId(), getActiveProject(), userId);
+            isAllowed = server.isOperationAllowed(authToken, Operations.MODIFY_OPERATION.getId(), getActiveProject(), userId);
         }
         catch (AuthorizationException | ServerServiceException | RemoteException | SynchronizationException e) {
-            throw new ClientRequestException(e.getMessage(), e);
+            // TODO Add logging
         }
+        return isAllowed;
     }
 
     @Override
-    public boolean canAssignRole() throws ClientRequestException {
+    public boolean canAssignRole() {
+        boolean isAllowed = false;
         try {
             connect();
-            return server.isOperationAllowed(authToken, Operations.ASSIGN_ROLE.getId(), getActiveProject(), userId);
+            isAllowed = server.isOperationAllowed(authToken, Operations.ASSIGN_ROLE.getId(), getActiveProject(), userId);
         }
         catch (AuthorizationException | ServerServiceException | RemoteException | SynchronizationException e) {
-            throw new ClientRequestException(e.getMessage(), e);
+            // TODO Add logging
         }
+        return isAllowed;
     }
 
     @Override
-    public boolean canRetractRole() throws ClientRequestException {
+    public boolean canRetractRole() {
+        boolean isAllowed = false;
         try {
             connect();
-            return server.isOperationAllowed(authToken, Operations.RETRACT_ROLE.getId(), getActiveProject(), userId);
+            isAllowed = server.isOperationAllowed(authToken, Operations.RETRACT_ROLE.getId(), getActiveProject(), userId);
         }
         catch (AuthorizationException | ServerServiceException | RemoteException | SynchronizationException e) {
-            throw new ClientRequestException(e.getMessage(), e);
+            // TODO Add logging
         }
+        return isAllowed;
     }
 
     @Override
-    public boolean canStopServer() throws ClientRequestException {
+    public boolean canStopServer() {
+        boolean isAllowed = false;
         try {
             connect();
-            return server.isOperationAllowed(authToken, Operations.STOP_SERVER.getId(), getActiveProject(), userId);
+            isAllowed = server.isOperationAllowed(authToken, Operations.STOP_SERVER.getId(), getActiveProject(), userId);
         }
         catch (AuthorizationException | ServerServiceException | RemoteException | SynchronizationException e) {
-            throw new ClientRequestException(e.getMessage(), e);
+            // TODO Add logging
         }
+        return isAllowed;
     }
 
     @Override
-    public boolean canUpdateServerConfig() throws ClientRequestException {
+    public boolean canUpdateServerConfig() {
+        boolean isAllowed = false;
         try {
             connect();
-            return server.isOperationAllowed(authToken, Operations.MODIFY_SERVER_SETTINGS.getId(), getActiveProject(), userId);
+            isAllowed = server.isOperationAllowed(authToken, Operations.MODIFY_SERVER_SETTINGS.getId(), getActiveProject(), userId);
         }
         catch (AuthorizationException | ServerServiceException | RemoteException | SynchronizationException e) {
-            throw new ClientRequestException(e.getMessage(), e);
+            // TODO Add logging
         }
+        return isAllowed;
     }
 
     @Override
-    public boolean canPerformOperation(OperationId operationId) throws ClientRequestException {
+    public boolean canPerformOperation(OperationId operationId) {
+        boolean isAllowed = false;
         try {
             connect();
-            return server.isOperationAllowed(authToken, operationId, getActiveProject(), userId);
+            isAllowed = server.isOperationAllowed(authToken, operationId, getActiveProject(), userId);
         }
         catch (AuthorizationException | ServerServiceException | RemoteException | SynchronizationException e) {
-            throw new ClientRequestException(e.getMessage(), e);
+            // TODO Add logging
         }
+        return isAllowed;
     }
 }

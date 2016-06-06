@@ -8,6 +8,8 @@ import java.io.ObjectInputStream;
 import java.io.ObjectOutputStream;
 import java.net.URI;
 import java.rmi.RemoteException;
+import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
@@ -21,6 +23,7 @@ import org.protege.editor.owl.client.util.ClientUtils;
 import org.protege.editor.owl.server.api.CommitBundle;
 import org.protege.editor.owl.server.api.exception.AuthorizationException;
 import org.protege.editor.owl.server.api.exception.OutOfSyncException;
+import org.protege.editor.owl.server.api.exception.ServerServiceException;
 import org.protege.editor.owl.server.http.HTTPServer;
 import org.protege.editor.owl.server.http.messages.HttpAuthResponse;
 import org.protege.editor.owl.server.http.messages.LoginCreds;
@@ -37,23 +40,36 @@ import com.google.gson.Gson;
 
 import edu.stanford.protege.metaproject.Manager;
 import edu.stanford.protege.metaproject.api.AuthToken;
+import edu.stanford.protege.metaproject.api.AuthenticationRegistry;
 import edu.stanford.protege.metaproject.api.Description;
 import edu.stanford.protege.metaproject.api.Host;
+import edu.stanford.protege.metaproject.api.MetaprojectAgent;
 import edu.stanford.protege.metaproject.api.MetaprojectFactory;
 import edu.stanford.protege.metaproject.api.Name;
 import edu.stanford.protege.metaproject.api.Operation;
 import edu.stanford.protege.metaproject.api.OperationId;
+import edu.stanford.protege.metaproject.api.OperationRegistry;
+import edu.stanford.protege.metaproject.api.Policy;
 import edu.stanford.protege.metaproject.api.Project;
 import edu.stanford.protege.metaproject.api.ProjectId;
 import edu.stanford.protege.metaproject.api.ProjectOptions;
+import edu.stanford.protege.metaproject.api.ProjectRegistry;
 import edu.stanford.protege.metaproject.api.Role;
 import edu.stanford.protege.metaproject.api.RoleId;
+import edu.stanford.protege.metaproject.api.RoleRegistry;
 import edu.stanford.protege.metaproject.api.SaltedPasswordDigest;
 import edu.stanford.protege.metaproject.api.Serializer;
 import edu.stanford.protege.metaproject.api.ServerConfiguration;
 import edu.stanford.protege.metaproject.api.User;
 import edu.stanford.protege.metaproject.api.UserId;
+import edu.stanford.protege.metaproject.api.UserRegistry;
+import edu.stanford.protege.metaproject.api.exception.IdAlreadyInUseException;
 import edu.stanford.protege.metaproject.api.exception.ObjectConversionException;
+import edu.stanford.protege.metaproject.api.exception.ProjectNotInPolicyException;
+import edu.stanford.protege.metaproject.api.exception.UnknownMetaprojectObjectIdException;
+import edu.stanford.protege.metaproject.api.exception.UserNotInPolicyException;
+import edu.stanford.protege.metaproject.impl.AuthorizedUserToken;
+import edu.stanford.protege.metaproject.impl.UserIdImpl;
 import edu.stanford.protege.metaproject.serialization.DefaultJsonSerializer;
 import okhttp3.MediaType;
 import okhttp3.OkHttpClient;
@@ -70,6 +86,7 @@ public class LocalHttpClient implements Client {
 	private String userId;
 
 	private UserInfo userInfo;
+	private AuthToken auth_token = null;
 
 	private String auth_header_value;
 	private final String AUTH_HEADER = "Authorization";
@@ -78,7 +95,15 @@ public class LocalHttpClient implements Client {
 
 	OkHttpClient req_client = new OkHttpClient.Builder().readTimeout(180, TimeUnit.SECONDS).build();
 	
-	ServerConfiguration config;
+	private ServerConfiguration config;
+	private AuthenticationRegistry auth_registry;
+	private ProjectRegistry proj_registry;
+	private UserRegistry user_registry;
+	private MetaprojectAgent meta_agent;
+	private RoleRegistry role_registry;
+	private Policy policy;
+	private OperationRegistry op_registry;
+	
 
 	private static LocalHttpClient current_user;
 
@@ -94,40 +119,22 @@ public class LocalHttpClient implements Client {
 		this.auth_header_value = "Basic " + new String(Base64.encodeBase64(toenc.getBytes()));
 		LocalHttpClient.current_user = this;
 		//check if user is allowed to edit config
+		initConfig();
+	}
+	
+	private void initConfig() {
 		config = getConfig();
-	}
-	
-	private ServerConfiguration getConfig() {
-		String url = HTTPServer.METAPROJECT;
-		Response response = get(url);
-	
-		Serializer<Gson> serl = new DefaultJsonSerializer();
-		
-		ServerConfiguration scfg = null;
-		
-
-		try {
-			scfg = (ServerConfiguration) serl.parse(new InputStreamReader(response.body().byteStream()), ServerConfiguration.class);
-		} catch (FileNotFoundException | ObjectConversionException e) {
-			e.printStackTrace();
-		}
-		return scfg;
+		proj_registry = config.getMetaproject().getProjectRegistry();
+		user_registry = config.getMetaproject().getUserRegistry();
+		auth_registry = config.getAuthenticationRegistry();
+		meta_agent = config.getMetaproject().getMetaprojectAgent();
+		role_registry = config.getMetaproject().getRoleRegistry();
+		op_registry = config.getMetaproject().getOperationRegistry();
+		policy = config.getMetaproject().getPolicy();
 		
 	}
 	
-	private void putConfig() {
-		
-		final MediaType JSON  = MediaType.parse("application/json; charset=utf-8");
-		String url = HTTPServer.METAPROJECT;
-
-		Serializer<Gson> serl = new DefaultJsonSerializer();
-		RequestBody body = RequestBody.create(JSON, serl.write(this.config, ServerConfiguration.class));
-
-		post(url, body, true);
-		
-	}
-
-
+	
 	private UserInfo login(String user, String pwd) {
 
 		final MediaType JSON  = MediaType.parse("application/json; charset=utf-8");
@@ -151,34 +158,59 @@ public class LocalHttpClient implements Client {
 
 
 	}
+	
+	@Override
+    public void setActiveProject(ProjectId projectId) {
+        this.projectId = projectId;
+    }
 
-	// not clearly needed
-	public void setActiveProject(ProjectId projectId) {
-		this.projectId = projectId;
-	}
-
-	// only needed for RMI version
+	
 	@Override
 	public AuthToken getAuthToken() {
-		// need to get rid of this method
-		return null;
+		if (auth_token != null) {
+			
+		} else {
+			User user = null;
+			try {
+				user = user_registry.get(new UserIdImpl(userId));
+			} catch (UnknownMetaprojectObjectIdException e) {
+				// TODO Auto-generated catch block
+				e.printStackTrace();
+			}
+			auth_token = new AuthorizedUserToken(user);
+		}
+		return auth_token;
 	}
 
 	@Override
 	public List<User> getAllUsers() throws AuthorizationException, ClientRequestException, RemoteException {
-		// TODO Auto-generated method stub
-		return null;
+		return new ArrayList<User>(user_registry.getEntries());
 	}
 
 	@Override
 	public void createUser(User newUser, Optional<SaltedPasswordDigest> password)
 			throws AuthorizationException, ClientRequestException, RemoteException {
-		// TODO Auto-generated method stub
-
+		try {
+			meta_agent.add(newUser);
+			if (password.isPresent()) {
+				auth_registry.add(newUser.getId(), password.get());
+			}
+			putConfig();
+		}
+		catch (IdAlreadyInUseException e) {
+			throw new ClientRequestException(e.getMessage(), e.getCause());
+		}
 	}
 
 	@Override
 	public void deleteUser(UserId userId) throws AuthorizationException, ClientRequestException, RemoteException {
+		try {
+            meta_agent.remove(user_registry.get(userId));
+            putConfig();
+        }
+        catch (UnknownMetaprojectObjectIdException e) {
+        	throw new ClientRequestException(e.getMessage(), e.getCause());
+        }
 		// TODO Auto-generated method stub
 
 	}
@@ -186,13 +218,94 @@ public class LocalHttpClient implements Client {
 	@Override
 	public void updateUser(UserId userId, User updatedUser)
 			throws AuthorizationException, ClientRequestException, RemoteException {
-		// TODO Auto-generated method stub
+		try {
+            user_registry.update(userId, updatedUser);
+            putConfig();
+        }
+        catch (UnknownMetaprojectObjectIdException e) {
+        	throw new ClientRequestException(e.getMessage(), e.getCause());
+        }
+	}
+	
+	@Override
+	public ServerDocument createProject(ProjectId projectId, Name projectName, Description description, UserId owner,
+			Optional<ProjectOptions> options, Optional<CommitBundle> initialCommit)
+					throws AuthorizationException, ClientRequestException, RemoteException {
+
+		String url = HTTPServer.PROJECT;
+
+		Response response;
+		ServerDocument serverDoc = null;
+
+		try {
+
+			ByteArrayOutputStream b = new ByteArrayOutputStream();
+			ObjectOutputStream os = new ObjectOutputStream(b);
+
+			os.writeObject(projectId);
+			os.writeObject(projectName);
+			os.writeObject(description);
+			os.writeObject(owner);
+			ProjectOptions popts = (options.isPresent()) ? options.get() : null;
+			os.writeObject(popts);
+
+			RequestBody req = RequestBody.create(MediaType.parse("application"), b.toByteArray());
+
+			response = post(url, req, true);
+
+			ObjectInputStream ois = new ObjectInputStream(response.body().byteStream());
+			serverDoc = (ServerDocument) ois.readObject();
+
+
+		} catch (Exception e) {
+			throw new ClientRequestException(e.getMessage(), e.getCause());
+		}
+
+
+		// Do initial commit if the commit bundle is not empty
+		if (initialCommit.isPresent()) {
+
+			try {
+
+				commit(projectId, initialCommit.get());
+
+			} catch (Exception e) {
+				throw new ClientRequestException(e.getMessage(), e.getCause());
+			}
+
+		}
+		initConfig();
+		return serverDoc;
+
+	}
+
+	@Override
+	public ServerDocument openProject(ProjectId projectId)
+			throws AuthorizationException, ClientRequestException, RemoteException {
+
+		String url = HTTPServer.PROJECT + "?projectid=" + projectId.get();
+
+
+		okhttp3.Response response;
+		ServerDocument sdoc = null;
+		try {
+			response = get(url);
+
+			ObjectInputStream ois = new ObjectInputStream(response.body().byteStream());
+			sdoc = (ServerDocument) ois.readObject();
+
+
+		} catch (Exception e) {
+			throw new ClientRequestException(e.getMessage(), e.getCause());
+		}   
+		return sdoc;
 
 	}
 
 	@Override
 	public List<Project> getProjects(UserId userId)
 			throws AuthorizationException, ClientRequestException, RemoteException {
+		// TODO: This can now be done locally
 
 		String url = HTTPServer.PROJECTS + "?userid=" + userId.get();
 
@@ -205,17 +318,14 @@ public class LocalHttpClient implements Client {
 
 
 		} catch (Exception e) {
-			// TODO Auto-generated catch block
-			e.printStackTrace();
+			throw new ClientRequestException(e.getMessage(), e.getCause());
 		}
-		return null;
 
 	}
 
 	@Override
-	public List<Project> getAllProjects() throws AuthorizationException, ClientRequestException, RemoteException {
-		// TODO Auto-generated method stub
-		return null;
+	public List<Project> getAllProjects() throws AuthorizationException, ClientRequestException, RemoteException {		
+		return new ArrayList<>(proj_registry.getEntries());
 	}
 
 
@@ -223,67 +333,110 @@ public class LocalHttpClient implements Client {
 	@Override
 	public void updateProject(ProjectId projectId, Project updatedProject)
 			throws AuthorizationException, ClientRequestException, RemoteException {
-		// TODO Auto-generated method stub
-
+		try {
+            proj_registry.update(projectId, updatedProject);
+            putConfig();
+        }
+        catch (UnknownMetaprojectObjectIdException e) {
+        	throw new ClientRequestException(e.getMessage(), e.getCause());
+        }
 	}
 
 	@Override
 	public Map<ProjectId, List<Role>> getRoles(UserId userId)
 			throws AuthorizationException, ClientRequestException, RemoteException {
-		// TODO Auto-generated method stub
-		return null;
+		Map<ProjectId, List<Role>> roleMap = new HashMap<>();
+        for (Project project : getAllProjects()) {
+            roleMap.put(project.getId(), getRoles(userId, project.getId()));
+        }
+        return roleMap;
 	}
 
 	@Override
 	public List<Role> getRoles(UserId userId, ProjectId projectId)
 			throws AuthorizationException, ClientRequestException, RemoteException {
-		// TODO Auto-generated method stub
-		return null;
+		try {
+            return new ArrayList<>(meta_agent.getRoles(userId, projectId));
+        }
+        catch (UserNotInPolicyException | ProjectNotInPolicyException e) {
+        	throw new ClientRequestException(e.getMessage(), e.getCause());
+        }
 	}
 
 	@Override
 	public List<Role> getAllRoles() throws AuthorizationException, ClientRequestException, RemoteException {
-		// TODO Auto-generated method stub
-		return null;
+		return new ArrayList<Role>(this.role_registry.getEntries());
 	}
 
 	@Override
 	public void createRole(Role newRole) throws AuthorizationException, ClientRequestException, RemoteException {
-		// TODO Auto-generated method stub
-
+		 try {
+			meta_agent.add(newRole);
+			putConfig();
+		} catch (IdAlreadyInUseException e) {
+			throw new ClientRequestException(e.getMessage(), e.getCause());
+		}
 	}
 
 	@Override
 	public void deleteRole(RoleId roleId) throws AuthorizationException, ClientRequestException, RemoteException {
-		// TODO Auto-generated method stub
-
+		try {
+			meta_agent.remove(role_registry.get(roleId));
+			putConfig();
+		} catch (UnknownMetaprojectObjectIdException e) {
+			throw new ClientRequestException(e.getMessage(), e.getCause());
+		}
 	}
 
 	@Override
 	public void updateRole(RoleId roleId, Role updatedRole)
 			throws AuthorizationException, ClientRequestException, RemoteException {
-		// TODO Auto-generated method stub
-
+		try {
+            role_registry.update(roleId, updatedRole);
+            putConfig();
+        }
+        catch (UnknownMetaprojectObjectIdException e) {
+        	throw new ClientRequestException(e.getMessage(), e.getCause());
+        }
 	}
 
 	@Override
 	public Map<ProjectId, List<Operation>> getOperations(UserId userId)
 			throws AuthorizationException, ClientRequestException, RemoteException {
-		// TODO Auto-generated method stub
-		return null;
+		Map<ProjectId, List<Operation>> operationMap = new HashMap<>();
+        for (Project project : getAllProjects()) {
+            operationMap.put(project.getId(), getOperations(userId, project.getId()));
+        }
+        return operationMap;
+		
 	}
 
 	@Override
 	public List<Operation> getOperations(UserId userId, ProjectId projectId)
 			throws AuthorizationException, ClientRequestException, RemoteException {
-		// TODO Auto-generated method stub
-		return null;
+		try {
+            return new ArrayList<>(meta_agent.getOperations(userId, projectId));
+        }
+        catch (UserNotInPolicyException | ProjectNotInPolicyException e) {
+        	throw new ClientRequestException(e.getMessage(), e.getCause());
+        }
 	}
+	
+	@Override
+	public List<Operation> getOperations(RoleId roleId)
+			throws AuthorizationException, ClientRequestException, RemoteException {
+		try {
+            return new ArrayList<>(meta_agent.getOperations(role_registry.get(roleId)));
+        }
+        catch (UnknownMetaprojectObjectIdException e) {
+        	throw new ClientRequestException(e.getMessage(), e.getCause());
+        }
+	}	
+
 
 	@Override
 	public List<Operation> getAllOperations() throws AuthorizationException, ClientRequestException, RemoteException {
-		// TODO Auto-generated method stub
-		return null;
+		return new ArrayList<>(op_registry.getEntries());
 	}
 
 	@Override
@@ -310,7 +463,8 @@ public class LocalHttpClient implements Client {
 	@Override
 	public void assignRole(UserId userId, ProjectId projectId, RoleId roleId)
 			throws AuthorizationException, ClientRequestException, RemoteException {
-		// TODO Auto-generated method stub
+		policy.add(roleId, projectId, userId);
+        putConfig();
 
 	}
 
@@ -356,24 +510,25 @@ public class LocalHttpClient implements Client {
 	@Override
 	public Map<String, String> getServerProperties()
 			throws AuthorizationException, ClientRequestException, RemoteException {
-		// TODO Auto-generated method stub
-		return null;
+		return config.getProperties();
 	}
 
 	@Override
 	public void setServerProperty(String property, String value)
 			throws AuthorizationException, ClientRequestException, RemoteException {
-		// TODO Auto-generated method stub
+		config.addProperty(property, value);
+		putConfig();
 
 	}
 
 	@Override
 	public void unsetServerProperty(String property)
 			throws AuthorizationException, ClientRequestException, RemoteException {
-		// TODO Auto-generated method stub
+		config.removeProperty(property);
+		putConfig();
 
 	}
-
+	
 	@Override
 	public ChangeHistory commit(ProjectId projectId, CommitBundle commitBundle)
 			throws AuthorizationException, OutOfSyncException, ClientRequestException, RemoteException {
@@ -397,7 +552,7 @@ public class LocalHttpClient implements Client {
 			hist = (ChangeHistory) ois.readObject();
 
 		} catch (IOException | ClassNotFoundException e) {
-			e.printStackTrace();
+			throw new ClientRequestException(e.getMessage(), e.getCause());
 		}
 
 
@@ -548,11 +703,7 @@ public class LocalHttpClient implements Client {
 		return false;
 	}
 
-	@Override
-	public boolean canRestartServer() throws ClientRequestException {
-		// TODO Auto-generated method stub
-		return false;
-	}
+	
 
 	@Override
 	public boolean canPerformOperation(OperationId operationId) throws ClientRequestException {
@@ -587,81 +738,7 @@ public class LocalHttpClient implements Client {
 		return null;
 	}
 
-	@Override
-	public ServerDocument createProject(ProjectId projectId, Name projectName, Description description, UserId owner,
-			Optional<ProjectOptions> options, Optional<CommitBundle> initialCommit)
-					throws AuthorizationException, ClientRequestException, RemoteException {
 
-		String url = HTTPServer.CREATE_PROJECT;
-
-		Response response;
-		ServerDocument serverDoc = null;
-
-		try {
-
-			ByteArrayOutputStream b = new ByteArrayOutputStream();
-			ObjectOutputStream os = new ObjectOutputStream(b);
-
-			os.writeObject(projectId);
-			os.writeObject(projectName);
-			os.writeObject(description);
-			os.writeObject(owner);
-			ProjectOptions popts = (options.isPresent()) ? options.get() : null;
-			os.writeObject(popts);
-
-			RequestBody req = RequestBody.create(MediaType.parse("application"), b.toByteArray());
-
-			response = post(url, req, true);
-
-			ObjectInputStream ois = new ObjectInputStream(response.body().byteStream());
-			serverDoc = (ServerDocument) ois.readObject();
-
-
-		} catch (Exception e) {
-			e.printStackTrace();
-		}
-
-
-		// Do initial commit if the commit bundle is not empty
-		if (initialCommit.isPresent()) {
-
-			try {
-
-				commit(projectId, initialCommit.get());
-
-			} catch (Exception e) {
-				// TODO Auto-generated catch block
-				e.printStackTrace();
-			}
-
-		}
-		return serverDoc;
-
-	}
-
-	@Override
-	public ServerDocument openProject(ProjectId projectId)
-			throws AuthorizationException, ClientRequestException, RemoteException {
-
-		String url = HTTPServer.PROJECT + "?projectid=" + projectId.get();
-
-
-		okhttp3.Response response;
-		ServerDocument sdoc = null;
-		try {
-			response = get(url);
-
-			ObjectInputStream ois = new ObjectInputStream(response.body().byteStream());
-			sdoc = (ServerDocument) ois.readObject();
-
-
-		} catch (Exception e) {
-			// TODO Auto-generated catch block
-			e.printStackTrace();
-		}   
-		return sdoc;
-
-	}
 
 	public VersionedOWLOntology buildVersionedOntology(ServerDocument sdoc, OWLOntologyManager owlManager)
 			throws ClientRequestException, OWLOntologyCreationException {
@@ -674,7 +751,7 @@ public class LocalHttpClient implements Client {
 		return new VersionedOWLOntologyImpl(sdoc, targetOntology, remoteChangeHistory);
 	}
 
-	public ChangeHistory getAllChanges(ServerDocument sdoc) {
+	public ChangeHistory getAllChanges(ServerDocument sdoc) throws ClientRequestException {
 		ChangeHistory history = null;
 		try {
 
@@ -695,23 +772,25 @@ public class LocalHttpClient implements Client {
 
 
 		} catch (Exception e) {
-			// TODO Auto-generated catch block
-			e.printStackTrace();
+			throw new ClientRequestException(e.getMessage(), e.getCause());
 		}  
 		return history;
 
 	}
 	
-	public DocumentRevision getRemoteHeadRevision(VersionedOWLOntology vont) {		
+	public DocumentRevision getRemoteHeadRevision(VersionedOWLOntology vont) throws
+		ClientRequestException {		
 		return getLatestChanges(vont).getHeadRevision();
 	}
 	
-	public ChangeHistory getLatestChanges(VersionedOWLOntology vont) {
+	public ChangeHistory getLatestChanges(VersionedOWLOntology vont) throws
+		ClientRequestException {
 		DocumentRevision start = vont.getChangeHistory().getHeadRevision();
 		return getLatestChanges(vont.getServerDocument(), start);
 	}
 	
-	public ChangeHistory getLatestChanges(ServerDocument sdoc, DocumentRevision start) {
+	public ChangeHistory getLatestChanges(ServerDocument sdoc, DocumentRevision start)
+		throws ClientRequestException {
 		ChangeHistory history = null;
 		try {
 
@@ -734,8 +813,7 @@ public class LocalHttpClient implements Client {
 
 
 		} catch (Exception e) {
-			// TODO Auto-generated catch block
-			e.printStackTrace();
+			throw new ClientRequestException(e.getMessage(), e.getCause());
 		}  
 		return history;
 
@@ -747,12 +825,19 @@ public class LocalHttpClient implements Client {
 	@Override
 	public void deleteProject(ProjectId projectId, boolean includeFile)
 			throws AuthorizationException, ClientRequestException, RemoteException {
-		// TODO Auto-generated method stub
+		String url = HTTPServer.PROJECT + "?projectid=" + projectId.get();
 
+		try {
+			delete(url, true);
+			initConfig();
+		} catch (Exception e) {
+			throw new ClientRequestException(e.getMessage(), e.getCause());
+		} 
 	}	
 
 	private Response post(String url, RequestBody body, boolean cred) {
 		Request request;
+		req_client = new OkHttpClient.Builder().readTimeout(180, TimeUnit.SECONDS).build();
 		if (cred) {
 			request = new Request.Builder()
 					.url(serverAddress + url)
@@ -777,8 +862,37 @@ public class LocalHttpClient implements Client {
 		}
 		return null;
 	}
+	
+	private Response delete(String url, boolean cred) {
+		Request request;
+		req_client = new OkHttpClient.Builder().readTimeout(180, TimeUnit.SECONDS).build();
+		if (cred) {
+			request = new Request.Builder()
+					.url(serverAddress + url)
+					.addHeader(AUTH_HEADER, auth_header_value)
+					.delete()
+					.build();
+
+		} else {
+			request = new Request.Builder()
+					.url(serverAddress + url)
+					.delete()
+					.build();
+		}
+
+
+		try {
+			return req_client.newCall(request).execute();
+
+		} catch (Exception e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
+		return null;
+	}
 
 	private Response get(String url) {
+		req_client = new OkHttpClient.Builder().readTimeout(180, TimeUnit.SECONDS).build();
 		Request request = new Request.Builder()
 				.url(serverAddress + url)
 				.addHeader(AUTH_HEADER, auth_header_value)
@@ -792,12 +906,38 @@ public class LocalHttpClient implements Client {
 		}
 		return null;
 	}
+	
+	private ServerConfiguration getConfig() {
+		String url = HTTPServer.METAPROJECT;
+		Response response = get(url);
+	
+		Serializer<Gson> serl = new DefaultJsonSerializer();
+		
+		ServerConfiguration scfg = null;
+		
 
-	@Override
-	public List<Operation> getOperations(RoleId roleId)
-			throws AuthorizationException, ClientRequestException, RemoteException {
-		// TODO Auto-generated method stub
-		return null;
+		try {
+			scfg = (ServerConfiguration) serl.parse(new InputStreamReader(response.body().byteStream()), ServerConfiguration.class);
+		} catch (FileNotFoundException | ObjectConversionException e) {
+			e.printStackTrace();
+		}
+		return scfg;
+		
+	}
+	
+	private void putConfig() {
+		
+		final MediaType JSON  = MediaType.parse("application/json; charset=utf-8");
+		String url = HTTPServer.METAPROJECT;
+
+		Serializer<Gson> serl = new DefaultJsonSerializer();
+		RequestBody body = RequestBody.create(JSON, serl.write(this.config, ServerConfiguration.class));
+
+		post(url, body, true);
+		
 	}
 
+
+
+	
 }

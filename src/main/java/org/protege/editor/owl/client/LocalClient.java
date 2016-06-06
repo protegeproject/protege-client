@@ -113,10 +113,11 @@ public class LocalClient implements Client {
     }
 
     @Override
-    public void createUser(User newUser, Optional<SaltedPasswordDigest> password) throws AuthorizationException, ClientRequestException, RemoteException {
+    public void createUser(User newUser, Optional<? extends Password> password)
+            throws AuthorizationException, ClientRequestException, RemoteException {
         try {
             connect();
-            SaltedPasswordDigest passwordValue = (password.isPresent()) ? password.get() : null;
+            Password passwordValue = (password.isPresent()) ? password.get() : null;
             server.createUser(authToken, newUser, passwordValue);
         }
         catch (ServerServiceException e) {

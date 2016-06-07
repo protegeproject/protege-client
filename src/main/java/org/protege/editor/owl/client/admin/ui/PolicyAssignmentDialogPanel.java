@@ -21,6 +21,7 @@ import java.awt.*;
 import java.rmi.RemoteException;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Optional;
 
 import static com.google.common.base.Preconditions.checkNotNull;
 
@@ -121,13 +122,13 @@ public class PolicyAssignmentDialogPanel extends JPanel implements VerifiedInput
 
     private Role[] getRoles() {
         Client client = ClientSession.getInstance(editorKit).getActiveClient();
+        List<Role> roles = new ArrayList<>();
         try {
-            List<Role> roles = client.getAllRoles();
-            return roles.toArray(new Role[roles.size()]);
+            roles = client.getAllRoles();
         } catch (AuthorizationException | ClientRequestException | RemoteException e) {
             ErrorLogPanel.showErrorDialog(e);
         }
-        return null;
+        return roles.toArray(new Role[roles.size()]);
     }
 
     private Project[] getProjects() {
@@ -194,7 +195,7 @@ public class PolicyAssignmentDialogPanel extends JPanel implements VerifiedInput
                     }
                 }
             } catch (AuthorizationException | ClientRequestException | RemoteException e) {
-                e.printStackTrace();
+                return false;
             }
         }
         return false;
@@ -211,16 +212,18 @@ public class PolicyAssignmentDialogPanel extends JPanel implements VerifiedInput
     }
 
     // Add assignment when a project is selected in the UI
-    private void addAssignment() {
+    private Project addAssignment() {
         addAssignment(selectedProject);
+        return selectedProject;
     }
 
-    public static void showDialog(OWLEditorKit editorKit, User selectedUser) {
+    public static Optional<Project> showDialog(OWLEditorKit editorKit, User selectedUser) {
         PolicyAssignmentDialogPanel panel = new PolicyAssignmentDialogPanel(editorKit, selectedUser);
         boolean add = showDialog(editorKit, panel, "Add New Access Policy");
         if(add) {
-            panel.addAssignment();
+            return Optional.of(panel.addAssignment());
         }
+        return Optional.empty();
     }
 
     public static void showDialog(OWLEditorKit editorKit, User selectedUser, Project selectedProject) {

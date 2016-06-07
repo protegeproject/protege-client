@@ -29,6 +29,7 @@ import java.rmi.RemoteException;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
+import java.util.Optional;
 import java.util.stream.Collectors;
 
 import static com.google.common.base.Preconditions.checkNotNull;
@@ -63,7 +64,7 @@ public class PolicyPanel extends JPanel implements Disposable {
             clearList(roleList, projectList);
             listProjects();
         } else if(event.equals(AdminTabEvent.POLICY_ITEM_SELECTION_CHANGED)) {
-            if(configManager.getPolicySelection() != null) {
+            if(configManager.getPolicySelection() != null && configManager.getPolicySelection().isProject()) {
                 listRoles();
             }
         }
@@ -156,35 +157,41 @@ public class PolicyPanel extends JPanel implements Disposable {
                 List<Project> projects = client.getProjects(user.getId());
                 data.addAll(projects.stream().map(ProjectListItem::new).collect(Collectors.toList()));
             } catch (AuthorizationException | ClientRequestException | RemoteException e) {
-                Throwable t = e.getCause();
-                if(t != null && t.getCause() != null && !(t.getCause() instanceof UserNotInPolicyException)) { // TODO revise
-                    ErrorLogPanel.showErrorDialog(e);
-                }
+                handleException(e);
             }
             projectList.setListData(data.toArray());
         }
     }
 
     private void listRoles() {
-        if(selectedProject != null && configManager.getSelection().isUser() && configManager.getPolicySelection().isProject()) {
+        if(selectedProject != null && configManager.getSelection().isUser()) {
             User user = (User)configManager.getSelection();
             Client client = ClientSession.getInstance(editorKit).getActiveClient();
-            List<Role> roles = new ArrayList<>();
-            try {
-                roles = client.getRoles(user.getId(), selectedProject.getId());
-            } catch (AuthorizationException | ClientRequestException | RemoteException e) {
-                e.printStackTrace();
-            }
             ArrayList<Object> data = new ArrayList<>();
             data.add(new RoleListHeaderItem());
-            data.addAll(roles.stream().map(RoleListItem::new).collect(Collectors.toList()));
+            try {
+                List<Role> roles = client.getRoles(user.getId(), selectedProject.getId());
+                data.addAll(roles.stream().map(RoleListItem::new).collect(Collectors.toList()));
+            } catch (AuthorizationException | ClientRequestException | RemoteException e) {
+                handleException(e);
+            }
             roleList.setListData(data.toArray());
         }
     }
 
+    private void handleException(Exception e) {
+        Throwable t = e.getCause();
+        if(t != null && t.getCause() != null && !(t.getCause() instanceof UserNotInPolicyException)) { // TODO revise
+            ErrorLogPanel.showErrorDialog(e);
+        }
+    }
+
     private void addProjectAssignment() {
-        PolicyAssignmentDialogPanel.showDialog(editorKit, (User)configManager.getSelection());
-        listProjects();
+        Optional<Project> project = PolicyAssignmentDialogPanel.showDialog(editorKit, (User)configManager.getSelection());
+        if(project.isPresent()) {
+            listProjects();
+            selectProject(project.get());
+        }
     }
 
     private void deleteProjectAssignment() {
@@ -210,14 +217,28 @@ public class PolicyPanel extends JPanel implements Disposable {
                 ErrorLogPanel.showErrorDialog(e);
             }
             listProjects();
-            listRoles();
+            clearList(roleList);
+        }
+    }
+
+    private void selectProject(Project project) {
+        for(int i = 0; i < projectList.getModel().getSize(); i++) {
+            Object item = projectList.getModel().getElementAt(i);
+            if(item instanceof ProjectListItem) {
+                if (((ProjectListItem)item).getProject().getId().equals(project.getId())) {
+                    projectList.setSelectedValue(item, true);
+                    break;
+                }
+            }
         }
     }
 
     private void addRoleAssignment() {
         if(projectList.getSelectedValue() != null && projectList.getSelectedValue() instanceof ProjectListItem) {
-            PolicyAssignmentDialogPanel.showDialog(editorKit, (User)configManager.getSelection(), ((ProjectListItem) projectList.getSelectedValue()).getProject());
+            Project project = ((ProjectListItem) projectList.getSelectedValue()).getProject();
+            PolicyAssignmentDialogPanel.showDialog(editorKit, (User)configManager.getSelection(), project);
             listRoles();
+            selectProject(project);
         }
     }
 
@@ -240,8 +261,8 @@ public class PolicyPanel extends JPanel implements Disposable {
             } catch (AuthorizationException | ClientRequestException | RemoteException e) {
                 ErrorLogPanel.showErrorDialog(e);
             }
-            listProjects();
             listRoles();
+            selectProject(selectedProject);
         }
     }
 

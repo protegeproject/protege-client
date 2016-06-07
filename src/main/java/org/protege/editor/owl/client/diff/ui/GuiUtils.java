@@ -1,5 +1,6 @@
 package org.protege.editor.owl.client.diff.ui;
 
+import org.protege.editor.core.ui.error.ErrorLogPanel;
 import org.protege.editor.owl.client.diff.model.ChangeMode;
 
 import javax.imageio.ImageIO;
@@ -62,7 +63,7 @@ public class GuiUtils {
         try {
             icon = ImageIO.read(checkNotNull(classLoader.getResource(filename)));
         } catch (IOException e) {
-            e.printStackTrace();
+            ErrorLogPanel.showErrorDialog(e);
         }
         Image img = icon.getScaledInstance(width, height, Image.SCALE_SMOOTH);
         return new ImageIcon(img);

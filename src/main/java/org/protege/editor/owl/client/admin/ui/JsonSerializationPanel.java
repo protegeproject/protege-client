@@ -1,6 +1,7 @@
 package org.protege.editor.owl.client.admin.ui;
 
 import org.protege.editor.core.Disposable;
+import org.protege.editor.core.ui.error.ErrorLogPanel;
 import org.protege.editor.owl.OWLEditorKit;
 import org.protege.editor.owl.client.admin.AdminTabManager;
 import org.protege.editor.owl.client.admin.model.AdminTabEvent;
@@ -71,8 +72,8 @@ public class JsonSerializationPanel extends JPanel implements Disposable {
             try {
                 textArea.getHighlighter().addHighlight(offset, offset + length, painter);
                 offset = textArea.getText().indexOf(searchWord, offset + 1);
-            } catch (BadLocationException ble) {
-                ble.printStackTrace();
+            } catch (BadLocationException e) {
+                ErrorLogPanel.showErrorDialog(e);
             }
         }
     }

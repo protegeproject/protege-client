@@ -273,8 +273,11 @@ public class UserDialogPanel extends JPanel implements VerifiedInputEditor {
     private void updateUser(User user) {
         Client client = ClientSession.getInstance(editorKit).getActiveClient();
         try {
-            client.updateUser(selectedUser.getId(), user);
-            // TODO update authentication details (need method from ClientRequests)
+            if(externalAuth.isSelected() || sameAuth.isSelected()) {
+                client.updateUser(selectedUser.getId(), user, Optional.empty());
+            } else {
+                client.updateUser(selectedUser.getId(), user, Optional.of(hashPassword()));
+            }
         } catch (AuthorizationException | ClientRequestException | RemoteException e) {
             ErrorLogPanel.showErrorDialog(e);
         }

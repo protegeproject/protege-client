@@ -11,8 +11,6 @@ import org.protege.editor.owl.client.ClientSession;
 import org.protege.editor.owl.client.api.Client;
 import org.protege.editor.owl.client.api.exception.ClientRequestException;
 import org.protege.editor.owl.server.api.exception.AuthorizationException;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 
 import javax.swing.*;
 import javax.swing.event.DocumentEvent;
@@ -31,6 +29,7 @@ import static com.google.common.base.Preconditions.checkNotNull;
  * Stanford Center for Biomedical Informatics Research
  */
 public class HostDialogPanel extends JPanel implements VerifiedInputEditor {
+    private static final long serialVersionUID = 119369228971361089L;
     private static final int FIELD_WIDTH = 20;
     private OWLEditorKit editorKit;
     private AugmentedJTextField uri, port;
@@ -131,7 +130,7 @@ public class HostDialogPanel extends JPanel implements VerifiedInputEditor {
             if (cause != null) {
                 errorArea.setText(cause.getMessage());
             } else {
-                errorArea.setText(e.getMessage());
+                errorArea.setText(e.toString());
             }
         }
     }
@@ -157,19 +156,14 @@ public class HostDialogPanel extends JPanel implements VerifiedInputEditor {
                 secondaryPort = Integer.parseInt(port.getText());
             }
             Client client = ClientSession.getInstance(editorKit).getActiveClient();
-            Logger logger = LoggerFactory.getLogger(HostDialogPanel.class.getName());
             if (uriChanged) {
-                logger.info("Changing URI");
                 client.setHostAddress(newUri);
             }
             if (portChanged && secondaryPort != -1) {
-                logger.info("Changing secondary Port");
                 client.setSecondaryPort(secondaryPort);
             }
-        } catch (AuthorizationException | ClientRequestException | RemoteException e) {
+        } catch (AuthorizationException | ClientRequestException | RemoteException | URISyntaxException e) {
             ErrorLogPanel.showErrorDialog(e);
-        } catch (URISyntaxException e) {
-            e.printStackTrace();
         }
     }
 

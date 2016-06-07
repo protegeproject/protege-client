@@ -336,21 +336,13 @@ public class LocalHttpClient implements Client {
 	@Override
 	public List<Project> getProjects(UserId userId)
 			throws AuthorizationException, ClientRequestException, RemoteException {
-		// TODO: This can now be done locally
 
-		String url = HTTPServer.PROJECTS + "?userid=" + userId.get();
-
-		Response response = get(url);
 		try {
-
-
-			ObjectInputStream ois = new ObjectInputStream(response.body().byteStream());
-			return (List<Project>) ois.readObject();
-
-
-		} catch (Exception e) {
+			return new ArrayList<>(meta_agent.getProjects(userId));
+		} catch (UserNotInPolicyException e) {
 			throw new ClientRequestException(e.getMessage(), e.getCause());
 		}
+
 
 	}
 

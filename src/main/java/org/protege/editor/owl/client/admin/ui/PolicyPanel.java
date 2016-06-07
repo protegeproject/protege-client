@@ -62,7 +62,8 @@ public class PolicyPanel extends JPanel implements Disposable {
     }
 
     private AdminTabListener tabListener = event -> {
-        if (event.equals(AdminTabEvent.SELECTION_CHANGED)) {
+        if (event.equals(AdminTabEvent.SELECTION_CHANGED) ||
+        		(event.equals(AdminTabEvent.CONFIGURATION_CHANGED))) {
             projectList.clearSelection();
             roleList.clearSelection();
             clearList(roleList, projectList);
@@ -246,6 +247,7 @@ public class PolicyPanel extends JPanel implements Disposable {
         if(project.isPresent()) {
             listProjects();
             selectProject(project.get());
+            configManager.statusChanged(AdminTabEvent.CONFIGURATION_CHANGED);
         }
     }
 
@@ -267,6 +269,7 @@ public class PolicyPanel extends JPanel implements Disposable {
                 List<Role> roles = client.getRoles(user.getId(), project.getId());
                 for(Role role : roles) {
                     client.retractRole(user.getId(), project.getId(), role.getId());
+                    configManager.statusChanged(AdminTabEvent.CONFIGURATION_CHANGED);
                 }
             } catch (AuthorizationException | ClientRequestException | RemoteException e) {
                 ErrorLogPanel.showErrorDialog(e);

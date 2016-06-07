@@ -14,7 +14,6 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
-import java.util.concurrent.TimeUnit;
 
 import org.apache.commons.codec.binary.Base64;
 import org.protege.editor.owl.client.api.Client;
@@ -49,6 +48,7 @@ import edu.stanford.protege.metaproject.api.Name;
 import edu.stanford.protege.metaproject.api.Operation;
 import edu.stanford.protege.metaproject.api.OperationId;
 import edu.stanford.protege.metaproject.api.OperationRegistry;
+import edu.stanford.protege.metaproject.api.Password;
 import edu.stanford.protege.metaproject.api.Policy;
 import edu.stanford.protege.metaproject.api.Project;
 import edu.stanford.protege.metaproject.api.ProjectId;
@@ -68,6 +68,7 @@ import edu.stanford.protege.metaproject.api.exception.ObjectConversionException;
 import edu.stanford.protege.metaproject.api.exception.ProjectNotInPolicyException;
 import edu.stanford.protege.metaproject.api.exception.UnknownMetaprojectObjectIdException;
 import edu.stanford.protege.metaproject.api.exception.UserNotInPolicyException;
+import edu.stanford.protege.metaproject.api.exception.UserNotRegisteredException;
 import edu.stanford.protege.metaproject.impl.AuthorizedUserToken;
 import edu.stanford.protege.metaproject.impl.UserIdImpl;
 import edu.stanford.protege.metaproject.serialization.DefaultJsonSerializer;
@@ -93,7 +94,8 @@ public class LocalHttpClient implements Client {
 
 	private MetaprojectFactory fact = Manager.getFactory();
 
-	OkHttpClient req_client = new OkHttpClient.Builder().readTimeout(180, TimeUnit.SECONDS).build();
+	OkHttpClient req_client = new OkHttpClient.Builder().build();
+			//new OkHttpClient.Builder().readTimeout(180, TimeUnit.SECONDS).build();
 	
 	private ServerConfiguration config;
 	private AuthenticationRegistry auth_registry;
@@ -196,12 +198,15 @@ public class LocalHttpClient implements Client {
 	}
 
 	@Override
-	public void createUser(User newUser, Optional<SaltedPasswordDigest> password)
+	public void createUser(User newUser, Optional<? extends Password> password)
 			throws AuthorizationException, ClientRequestException, RemoteException {
 		try {
 			meta_agent.add(newUser);
 			if (password.isPresent()) {
-				auth_registry.add(newUser.getId(), password.get());
+				Password newpassword = password.get();
+                if (newpassword instanceof SaltedPasswordDigest) {
+                    auth_registry.add(newUser.getId(), (SaltedPasswordDigest) newpassword);
+                }
 			}
 			putConfig();
 		}
@@ -222,13 +227,19 @@ public class LocalHttpClient implements Client {
 	}
 
 	@Override
-	public void updateUser(UserId userId, User updatedUser)
+	public void updateUser(UserId userId, User updatedUser, Optional<? extends Password> updatedPassword)
 			throws AuthorizationException, ClientRequestException, RemoteException {
 		try {
             user_registry.update(userId, updatedUser);
+            if (updatedPassword.isPresent()) {
+                Password password = updatedPassword.get();
+                if (password instanceof SaltedPasswordDigest) {
+                    auth_registry.changePassword(userId, (SaltedPasswordDigest) password);
+                }
+            }
             putConfig();
         }
-        catch (UnknownMetaprojectObjectIdException e) {
+        catch (UnknownMetaprojectObjectIdException | UserNotRegisteredException e) {
         	throw new ClientRequestException(e.getMessage(), e.getCause());
         }
 	}

@@ -4,6 +4,7 @@ import edu.stanford.protege.metaproject.api.*;
 import edu.stanford.protege.metaproject.api.exception.IdAlreadyInUseException;
 import edu.stanford.protege.metaproject.impl.Operations;
 import org.protege.editor.owl.client.api.Client;
+import org.protege.editor.owl.client.api.PolicyMediator;
 import org.protege.editor.owl.client.api.UserInfo;
 import org.protege.editor.owl.client.api.exception.ClientRequestException;
 import org.protege.editor.owl.client.util.ServerUtils;
@@ -27,8 +28,7 @@ import java.util.Optional;
  * @author Josef Hardi <johardi@stanford.edu> <br>
  * Stanford Center for Biomedical Informatics Research
  */
-public class LocalClient implements Client, ClientSessionListener {
-
+public class LocalClient implements Client, PolicyMediator, ClientSessionListener  {
     private AuthToken authToken;
     private String serverAddress;
     private int registryPort;

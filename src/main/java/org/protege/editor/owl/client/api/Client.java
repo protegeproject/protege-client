@@ -16,8 +16,14 @@ import edu.stanford.protege.metaproject.api.Role;
  */
 public interface Client extends ClientRequests, PolicyMediator {
 
+    /**
+     * Gets the authentication token owned by this client
+     */
     AuthToken getAuthToken();
 
+    /**
+     * Gets the client details
+     */
     UserInfo getUserInfo();
 
     /**

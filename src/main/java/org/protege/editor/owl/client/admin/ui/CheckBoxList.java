@@ -1,5 +1,8 @@
 package org.protege.editor.owl.client.admin.ui;
 
+import edu.stanford.protege.metaproject.api.MetaprojectObject;
+import edu.stanford.protege.metaproject.api.Operation;
+
 import javax.swing.*;
 import javax.swing.border.Border;
 import javax.swing.border.EmptyBorder;
@@ -58,7 +61,12 @@ public class CheckBoxList<E> extends JList<E> {
             checkbox.setFocusPainted(false);
             checkbox.setBorderPainted(true);
             checkbox.setBorder(isSelected ? UIManager.getBorder("List.focusCellHighlightBorder") : noFocusBorder);
-            checkbox.setText(checkbox.getObject().getName().get());
+            MetaprojectObject obj = checkbox.getObject();
+            if(obj.isOperation()) {
+                checkbox.setText("<html>" + obj.getName().get() + " <i>&nbsp;(" + ((Operation)obj).getType().toString().toLowerCase() + ")</i></html>");
+            } else {
+                checkbox.setText(obj.getName().get());
+            }
             return checkbox;
         }
 

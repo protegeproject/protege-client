@@ -91,4 +91,5 @@ public class JsonSerializationPanel extends JPanel implements Disposable {
     public void dispose() {
         configManager.removeListener(listener);
     }
+    
 }

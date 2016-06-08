@@ -26,7 +26,9 @@ public class JsonSerializationView extends AbstractOWLViewComponent implements A
     
     private JButton saveButton;
     
-    private JButton clearButton;
+    private JButton cancelButton;
+    
+    private AdminTabManager manager = null;
 
     @Override
     protected void initialiseOWLView() throws Exception {
@@ -35,7 +37,8 @@ public class JsonSerializationView extends AbstractOWLViewComponent implements A
         serializationPanel = new JsonSerializationPanel(getOWLEditorKit());
         add(serializationPanel, BorderLayout.CENTER);
         add(createJButtonPanel(), BorderLayout.SOUTH);
-        AdminTabManager.get(getOWLEditorKit()).addListener(this);
+        manager = AdminTabManager.get(getOWLEditorKit());
+        manager.addListener(this);
         // listener is not added until view initialized and changes may have already
         // occurred
         if (LocalHttpClient.current_user().configStateChanged()) {
@@ -63,21 +66,23 @@ public class JsonSerializationView extends AbstractOWLViewComponent implements A
             }
         });     
 		
-		clearButton = new JButton("Clear");
-		clearButton.setEnabled(false);
+		cancelButton = new JButton("Cancel");
+		cancelButton.setEnabled(false);
 		
-		clearButton.addActionListener(new ActionListener() {
+		cancelButton.addActionListener(new ActionListener() {
 			 
             public void actionPerformed(ActionEvent e)
             {
             	LocalHttpClient.current_user().initConfig();
             	setButtons(false);
+            	manager.statusChanged(AdminTabEvent.CONFIGURATION_RESET);
+            	
             	
             }
         });     
 		
 		buttonPanel.add(saveButton);
-		buttonPanel.add(clearButton);
+		buttonPanel.add(cancelButton);
 		return buttonPanel;
 	}
 
@@ -91,7 +96,7 @@ public class JsonSerializationView extends AbstractOWLViewComponent implements A
 	
 	private void setButtons(boolean b) {
 		saveButton.setEnabled(b);
-		clearButton.setEnabled(b);	
+		cancelButton.setEnabled(b);	
 		
 	}
 }

@@ -62,6 +62,8 @@ public class UserPanel extends JPanel implements Disposable {
             if (configManager.hasSelection() && !configManager.getSelection().isUser()) {
                 userList.clearSelection();
             }
+        } else if (event.equals(AdminTabEvent.CONFIGURATION_RESET)) {
+        	listUsers();
         }
     };
 

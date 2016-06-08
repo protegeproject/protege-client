@@ -141,15 +141,20 @@ public class ProjectPanel extends JPanel implements Disposable {
         if (selectedObj instanceof ProjectListItem) {
             Project project = ((ProjectListItem) selectedObj).getProject();
             String projectName = project.getName().get();
-            int res = JOptionPaneEx.showConfirmDialog(editorKit.getWorkspace(), "Delete Project '" + projectName + "'",
-                    new JLabel("Proceed to delete project '" + projectName + "'? All policy entries involving '" + projectName + "' will be removed."),
+
+            JPanel panel = new JPanel(new GridLayout(0, 1));
+            panel.add(new JLabel("Proceed to delete project '" + projectName + "'? All policy entries involving '" + projectName + "' will be removed."));
+            JCheckBox checkBox = new JCheckBox("Delete the history file of the project");
+            panel.add(checkBox);
+
+            int res = JOptionPaneEx.showConfirmDialog(editorKit.getWorkspace(), "Delete Project '" + projectName + "'", panel,
                     JOptionPane.WARNING_MESSAGE, JOptionPane.YES_NO_OPTION, null);
             if (res != JOptionPane.OK_OPTION) {
                 return;
             }
             Client client = ClientSession.getInstance(editorKit).getActiveClient();
             try {
-                client.deleteProject(project.getId(), true); // TODO checkbox for including deletion of history file
+                client.deleteProject(project.getId(), checkBox.isSelected());
             } catch (AuthorizationException | ClientRequestException | RemoteException e) {
                 ErrorLogPanel.showErrorDialog(e);
             }

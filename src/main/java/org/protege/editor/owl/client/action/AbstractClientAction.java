@@ -23,7 +23,7 @@ public abstract class AbstractClientAction extends ProtegeOWLAction {
 
     private static final long serialVersionUID = 8677318010907902600L;
 
-    private ClientSession clientRegistry;
+    private ClientSession clientSession;
 
     private static ScheduledExecutorService executorService = Executors
             .newSingleThreadScheduledExecutor(new ThreadFactory() {
@@ -37,24 +37,24 @@ public abstract class AbstractClientAction extends ProtegeOWLAction {
 
     @Override
     public void initialise() throws Exception {
-        clientRegistry = ClientSession.getInstance(getOWLEditorKit());
+        clientSession = ClientSession.getInstance(getOWLEditorKit());
     }
 
     @Override
     public void dispose() throws Exception {
-        clientRegistry.dispose();
+        clientSession.dispose();
     }
 
-    protected ClientSession getClientRegistry() {
-        return clientRegistry;
+    protected ClientSession getClientSession() {
+        return clientSession;
     }
 
     protected Client getClient() {
-        return clientRegistry.getActiveClient();
+        return clientSession.getActiveClient();
     }
 
     protected Optional<VersionedOWLOntology> getOntologyResource() {
-        return Optional.ofNullable(clientRegistry.getActiveVersionOntology());
+        return Optional.ofNullable(clientSession.getActiveVersionOntology());
     }
 
     protected VersionedOWLOntology getActiveVersionOntology() throws SynchronizationException {

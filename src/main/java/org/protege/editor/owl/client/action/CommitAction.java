@@ -165,7 +165,7 @@ public class CommitAction extends AbstractClientAction {
                 ClientRequestException, RemoteException {
             Commit commit = ClientUtils.createCommit(author, comment, changes);
             CommitBundle commitBundle = new CommitBundleImpl(commitBaseRevision, commit);
-            return author.commit(getClientRegistry().getActiveProject(), commitBundle);
+            return author.commit(getClientSession().getActiveProject(), commitBundle);
         }
     }
 }

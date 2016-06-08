@@ -2,7 +2,7 @@ package org.protege.editor.owl.client.admin.model;
 
 import com.google.common.base.Objects;
 
-import java.util.Set;
+import java.util.List;
 
 import static com.google.common.base.Preconditions.checkNotNull;
 
@@ -12,9 +12,9 @@ import static com.google.common.base.Preconditions.checkNotNull;
  */
 public class ProjectOption {
     private String key;
-    private Set<String> values;
+    private List<String> values;
 
-    public ProjectOption(String key, Set<String> values) {
+    public ProjectOption(String key, List<String> values) {
         this.key = checkNotNull(key);
         this.values = checkNotNull(values);
     }
@@ -23,7 +23,7 @@ public class ProjectOption {
         return key;
     }
 
-    public Set<String> getValues() {
+    public List<String> getValues() {
         return values;
     }
 

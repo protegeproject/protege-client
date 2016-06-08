@@ -9,9 +9,9 @@ import org.protege.editor.core.ui.list.MListSectionHeader;
 import org.protege.editor.core.ui.util.JOptionPaneEx;
 import org.protege.editor.owl.OWLEditorKit;
 import org.protege.editor.owl.client.ClientSession;
+import org.protege.editor.owl.client.admin.AdminTabManager;
 import org.protege.editor.owl.client.admin.model.AdminTabEvent;
 import org.protege.editor.owl.client.admin.model.AdminTabListener;
-import org.protege.editor.owl.client.admin.AdminTabManager;
 import org.protege.editor.owl.client.api.Client;
 import org.protege.editor.owl.client.api.exception.ClientRequestException;
 import org.protege.editor.owl.client.diff.ui.GuiUtils;
@@ -23,6 +23,8 @@ import javax.swing.event.ListSelectionListener;
 import java.awt.*;
 import java.rmi.RemoteException;
 import java.util.ArrayList;
+import java.util.Collections;
+import java.util.List;
 import java.util.Map;
 import java.util.stream.Collectors;
 
@@ -247,7 +249,9 @@ public class ServerSettingsPanel extends JPanel implements Disposable {
         try {
             if(client != null) {
                 Map<String, String> propertiesMap = client.getServerProperties();
-                data.addAll(propertiesMap.keySet().stream().map(s -> new PropertyListItem(s, propertiesMap.get(s))).collect(Collectors.toList()));
+                List<String> keyset = new ArrayList<>(propertiesMap.keySet());
+                Collections.sort(keyset);
+                data.addAll(keyset.stream().map(key -> new PropertyListItem(key, propertiesMap.get(key))).collect(Collectors.toList()));
             }
         } catch (AuthorizationException | ClientRequestException | RemoteException e) {
             ErrorLogPanel.showErrorDialog(e);

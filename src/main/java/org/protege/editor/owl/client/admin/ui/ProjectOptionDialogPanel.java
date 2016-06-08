@@ -153,27 +153,30 @@ public class ProjectOptionDialogPanel extends JPanel implements VerifiedInputEdi
     private void updateValue(String oldValue, String newValue) {
         checkNotNull(oldValue);
         checkNotNull(newValue);
-        Set<String> valueSet = getValues();
-        valueSet.remove(oldValue);
-        valueSet.add(newValue);
-        values.setListData(valueSet.toArray(new String[valueSet.size()]));
+        List<String> values = getValues();
+        values.remove(oldValue);
+        values.add(newValue);
+        Collections.sort(values);
+        this.values.setListData(values.toArray(new String[values.size()]));
         handleValueChange();
     }
 
     private void addValue(String value) {
         checkNotNull(value);
         if(!value.isEmpty()) {
-            Set<String> valueSet = getValues();
-            valueSet.add(value);
-            values.setListData(valueSet.toArray(new String[valueSet.size()]));
+            List<String> values = getValues();
+            values.add(value);
+            Collections.sort(values);
+            this.values.setListData(values.toArray(new String[values.size()]));
             handleValueChange();
         }
     }
 
     private void removeValue() {
-        Set<String> valueSet = getValues();
-        values.getSelectedValuesList().forEach(valueSet::remove);
-        values.setListData(valueSet.toArray(new String[valueSet.size()]));
+        List<String> values = getValues();
+        this.values.getSelectedValuesList().forEach(values::remove);
+        Collections.sort(values);
+        this.values.setListData(values.toArray(new String[values.size()]));
         handleValueChange();
     }
 
@@ -258,9 +261,9 @@ public class ProjectOptionDialogPanel extends JPanel implements VerifiedInputEdi
         return new ProjectOption(key.getText(), getValues());
     }
 
-    private Set<String> getValues() {
+    private List<String> getValues() {
         ListModel<String> model = values.getModel();
-        Set<String> values = new HashSet<>();
+        List<String> values = new ArrayList<>();
         for(int i = 0; i < model.getSize(); i++) {
             values.add(model.getElementAt(i));
         }

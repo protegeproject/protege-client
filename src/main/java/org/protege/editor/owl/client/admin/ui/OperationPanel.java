@@ -23,6 +23,7 @@ import javax.swing.event.ListSelectionListener;
 import java.awt.*;
 import java.rmi.RemoteException;
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
 import java.util.Optional;
 import java.util.stream.Collectors;
@@ -108,6 +109,7 @@ public class OperationPanel extends JPanel implements Disposable {
         try {
             if(client != null) {
                 List<Operation> operations = client.getAllOperations();
+                Collections.sort(operations);
                 data.addAll(operations.stream().map(OperationListItem::new).collect(Collectors.toList()));
             }
         } catch (ClientRequestException | RemoteException | AuthorizationException e) {

@@ -20,6 +20,7 @@ import javax.swing.*;
 import java.awt.*;
 import java.rmi.RemoteException;
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
 import java.util.Optional;
 
@@ -128,6 +129,7 @@ public class PolicyAssignmentDialogPanel extends JPanel implements VerifiedInput
         } catch (AuthorizationException | ClientRequestException | RemoteException e) {
             ErrorLogPanel.showErrorDialog(e);
         }
+        Collections.sort(roles);
         return roles.toArray(new Role[roles.size()]);
     }
 
@@ -140,6 +142,7 @@ public class PolicyAssignmentDialogPanel extends JPanel implements VerifiedInput
         } catch (AuthorizationException | ClientRequestException | RemoteException e) {
             ErrorLogPanel.showErrorDialog(e);
         }
+        Collections.sort(projects);
         return projects.toArray(new Project[projects.size()]);
     }
 
@@ -151,6 +154,7 @@ public class PolicyAssignmentDialogPanel extends JPanel implements VerifiedInput
         } catch (AuthorizationException | ClientRequestException | RemoteException e) {
             ErrorLogPanel.showErrorDialog(e);
         }
+        Collections.sort(operations);
         return operations.toArray(new Operation[operations.size()]);
     }
 

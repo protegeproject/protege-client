@@ -6,8 +6,8 @@ import javax.swing.*;
 import javax.swing.border.EmptyBorder;
 import javax.swing.table.TableCellRenderer;
 import java.awt.*;
-import java.util.Iterator;
-import java.util.Set;
+import java.util.*;
+import java.util.List;
 
 /**
  * @author Rafael Gonçalves <br>
@@ -32,11 +32,12 @@ public class ProjectOptionsTableCellRenderer extends JTextArea implements TableC
             setToolTipText(getText());
         }
         else if(value instanceof Set) {
-            Set<String> values = (Set<String>) value;
+            List<String> values = new ArrayList<>((Set<String>) value);
+            Collections.sort(values);
             String valueSet = "";
             Iterator it = values.iterator();
             while(it.hasNext()) {
-                valueSet += it.next() + (it.hasNext() ? "," : "");
+                valueSet += it.next() + (it.hasNext() ? ", " : "");
             }
             setText(valueSet);
             setToolTipText(valueSet);

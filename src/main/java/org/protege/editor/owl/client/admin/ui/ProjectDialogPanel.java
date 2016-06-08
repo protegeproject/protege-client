@@ -278,7 +278,7 @@ public class ProjectDialogPanel extends JPanel implements VerifiedInputEditor {
         public void actionPerformed(ActionEvent e) {
             Optional<ProjectOption> optionOpt = ProjectOptionDialogPanel.showDialog(editorKit, projectOptions.keySet());
             if (optionOpt.isPresent()) {
-                projectOptions.put(optionOpt.get().getKey(), optionOpt.get().getValues());
+                projectOptions.put(optionOpt.get().getKey(), new TreeSet<>(optionOpt.get().getValues()));
             }
             optionsTableModel.setOptions(createProjectOptions(projectOptions));
             handleValueChange();
@@ -294,7 +294,7 @@ public class ProjectDialogPanel extends JPanel implements VerifiedInputEditor {
                 Set<String> values = optionsTableModel.getValues(key);
                 Optional<ProjectOption> optionOpt = ProjectOptionDialogPanel.showDialog(editorKit, projectOptions.keySet(), key, values);
                 if (optionOpt.isPresent()) {
-                    projectOptions.put(optionOpt.get().getKey(), optionOpt.get().getValues());
+                    projectOptions.put(optionOpt.get().getKey(), new TreeSet<>(optionOpt.get().getValues()));
                     if (!optionOpt.get().getKey().equals(key)) {
                         projectOptions.remove(key);
                     }
@@ -335,6 +335,7 @@ public class ProjectDialogPanel extends JPanel implements VerifiedInputEditor {
         try {
             Client client = ClientSession.getInstance(editorKit).getActiveClient();
             List<User> userList = client.getAllUsers();
+            Collections.sort(userList);
             users = userList.toArray(new User[userList.size()]);
         } catch (RemoteException | ClientRequestException | AuthorizationException e) {
             ErrorLogPanel.showErrorDialog(e);

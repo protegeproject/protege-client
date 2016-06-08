@@ -37,7 +37,7 @@ public class ClientSession extends OWLEditorKitHook {
         @Override
         public void handleChange(OWLModelManagerChangeEvent event) {
             if (event.isType(EventType.ACTIVE_ONTOLOGY_CHANGED)) {
-                fireChangeEvent();
+                //fireChangeEvent();
             }
         }
     };
@@ -79,6 +79,8 @@ public class ClientSession extends OWLEditorKitHook {
         registerProject(versionOntology.getOntology().getOntologyID(), projectId);
         registerVersionOntology(versionOntology.getOntology().getOntologyID(), versionOntology);
         getEditorKit().getOWLModelManager().setActiveOntology(versionOntology.getOntology());
+        fireChangeEvent();
+
     }
 
     public ProjectId getActiveProject() {

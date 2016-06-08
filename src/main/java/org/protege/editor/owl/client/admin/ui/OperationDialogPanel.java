@@ -21,13 +21,13 @@ import javax.swing.*;
 import javax.swing.border.EmptyBorder;
 import javax.swing.event.DocumentEvent;
 import javax.swing.event.DocumentListener;
-import javax.swing.event.ListSelectionListener;
 import javax.swing.text.Document;
 import java.awt.*;
 import java.rmi.RemoteException;
-import java.util.*;
+import java.util.ArrayList;
 import java.util.List;
-import java.util.stream.Collectors;
+import java.util.Optional;
+import java.util.UUID;
 
 import static com.google.common.base.Preconditions.checkNotNull;
 
@@ -36,7 +36,7 @@ import static com.google.common.base.Preconditions.checkNotNull;
  * Stanford Center for Biomedical Informatics Research
  */
 public class OperationDialogPanel extends JPanel implements VerifiedInputEditor {
-    private static final long serialVersionUID = 3421074908068428217L;
+    private static final long serialVersionUID = -3827309465532294196L;
     private static final int FIELD_WIDTH = 20;
     private OWLEditorKit editorKit;
     private AugmentedJTextField name;
@@ -45,7 +45,6 @@ public class OperationDialogPanel extends JPanel implements VerifiedInputEditor 
     private JComboBox<OperationType> typesBox = new JComboBox<>(OperationType.values());
     private JLabel idLbl, nameLbl, descriptionLbl, typeLbl;
     private final JTextArea errorArea = new JTextArea(1, FIELD_WIDTH*2);
-    private CheckBoxList<AugmentedJCheckBox<Operation>> operationCheckboxList = new CheckBoxList<>();
     private List<InputVerificationStatusChangedListener> listeners = new ArrayList<>();
     private boolean currentlyValid = false;
     private Operation selectedOperation;
@@ -82,10 +81,6 @@ public class OperationDialogPanel extends JPanel implements VerifiedInputEditor 
         addListener(id.getDocument());
         addListener(name.getDocument());
         addListener(description.getDocument());
-
-        ListSelectionListener listener = e -> handleValueChange();
-        operationCheckboxList.addListSelectionListener(listener);
-        initList();
     }
 
     private void initUi() {
@@ -117,17 +112,6 @@ public class OperationDialogPanel extends JPanel implements VerifiedInputEditor 
         errorArea.setFont(errorArea.getFont().deriveFont(12.0f));
         errorArea.setForeground(Color.RED);
         holderPanel.add(errorArea, new GridBagConstraints(0, rowIndex, 2, 1, 0, 0, GridBagConstraints.SOUTHWEST, GridBagConstraints.NONE, new Insets(12, 2, 0, 2), 0, 0));
-        operationCheckboxList.setVisibleRowCount(20);
-    }
-
-    private void initList() {
-        List<AugmentedJCheckBox<Operation>> list = new ArrayList<>();
-        List<Operation> operationList = getOperations();
-        if (operationList != null) {
-            Collections.sort(operationList);
-            list.addAll(operationList.stream().map(AugmentedJCheckBox::new).collect(Collectors.toList()));
-            operationCheckboxList.setListData(list.toArray(new AugmentedJCheckBox[list.size()]));
-        }
     }
 
     private void setIsEditing(Operation operation) {
@@ -136,16 +120,6 @@ public class OperationDialogPanel extends JPanel implements VerifiedInputEditor 
         name.setText(operation.getName().get());
         description.setText(operation.getDescription().get());
         typesBox.setSelectedItem(operation.getType());
-    }
-
-    private List<Operation> getOperations() {
-        Client client = ClientSession.getInstance(editorKit).getActiveClient();
-        try {
-            return client.getAllOperations();
-        } catch (AuthorizationException | ClientRequestException | RemoteException e) {
-            ErrorLogPanel.showErrorDialog(e);
-        }
-        return Collections.emptyList();
     }
 
     private void addListener(Document doc) {

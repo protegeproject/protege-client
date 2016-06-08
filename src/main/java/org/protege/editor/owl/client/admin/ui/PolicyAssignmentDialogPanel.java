@@ -17,12 +17,15 @@ import org.protege.editor.owl.client.api.exception.ClientRequestException;
 import org.protege.editor.owl.server.api.exception.AuthorizationException;
 
 import javax.swing.*;
+import javax.swing.event.ListSelectionEvent;
+import javax.swing.event.ListSelectionListener;
 import java.awt.*;
 import java.rmi.RemoteException;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 import java.util.Optional;
+import java.util.stream.Collectors;
 
 import static com.google.common.base.Preconditions.checkNotNull;
 
@@ -35,7 +38,7 @@ public class PolicyAssignmentDialogPanel extends JPanel implements VerifiedInput
     private static final int FIELD_WIDTH = 20;
     private OWLEditorKit editorKit;
     private JComboBox<Project> projectBox;
-    private JComboBox<Role> roleBox;
+    private CheckBoxList<AugmentedJCheckBox<Role>> roleCheckBoxList;
     private JLabel operationsLbl, roleLbl, projectLbl;
     private JList<Operation> operationsList;
     private final JTextArea errorArea = new JTextArea(1, FIELD_WIDTH*2);
@@ -43,7 +46,7 @@ public class PolicyAssignmentDialogPanel extends JPanel implements VerifiedInput
     private boolean currentlyValid = false, roleOnly = false;
     private User selectedUser;
     private Project selectedProject;
-    private Role dialogSelectedRole;
+    private List<Role> dialogSelectedRoles = new ArrayList<>();
 
     /**
      * Constructor
@@ -62,14 +65,17 @@ public class PolicyAssignmentDialogPanel extends JPanel implements VerifiedInput
 
     private void initInputFields() {
         operationsLbl = new JLabel("Allowed operations:");
-        roleLbl = new JLabel("Role");
+        roleLbl = new JLabel("Roles");
         projectLbl = new JLabel("Project");
 
         projectBox = new JComboBox<>(getProjects());
         projectBox.setSelectedIndex(-1);
-        roleBox = new JComboBox<>(getRoles());
-        roleBox.setSelectedIndex(-1);
         operationsList = new JList<>();
+
+        roleCheckBoxList = new CheckBoxList<>();
+        roleCheckBoxList.setListData(getRoles());
+        roleCheckBoxList.setVisibleRowCount(5);
+        roleCheckBoxList.addListSelectionListener(roleCheckboxListListener);
 
         operationsList.setCellRenderer(new OperationListCellRenderer());
         projectBox.setRenderer(new MetaprojectObjectComboBoxRenderer());
@@ -79,15 +85,19 @@ public class PolicyAssignmentDialogPanel extends JPanel implements VerifiedInput
                 handleValueChange();
             }
         });
-        roleBox.setRenderer(new MetaprojectObjectComboBoxRenderer());
-        roleBox.addActionListener(e -> {
-            if(e.getSource().equals(roleBox)) {
-                dialogSelectedRole = (Role)roleBox.getSelectedItem();
-                operationsList.setListData(getOperations(dialogSelectedRole));
+    }
+
+    private ListSelectionListener roleCheckboxListListener = new ListSelectionListener() {
+        @Override
+        public void valueChanged(ListSelectionEvent e) {
+            List<Role> selRoles = getSelectedRoles();
+            if(!selRoles.equals(dialogSelectedRoles)) {
+                dialogSelectedRoles = getSelectedRoles();
+                operationsList.setListData(getOperations(dialogSelectedRoles));
                 handleValueChange();
             }
-        });
-    }
+        }
+    };
 
     private void initUi(boolean roleOnly) {
         JPanel holderPanel = new JPanel(new GridBagLayout());
@@ -100,7 +110,7 @@ public class PolicyAssignmentDialogPanel extends JPanel implements VerifiedInput
             rowIndex++;
         }
         holderPanel.add(roleLbl, new GridBagConstraints(0, rowIndex, 1, 1, 0.0, 0.0, GridBagConstraints.BASELINE_TRAILING, GridBagConstraints.NONE, insets, 0, 0));
-        holderPanel.add(roleBox, new GridBagConstraints(1, rowIndex, 1, 1, 100.0, 0.0, GridBagConstraints.BASELINE_LEADING, GridBagConstraints.HORIZONTAL, insets, 0, 0));
+        holderPanel.add(new JScrollPane(roleCheckBoxList), new GridBagConstraints(1, rowIndex, 1, 1, 100.0, 0.0, GridBagConstraints.BASELINE_LEADING, GridBagConstraints.HORIZONTAL, insets, 0, 0));
         rowIndex++;
         holderPanel.add(new JSeparator(), new GridBagConstraints(0, rowIndex, 2, 1, 100.0, 0.0, GridBagConstraints.CENTER, GridBagConstraints.HORIZONTAL, new Insets(5, 2, 5, 2), 0, 0));
         rowIndex++;
@@ -121,16 +131,17 @@ public class PolicyAssignmentDialogPanel extends JPanel implements VerifiedInput
         this.selectedProject = checkNotNull(project);
     }
 
-    private Role[] getRoles() {
+    private AugmentedJCheckBox<Role>[] getRoles() {
         Client client = ClientSession.getInstance(editorKit).getActiveClient();
-        List<Role> roles = new ArrayList<>();
+        List<AugmentedJCheckBox<Role>> roles = new ArrayList<>();
         try {
-            roles = client.getAllRoles();
+            List<Role> roleSet = client.getAllRoles();
+            Collections.sort(roleSet);
+            roles.addAll(roleSet.stream().map(AugmentedJCheckBox::new).collect(Collectors.toList()));
         } catch (AuthorizationException | ClientRequestException | RemoteException e) {
             ErrorLogPanel.showErrorDialog(e);
         }
-        Collections.sort(roles);
-        return roles.toArray(new Role[roles.size()]);
+        return roles.toArray(new AugmentedJCheckBox[roles.size()]);
     }
 
     private Project[] getProjects() {
@@ -146,11 +157,14 @@ public class PolicyAssignmentDialogPanel extends JPanel implements VerifiedInput
         return projects.toArray(new Project[projects.size()]);
     }
 
-    private Operation[] getOperations(Role role) {
+    private Operation[] getOperations(List<Role> roles) {
         Client client = ClientSession.getInstance(editorKit).getActiveClient();
         List<Operation> operations = new ArrayList<>();
         try {
-            operations = client.getOperations(role.getId());
+            for(Role r : roles) {
+                List<Operation> ops = client.getOperations(r.getId());
+                ops.stream().filter(op -> !operations.contains(op)).forEach(operations::add);
+            }
         } catch (AuthorizationException | ClientRequestException | RemoteException e) {
             ErrorLogPanel.showErrorDialog(e);
         }
@@ -177,9 +191,17 @@ public class PolicyAssignmentDialogPanel extends JPanel implements VerifiedInput
     private boolean checkInputs() throws PolicyEntryAlreadyExistsException {
         boolean allValid = true;
         if(policyEntryExists()) {
-            throw new PolicyEntryAlreadyExistsException("The specified policy entry already exists");
+            throw new PolicyEntryAlreadyExistsException("This role assignment already exists");
         }
-        if (roleBox.getSelectedItem() == null) {
+        boolean noneChecked = true;
+        for (int i = 0; i < roleCheckBoxList.getModel().getSize(); i++) {
+            AugmentedJCheckBox<Role> cb = roleCheckBoxList.getModel().getElementAt(i);
+            if (cb.isSelected()) {
+                noneChecked = false;
+                break;
+            }
+        }
+        if (noneChecked) {
             allValid = false;
         }
         if(!roleOnly && projectBox.getSelectedItem() == null) {
@@ -189,12 +211,12 @@ public class PolicyAssignmentDialogPanel extends JPanel implements VerifiedInput
     }
 
     private boolean policyEntryExists() {
-        if(selectedProject != null && selectedUser != null && dialogSelectedRole != null) {
+        if(selectedProject != null && selectedUser != null && !getSelectedRoleCheckboxes().isEmpty()) {
             Client client = ClientSession.getInstance(editorKit).getActiveClient();
             try {
                 List<Role> roles = client.getRoles(selectedUser.getId(), selectedProject.getId());
-                for(Role role : roles) {
-                    if(role.getId().equals(dialogSelectedRole.getId())) {
+                for(Role r : getSelectedRoles()) {
+                    if(roles.contains(r)) {
                         return true;
                     }
                 }
@@ -205,11 +227,29 @@ public class PolicyAssignmentDialogPanel extends JPanel implements VerifiedInput
         return false;
     }
 
+    private List<AugmentedJCheckBox<Role>> getSelectedRoleCheckboxes() {
+        List<AugmentedJCheckBox<Role>> list = new ArrayList<>();
+        for (int i = 0; i < roleCheckBoxList.getModel().getSize(); i++) {
+            AugmentedJCheckBox<Role> checkbox = roleCheckBoxList.getModel().getElementAt(i);
+            if(checkbox.isSelected()) {
+                list.add(checkbox);
+            }
+        }
+        return list;
+    }
+
+    private List<Role> getSelectedRoles() {
+        List<AugmentedJCheckBox<Role>> checkBoxes = getSelectedRoleCheckboxes();
+        return checkBoxes.stream().map(AugmentedJCheckBox::getObject).collect(Collectors.toList());
+    }
+
     private void addAssignment(Project project) {
-        Role role = (Role) roleBox.getSelectedItem();
+        List<Role> roles = getSelectedRoles();
         Client client = ClientSession.getInstance(editorKit).getActiveClient();
         try {
-            client.assignRole(selectedUser.getId(), project.getId(), role.getId());
+            for(Role r : roles) {
+                client.assignRole(selectedUser.getId(), project.getId(), r.getId());
+            }
         } catch (AuthorizationException | ClientRequestException | RemoteException e) {
             ErrorLogPanel.showErrorDialog(e);
         }

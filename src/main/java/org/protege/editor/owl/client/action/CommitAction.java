@@ -68,7 +68,6 @@ public class CommitAction extends AbstractClientAction implements ClientSessionL
     @Override
     public void handleChange(ClientSessionChangeEvent event) {
         activeVersionOntology = Optional.ofNullable(event.getSource().getActiveVersionOntology());
-        setEnabled(activeVersionOntology.isPresent());
     }
 
     @Override

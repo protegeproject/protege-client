@@ -161,11 +161,20 @@
       	<editorKitId value="OWLEditorKit"/>
    	</extension>
    
+   	<extension id="Login"
+               name="Login Menu"
+               point="org.protege.editor.core.application.EditorKitMenuAction">
+		<name value="Login"/>
+      	<path value="org.protege.editor.owl.client.Server/SlotA-G"/>
+      	<editorKitId value="OWLEditorKit"/>
+      	<class value="org.protege.editor.owl.client.action.LoginAction"/>
+	</extension>
+	
 	<extension id="Commit"
                name="Commit Menu"
                point="org.protege.editor.core.application.EditorKitMenuAction">
 		<name value="Commit"/>
-      	<path value="org.protege.editor.owl.client.Server/SlotA-G"/>
+      	<path value="org.protege.editor.owl.client.Server/SlotB-G"/>
       	<editorKitId value="OWLEditorKit"/>
       	<class value="org.protege.editor.owl.client.action.CommitAction"/>
 	</extension>
@@ -174,7 +183,7 @@
                name="Update Menu"
                point="org.protege.editor.core.application.EditorKitMenuAction">
 		<name value="Update"/>
-      	<path value="org.protege.editor.owl.client.Server/SlotA-I"/>
+      	<path value="org.protege.editor.owl.client.Server/SlotB-I"/>
       	<editorKitId value="OWLEditorKit"/>
       	<class value="org.protege.editor.owl.client.action.UpdateAction"/>
 	</extension>
@@ -183,7 +192,7 @@
                name="Show Uncommitted Changes"
                point="org.protege.editor.core.application.EditorKitMenuAction">
 		<name value="Show uncommitted changes"/>
-       	<path value="org.protege.editor.owl.client.Server/SlotB-W"/>
+       	<path value="org.protege.editor.owl.client.Server/SlotC-W"/>
        	<editorKitId value="OWLEditorKit"/>
        	<class value="org.protege.editor.owl.client.action.ShowUncommittedChangesAction"/>
 	</extension>
@@ -192,7 +201,7 @@
                name="Show History"
                point="org.protege.editor.core.application.EditorKitMenuAction">
 		<name value="Show change history"/>
-       	<path value="org.protege.editor.owl.client.Server/SlotB-V"/>
+       	<path value="org.protege.editor.owl.client.Server/SlotC-V"/>
        	<editorKitId value="OWLEditorKit"/>
        	<class value="org.protege.editor.owl.client.action.ShowHistoryAction"/>
 	</extension>
@@ -212,7 +221,7 @@
                name="Auto Update Menu"
                point="org.protege.editor.core.application.EditorKitMenuAction">
 		<name value="Auto-update"/>
-      	<path value="org.protege.editor.owl.client.Server/SlotC-E"/>
+      	<path value="org.protege.editor.owl.client.Server/SlotD-E"/>
       	<editorKitId value="OWLEditorKit"/>
       	<class value="org.protege.editor.owl.client.action.EnableAutoUpdateAction"/>
       	<checkbox value="true"/>

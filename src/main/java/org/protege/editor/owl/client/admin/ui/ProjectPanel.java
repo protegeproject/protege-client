@@ -9,6 +9,7 @@ import org.protege.editor.core.ui.list.MListSectionHeader;
 import org.protege.editor.core.ui.util.JOptionPaneEx;
 import org.protege.editor.owl.OWLEditorKit;
 import org.protege.editor.owl.client.ClientSession;
+import org.protege.editor.owl.client.ClientSessionListener;
 import org.protege.editor.owl.client.admin.AdminTabManager;
 import org.protege.editor.owl.client.admin.model.AdminTabEvent;
 import org.protege.editor.owl.client.admin.model.AdminTabListener;
@@ -39,11 +40,13 @@ import static com.google.common.base.Preconditions.checkNotNull;
  * Stanford Center for Biomedical Informatics Research
  */
 public class ProjectPanel extends JPanel implements Disposable {
-    private static final long serialVersionUID = 5919830988663977652L;
+    private static final long serialVersionUID = 3288714216715860825L;
     private OWLEditorKit editorKit;
     private AdminTabManager configManager;
     private MList projectList;
     private Project selectedProject;
+    private ClientSession session;
+    private Client client;
 
     /**
      * Constructor
@@ -54,7 +57,10 @@ public class ProjectPanel extends JPanel implements Disposable {
         this.editorKit = checkNotNull(editorKit);
         configManager = AdminTabManager.get(editorKit);
         configManager.addListener(tabListener);
-        initUiComponents();
+        session = ClientSession.getInstance(editorKit);
+        session.addListener(sessionListener);
+        client = session.getActiveClient();
+        initUi();
     }
 
     private AdminTabListener tabListener = event -> {
@@ -65,7 +71,13 @@ public class ProjectPanel extends JPanel implements Disposable {
         }
     };
 
-    private void initUiComponents() {
+    private ClientSessionListener sessionListener = event -> {
+        client = session.getActiveClient();
+        removeAll();
+        initUi();
+    };
+
+    private void initUi() {
         setupList();
         setLayout(new BorderLayout());
         JScrollPane scrollpane = new JScrollPane(projectList);
@@ -219,7 +231,7 @@ public class ProjectPanel extends JPanel implements Disposable {
 
         @Override
         public boolean canAdd() {
-            return true;
+            return (client != null && client.canCreateProject());
         }
     }
 
@@ -245,7 +257,7 @@ public class ProjectPanel extends JPanel implements Disposable {
 
         @Override
         public boolean isEditable() {
-            return true;
+            return (client != null && client.canUpdateProject());
         }
 
         @Override
@@ -255,7 +267,7 @@ public class ProjectPanel extends JPanel implements Disposable {
 
         @Override
         public boolean isDeleteable() {
-            return true;
+            return (client != null && client.canDeleteProject());
         }
 
         @Override
@@ -290,5 +302,6 @@ public class ProjectPanel extends JPanel implements Disposable {
     public void dispose() {
         projectList.removeListSelectionListener(listSelectionListener);
         configManager.removeListener(tabListener);
+        session.removeListener(sessionListener);
     }
 }

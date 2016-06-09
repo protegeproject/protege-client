@@ -10,6 +10,7 @@ import org.protege.editor.core.ui.list.MListSectionHeader;
 import org.protege.editor.core.ui.util.JOptionPaneEx;
 import org.protege.editor.owl.OWLEditorKit;
 import org.protege.editor.owl.client.ClientSession;
+import org.protege.editor.owl.client.ClientSessionListener;
 import org.protege.editor.owl.client.admin.AdminTabManager;
 import org.protege.editor.owl.client.admin.model.AdminTabEvent;
 import org.protege.editor.owl.client.admin.model.AdminTabListener;
@@ -39,11 +40,13 @@ import static com.google.common.base.Preconditions.checkNotNull;
  * Stanford Center for Biomedical Informatics Research
  */
 public class UserPanel extends JPanel implements Disposable {
-    private static final long serialVersionUID = 1495161684558867063L;
+    private static final long serialVersionUID = 631771601957397823L;
     private OWLEditorKit editorKit;
     private AdminTabManager configManager;
     private MList userList;
     private User selectedUser;
+    private ClientSession session;
+    private Client client;
 
     /**
      * Constructor
@@ -54,7 +57,10 @@ public class UserPanel extends JPanel implements Disposable {
         this.editorKit = checkNotNull(editorKit);
         configManager = AdminTabManager.get(editorKit);
         configManager.addListener(tabListener);
-        initUiComponents();
+        session = ClientSession.getInstance(editorKit);
+        session.addListener(sessionListener);
+        client = session.getActiveClient();
+        initUi();
     }
 
     private AdminTabListener tabListener = event -> {
@@ -65,7 +71,13 @@ public class UserPanel extends JPanel implements Disposable {
         }
     };
 
-    private void initUiComponents() {
+    private ClientSessionListener sessionListener = event -> {
+        client = session.getActiveClient();
+        removeAll();
+        initUi();
+    };
+
+    private void initUi() {
         setupList();
         setLayout(new BorderLayout());
         JScrollPane scrollpane = new JScrollPane(userList);
@@ -203,7 +215,7 @@ public class UserPanel extends JPanel implements Disposable {
 
         @Override
         public boolean canAdd() {
-            return true;
+            return (client != null && client.canCreateUser());
         }
     }
 
@@ -228,7 +240,7 @@ public class UserPanel extends JPanel implements Disposable {
 
         @Override
         public boolean isEditable() {
-            return true;
+            return (client != null && client.canUpdateUser());
         }
 
         @Override
@@ -238,7 +250,7 @@ public class UserPanel extends JPanel implements Disposable {
 
         @Override
         public boolean isDeleteable() {
-            return true;
+            return (client != null && client.canDeleteUser());
         }
 
         @Override
@@ -273,5 +285,6 @@ public class UserPanel extends JPanel implements Disposable {
     public void dispose() {
         userList.removeListSelectionListener(listSelectionListener);
         configManager.removeListener(tabListener);
+        session.removeListener(sessionListener);
     }
 }

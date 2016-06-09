@@ -9,6 +9,7 @@ import org.protege.editor.core.ui.list.MListSectionHeader;
 import org.protege.editor.core.ui.util.JOptionPaneEx;
 import org.protege.editor.owl.OWLEditorKit;
 import org.protege.editor.owl.client.ClientSession;
+import org.protege.editor.owl.client.ClientSessionListener;
 import org.protege.editor.owl.client.admin.AdminTabManager;
 import org.protege.editor.owl.client.admin.model.AdminTabEvent;
 import org.protege.editor.owl.client.admin.model.AdminTabListener;
@@ -39,11 +40,13 @@ import static com.google.common.base.Preconditions.checkNotNull;
  * Stanford Center for Biomedical Informatics Research
  */
 public class RolePanel extends JPanel implements Disposable {
-    private static final long serialVersionUID = 1162869150478561731L;
+    private static final long serialVersionUID = -6884136427422368948L;
     private OWLEditorKit editorKit;
     private AdminTabManager configManager;
     private MList roleList;
     private Role selectedRole;
+    private ClientSession session;
+    private Client client;
 
     /**
      * Constructor
@@ -54,7 +57,10 @@ public class RolePanel extends JPanel implements Disposable {
         this.editorKit = checkNotNull(editorKit);
         configManager = AdminTabManager.get(editorKit);
         configManager.addListener(tabListener);
-        initUiComponents();
+        session = ClientSession.getInstance(editorKit);
+        session.addListener(sessionListener);
+        client = session.getActiveClient();
+        initUi();
     }
 
     private AdminTabListener tabListener = event -> {
@@ -65,7 +71,13 @@ public class RolePanel extends JPanel implements Disposable {
         }
     };
 
-    private void initUiComponents() {
+    private ClientSessionListener sessionListener = event -> {
+        client = session.getActiveClient();
+        removeAll();
+        initUi();
+    };
+
+    private void initUi() {
         setupList();
         setLayout(new BorderLayout());
         JScrollPane scrollpane = new JScrollPane(roleList);
@@ -203,7 +215,7 @@ public class RolePanel extends JPanel implements Disposable {
 
         @Override
         public boolean canAdd() {
-            return true;
+            return (client != null && client.canCreateRole());
         }
     }
 
@@ -229,7 +241,7 @@ public class RolePanel extends JPanel implements Disposable {
 
         @Override
         public boolean isEditable() {
-            return true;
+            return (client != null && client.canUpdateRole());
         }
 
         @Override
@@ -239,7 +251,7 @@ public class RolePanel extends JPanel implements Disposable {
 
         @Override
         public boolean isDeleteable() {
-            return true;
+            return (client != null && client.canDeleteRole());
         }
 
         @Override
@@ -274,5 +286,6 @@ public class RolePanel extends JPanel implements Disposable {
     public void dispose() {
         roleList.removeListSelectionListener(listSelectionListener);
         configManager.removeListener(tabListener);
+        session.removeListener(sessionListener);
     }
 }

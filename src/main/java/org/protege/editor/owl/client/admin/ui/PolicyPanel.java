@@ -11,6 +11,7 @@ import org.protege.editor.core.ui.list.MListSectionHeader;
 import org.protege.editor.core.ui.util.JOptionPaneEx;
 import org.protege.editor.owl.OWLEditorKit;
 import org.protege.editor.owl.client.ClientSession;
+import org.protege.editor.owl.client.ClientSessionListener;
 import org.protege.editor.owl.client.admin.AdminTabManager;
 import org.protege.editor.owl.client.admin.model.AdminTabEvent;
 import org.protege.editor.owl.client.admin.model.AdminTabListener;
@@ -43,11 +44,13 @@ import static com.google.common.base.Preconditions.checkNotNull;
  * Stanford Center for Biomedical Informatics Research
  */
 public class PolicyPanel extends JPanel implements Disposable {
-    private static final long serialVersionUID = -7419215167017892008L;
+    private static final long serialVersionUID = 6066487586948730875L;
     private OWLEditorKit editorKit;
     private AdminTabManager configManager;
     private MList projectList, roleList;
     private Project selectedProject;
+    private ClientSession session;
+    private Client client;
 
     /**
      * Constructor
@@ -58,7 +61,10 @@ public class PolicyPanel extends JPanel implements Disposable {
         this.editorKit = checkNotNull(editorKit);
         configManager = AdminTabManager.get(editorKit);
         configManager.addListener(tabListener);
-        initUiComponents();
+        session = ClientSession.getInstance(editorKit);
+        session.addListener(sessionListener);
+        client = session.getActiveClient();
+        initUi();
     }
 
     private AdminTabListener tabListener = event -> {
@@ -75,7 +81,13 @@ public class PolicyPanel extends JPanel implements Disposable {
         }
     };
 
-    private void initUiComponents() {
+    private ClientSessionListener sessionListener = event -> {
+        client = session.getActiveClient();
+        removeAll();
+        initUi();
+    };
+
+    private void initUi() {
         setBackground(getBackground());
         setLayout(new BorderLayout());
         setupProjectList();
@@ -341,7 +353,7 @@ public class PolicyPanel extends JPanel implements Disposable {
 
         @Override
         public boolean canAdd() {
-            return true;
+            return (client != null && client.canAssignRole());
         }
     }
 
@@ -377,7 +389,7 @@ public class PolicyPanel extends JPanel implements Disposable {
 
         @Override
         public boolean isDeleteable() {
-            return true;
+            return (client != null && client.canRetractRole());
         }
 
         @Override
@@ -403,7 +415,7 @@ public class PolicyPanel extends JPanel implements Disposable {
 
         @Override
         public boolean canAdd() {
-            return true;
+            return (client != null && client.canAssignRole());
         }
     }
 
@@ -439,7 +451,7 @@ public class PolicyPanel extends JPanel implements Disposable {
 
         @Override
         public boolean isDeleteable() {
-            return true;
+            return (client != null && client.canRetractRole());
         }
 
         @Override
@@ -458,5 +470,6 @@ public class PolicyPanel extends JPanel implements Disposable {
         projectList.removeListSelectionListener(projectListSelectionListener);
         roleList.removeListSelectionListener(roleListSelectionListener);
         configManager.removeListener(tabListener);
+        session.removeListener(sessionListener);
     }
 }

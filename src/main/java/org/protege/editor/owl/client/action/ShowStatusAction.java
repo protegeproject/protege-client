@@ -11,6 +11,7 @@ import javax.swing.JPanel;
 
 import org.protege.editor.owl.client.ClientSessionChangeEvent;
 import org.protege.editor.owl.client.ClientSessionListener;
+import org.protege.editor.owl.client.ClientSessionChangeEvent.EventCategory;
 import org.protege.editor.owl.client.api.exception.ClientRequestException;
 import org.protege.editor.owl.client.util.ChangeUtils;
 import org.protege.editor.owl.client.util.ClientUtils;
@@ -36,8 +37,10 @@ public class ShowStatusAction extends AbstractClientAction implements ClientSess
 
     @Override
     public void handleChange(ClientSessionChangeEvent event) {
-        activeVersionOntology = Optional.ofNullable(event.getSource().getActiveVersionOntology());
-        setEnabled(activeVersionOntology.isPresent());
+        if (event.hasCategory(EventCategory.SWITCH_ONTOLOGY)) {
+            activeVersionOntology = Optional.ofNullable(event.getSource().getActiveVersionOntology());
+            setEnabled(activeVersionOntology.isPresent());
+        }
     }
 
     @Override

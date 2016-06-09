@@ -8,6 +8,7 @@ import javax.swing.JCheckBoxMenuItem;
 import javax.swing.JMenuItem;
 
 import org.protege.editor.owl.client.ClientSessionChangeEvent;
+import org.protege.editor.owl.client.ClientSessionChangeEvent.EventCategory;
 import org.protege.editor.owl.client.ClientSessionListener;
 import org.protege.editor.owl.server.versioning.api.VersionedOWLOntology;
 
@@ -34,8 +35,10 @@ public class EnableAutoUpdateAction extends AbstractClientAction implements Clie
 
     @Override
     public void handleChange(ClientSessionChangeEvent event) {
-        activeVersionOntology = Optional.ofNullable(event.getSource().getActiveVersionOntology());
-        setEnabled(activeVersionOntology.isPresent());
+        if (event.hasCategory(EventCategory.SWITCH_ONTOLOGY)) {
+            activeVersionOntology = Optional.ofNullable(event.getSource().getActiveVersionOntology());
+            setEnabled(activeVersionOntology.isPresent());
+        }
     }
 
     public void setMenuItem(JMenuItem menu) {

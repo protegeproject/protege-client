@@ -14,6 +14,7 @@ import java.util.concurrent.Future;
 
 import org.protege.editor.owl.client.ClientSessionChangeEvent;
 import org.protege.editor.owl.client.ClientSessionListener;
+import org.protege.editor.owl.client.ClientSessionChangeEvent.EventCategory;
 import org.protege.editor.owl.client.api.exception.ClientRequestException;
 import org.protege.editor.owl.client.api.exception.SynchronizationException;
 import org.protege.editor.owl.client.util.ChangeUtils;
@@ -57,8 +58,10 @@ public class UpdateAction extends AbstractClientAction implements ClientSessionL
 
     @Override
     public void handleChange(ClientSessionChangeEvent event) {
-        activeVersionOntology = Optional.ofNullable(event.getSource().getActiveVersionOntology());
-        setEnabled(activeVersionOntology.isPresent());
+        if (event.hasCategory(EventCategory.SWITCH_ONTOLOGY)) {
+            activeVersionOntology = Optional.ofNullable(event.getSource().getActiveVersionOntology());
+            setEnabled(activeVersionOntology.isPresent());
+        }
     }
 
     @Override

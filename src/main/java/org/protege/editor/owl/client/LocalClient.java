@@ -3,6 +3,8 @@ package org.protege.editor.owl.client;
 import edu.stanford.protege.metaproject.api.*;
 import edu.stanford.protege.metaproject.api.exception.IdAlreadyInUseException;
 import edu.stanford.protege.metaproject.impl.Operations;
+
+import org.protege.editor.owl.client.ClientSessionChangeEvent.EventCategory;
 import org.protege.editor.owl.client.api.Client;
 import org.protege.editor.owl.client.api.UserInfo;
 import org.protege.editor.owl.client.api.exception.ClientRequestException;
@@ -48,7 +50,9 @@ public class LocalClient implements Client, ClientSessionListener {
 
     @Override
     public void handleChange(ClientSessionChangeEvent event) {
-        projectId = event.getSource().getActiveProject();
+        if (event.hasCategory(EventCategory.SWITCH_ONTOLOGY)) {
+            projectId = event.getSource().getActiveProject();
+        }
     }
 
     /**

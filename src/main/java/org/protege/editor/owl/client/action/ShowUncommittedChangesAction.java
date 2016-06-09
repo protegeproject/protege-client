@@ -14,6 +14,7 @@ import javax.swing.KeyStroke;
 
 import org.protege.editor.owl.client.ClientSessionChangeEvent;
 import org.protege.editor.owl.client.ClientSessionListener;
+import org.protege.editor.owl.client.ClientSessionChangeEvent.EventCategory;
 import org.protege.editor.owl.client.api.exception.SynchronizationException;
 import org.protege.editor.owl.client.ui.UncommittedChangesPanel;
 import org.protege.editor.owl.model.OWLWorkspace;
@@ -39,8 +40,10 @@ public class ShowUncommittedChangesAction extends AbstractClientAction implement
 
     @Override
     public void handleChange(ClientSessionChangeEvent event) {
-        activeVersionOntology = Optional.ofNullable(event.getSource().getActiveVersionOntology());
-        setEnabled(activeVersionOntology.isPresent());
+        if (event.hasCategory(EventCategory.SWITCH_ONTOLOGY)) {
+            activeVersionOntology = Optional.ofNullable(event.getSource().getActiveVersionOntology());
+            setEnabled(activeVersionOntology.isPresent());
+        }
     }
 
     @Override

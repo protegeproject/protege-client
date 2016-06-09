@@ -21,6 +21,10 @@ import javax.swing.*;
 import javax.swing.border.EmptyBorder;
 import javax.swing.event.ListSelectionListener;
 import java.awt.*;
+import java.awt.event.KeyAdapter;
+import java.awt.event.KeyEvent;
+import java.awt.event.MouseAdapter;
+import java.awt.event.MouseEvent;
 import java.rmi.RemoteException;
 import java.util.ArrayList;
 import java.util.Collections;
@@ -100,7 +104,35 @@ public class UserPanel extends JPanel implements Disposable {
         userList.addListSelectionListener(listSelectionListener);
         userList.setCellRenderer(new UserListCellRenderer());
         userList.setFixedCellHeight(30);
+        userList.addKeyListener(keyAdapter);
+        userList.addMouseListener(mouseAdapter);
     }
+
+    private KeyAdapter keyAdapter = new KeyAdapter() {
+        @Override
+        public void keyReleased(KeyEvent e) {
+            if(e.getKeyCode() == KeyEvent.VK_ENTER) {
+                if(userList.getSelectedValue() instanceof UserListHeaderItem) {
+                    addUser();
+                } else {
+                    editUser();
+                }
+            }
+        }
+    };
+
+    private MouseAdapter mouseAdapter = new MouseAdapter() {
+        @Override
+        public void mouseClicked(MouseEvent e) {
+            if(e.getClickCount() == 2) {
+                if(userList.getSelectedValue() instanceof UserListHeaderItem) {
+                    addUser();
+                } else {
+                    editUser();
+                }
+            }
+        }
+    };
 
     private void listUsers() {
         Client client = ClientSession.getInstance(editorKit).getActiveClient();

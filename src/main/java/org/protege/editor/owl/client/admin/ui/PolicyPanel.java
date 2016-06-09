@@ -215,7 +215,6 @@ public class PolicyPanel extends JPanel implements Disposable {
     private void listProjects() {
         if(configManager.getSelection() != null && configManager.getSelection().isUser()) {
             User user = (User) configManager.getSelection();
-            Client client = ClientSession.getInstance(editorKit).getActiveClient();
             ArrayList<Object> data = new ArrayList<>();
             data.add(new ProjectListHeaderItem());
             try {
@@ -232,7 +231,6 @@ public class PolicyPanel extends JPanel implements Disposable {
     private void listRoles() {
         if(selectedProject != null && configManager.getSelection().isUser()) {
             User user = (User)configManager.getSelection();
-            Client client = ClientSession.getInstance(editorKit).getActiveClient();
             ArrayList<Object> data = new ArrayList<>();
             data.add(new RoleListHeaderItem());
             try {
@@ -254,37 +252,42 @@ public class PolicyPanel extends JPanel implements Disposable {
     }
 
     private void addProjectAssignment() {
-        Optional<Project> project = PolicyAssignmentDialogPanel.showDialog(editorKit, (User)configManager.getSelection());
-        if(project.isPresent()) {
-            listProjects();
-            selectProject(project.get());
+        if(client != null && client.canAssignRole()) {
+            Optional<Project> project = PolicyAssignmentDialogPanel.showDialog(editorKit, (User) configManager.getSelection());
+            if (project.isPresent()) {
+                configManager.statusChanged(AdminTabEvent.CONFIGURATION_CHANGED);
+                listProjects();
+                selectProject(project.get());
+            }
         }
     }
 
     private void deleteProjectAssignment() {
-        Object selectedObj = projectList.getSelectedValue();
-        if (selectedObj instanceof ProjectListItem) {
-            Project project = ((ProjectListItem) selectedObj).getProject();
-            User user = (User)configManager.getSelection();
-            String projectName = project.getName().get();
-            int res = JOptionPaneEx.showConfirmDialog(editorKit.getWorkspace(), "Delete Project Assignment '" + projectName + "'",
-                    new JLabel("Proceed to delete permissions of user '" + user.getName().get() + "' on project '" + projectName + "'?\n" +
-                            "All role assignments to '" + projectName + "' will be removed."),
-                    JOptionPane.WARNING_MESSAGE, JOptionPane.YES_NO_OPTION, null);
-            if (res != JOptionPane.OK_OPTION) {
-                return;
-            }
-            Client client = ClientSession.getInstance(editorKit).getActiveClient();
-            try {
-                List<Role> roles = client.getRoles(user.getId(), project.getId());
-                for(Role role : roles) {
-                    client.retractRole(user.getId(), project.getId(), role.getId());
+        if(client != null && client.canRetractRole()) {
+            Object selectedObj = projectList.getSelectedValue();
+            if (selectedObj instanceof ProjectListItem) {
+                Project project = ((ProjectListItem) selectedObj).getProject();
+                User user = (User) configManager.getSelection();
+                String projectName = project.getName().get();
+                int res = JOptionPaneEx.showConfirmDialog(editorKit.getWorkspace(), "Delete Project Assignment '" + projectName + "'",
+                        new JLabel("Proceed to delete permissions of user '" + user.getName().get() + "' on project '" + projectName + "'?\n" +
+                                "All role assignments to '" + projectName + "' will be removed."),
+                        JOptionPane.WARNING_MESSAGE, JOptionPane.YES_NO_OPTION, null);
+                if (res != JOptionPane.OK_OPTION) {
+                    return;
                 }
-            } catch (AuthorizationException | ClientRequestException | RemoteException e) {
-                ErrorLogPanel.showErrorDialog(e);
+                try {
+                    List<Role> roles = client.getRoles(user.getId(), project.getId());
+                    for (Role role : roles) {
+                        client.retractRole(user.getId(), project.getId(), role.getId());
+                        configManager.statusChanged(AdminTabEvent.CONFIGURATION_CHANGED);
+                    }
+                } catch (AuthorizationException | ClientRequestException | RemoteException e) {
+                    ErrorLogPanel.showErrorDialog(e);
+                }
+                clearList(projectList, roleList);
+                listProjects();
             }
-            clearList(projectList, roleList);
-            listProjects();
         }
     }
 
@@ -301,36 +304,43 @@ public class PolicyPanel extends JPanel implements Disposable {
     }
 
     private void addRoleAssignment() {
-        if(projectList.getSelectedValue() != null && projectList.getSelectedValue() instanceof ProjectListItem) {
-            Project project = ((ProjectListItem) projectList.getSelectedValue()).getProject();
-            PolicyAssignmentDialogPanel.showDialog(editorKit, (User)configManager.getSelection(), project);
-            listRoles();
-            selectProject(project);
+        if(client != null && client.canAssignRole()) {
+            if (projectList.getSelectedValue() != null && projectList.getSelectedValue() instanceof ProjectListItem) {
+                Project project = ((ProjectListItem) projectList.getSelectedValue()).getProject();
+                boolean added = PolicyAssignmentDialogPanel.showDialog(editorKit, (User) configManager.getSelection(), project);
+                if(added) {
+                    configManager.statusChanged(AdminTabEvent.CONFIGURATION_CHANGED);
+                    listRoles();
+                    selectProject(project);
+                }
+            }
         }
     }
 
     private void deleteRoleAssignment() {
-        Object selectedObj = roleList.getSelectedValue();
-        if (selectedObj instanceof RoleListItem) {
-            Role role = ((RoleListItem) selectedObj).getRole();
-            User user = (User)configManager.getSelection();
-            String roleName = role.getName().get();
-            int res = JOptionPaneEx.showConfirmDialog(editorKit.getWorkspace(), "Delete Role Assignment '" + roleName + "'",
-                    new JLabel("Proceed to delete assignment of role '" + roleName + "' to user '" + user.getName().get() + "' on project '" +
-                            selectedProject.getName().get() + "'?"),
-                    JOptionPane.WARNING_MESSAGE, JOptionPane.YES_NO_OPTION, null);
-            if (res != JOptionPane.OK_OPTION) {
-                return;
+        if(client != null && client.canRetractRole()) {
+            Object selectedObj = roleList.getSelectedValue();
+            if (selectedObj instanceof RoleListItem) {
+                Role role = ((RoleListItem) selectedObj).getRole();
+                User user = (User) configManager.getSelection();
+                String roleName = role.getName().get();
+                int res = JOptionPaneEx.showConfirmDialog(editorKit.getWorkspace(), "Delete Role Assignment '" + roleName + "'",
+                        new JLabel("Proceed to delete assignment of role '" + roleName + "' to user '" + user.getName().get() + "' on project '" +
+                                selectedProject.getName().get() + "'?"),
+                        JOptionPane.WARNING_MESSAGE, JOptionPane.YES_NO_OPTION, null);
+                if (res != JOptionPane.OK_OPTION) {
+                    return;
+                }
+                try {
+                    client.retractRole(user.getId(), selectedProject.getId(), role.getId());
+                    configManager.statusChanged(AdminTabEvent.CONFIGURATION_CHANGED);
+                } catch (AuthorizationException | ClientRequestException | RemoteException e) {
+                    ErrorLogPanel.showErrorDialog(e);
+                }
+                listProjects();
+                listRoles();
+                selectProject(selectedProject);
             }
-            Client client = ClientSession.getInstance(editorKit).getActiveClient();
-            try {
-                client.retractRole(user.getId(), selectedProject.getId(), role.getId());
-            } catch (AuthorizationException | ClientRequestException | RemoteException e) {
-                ErrorLogPanel.showErrorDialog(e);
-            }
-            listProjects();
-            listRoles();
-            selectProject(selectedProject);
         }
     }
 

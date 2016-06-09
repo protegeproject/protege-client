@@ -147,7 +147,6 @@ public class RolePanel extends JPanel implements Disposable {
     };
 
     private void listRoles() {
-        Client client = ClientSession.getInstance(editorKit).getActiveClient();
         ArrayList<Object> data = new ArrayList<>();
         data.add(new RoleListHeaderItem());
         try {
@@ -163,42 +162,47 @@ public class RolePanel extends JPanel implements Disposable {
     }
 
     private void addRole() {
-        Optional<Role> role = RoleDialogPanel.showDialog(editorKit);
-        if(role.isPresent()) {
-            configManager.statusChanged(AdminTabEvent.CONFIGURATION_CHANGED);
-            listRoles();
-            roleList.setSelectedValue(new RoleListItem(role.get()), true);
+        if(client != null && client.canCreateRole()) {
+            Optional<Role> role = RoleDialogPanel.showDialog(editorKit);
+            if (role.isPresent()) {
+                configManager.statusChanged(AdminTabEvent.CONFIGURATION_CHANGED);
+                listRoles();
+                roleList.setSelectedValue(new RoleListItem(role.get()), true);
+            }
         }
     }
 
     private void editRole() {
-        Optional<Role> role = RoleDialogPanel.showDialog(editorKit, selectedRole);
-        if(role.isPresent()) {
-            configManager.statusChanged(AdminTabEvent.CONFIGURATION_CHANGED);
-            listRoles();
-            roleList.setSelectedValue(new RoleListItem(role.get()), true);
+        if(client != null && client.canUpdateRole()) {
+            Optional<Role> role = RoleDialogPanel.showDialog(editorKit, selectedRole);
+            if (role.isPresent()) {
+                configManager.statusChanged(AdminTabEvent.CONFIGURATION_CHANGED);
+                listRoles();
+                roleList.setSelectedValue(new RoleListItem(role.get()), true);
+            }
         }
     }
 
     private void deleteRole() {
-        Object selectedObj = roleList.getSelectedValue();
-        if (selectedObj instanceof RoleListItem) {
-            Role role = ((RoleListItem) selectedObj).getRole();
-            String roleName = role.getName().get();
-            int res = JOptionPaneEx.showConfirmDialog(editorKit.getWorkspace(), "Delete Role '" + roleName + "'",
-                    new JLabel("Proceed to delete role '" + roleName + "'? All policy entries involving '" + roleName + "' will be removed."),
-                    JOptionPane.WARNING_MESSAGE, JOptionPane.YES_NO_OPTION, null);
-            if (res != JOptionPane.OK_OPTION) {
-                return;
+        if(client != null && client.canDeleteRole()) {
+            Object selectedObj = roleList.getSelectedValue();
+            if (selectedObj instanceof RoleListItem) {
+                Role role = ((RoleListItem) selectedObj).getRole();
+                String roleName = role.getName().get();
+                int res = JOptionPaneEx.showConfirmDialog(editorKit.getWorkspace(), "Delete Role '" + roleName + "'",
+                        new JLabel("Proceed to delete role '" + roleName + "'? All policy entries involving '" + roleName + "' will be removed."),
+                        JOptionPane.WARNING_MESSAGE, JOptionPane.YES_NO_OPTION, null);
+                if (res != JOptionPane.OK_OPTION) {
+                    return;
+                }
+                try {
+                    client.deleteRole(role.getId());
+                } catch (AuthorizationException | ClientRequestException | RemoteException e) {
+                    ErrorLogPanel.showErrorDialog(e);
+                }
+                configManager.statusChanged(AdminTabEvent.CONFIGURATION_CHANGED);
+                listRoles();
             }
-            Client client = ClientSession.getInstance(editorKit).getActiveClient();
-            try {
-                client.deleteRole(role.getId());
-            } catch (AuthorizationException | ClientRequestException | RemoteException e) {
-                ErrorLogPanel.showErrorDialog(e);
-            }
-            configManager.statusChanged(AdminTabEvent.CONFIGURATION_CHANGED);
-            listRoles();
         }
     }
 

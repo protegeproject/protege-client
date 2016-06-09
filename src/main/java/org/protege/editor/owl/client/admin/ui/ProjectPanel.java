@@ -147,7 +147,6 @@ public class ProjectPanel extends JPanel implements Disposable {
     };
 
     private void listProjects() {
-        Client client = ClientSession.getInstance(editorKit).getActiveClient();
         ArrayList<Object> data = new ArrayList<>();
         data.add(new ProjectListHeaderItem());
         try {
@@ -163,47 +162,52 @@ public class ProjectPanel extends JPanel implements Disposable {
     }
 
     private void addProject() {
-        Optional<Project> project = ProjectDialogPanel.showDialog(editorKit);
-        if(project.isPresent()) {
-            configManager.statusChanged(AdminTabEvent.CONFIGURATION_CHANGED);
-            listProjects();
-            selectProject(project.get());
+        if(client != null && client.canCreateProject()) {
+            Optional<Project> project = ProjectDialogPanel.showDialog(editorKit);
+            if (project.isPresent()) {
+                configManager.statusChanged(AdminTabEvent.CONFIGURATION_CHANGED);
+                listProjects();
+                selectProject(project.get());
+            }
         }
     }
 
     private void editProject() {
-        Optional<Project> project = ProjectDialogPanel.showDialog(editorKit, selectedProject);
-        if(project.isPresent()) {
-            configManager.statusChanged(AdminTabEvent.CONFIGURATION_CHANGED);
-            listProjects();
-            selectProject(project.get());
+        if(client != null && client.canUpdateProject()) {
+            Optional<Project> project = ProjectDialogPanel.showDialog(editorKit, selectedProject);
+            if (project.isPresent()) {
+                configManager.statusChanged(AdminTabEvent.CONFIGURATION_CHANGED);
+                listProjects();
+                selectProject(project.get());
+            }
         }
     }
 
     private void deleteProject() {
-        Object selectedObj = projectList.getSelectedValue();
-        if (selectedObj instanceof ProjectListItem) {
-            Project project = ((ProjectListItem) selectedObj).getProject();
-            String projectName = project.getName().get();
+        if(client != null && client.canDeleteProject()) {
+            Object selectedObj = projectList.getSelectedValue();
+            if (selectedObj instanceof ProjectListItem) {
+                Project project = ((ProjectListItem) selectedObj).getProject();
+                String projectName = project.getName().get();
 
-            JPanel panel = new JPanel(new GridLayout(0, 1));
-            panel.add(new JLabel("Proceed to delete project '" + projectName + "'? All policy entries involving '" + projectName + "' will be removed."));
-            JCheckBox checkBox = new JCheckBox("Delete the history file of the project");
-            panel.add(checkBox);
+                JPanel panel = new JPanel(new GridLayout(0, 1));
+                panel.add(new JLabel("Proceed to delete project '" + projectName + "'? All policy entries involving '" + projectName + "' will be removed."));
+                JCheckBox checkBox = new JCheckBox("Delete the history file of the project");
+                panel.add(checkBox);
 
-            int res = JOptionPaneEx.showConfirmDialog(editorKit.getWorkspace(), "Delete Project '" + projectName + "'", panel,
-                    JOptionPane.WARNING_MESSAGE, JOptionPane.YES_NO_OPTION, null);
-            if (res != JOptionPane.OK_OPTION) {
-                return;
+                int res = JOptionPaneEx.showConfirmDialog(editorKit.getWorkspace(), "Delete Project '" + projectName + "'", panel,
+                        JOptionPane.WARNING_MESSAGE, JOptionPane.YES_NO_OPTION, null);
+                if (res != JOptionPane.OK_OPTION) {
+                    return;
+                }
+                try {
+                    client.deleteProject(project.getId(), checkBox.isSelected());
+                } catch (AuthorizationException | ClientRequestException | RemoteException e) {
+                    ErrorLogPanel.showErrorDialog(e);
+                }
+                configManager.statusChanged(AdminTabEvent.CONFIGURATION_CHANGED);
+                listProjects();
             }
-            Client client = ClientSession.getInstance(editorKit).getActiveClient();
-            try {
-                client.deleteProject(project.getId(), checkBox.isSelected());
-            } catch (AuthorizationException | ClientRequestException | RemoteException e) {
-                ErrorLogPanel.showErrorDialog(e);
-            }
-            configManager.statusChanged(AdminTabEvent.CONFIGURATION_CHANGED);
-            listProjects();
         }
     }
 

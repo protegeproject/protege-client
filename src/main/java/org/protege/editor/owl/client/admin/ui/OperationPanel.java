@@ -147,7 +147,6 @@ public class OperationPanel extends JPanel implements Disposable {
     };
 
     private void listOperations() {
-        Client client = ClientSession.getInstance(editorKit).getActiveClient();
         ArrayList<Object> data = new ArrayList<>();
         data.add(new OperationListHeaderItem());
         try {
@@ -163,42 +162,47 @@ public class OperationPanel extends JPanel implements Disposable {
     }
 
     private void addOperation() {
-        Optional<Operation> operation = OperationDialogPanel.showDialog(editorKit);
-        if(operation.isPresent()) {
-            configManager.statusChanged(AdminTabEvent.CONFIGURATION_CHANGED);
-            listOperations();
-            operationList.setSelectedValue(new OperationListItem(operation.get()), true);
+        if(client != null && client.canCreateOperation()) {
+            Optional<Operation> operation = OperationDialogPanel.showDialog(editorKit);
+            if (operation.isPresent()) {
+                configManager.statusChanged(AdminTabEvent.CONFIGURATION_CHANGED);
+                listOperations();
+                operationList.setSelectedValue(new OperationListItem(operation.get()), true);
+            }
         }
     }
 
     private void editOperation() {
-        Optional<Operation> operation = OperationDialogPanel.showDialog(editorKit, selectedOperation);
-        if(operation.isPresent()) {
-            configManager.statusChanged(AdminTabEvent.CONFIGURATION_CHANGED);
-            listOperations();
-            operationList.setSelectedValue(new OperationListItem(operation.get()), true);
+        if(client != null && client.canUpdateOperation()) {
+            Optional<Operation> operation = OperationDialogPanel.showDialog(editorKit, selectedOperation);
+            if (operation.isPresent()) {
+                configManager.statusChanged(AdminTabEvent.CONFIGURATION_CHANGED);
+                listOperations();
+                operationList.setSelectedValue(new OperationListItem(operation.get()), true);
+            }
         }
     }
 
     private void deleteOperation() {
-        Object selectedObj = operationList.getSelectedValue();
-        if(selectedObj instanceof OperationListItem) {
-            Operation operation = ((OperationListItem)selectedObj).getOperation();
-            String operationName = operation.getName().get();
-            int res = JOptionPaneEx.showConfirmDialog(editorKit.getWorkspace(), "Delete Operation '" + operationName + "'",
-                    new JLabel("Proceed to delete operation '" + operationName + "'? All policy entries involving '" + operationName + "' will be removed."),
-                    JOptionPane.WARNING_MESSAGE, JOptionPane.YES_NO_OPTION, null);
-            if (res != JOptionPane.OK_OPTION){
-                return;
+        if(client != null && client.canDeleteOperation()) {
+            Object selectedObj = operationList.getSelectedValue();
+            if (selectedObj instanceof OperationListItem) {
+                Operation operation = ((OperationListItem) selectedObj).getOperation();
+                String operationName = operation.getName().get();
+                int res = JOptionPaneEx.showConfirmDialog(editorKit.getWorkspace(), "Delete Operation '" + operationName + "'",
+                        new JLabel("Proceed to delete operation '" + operationName + "'? All policy entries involving '" + operationName + "' will be removed."),
+                        JOptionPane.WARNING_MESSAGE, JOptionPane.YES_NO_OPTION, null);
+                if (res != JOptionPane.OK_OPTION) {
+                    return;
+                }
+                try {
+                    client.deleteOperation(operation.getId());
+                } catch (AuthorizationException | ClientRequestException | RemoteException e) {
+                    ErrorLogPanel.showErrorDialog(e);
+                }
+                configManager.statusChanged(AdminTabEvent.CONFIGURATION_CHANGED);
+                listOperations();
             }
-            Client client = ClientSession.getInstance(editorKit).getActiveClient();
-            try {
-                client.deleteOperation(operation.getId());
-            } catch (AuthorizationException | ClientRequestException | RemoteException e) {
-                ErrorLogPanel.showErrorDialog(e);
-            }
-            configManager.statusChanged(AdminTabEvent.CONFIGURATION_CHANGED);
-            listOperations();
         }
     }
 

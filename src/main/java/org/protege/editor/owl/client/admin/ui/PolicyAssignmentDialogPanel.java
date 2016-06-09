@@ -270,13 +270,14 @@ public class PolicyAssignmentDialogPanel extends JPanel implements VerifiedInput
         return Optional.empty();
     }
 
-    public static void showDialog(OWLEditorKit editorKit, User selectedUser, Project selectedProject) {
+    public static boolean showDialog(OWLEditorKit editorKit, User selectedUser, Project selectedProject) {
         PolicyAssignmentDialogPanel panel = new PolicyAssignmentDialogPanel(editorKit, selectedUser, true);
         panel.setProject(selectedProject);
         boolean add = showDialog(editorKit, panel, "Add New Access Policy within Project '" + selectedProject.getName().get() + "'");
         if(add) {
             panel.addAssignment(selectedProject);
         }
+        return add;
     }
 
     private static boolean showDialog(OWLEditorKit editorKit, PolicyAssignmentDialogPanel panel, String header) {

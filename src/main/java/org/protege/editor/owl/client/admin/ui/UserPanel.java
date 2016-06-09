@@ -74,6 +74,7 @@ public class UserPanel extends JPanel implements Disposable {
     private ClientSessionListener sessionListener = event -> {
         client = session.getActiveClient();
         removeAll();
+        revalidate();
         initUi();
     };
 
@@ -147,7 +148,6 @@ public class UserPanel extends JPanel implements Disposable {
     };
 
     private void listUsers() {
-        Client client = ClientSession.getInstance(editorKit).getActiveClient();
         ArrayList<Object> data = new ArrayList<>();
         data.add(new UserListHeaderItem());
         try {
@@ -163,42 +163,48 @@ public class UserPanel extends JPanel implements Disposable {
     }
 
     private void addUser() {
-        Optional<User> user = UserDialogPanel.showDialog(editorKit);
-        if (user.isPresent()) {
-            configManager.statusChanged(AdminTabEvent.CONFIGURATION_CHANGED);
-            listUsers();
-            userList.setSelectedValue(new UserListItem(user.get()), true);
+        if(client != null && client.canCreateUser()) {
+            Optional<User> user = UserDialogPanel.showDialog(editorKit);
+            if (user.isPresent()) {
+                configManager.statusChanged(AdminTabEvent.CONFIGURATION_CHANGED);
+                listUsers();
+                userList.setSelectedValue(new UserListItem(user.get()), true);
+            }
         }
     }
 
     private void editUser() {
-        Optional<User> user = UserDialogPanel.showDialog(editorKit, selectedUser);
-        if (user.isPresent()) {
-            configManager.statusChanged(AdminTabEvent.CONFIGURATION_CHANGED);
-            listUsers();
-            userList.setSelectedValue(new UserListItem(user.get()), true);
+        if(client != null && client.canUpdateUser()) {
+            Optional<User> user = UserDialogPanel.showDialog(editorKit, selectedUser);
+            if (user.isPresent()) {
+                configManager.statusChanged(AdminTabEvent.CONFIGURATION_CHANGED);
+                listUsers();
+                userList.setSelectedValue(new UserListItem(user.get()), true);
+            }
         }
     }
 
     private void deleteUser() {
-        Object selectedObj = userList.getSelectedValue();
-        if (selectedObj instanceof UserListItem) {
-            User user = ((UserListItem) selectedObj).getUser();
-            String userName = user.getName().get();
-            int res = JOptionPaneEx.showConfirmDialog(editorKit.getWorkspace(), "Delete User '" + userName + "'",
-                    new JLabel("Proceed to delete user '" + userName + "'?\n" + "All policy entries involving '" + userName + "' will be removed."),
-                    JOptionPane.WARNING_MESSAGE, JOptionPane.YES_NO_OPTION, null);
-            if (res != JOptionPane.OK_OPTION) {
-                return;
+        if(client != null && client.canDeleteUser()) {
+            Object selectedObj = userList.getSelectedValue();
+            if (selectedObj instanceof UserListItem) {
+                User user = ((UserListItem) selectedObj).getUser();
+                String userName = user.getName().get();
+                int res = JOptionPaneEx.showConfirmDialog(editorKit.getWorkspace(), "Delete User '" + userName + "'",
+                        new JLabel("Proceed to delete user '" + userName + "'?\n" + "All policy entries involving '" + userName + "' will be removed."),
+                        JOptionPane.WARNING_MESSAGE, JOptionPane.YES_NO_OPTION, null);
+                if (res != JOptionPane.OK_OPTION) {
+                    return;
+                }
+                Client client = ClientSession.getInstance(editorKit).getActiveClient();
+                try {
+                    client.deleteUser(user.getId());
+                } catch (AuthorizationException | ClientRequestException | RemoteException e) {
+                    ErrorLogPanel.showErrorDialog(e);
+                }
+                configManager.statusChanged(AdminTabEvent.CONFIGURATION_CHANGED);
+                listUsers();
             }
-            Client client = ClientSession.getInstance(editorKit).getActiveClient();
-            try {
-                client.deleteUser(user.getId());
-            } catch (AuthorizationException | ClientRequestException | RemoteException e) {
-                ErrorLogPanel.showErrorDialog(e);
-            }
-            configManager.statusChanged(AdminTabEvent.CONFIGURATION_CHANGED);
-            listUsers();
         }
     }
 

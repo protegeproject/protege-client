@@ -243,60 +243,68 @@ public class ServerSettingsPanel extends JPanel implements Disposable {
     };
 
     private void addProperty() {
-        boolean added = PropertyDialogPanel.showDialog(editorKit);
-        if(added) {
-            configManager.statusChanged(AdminTabEvent.CONFIGURATION_CHANGED);
-        }
-        refresh();
-    }
-
-    private void deleteProperty() {
-        Object selectedObj = settingsList.getSelectedValue();
-        if (selectedObj instanceof PropertyListItem) {
-            String propertyName = ((PropertyListItem) selectedObj).getPropertyName();
-            int res = JOptionPaneEx.showConfirmDialog(editorKit.getWorkspace(), "Delete Property '" + propertyName + "'",
-                    new JLabel("Proceed to delete property '" + propertyName + "'?"),
-                    JOptionPane.WARNING_MESSAGE, JOptionPane.YES_NO_OPTION, null);
-            if (res != JOptionPane.OK_OPTION) {
-                return;
+        if(client != null && client.canUpdateServerConfig()) {
+            boolean added = PropertyDialogPanel.showDialog(editorKit);
+            if (added) {
+                configManager.statusChanged(AdminTabEvent.CONFIGURATION_CHANGED);
             }
-            Client client = ClientSession.getInstance(editorKit).getActiveClient();
-            try {
-                client.unsetServerProperty(propertyName);
-            } catch (AuthorizationException | ClientRequestException | RemoteException e) {
-                ErrorLogPanel.showErrorDialog(e);
-            }
-            configManager.statusChanged(AdminTabEvent.CONFIGURATION_CHANGED);
             refresh();
         }
     }
 
-    private void editProperty() {
-        boolean edited = PropertyDialogPanel.showDialog(editorKit, selectedProperty);
-        if(edited) {
-            configManager.statusChanged(AdminTabEvent.CONFIGURATION_CHANGED);
+    private void deleteProperty() {
+        if(client != null && client.canUpdateServerConfig()) {
+            Object selectedObj = settingsList.getSelectedValue();
+            if (selectedObj instanceof PropertyListItem) {
+                String propertyName = ((PropertyListItem) selectedObj).getPropertyName();
+                int res = JOptionPaneEx.showConfirmDialog(editorKit.getWorkspace(), "Delete Property '" + propertyName + "'",
+                        new JLabel("Proceed to delete property '" + propertyName + "'?"),
+                        JOptionPane.WARNING_MESSAGE, JOptionPane.YES_NO_OPTION, null);
+                if (res != JOptionPane.OK_OPTION) {
+                    return;
+                }
+                try {
+                    client.unsetServerProperty(propertyName);
+                } catch (AuthorizationException | ClientRequestException | RemoteException e) {
+                    ErrorLogPanel.showErrorDialog(e);
+                }
+                configManager.statusChanged(AdminTabEvent.CONFIGURATION_CHANGED);
+                refresh();
+            }
         }
-        refresh();
+    }
+
+    private void editProperty() {
+        if(client != null && client.canUpdateServerConfig()) {
+            boolean edited = PropertyDialogPanel.showDialog(editorKit, selectedProperty);
+            if (edited) {
+                configManager.statusChanged(AdminTabEvent.CONFIGURATION_CHANGED);
+            }
+            refresh();
+        }
     }
 
     private void editRoot() {
-        boolean edited = RootDialogPanel.showDialog(editorKit, ((RootListItem)rootList.getSelectedValue()).getRoot());
-        if(edited) {
-            configManager.statusChanged(AdminTabEvent.CONFIGURATION_CHANGED);
+        if(client != null && client.canUpdateServerConfig()) {
+            boolean edited = RootDialogPanel.showDialog(editorKit, ((RootListItem) rootList.getSelectedValue()).getRoot());
+            if (edited) {
+                configManager.statusChanged(AdminTabEvent.CONFIGURATION_CHANGED);
+            }
+            refresh();
         }
-        refresh();
     }
 
     private void editHost() {
-        boolean edited = HostDialogPanel.showDialog(editorKit, ((HostListItem)hostList.getSelectedValue()).getHost());
-        if(edited) {
-            configManager.statusChanged(AdminTabEvent.CONFIGURATION_CHANGED);
+        if(client != null && client.canUpdateServerConfig()) {
+            boolean edited = HostDialogPanel.showDialog(editorKit, ((HostListItem) hostList.getSelectedValue()).getHost());
+            if (edited) {
+                configManager.statusChanged(AdminTabEvent.CONFIGURATION_CHANGED);
+            }
+            refresh();
         }
-        refresh();
     }
 
     private void listHost() {
-        Client client = ClientSession.getInstance(editorKit).getActiveClient();
         ArrayList<Object> data = new ArrayList<>();
         data.add(new HostListHeaderItem());
         try {
@@ -310,7 +318,6 @@ public class ServerSettingsPanel extends JPanel implements Disposable {
     }
 
     private void listRoot() {
-        Client client = ClientSession.getInstance(editorKit).getActiveClient();
         ArrayList<Object> data = new ArrayList<>();
         data.add(new RootListHeaderItem());
         try {
@@ -324,7 +331,6 @@ public class ServerSettingsPanel extends JPanel implements Disposable {
     }
 
     private void listProperties() {
-        Client client = ClientSession.getInstance(editorKit).getActiveClient();
         ArrayList<Object> data = new ArrayList<>();
         data.add(new PropertyListHeaderItem());
         try {

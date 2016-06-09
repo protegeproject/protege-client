@@ -40,8 +40,7 @@ public class CommitAction extends AbstractClientAction implements ClientSessionL
 
     private OWLOntologyChangeListener checkUncommittedChanges = new OWLOntologyChangeListener() {
         @Override
-        public void ontologiesChanged(List<? extends OWLOntologyChange> changes)
-                throws OWLException {
+        public void ontologiesChanged(List<? extends OWLOntologyChange> changes) throws OWLException {
             OWLOntology activeOntology = getOWLEditorKit().getOWLModelManager().getActiveOntology();
             if (activeVersionOntology.isPresent()) {
                 ChangeHistory baseline = activeVersionOntology.get().getChangeHistory();
@@ -68,6 +67,13 @@ public class CommitAction extends AbstractClientAction implements ClientSessionL
     @Override
     public void handleChange(ClientSessionChangeEvent event) {
         activeVersionOntology = Optional.ofNullable(event.getSource().getActiveVersionOntology());
+        /*
+         * This method does not handle if version ontology is present because the menu item will
+         * only be enabled if checkUncommittedChanges(...) listener senses changes in the ontology.
+         */
+        if (!activeVersionOntology.isPresent()) {
+            setEnabled(false);
+        }
     }
 
     @Override
@@ -92,14 +98,12 @@ public class CommitAction extends AbstractClientAction implements ClientSessionL
 
     private void performCommit(VersionedOWLOntology vont, String comment) {
         try {
-            Optional<ChangeHistory> acceptedChanges = commit(vont.getHeadRevision(), localChanges,
-                    comment);
+            Optional<ChangeHistory> acceptedChanges = commit(vont.getHeadRevision(), localChanges, comment);
             if (acceptedChanges.isPresent()) {
                 ChangeHistory changes = acceptedChanges.get();
                 vont.update(changes); // update the local ontology
                 setEnabled(false); // disable the commit action after the changes got committed successfully
-                showInfoDialog("Commit",
-                        "Commit success (uploaded as revision " + changes.getHeadRevision() + ")");
+                showInfoDialog("Commit", "Commit success (uploaded as revision " + changes.getHeadRevision() + ")");
             }
         }
         catch (InterruptedException e) {

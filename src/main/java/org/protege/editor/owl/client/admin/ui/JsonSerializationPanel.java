@@ -55,7 +55,8 @@ public class JsonSerializationPanel extends JPanel implements Disposable {
     }
 
     private AdminTabListener listener = event -> {
-        if(event.equals(AdminTabEvent.CONFIGURATION_CHANGED)) {
+        if( event.equals(AdminTabEvent.CONFIGURATION_CHANGED) ||
+        		event.equals(AdminTabEvent.CONFIGURATION_RESET)) {
             update();
         }
     };

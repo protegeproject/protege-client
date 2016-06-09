@@ -234,12 +234,22 @@ public interface PolicyMediator {
     // ------------------------------------------------
 
     /**
-     * Checks if the user has the permission to perform the given operation.
+     * Checks if the user has the permission to perform a project-related operation.
      *
      * @param operationId
      *            The target operation for the query
      * @return Returns <code>true</code> if the user has the permission, or
      *         <code>false</code> otherwise.
      */
-    boolean canPerformOperation(OperationId operationId);
+    boolean canPerformProjectOperation(OperationId operationId);
+
+    /**
+     * Checks if the user has the permission to perform an admin-related operation.
+     *
+     * @param operationId
+     *            The target operation for the query
+     * @return Returns <code>true</code> if the user has the permission, or
+     *         <code>false</code> otherwise.
+     */
+    boolean canPerformAdminOperation(OperationId operationId);
 }

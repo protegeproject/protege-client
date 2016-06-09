@@ -555,7 +555,7 @@ public class LocalClient implements Client, ClientSessionListener {
         if (!getRemoteProject().isPresent()) {
             return false;
         }
-        return queryUserPolicy(userId, getRemoteProject().get(), Operations.ADD_AXIOM.getId());
+        return queryProjectPolicy(userId, getRemoteProject().get(), Operations.ADD_AXIOM.getId());
     }
 
     @Override
@@ -563,7 +563,7 @@ public class LocalClient implements Client, ClientSessionListener {
         if (!getRemoteProject().isPresent()) {
             return false;
         }
-        return queryUserPolicy(userId, getRemoteProject().get(), Operations.REMOVE_AXIOM.getId());
+        return queryProjectPolicy(userId, getRemoteProject().get(), Operations.REMOVE_AXIOM.getId());
     }
 
     @Override
@@ -571,7 +571,7 @@ public class LocalClient implements Client, ClientSessionListener {
         if (!getRemoteProject().isPresent()) {
             return false;
         }
-        return queryUserPolicy(userId, getRemoteProject().get(), Operations.ADD_ONTOLOGY_ANNOTATION.getId());
+        return queryProjectPolicy(userId, getRemoteProject().get(), Operations.ADD_ONTOLOGY_ANNOTATION.getId());
     }
 
     @Override
@@ -579,7 +579,7 @@ public class LocalClient implements Client, ClientSessionListener {
         if (!getRemoteProject().isPresent()) {
             return false;
         }
-        return queryUserPolicy(userId, getRemoteProject().get(), Operations.REMOVE_ONTOLOGY_ANNOTATION.getId());
+        return queryProjectPolicy(userId, getRemoteProject().get(), Operations.REMOVE_ONTOLOGY_ANNOTATION.getId());
     }
 
     @Override
@@ -587,7 +587,7 @@ public class LocalClient implements Client, ClientSessionListener {
         if (!getRemoteProject().isPresent()) {
             return false;
         }
-        return queryUserPolicy(userId, getRemoteProject().get(), Operations.ADD_IMPORT.getId());
+        return queryProjectPolicy(userId, getRemoteProject().get(), Operations.ADD_IMPORT.getId());
     }
 
     @Override
@@ -595,7 +595,7 @@ public class LocalClient implements Client, ClientSessionListener {
         if (!getRemoteProject().isPresent()) {
             return false;
         }
-        return queryUserPolicy(userId, getRemoteProject().get(), Operations.REMOVE_IMPORT.getId());
+        return queryProjectPolicy(userId, getRemoteProject().get(), Operations.REMOVE_IMPORT.getId());
     }
 
     @Override
@@ -603,39 +603,27 @@ public class LocalClient implements Client, ClientSessionListener {
         if (!getRemoteProject().isPresent()) {
             return false;
         }
-        return queryUserPolicy(userId, getRemoteProject().get(), Operations.MODIFY_ONTOLOGY_IRI.getId());
+        return queryProjectPolicy(userId, getRemoteProject().get(), Operations.MODIFY_ONTOLOGY_IRI.getId());
     }
 
     @Override
     public boolean canCreateUser() {
-        if (!getRemoteProject().isPresent()) {
-            return false;
-        }
-        return queryUserPolicy(userId, getRemoteProject().get(), Operations.ADD_USER.getId());
+        return queryAdminPolicy(userId, Operations.ADD_USER.getId());
     }
 
     @Override
     public boolean canDeleteUser() {
-        if (!getRemoteProject().isPresent()) {
-            return false;
-        }
-        return queryUserPolicy(userId, getRemoteProject().get(), Operations.REMOVE_USER.getId());
+        return queryAdminPolicy(userId, Operations.REMOVE_USER.getId());
     }
 
     @Override
     public boolean canUpdateUser() {
-        if (!getRemoteProject().isPresent()) {
-            return false;
-        }
-        return queryUserPolicy(userId, getRemoteProject().get(), Operations.MODIFY_USER.getId());
+        return queryAdminPolicy(userId, Operations.MODIFY_USER.getId());
     }
 
     @Override
     public boolean canCreateProject() {
-        if (!getRemoteProject().isPresent()) {
-            return false;
-        }
-        return queryUserPolicy(userId, getRemoteProject().get(), Operations.ADD_PROJECT.getId());
+        return queryAdminPolicy(userId, Operations.ADD_PROJECT.getId());
     }
 
     @Override
@@ -643,7 +631,7 @@ public class LocalClient implements Client, ClientSessionListener {
         if (!getRemoteProject().isPresent()) {
             return false;
         }
-        return queryUserPolicy(userId, getRemoteProject().get(), Operations.REMOVE_PROJECT.getId());
+        return queryProjectPolicy(userId, getRemoteProject().get(), Operations.REMOVE_PROJECT.getId());
     }
 
     @Override
@@ -651,7 +639,7 @@ public class LocalClient implements Client, ClientSessionListener {
         if (!getRemoteProject().isPresent()) {
             return false;
         }
-        return queryUserPolicy(userId, getRemoteProject().get(), Operations.MODIFY_PROJECT.getId());
+        return queryProjectPolicy(userId, getRemoteProject().get(), Operations.MODIFY_PROJECT.getId());
     }
 
     @Override
@@ -659,102 +647,96 @@ public class LocalClient implements Client, ClientSessionListener {
         if (!getRemoteProject().isPresent()) {
             return false;
         }
-        return queryUserPolicy(userId, getRemoteProject().get(), Operations.OPEN_PROJECT.getId());
+        return queryProjectPolicy(userId, getRemoteProject().get(), Operations.OPEN_PROJECT.getId());
     }
 
     @Override
     public boolean canCreateRole() {
-        if (!getRemoteProject().isPresent()) {
-            return false;
-        }
-        return queryUserPolicy(userId, getRemoteProject().get(), Operations.ADD_ROLE.getId());
+        return queryAdminPolicy(userId, Operations.ADD_ROLE.getId());
     }
 
     @Override
     public boolean canDeleteRole() {
-        if (!getRemoteProject().isPresent()) {
-            return false;
-        }
-        return queryUserPolicy(userId, getRemoteProject().get(), Operations.REMOVE_ROLE.getId());
+        return queryAdminPolicy(userId, Operations.REMOVE_ROLE.getId());
     }
 
     @Override
     public boolean canUpdateRole() {
-        if (!getRemoteProject().isPresent()) {
-            return false;
-        }
-        return queryUserPolicy(userId, getRemoteProject().get(), Operations.MODIFY_ROLE.getId());
+        return queryAdminPolicy(userId, Operations.MODIFY_ROLE.getId());
     }
 
     @Override
     public boolean canCreateOperation() {
-        if (!getRemoteProject().isPresent()) {
-            return false;
-        }
-        return queryUserPolicy(userId, getRemoteProject().get(), Operations.ADD_OPERATION.getId());
+        return queryAdminPolicy(userId, Operations.ADD_OPERATION.getId());
     }
 
     @Override
     public boolean canDeleteOperation() {
-        if (!getRemoteProject().isPresent()) {
-            return false;
-        }
-        return queryUserPolicy(userId, getRemoteProject().get(), Operations.REMOVE_OPERATION.getId());
+        return queryAdminPolicy(userId, Operations.REMOVE_OPERATION.getId());
     }
 
     @Override
     public boolean canUpdateOperation() {
-        if (!getRemoteProject().isPresent()) {
-            return false;
-        }
-        return queryUserPolicy(userId, getRemoteProject().get(), Operations.MODIFY_OPERATION.getId());
+        return queryAdminPolicy(userId, Operations.MODIFY_OPERATION.getId());
     }
 
     @Override
     public boolean canAssignRole() {
-        if (!getRemoteProject().isPresent()) {
-            return false;
-        }
-        return queryUserPolicy(userId, getRemoteProject().get(), Operations.ASSIGN_ROLE.getId());
+        return queryAdminPolicy(userId, Operations.ASSIGN_ROLE.getId());
     }
 
     @Override
     public boolean canRetractRole() {
-        if (!getRemoteProject().isPresent()) {
-            return false;
-        }
-        return queryUserPolicy(userId, getRemoteProject().get(), Operations.RETRACT_ROLE.getId());
+        return queryAdminPolicy(userId, Operations.RETRACT_ROLE.getId());
     }
 
     @Override
     public boolean canStopServer() {
-        if (!getRemoteProject().isPresent()) {
-            return false;
-        }
-        return queryUserPolicy(userId, getRemoteProject().get(), Operations.STOP_SERVER.getId());
+        return queryAdminPolicy(userId, Operations.STOP_SERVER.getId());
     }
 
     @Override
     public boolean canUpdateServerConfig() {
-        if (!getRemoteProject().isPresent()) {
-            return false;
-        }
-        return queryUserPolicy(userId, getRemoteProject().get(), Operations.MODIFY_SERVER_SETTINGS.getId());
+        return queryAdminPolicy(userId, Operations.MODIFY_SERVER_SETTINGS.getId());
     }
 
     @Override
-    public boolean canPerformOperation(OperationId operationId) {
+    public boolean canPerformProjectOperation(OperationId operationId) {
         if (!getRemoteProject().isPresent()) {
             return false;
         }
-        return queryUserPolicy(userId, getRemoteProject().get(), operationId);
+        return queryProjectPolicy(userId, getRemoteProject().get(), operationId);
     }
 
-    private boolean queryUserPolicy(UserId userId, ProjectId projectId, OperationId operationId) {
+    @Override
+    public boolean canPerformAdminOperation(OperationId operationId) {
+        if (!getRemoteProject().isPresent()) {
+            return false;
+        }
+        return queryAdminPolicy(userId, operationId);
+    }
+
+    /*
+     * Utility methods
+     */
+
+    private boolean queryProjectPolicy(UserId userId, ProjectId projectId, OperationId operationId) {
         boolean isAllowed = false;
         try {
             connect();
             isAllowed = server.isOperationAllowed(authToken, operationId, projectId, userId);
+        }
+        catch (AuthorizationException | ServerServiceException | RemoteException e) {
+            // TODO Add logging
+        }
+        return isAllowed;
+    }
+
+    private boolean queryAdminPolicy(UserId userId, OperationId operationId) {
+        boolean isAllowed = false;
+        try {
+            connect();
+            isAllowed = server.isOperationAllowed(authToken, operationId, userId);
         }
         catch (AuthorizationException | ServerServiceException | RemoteException e) {
             // TODO Add logging

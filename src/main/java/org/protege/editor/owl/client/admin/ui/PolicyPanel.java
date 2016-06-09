@@ -25,6 +25,10 @@ import javax.swing.*;
 import javax.swing.border.EmptyBorder;
 import javax.swing.event.ListSelectionListener;
 import java.awt.*;
+import java.awt.event.KeyAdapter;
+import java.awt.event.KeyEvent;
+import java.awt.event.MouseAdapter;
+import java.awt.event.MouseEvent;
 import java.rmi.RemoteException;
 import java.util.ArrayList;
 import java.util.Collections;
@@ -131,7 +135,31 @@ public class PolicyPanel extends JPanel implements Disposable {
         projectList.setSelectionMode(ListSelectionModel.SINGLE_SELECTION);
         projectList.addListSelectionListener(projectListSelectionListener);
         projectList.setCellRenderer(new ProjectListCellRenderer());
+        projectList.addKeyListener(keyAdapter);
+        projectList.addMouseListener(mouseAdapter);
     }
+
+    private KeyAdapter keyAdapter = new KeyAdapter() {
+        @Override
+        public void keyReleased(KeyEvent e) {
+            if(e.getKeyCode() == KeyEvent.VK_ENTER) {
+                if(projectList.getSelectedValue() instanceof ProjectListHeaderItem) {
+                    addProjectAssignment();
+                }
+            }
+        }
+    };
+
+    private MouseAdapter mouseAdapter = new MouseAdapter() {
+        @Override
+        public void mouseClicked(MouseEvent e) {
+            if(e.getClickCount() == 2) {
+                if(projectList.getSelectedValue() instanceof ProjectListHeaderItem) {
+                    addProjectAssignment();
+                }
+            }
+        }
+    };
 
     private void setupRoleList() {
         roleList = new MList() {
@@ -146,7 +174,31 @@ public class PolicyPanel extends JPanel implements Disposable {
         roleList.setSelectionMode(ListSelectionModel.SINGLE_SELECTION);
         roleList.addListSelectionListener(roleListSelectionListener);
         roleList.setCellRenderer(new RoleListCellRenderer());
+        roleList.addKeyListener(roleKeyAdapter);
+        roleList.addMouseListener(roleMouseAdapter);
     }
+
+    private KeyAdapter roleKeyAdapter = new KeyAdapter() {
+        @Override
+        public void keyReleased(KeyEvent e) {
+            if(e.getKeyCode() == KeyEvent.VK_ENTER) {
+                if(roleList.getSelectedValue() instanceof RoleListHeaderItem) {
+                    addRoleAssignment();
+                }
+            }
+        }
+    };
+
+    private MouseAdapter roleMouseAdapter = new MouseAdapter() {
+        @Override
+        public void mouseClicked(MouseEvent e) {
+            if(e.getClickCount() == 2) {
+                if(roleList.getSelectedValue() instanceof RoleListHeaderItem) {
+                    addRoleAssignment();
+                }
+            }
+        }
+    };
 
     private void listProjects() {
         if(configManager.getSelection() != null && configManager.getSelection().isUser()) {

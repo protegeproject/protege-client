@@ -21,6 +21,7 @@ import javax.swing.*;
 import javax.swing.border.EmptyBorder;
 import javax.swing.event.ListSelectionListener;
 import java.awt.*;
+import java.awt.event.*;
 import java.rmi.RemoteException;
 import java.util.ArrayList;
 import java.util.Collections;
@@ -129,6 +130,8 @@ public class ServerSettingsPanel extends JPanel implements Disposable {
         hostList.setSelectionMode(ListSelectionModel.SINGLE_SELECTION);
         hostList.setCellRenderer(new HostListCellRenderer());
         hostList.addListSelectionListener(hostListListener);
+        hostList.addKeyListener(hostKeyListener);
+        hostList.addMouseListener(hostMouseListener);
 
         rootList = new MList() {
             @Override
@@ -139,6 +142,8 @@ public class ServerSettingsPanel extends JPanel implements Disposable {
         rootList.setSelectionMode(ListSelectionModel.SINGLE_SELECTION);
         rootList.setCellRenderer(new RootListCellRenderer());
         rootList.addListSelectionListener(rootListListener);
+        rootList.addKeyListener(rootKeyListener);
+        rootList.addMouseListener(rootMouseListener);
 
         settingsList = new MList() {
             @Override
@@ -159,7 +164,71 @@ public class ServerSettingsPanel extends JPanel implements Disposable {
         settingsList.setSelectionMode(ListSelectionModel.SINGLE_SELECTION);
         settingsList.setCellRenderer(new PropertyListCellRenderer());
         settingsList.addListSelectionListener(settingsListListener);
+        settingsList.addKeyListener(keyAdapter);
+        settingsList.addMouseListener(mouseAdapter);
     }
+
+    private KeyAdapter keyAdapter = new KeyAdapter() {
+        @Override
+        public void keyReleased(KeyEvent e) {
+            if (e.getKeyCode() == KeyEvent.VK_ENTER) {
+                if (settingsList.getSelectedValue() instanceof PropertyListHeaderItem) {
+                    addProperty();
+                } else {
+                    editProperty();
+                }
+            }
+        }
+    };
+
+    private MouseAdapter mouseAdapter = new MouseAdapter() {
+        @Override
+        public void mouseClicked(MouseEvent e) {
+            if (e.getClickCount() == 2) {
+                if (settingsList.getSelectedValue() instanceof PropertyListHeaderItem) {
+                    addProperty();
+                } else {
+                    editProperty();
+                }
+            }
+        }
+    };
+
+    private KeyAdapter rootKeyListener = new KeyAdapter() {
+        @Override
+        public void keyReleased(KeyEvent e) {
+            if (e.getKeyCode() == KeyEvent.VK_ENTER && rootList.getSelectedValue() instanceof RootListItem) {
+                editRoot();
+            }
+        }
+    };
+
+    private MouseListener rootMouseListener = new MouseAdapter() {
+        @Override
+        public void mouseClicked(MouseEvent e) {
+            if (e.getClickCount() == 2 && rootList.getSelectedValue() instanceof RootListItem) {
+                editRoot();
+            }
+        }
+    };
+
+    private KeyAdapter hostKeyListener = new KeyAdapter() {
+        @Override
+        public void keyReleased(KeyEvent e) {
+            if (e.getKeyCode() == KeyEvent.VK_ENTER && hostList.getSelectedValue() instanceof HostListItem) {
+                editHost();
+            }
+        }
+    };
+
+    private MouseListener hostMouseListener = new MouseAdapter() {
+        @Override
+        public void mouseClicked(MouseEvent e) {
+            if (e.getClickCount() == 2 && hostList.getSelectedValue() instanceof HostListItem) {
+                editHost();
+            }
+        }
+    };
 
     private void addProperty() {
         boolean added = PropertyDialogPanel.showDialog(editorKit);

@@ -21,6 +21,10 @@ import javax.swing.*;
 import javax.swing.border.EmptyBorder;
 import javax.swing.event.ListSelectionListener;
 import java.awt.*;
+import java.awt.event.KeyAdapter;
+import java.awt.event.KeyEvent;
+import java.awt.event.MouseAdapter;
+import java.awt.event.MouseEvent;
 import java.rmi.RemoteException;
 import java.util.ArrayList;
 import java.util.Collections;
@@ -100,7 +104,35 @@ public class OperationPanel extends JPanel implements Disposable {
         operationList.setSelectionMode(ListSelectionModel.SINGLE_SELECTION);
         operationList.addListSelectionListener(listSelectionListener);
         operationList.setCellRenderer(new OperationListCellRenderer());
+        operationList.addKeyListener(keyAdapter);
+        operationList.addMouseListener(mouseAdapter);
     }
+
+    private KeyAdapter keyAdapter = new KeyAdapter() {
+        @Override
+        public void keyReleased(KeyEvent e) {
+            if(e.getKeyCode() == KeyEvent.VK_ENTER) {
+                if(operationList.getSelectedValue() instanceof OperationListHeaderItem) {
+                    addOperation();
+                } else {
+                    editOperation();
+                }
+            }
+        }
+    };
+
+    private MouseAdapter mouseAdapter = new MouseAdapter() {
+        @Override
+        public void mouseClicked(MouseEvent e) {
+            if(e.getClickCount() == 2) {
+                if(operationList.getSelectedValue() instanceof OperationListHeaderItem) {
+                    addOperation();
+                } else {
+                    editOperation();
+                }
+            }
+        }
+    };
 
     private void listOperations() {
         Client client = ClientSession.getInstance(editorKit).getActiveClient();

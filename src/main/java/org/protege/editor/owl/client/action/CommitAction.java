@@ -14,6 +14,7 @@ import javax.swing.JTextArea;
 
 import org.protege.editor.owl.client.ClientSessionChangeEvent;
 import org.protege.editor.owl.client.ClientSessionListener;
+import org.protege.editor.owl.client.ClientSessionChangeEvent.EventCategory;
 import org.protege.editor.owl.client.api.Client;
 import org.protege.editor.owl.client.api.exception.ClientRequestException;
 import org.protege.editor.owl.client.util.ClientUtils;
@@ -66,13 +67,15 @@ public class CommitAction extends AbstractClientAction implements ClientSessionL
 
     @Override
     public void handleChange(ClientSessionChangeEvent event) {
-        activeVersionOntology = Optional.ofNullable(event.getSource().getActiveVersionOntology());
-        /*
-         * This method does not handle if version ontology is present because the menu item will
-         * only be enabled if checkUncommittedChanges(...) listener senses changes in the ontology.
-         */
-        if (!activeVersionOntology.isPresent()) {
-            setEnabled(false);
+        if (event.hasCategory(EventCategory.SWITCH_ONTOLOGY)) {
+            /*
+             * This method does not handle if version ontology is present because the menu item will
+             * only be enabled if checkUncommittedChanges(...) listener senses changes in the ontology.
+             */
+            activeVersionOntology = Optional.ofNullable(event.getSource().getActiveVersionOntology());
+            if (!activeVersionOntology.isPresent()) {
+                setEnabled(false);
+            }
         }
     }
 

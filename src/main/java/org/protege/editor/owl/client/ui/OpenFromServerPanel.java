@@ -295,8 +295,9 @@ public class OpenFromServerPanel extends JPanel {
                 PlainPassword plainPassword = f.getPlainPassword(new String(password.getPassword()));
 
                 AuthToken authToken = authenticator.hasValidCredentials(userId, plainPassword);
-                Client client = new LocalClient(authToken, serverAddress, registryPort);
+                LocalClient client = new LocalClient(authToken, serverAddress, registryPort);
                 clientSession.setActiveClient(client);
+                clientSession.addListener(client);
 
                 saveServerConnectionData();
                 loadProjectList(client);
@@ -322,8 +323,7 @@ public class OpenFromServerPanel extends JPanel {
         try {
             ServerDocument serverDocument = clientSession.getActiveClient().openProject(pid);
             VersionedOWLOntology vont = ClientUtils.buildVersionedOntology(serverDocument, owlManager);
-            clientSession.registerProject(pid, vont);
-            editorKit.getOWLModelManager().setActiveOntology(vont.getOntology());
+            clientSession.setActiveProject(pid, vont);
             closeDialog();
         }
         catch (Exception e) {

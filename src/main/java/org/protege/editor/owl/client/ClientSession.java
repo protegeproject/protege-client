@@ -75,6 +75,10 @@ public class ClientSession extends OWLEditorKitHook {
         return activeClient;
     }
 
+    public boolean hasActiveClient() {
+        return getActiveClient() != null;
+    }
+
     public void setActiveProject(ProjectId projectId, VersionedOWLOntology versionOntology) {
         registerProject(versionOntology.getOntology().getOntologyID(), projectId);
         registerVersionOntology(versionOntology.getOntology().getOntologyID(), versionOntology);

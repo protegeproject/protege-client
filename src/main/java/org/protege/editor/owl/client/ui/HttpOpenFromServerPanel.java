@@ -12,7 +12,6 @@ import java.awt.event.ActionListener;
 import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
 import java.io.File;
-import java.io.InputStreamReader;
 import java.rmi.RemoteException;
 import java.util.ArrayList;
 import java.util.Collections;
@@ -45,8 +44,6 @@ import org.protege.editor.owl.client.api.exception.ClientRequestException;
 import org.protege.editor.owl.client.api.exception.OWLClientException;
 import org.protege.editor.owl.server.api.CommitBundle;
 import org.protege.editor.owl.server.api.exception.AuthorizationException;
-import org.protege.editor.owl.server.http.messages.HttpAuthResponse;
-import org.protege.editor.owl.server.http.messages.LoginCreds;
 import org.protege.editor.owl.server.policy.CommitBundleImpl;
 import org.protege.editor.owl.server.util.GetUncommittedChangesVisitor;
 import org.protege.editor.owl.server.versioning.Commit;
@@ -60,21 +57,13 @@ import org.semanticweb.owlapi.model.OWLOntology;
 import org.semanticweb.owlapi.model.OWLOntologyChange;
 import org.semanticweb.owlapi.model.OWLOntologyManager;
 
-import com.google.gson.Gson;
-
 import edu.stanford.protege.metaproject.Manager;
 import edu.stanford.protege.metaproject.api.Description;
 import edu.stanford.protege.metaproject.api.MetaprojectFactory;
 import edu.stanford.protege.metaproject.api.Name;
 import edu.stanford.protege.metaproject.api.ProjectId;
 import edu.stanford.protege.metaproject.api.ProjectOptions;
-import edu.stanford.protege.metaproject.api.Serializer;
 import edu.stanford.protege.metaproject.api.UserId;
-import edu.stanford.protege.metaproject.serialization.DefaultJsonSerializer;
-import okhttp3.MediaType;
-import okhttp3.OkHttpClient;
-import okhttp3.Request;
-import okhttp3.RequestBody;
 
 public class HttpOpenFromServerPanel extends JPanel {
 
@@ -302,8 +291,9 @@ public class HttpOpenFromServerPanel extends JPanel {
             	
             	     		
                 
-                Client client = new LocalHttpClient(userName, pwd, serverAddress);
+                LocalHttpClient client = new LocalHttpClient(userName, pwd, serverAddress);
                 clientRegistry.setActiveClient(client);
+                clientRegistry.addListener(client);
 
                 saveServerConnectionData();
                 loadProjectList(client);
@@ -332,7 +322,7 @@ public class HttpOpenFromServerPanel extends JPanel {
     			ServerDocument sdoc = client.openProject(pid);
     			VersionedOWLOntology vont = ((LocalHttpClient) client).buildVersionedOntology(sdoc, owlManager);
     			editorKit.getOWLModelManager().setActiveOntology(vont.getOntology());
-    			clientRegistry.registerProject(pid, vont);    			
+    			clientRegistry.setActiveProject(pid, vont);    			
     			closeDialog();
     		}
     		else {

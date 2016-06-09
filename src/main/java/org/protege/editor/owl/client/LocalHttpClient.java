@@ -78,7 +78,7 @@ import okhttp3.Request;
 import okhttp3.RequestBody;
 import okhttp3.Response;
 
-public class LocalHttpClient implements Client {
+public class LocalHttpClient implements Client, ClientSessionListener {
 
 	//private AuthToken authToken;
 	private String serverAddress;
@@ -167,6 +167,11 @@ public class LocalHttpClient implements Client {
 		return new UserInfo(resp.getId(), resp.getName(), resp.getEmail(), resp.getToken());
 
 
+	}
+	
+	@Override
+	public void handleChange(ClientSessionChangeEvent event) {
+		projectId = event.getSource().getActiveProject();
 	}
 	
 	@Override

@@ -19,7 +19,7 @@ public abstract class AbstractClientAction extends ProtegeOWLAction {
 
     private static final long serialVersionUID = 8677318010907902600L;
 
-    private ClientSession clientSession;
+    private static ClientSession clientSession;
 
     private static ScheduledExecutorService executorService = Executors
             .newSingleThreadScheduledExecutor(new ThreadFactory() {
@@ -33,12 +33,16 @@ public abstract class AbstractClientAction extends ProtegeOWLAction {
 
     @Override
     public void initialise() throws Exception {
-        clientSession = ClientSession.getInstance(getOWLEditorKit());
+        if (clientSession == null) {
+            clientSession = ClientSession.getInstance(getOWLEditorKit());
+        }
     }
 
     @Override
     public void dispose() throws Exception {
-        clientSession.dispose();
+        if (clientSession != null) {
+            clientSession.dispose();
+        }
     }
 
     protected ClientSession getClientSession() {

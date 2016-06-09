@@ -6,13 +6,27 @@ package org.protege.editor.owl.client;
  */
 public class ClientSessionChangeEvent {
 
-    private ClientSession source;
+    public enum EventCategory {
+        REGISTER_USER, UNREGISTER_USER, SWITCH_ONTOLOGY
+    }
 
-    public ClientSessionChangeEvent(ClientSession source) {
+    private ClientSession source;
+    private EventCategory category;
+
+    public ClientSessionChangeEvent(ClientSession source, EventCategory category) {
         this.source = source;
+        this.category = category;
     }
 
     public ClientSession getSource() {
         return source;
+    }
+
+    public EventCategory getCategory() {
+        return category;
+    }
+
+    public boolean hasCategory(EventCategory category) {
+        return this.category.equals(category);
     }
 }

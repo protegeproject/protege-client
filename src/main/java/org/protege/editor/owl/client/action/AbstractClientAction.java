@@ -2,12 +2,8 @@ package org.protege.editor.owl.client.action;
 
 import org.protege.editor.core.ui.util.JOptionPaneEx;
 import org.protege.editor.owl.client.ClientSession;
-import org.protege.editor.owl.client.api.Client;
-import org.protege.editor.owl.client.api.exception.SynchronizationException;
-import org.protege.editor.owl.server.versioning.api.VersionedOWLOntology;
 import org.protege.editor.owl.ui.action.ProtegeOWLAction;
 
-import java.util.Optional;
 import java.util.concurrent.Callable;
 import java.util.concurrent.Executors;
 import java.util.concurrent.Future;
@@ -47,21 +43,6 @@ public abstract class AbstractClientAction extends ProtegeOWLAction {
 
     protected ClientSession getClientSession() {
         return clientSession;
-    }
-
-    protected Client getClient() {
-        return clientSession.getActiveClient();
-    }
-
-    protected Optional<VersionedOWLOntology> getOntologyResource() {
-        return Optional.ofNullable(clientSession.getActiveVersionOntology());
-    }
-
-    protected VersionedOWLOntology getActiveVersionOntology() throws SynchronizationException {
-        if (getOntologyResource().isPresent()) {
-            return getOntologyResource().get();
-        }
-        throw new SynchronizationException("The current active ontology does not link to the server");
     }
 
     protected Future<?> submit(Runnable task) {

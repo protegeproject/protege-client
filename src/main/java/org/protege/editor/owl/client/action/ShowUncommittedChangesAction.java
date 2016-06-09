@@ -5,28 +5,41 @@ import java.awt.event.ActionEvent;
 import java.awt.event.KeyEvent;
 import java.awt.event.WindowAdapter;
 import java.awt.event.WindowEvent;
+import java.util.Optional;
 
 import javax.swing.AbstractAction;
 import javax.swing.JComponent;
 import javax.swing.JDialog;
 import javax.swing.KeyStroke;
 
+import org.protege.editor.owl.client.ClientSessionChangeEvent;
+import org.protege.editor.owl.client.ClientSessionListener;
 import org.protege.editor.owl.client.api.exception.SynchronizationException;
 import org.protege.editor.owl.client.ui.UncommittedChangesPanel;
 import org.protege.editor.owl.model.OWLWorkspace;
+import org.protege.editor.owl.server.versioning.api.VersionedOWLOntology;
 
-public class ShowUncommittedChangesAction extends AbstractClientAction {
+public class ShowUncommittedChangesAction extends AbstractClientAction implements ClientSessionListener {
 
     private static final long serialVersionUID = -7628375950917155764L;
+
+    private Optional<VersionedOWLOntology> activeVersionOntology = Optional.empty();
 
     @Override
     public void initialise() throws Exception {
         super.initialise();
+        getClientSession().addListener(this);
     }
 
     @Override
     public void dispose() throws Exception {
         super.dispose();
+    }
+
+    @Override
+    public void handleChange(ClientSessionChangeEvent event) {
+        activeVersionOntology = Optional.ofNullable(event.getSource().getActiveVersionOntology());
+        setEnabled(activeVersionOntology.isPresent());
     }
 
     @Override
@@ -44,7 +57,7 @@ public class ShowUncommittedChangesAction extends AbstractClientAction {
 
     private JDialog createDialog() throws SynchronizationException {
         final JDialog dialog = new JDialog(null, "Browse Uncommitted Changes", Dialog.ModalityType.MODELESS);
-        UncommittedChangesPanel uncommittedChangesPanel = new UncommittedChangesPanel(getActiveVersionOntology(), getOWLEditorKit());
+        UncommittedChangesPanel uncommittedChangesPanel = new UncommittedChangesPanel(activeVersionOntology.get(), getOWLEditorKit());
         uncommittedChangesPanel.getInputMap(JComponent.WHEN_ANCESTOR_OF_FOCUSED_COMPONENT).put(KeyStroke.getKeyStroke(KeyEvent.VK_ESCAPE, 0), "CLOSE_DIALOG");
         uncommittedChangesPanel.getActionMap().put("CLOSE_DIALOG", new AbstractAction()
         {

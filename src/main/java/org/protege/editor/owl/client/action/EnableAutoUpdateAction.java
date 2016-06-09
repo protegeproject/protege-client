@@ -1,17 +1,21 @@
 package org.protege.editor.owl.client.action;
 
-import org.protege.editor.owl.client.api.exception.SynchronizationException;
-import org.protege.editor.owl.server.versioning.api.VersionedOWLOntology;
-
 import java.awt.event.ActionEvent;
+import java.util.Optional;
 import java.util.concurrent.ScheduledFuture;
 
 import javax.swing.JCheckBoxMenuItem;
 import javax.swing.JMenuItem;
 
-public class EnableAutoUpdateAction extends AbstractClientAction {
+import org.protege.editor.owl.client.ClientSessionChangeEvent;
+import org.protege.editor.owl.client.ClientSessionListener;
+import org.protege.editor.owl.server.versioning.api.VersionedOWLOntology;
+
+public class EnableAutoUpdateAction extends AbstractClientAction implements ClientSessionListener {
 
     private static final long serialVersionUID = 1098490684799516207L;
+
+    private Optional<VersionedOWLOntology> activeVersionOntology = Optional.empty();
 
     private ScheduledFuture<?> autoUpdate;
     private JCheckBoxMenuItem checkBoxMenuItem;
@@ -19,11 +23,18 @@ public class EnableAutoUpdateAction extends AbstractClientAction {
     @Override
     public void initialise() throws Exception {
         super.initialise();
+        getClientSession().addListener(this);
     }
 
     @Override
     public void dispose() throws Exception {
         super.dispose();
+    }
+
+    @Override
+    public void handleChange(ClientSessionChangeEvent event) {
+        activeVersionOntology = Optional.ofNullable(event.getSource().getActiveVersionOntology());
+        setEnabled(activeVersionOntology.isPresent());
     }
 
     public void setMenuItem(JMenuItem menu) {
@@ -34,13 +45,8 @@ public class EnableAutoUpdateAction extends AbstractClientAction {
     public void actionPerformed(ActionEvent event) {
         killAutoUpdate();
         if (checkBoxMenuItem.isSelected()) {
-            try {
-                final VersionedOWLOntology vont = getActiveVersionOntology();
-                autoUpdate = submit(new AutoUpdate(vont), 15); // TODO Make the auto-update timing adjustable
-            }
-            catch (SynchronizationException e) {
-                showErrorDialog("Synchronization error", e.getMessage(), e);
-            }
+            final VersionedOWLOntology vont = activeVersionOntology.get();
+            autoUpdate = submit(new AutoUpdate(vont), 15); // TODO Make the auto-update timing adjustable
         }
     }
 

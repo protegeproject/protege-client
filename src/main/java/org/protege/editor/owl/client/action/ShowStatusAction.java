@@ -1,52 +1,48 @@
 package org.protege.editor.owl.client.action;
 
-import org.protege.editor.owl.client.api.exception.ClientRequestException;
-import org.protege.editor.owl.client.api.exception.SynchronizationException;
-import org.protege.editor.owl.client.util.ChangeUtils;
-import org.protege.editor.owl.client.util.ClientUtils;
-import org.protege.editor.owl.model.event.OWLModelManagerChangeEvent;
-import org.protege.editor.owl.model.event.OWLModelManagerListener;
-import org.protege.editor.owl.server.versioning.api.VersionedOWLOntology;
-
 import java.awt.BorderLayout;
 import java.awt.GridLayout;
 import java.awt.event.ActionEvent;
+import java.util.Optional;
 
 import javax.swing.JDialog;
 import javax.swing.JLabel;
 import javax.swing.JPanel;
 
-public class ShowStatusAction extends AbstractClientAction {
+import org.protege.editor.owl.client.ClientSessionChangeEvent;
+import org.protege.editor.owl.client.ClientSessionListener;
+import org.protege.editor.owl.client.api.exception.ClientRequestException;
+import org.protege.editor.owl.client.util.ChangeUtils;
+import org.protege.editor.owl.client.util.ClientUtils;
+import org.protege.editor.owl.server.versioning.api.VersionedOWLOntology;
+
+public class ShowStatusAction extends AbstractClientAction implements ClientSessionListener {
 
     private static final long serialVersionUID = 4601012273632698091L;
 
-    private OWLModelManagerListener listener = new OWLModelManagerListener() {
-        @Override
-        public void handleChange(OWLModelManagerChangeEvent event) {
-            updateEnabled();
-        }
-    };
+    private Optional<VersionedOWLOntology> activeVersionOntology = Optional.empty();
 
     @Override
     public void initialise() throws Exception {
         super.initialise();
-        getOWLModelManager().addListener(listener);
-    }
-
-    private void updateEnabled() {
-        setEnabled(getOntologyResource().isPresent());
+        getClientSession().addListener(this);
     }
 
     @Override
     public void dispose() throws Exception {
         super.dispose();
-        getOWLModelManager().removeListener(listener);
+    }
+
+    @Override
+    public void handleChange(ClientSessionChangeEvent event) {
+        activeVersionOntology = Optional.ofNullable(event.getSource().getActiveVersionOntology());
+        setEnabled(activeVersionOntology.isPresent());
     }
 
     @Override
     public void actionPerformed(ActionEvent arg0) {
         try {
-            final VersionedOWLOntology vont = getActiveVersionOntology();
+            final VersionedOWLOntology vont = activeVersionOntology.get();
             
             JDialog dialog = new JDialog();
             dialog.setTitle("Client status");
@@ -67,9 +63,6 @@ public class ShowStatusAction extends AbstractClientAction {
             dialog.getContentPane().add(panel, BorderLayout.CENTER);
             dialog.pack();
             dialog.setVisible(true);
-        }
-        catch (SynchronizationException e) {
-            showErrorDialog("Synchronization error", e.getMessage(), e);
         }
         catch (ClientRequestException e) {
             showErrorDialog("Show status error", e.getMessage(), e);

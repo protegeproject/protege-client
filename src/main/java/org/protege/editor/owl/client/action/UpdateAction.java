@@ -1,5 +1,19 @@
 package org.protege.editor.owl.client.action;
 
+import java.awt.event.ActionEvent;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Map;
+import java.util.Map.Entry;
+import java.util.Optional;
+import java.util.Set;
+import java.util.TreeSet;
+import java.util.concurrent.Callable;
+import java.util.concurrent.ExecutionException;
+import java.util.concurrent.Future;
+
+import org.protege.editor.owl.client.ClientSessionChangeEvent;
+import org.protege.editor.owl.client.ClientSessionListener;
 import org.protege.editor.owl.client.api.exception.ClientRequestException;
 import org.protege.editor.owl.client.api.exception.SynchronizationException;
 import org.protege.editor.owl.client.util.ChangeUtils;
@@ -9,7 +23,6 @@ import org.protege.editor.owl.server.versioning.CollectingChangeVisitor;
 import org.protege.editor.owl.server.versioning.api.ChangeHistory;
 import org.protege.editor.owl.server.versioning.api.DocumentRevision;
 import org.protege.editor.owl.server.versioning.api.VersionedOWLOntology;
-
 import org.semanticweb.owlapi.model.AddImport;
 import org.semanticweb.owlapi.model.AnnotationChange;
 import org.semanticweb.owlapi.model.ImportChange;
@@ -24,24 +37,16 @@ import org.semanticweb.owlapi.model.OWLOntologyLoaderConfiguration;
 import org.semanticweb.owlapi.model.OWLOntologyLoaderConfiguration.MissingOntologyHeaderStrategy;
 import org.semanticweb.owlapi.model.UnloadableImportException;
 
-import java.awt.event.ActionEvent;
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Map;
-import java.util.Map.Entry;
-import java.util.Set;
-import java.util.TreeSet;
-import java.util.concurrent.Callable;
-import java.util.concurrent.ExecutionException;
-import java.util.concurrent.Future;
-
-public class UpdateAction extends AbstractClientAction {
+public class UpdateAction extends AbstractClientAction implements ClientSessionListener {
 
     private static final long serialVersionUID = 2694484296709954780L;
+
+    private Optional<VersionedOWLOntology> activeVersionOntology = Optional.empty();
 
     @Override
     public void initialise() throws Exception {
         super.initialise();
+        getClientSession().addListener(this);
     }
 
     @Override
@@ -50,10 +55,15 @@ public class UpdateAction extends AbstractClientAction {
     }
 
     @Override
+    public void handleChange(ClientSessionChangeEvent event) {
+        activeVersionOntology = Optional.ofNullable(event.getSource().getActiveVersionOntology());
+        setEnabled(activeVersionOntology.isPresent());
+    }
+
+    @Override
     public void actionPerformed(ActionEvent event) {
         try {
-            final VersionedOWLOntology vont = getActiveVersionOntology();
-            Future<?> task = submit(new DoUpdate(vont));
+            Future<?> task = submit(new DoUpdate(activeVersionOntology.get()));
             @SuppressWarnings("unchecked")
             List<OWLOntologyChange> incomingChanges = (List<OWLOntologyChange>) task.get();
             if (incomingChanges.isEmpty()) {
@@ -63,9 +73,6 @@ public class UpdateAction extends AbstractClientAction {
                 String template = "Local copy is succesfully updated by %d changes";
                 showInfoDialog("Update", String.format(template, incomingChanges.size()));
             }
-        }
-        catch (SynchronizationException e) {
-            showErrorDialog("Synchronization error", e.getMessage(), e);
         }
         catch (InterruptedException | ExecutionException e) {
             showErrorDialog("Update error", "Internal error: " + e.getMessage(), e);

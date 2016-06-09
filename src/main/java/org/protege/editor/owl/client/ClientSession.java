@@ -1,21 +1,21 @@
 package org.protege.editor.owl.client;
 
-import org.protege.editor.owl.OWLEditorKit;
-import org.protege.editor.owl.client.api.Client;
-import org.protege.editor.owl.model.OWLEditorKitHook;
-import org.protege.editor.owl.model.event.EventType;
-import org.protege.editor.owl.model.event.OWLModelManagerChangeEvent;
-import org.protege.editor.owl.model.event.OWLModelManagerListener;
-import org.protege.editor.owl.server.versioning.api.VersionedOWLOntology;
-
-import org.semanticweb.owlapi.model.OWLOntologyID;
-
 import java.util.HashSet;
 import java.util.Map;
 import java.util.Set;
 import java.util.TreeMap;
 
 import edu.stanford.protege.metaproject.api.ProjectId;
+
+import org.protege.editor.owl.OWLEditorKit;
+import org.protege.editor.owl.client.ClientSessionChangeEvent.EventCategory;
+import org.protege.editor.owl.client.api.Client;
+import org.protege.editor.owl.model.OWLEditorKitHook;
+import org.protege.editor.owl.model.event.EventType;
+import org.protege.editor.owl.model.event.OWLModelManagerChangeEvent;
+import org.protege.editor.owl.model.event.OWLModelManagerListener;
+import org.protege.editor.owl.server.versioning.api.VersionedOWLOntology;
+import org.semanticweb.owlapi.model.OWLOntologyID;
 
 /**
  * @author Josef Hardi <johardi@stanford.edu> <br>
@@ -37,7 +37,7 @@ public class ClientSession extends OWLEditorKitHook {
         @Override
         public void handleChange(OWLModelManagerChangeEvent event) {
             if (event.isType(EventType.ACTIVE_ONTOLOGY_CHANGED)) {
-                fireChangeEvent();
+                fireChangeEvent(EventCategory.SWITCH_ONTOLOGY);
             }
         }
     };
@@ -51,8 +51,8 @@ public class ClientSession extends OWLEditorKitHook {
         getEditorKit().getOWLModelManager().addListener(changeActiveProject);
     }
 
-    private void fireChangeEvent() {
-        ClientSessionChangeEvent event = new ClientSessionChangeEvent(this);
+    private void fireChangeEvent(EventCategory category) {
+        ClientSessionChangeEvent event = new ClientSessionChangeEvent(this, category);
         for (ClientSessionListener listener : clientSessionListeners) {
             listener.handleChange(event);
         }
@@ -67,8 +67,20 @@ public class ClientSession extends OWLEditorKitHook {
     }
 
     public void setActiveClient(Client client) {
+        if (hasActiveClient()) {
+            activeClient = null;
+            unregisterAllProjects();
+            unregisterAllVersionOntologies();
+        }
         activeClient = client;
-        changeActiveClient();
+        fireChangeEvent(EventCategory.REGISTER_USER);
+    }
+
+    public void unsetActiveClient() {
+        activeClient = null;
+        unregisterAllProjects();
+        unregisterAllVersionOntologies();
+        fireChangeEvent(EventCategory.UNREGISTER_USER);
     }
 
     public Client getActiveClient() {
@@ -93,12 +105,6 @@ public class ClientSession extends OWLEditorKitHook {
     public VersionedOWLOntology getActiveVersionOntology() {
         OWLOntologyID ontologyId = getEditorKit().getOWLModelManager().getActiveOntology().getOntologyID();
         return ontologyMap.get(ontologyId);
-    }
-
-    private void changeActiveClient() {
-        // TODO How to close ontology properly?
-        unregisterAllProjects();
-        unregisterAllVersionOntologies();
     }
 
     @Override

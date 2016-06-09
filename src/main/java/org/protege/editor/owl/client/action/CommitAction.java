@@ -54,6 +54,7 @@ public class CommitAction extends AbstractClientAction implements ClientSessionL
     @Override
     public void initialise() throws Exception {
         super.initialise();
+        setEnabled(false); // initially the menu item is disabled
         getClientSession().addListener(this);
         getOWLModelManager().addOntologyChangeListener(checkUncommittedChanges);
     }

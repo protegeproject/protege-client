@@ -21,6 +21,7 @@ public class OpenFromServerAction extends AbstractClientAction {
     @Override
     public void initialise() throws Exception {
         super.initialise();
+        setEnabled(true);
     }
 
     @Override

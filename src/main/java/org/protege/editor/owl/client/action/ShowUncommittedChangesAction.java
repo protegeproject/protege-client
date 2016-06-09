@@ -28,6 +28,7 @@ public class ShowUncommittedChangesAction extends AbstractClientAction implement
     @Override
     public void initialise() throws Exception {
         super.initialise();
+        setEnabled(false); // initially the menu item is disabled
         getClientSession().addListener(this);
     }
 

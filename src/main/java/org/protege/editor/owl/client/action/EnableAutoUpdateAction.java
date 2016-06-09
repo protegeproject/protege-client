@@ -23,6 +23,7 @@ public class EnableAutoUpdateAction extends AbstractClientAction implements Clie
     @Override
     public void initialise() throws Exception {
         super.initialise();
+        setEnabled(false); // initially the menu item is disabled
         getClientSession().addListener(this);
     }
 

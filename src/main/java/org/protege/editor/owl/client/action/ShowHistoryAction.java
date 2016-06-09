@@ -29,6 +29,7 @@ public class ShowHistoryAction extends AbstractClientAction implements ClientSes
     @Override
     public void initialise() throws Exception {
         super.initialise();
+        setEnabled(false); // initially the menu item is disabled
         getClientSession().addListener(this);
     }
 

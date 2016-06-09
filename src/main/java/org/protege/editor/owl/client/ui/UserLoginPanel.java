@@ -107,7 +107,7 @@ public class UserLoginPanel extends JPanel {
 
         btnLogin = new JButton("Login");
         btnLogin.setSelected(true);
-        btnLogin.addActionListener(new ConnectServerActionListener());
+        btnLogin.addActionListener(new LoginActionListener());
         pnlButtons.add(btnLogin);
 
         btnCancel = new JButton("Cancel");
@@ -160,7 +160,7 @@ public class UserLoginPanel extends JPanel {
         prefs.setCurrentUsername(txtUsername.getText());
     }
 
-    private class ConnectServerActionListener implements ActionListener {
+    private class LoginActionListener implements ActionListener {
         @Override
         public void actionPerformed(ActionEvent evt) {
             String serverAddress = (String) cmbServerList.getSelectedItem();
@@ -180,8 +180,8 @@ public class UserLoginPanel extends JPanel {
 
                 AuthToken authToken = authenticator.hasValidCredentials(userId, plainPassword);
                 LocalClient client = new LocalClient(authToken, serverAddress, registryPort);
-                clientSession.setActiveClient(client);
                 clientSession.addListener(client);
+                clientSession.setActiveClient(client);
 
                 saveServerConnectionData();
                 closeDialog();

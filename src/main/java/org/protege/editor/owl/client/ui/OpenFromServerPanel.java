@@ -1,272 +1,165 @@
 package org.protege.editor.owl.client.ui;
 
 import java.awt.BorderLayout;
-import java.awt.Color;
+import java.awt.Dialog;
 import java.awt.FlowLayout;
-import java.awt.GridBagConstraints;
-import java.awt.GridBagLayout;
-import java.awt.Insets;
 import java.awt.Window;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
+import java.awt.event.FocusEvent;
+import java.awt.event.FocusListener;
+import java.awt.event.KeyEvent;
 import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
-import java.util.ArrayList;
-import java.util.Collections;
+import java.awt.event.WindowAdapter;
+import java.awt.event.WindowEvent;
 
+import javax.swing.AbstractAction;
 import javax.swing.BorderFactory;
-import javax.swing.DefaultComboBoxModel;
 import javax.swing.JButton;
-import javax.swing.JComboBox;
+import javax.swing.JComponent;
+import javax.swing.JDialog;
 import javax.swing.JLabel;
 import javax.swing.JOptionPane;
 import javax.swing.JPanel;
-import javax.swing.JPasswordField;
 import javax.swing.JScrollPane;
 import javax.swing.JTable;
-import javax.swing.JTextField;
+import javax.swing.KeyStroke;
 import javax.swing.SwingUtilities;
-import javax.swing.border.CompoundBorder;
 
-import org.protege.editor.core.ui.util.AugmentedJTextField;
+import edu.stanford.protege.metaproject.api.ProjectId;
+
 import org.protege.editor.core.ui.util.JOptionPaneEx;
 import org.protege.editor.owl.OWLEditorKit;
-import org.protege.editor.owl.client.ClientPreferences;
 import org.protege.editor.owl.client.ClientSession;
-import org.protege.editor.owl.client.LocalClient;
 import org.protege.editor.owl.client.api.Client;
 import org.protege.editor.owl.client.api.exception.OWLClientException;
 import org.protege.editor.owl.client.util.ClientUtils;
-import org.protege.editor.owl.client.util.ServerUtils;
-import org.protege.editor.owl.server.transport.rmi.RemoteLoginService;
-import org.protege.editor.owl.server.transport.rmi.RmiLoginService;
 import org.protege.editor.owl.server.versioning.api.ServerDocument;
 import org.protege.editor.owl.server.versioning.api.VersionedOWLOntology;
 import org.semanticweb.owlapi.model.OWLOntologyManager;
 
-import edu.stanford.protege.metaproject.Manager;
-import edu.stanford.protege.metaproject.api.AuthToken;
-import edu.stanford.protege.metaproject.api.MetaprojectFactory;
-import edu.stanford.protege.metaproject.api.PlainPassword;
-import edu.stanford.protege.metaproject.api.ProjectId;
-import edu.stanford.protege.metaproject.api.UserId;
-
 public class OpenFromServerPanel extends JPanel {
 
     private static final long serialVersionUID = -6710802337675443598L;
-
-    private static String currentPassword = null;
 
     private ClientSession clientSession;
 
     private OWLEditorKit editorKit;
     private OWLOntologyManager owlManager;
 
-    private JButton cancelButton;
-    private JButton connectButton;
-    private JButton openButton;
-    private JComboBox<String> serverLocationsList;
-    private AugmentedJTextField registryPort;
-    private JPasswordField password;
-    private JTable serverContentTable;
-    private JTextField username;
-    private ServerTableModel tableModel;
+    private JButton btnOpenProject;
+    private JButton btnCancel;
+
+    private JTable tblRemoteProjects;
+    private ServerTableModel remoteProjectModel;
 
     public OpenFromServerPanel(ClientSession clientSession, OWLEditorKit editorKit) {
         this.clientSession = clientSession;
         this.editorKit = editorKit;
         owlManager = editorKit.getOWLModelManager().getOWLOntologyManager();
 
-        setLayout(new GridBagLayout());
+        addFocusListener(new FocusListener() {
+            @Override
+            public void focusLost(FocusEvent e) {
+                // NO-OP
+            }
+            @Override
+            public void focusGained(FocusEvent e) {
+                showLoginWhenNecessary();
+            }
+        });
 
-        // gridx, gridy, gridwidth, gridheight, weightx, weighty, anchor, fill, insets, ipadx, ipady
-        GridBagConstraints c = new GridBagConstraints(0, 0, 1, 1, 0, 0, GridBagConstraints.LINE_START,
-                GridBagConstraints.NONE, new Insets(12, 12, 0, 11), 0, 0);
-        JLabel serverIRILabel = new JLabel("Server address:");
-        add(serverIRILabel, c);
+        setLayout(new BorderLayout());
+        setBorder(BorderFactory.createEmptyBorder(12, 12, 6, 12));
 
-        c.gridx = 1;
-        c.weightx = 1.0;
-        c.fill = GridBagConstraints.HORIZONTAL;
-        c.insets = new Insets(12, 0, 0, 12);
-        add(getServerLocationsList(), c);
+        add(getRemoteProjectsPanel(), BorderLayout.CENTER);
 
-        JLabel registryPortLabel = new JLabel("Registry port:");
-        c.gridx = 0;
-        c.gridy = 1;
-        c.weightx = 0;
-        c.fill = GridBagConstraints.NONE;
-        c.insets = new Insets(11, 12, 0, 11);
-        add(registryPortLabel, c);
+        JPanel pnlButtons = new JPanel(new FlowLayout(FlowLayout.CENTER));
+        pnlButtons.setBorder(BorderFactory.createEmptyBorder(6, 0, 0, 0)); // padding-top
 
-        registryPort = new AugmentedJTextField(70, "(optional)");
-        c.gridx = 1;
-        c.weightx = 1.0;
-        c.fill = GridBagConstraints.HORIZONTAL;
-        c.insets = new Insets(11, 0, 0, 12);
-        add(registryPort, c);
+        btnOpenProject = new JButton("Open Project");
+        btnOpenProject.setSelected(true);
+        btnOpenProject.addActionListener(new OpenActionListener());
+        pnlButtons.add(btnOpenProject);
 
-        JLabel usernameLabel = new JLabel("Username:");
-        c.gridx = 0;
-        c.gridy = 2;
-        c.weightx = 0;
-        c.fill = GridBagConstraints.NONE;
-        c.insets = new Insets(11, 12, 0, 11);
-        add(usernameLabel, c);
+        btnCancel = new JButton("Cancel");
+        btnCancel.addActionListener(e -> {
+            closeDialog();
+        });
+        pnlButtons.add(btnCancel);
 
-        username = new JTextField("");
-        username.setColumns(50);
-        ClientPreferences prefs = ClientPreferences.getInstance();
-        String currentUsername = prefs.getCurrentUsername();
-        if (currentUsername != null) {
-            username.setText(currentUsername);
-        }
-        c.gridx = 1;
-        c.weightx = 1.0;
-        c.fill = GridBagConstraints.HORIZONTAL;
-        c.insets = new Insets(11, 0, 0, 12);
-        add(username, c);
+        add(pnlButtons, BorderLayout.SOUTH);
 
-        JLabel passwordlabel = new JLabel("Password:");
-        c.gridx = 0;
-        c.gridy = 3;
-        c.weightx = 0;
-        c.fill = GridBagConstraints.NONE;
-        c.insets = new Insets(11, 12, 0, 11);
-        add(passwordlabel, c);
-
-        password = new JPasswordField("");
-        password.setColumns(50);
-        if (currentPassword != null) {
-            password.setText(currentPassword);
-        }
-        c.gridx = 1;
-        c.weightx = 1.0;
-        c.fill = GridBagConstraints.HORIZONTAL;
-        c.insets = new Insets(11, 0, 0, 12);
-        add(password, c);
-
-        connectButton = new JButton("Connect to server");
-        connectButton.setSelected(true);
-        connectButton.addActionListener(new ConnectServerActionListener());
-        c.gridy = 4;
-        c.weightx = 0;
-        c.fill = GridBagConstraints.NONE;
-        c.insets = new Insets(11, 0, 0, 0);
-        add(connectButton, c);
-
-        c.gridx = 0;
-        c.gridy = 5;
-        c.gridwidth = 2;
-        c.fill = GridBagConstraints.BOTH;
-        c.insets = new Insets(11, 12, 12, 12);
-        c.weightx = 1.0;
-        c.weighty = 1.0;
-        add(getServerContentPanel(), c);
-
-        c.gridy = 6;
-        c.fill = GridBagConstraints.HORIZONTAL;
-        c.weighty = 0;
-        add(getButtonPanel(), c);
-
-        if (password.getPassword().length == 0) {
-            password.requestFocus();
-        }
-        else {
-            connectButton.requestFocus();
-        }
+        setFocusable(true);
     }
 
-    private JComboBox<String> getServerLocationsList() {
-        DefaultComboBoxModel<String> model = new DefaultComboBoxModel<>();
-        serverLocationsList = new JComboBox<>(model);
-        serverLocationsList.setEditable(true);
+    private JPanel getRemoteProjectsPanel() {
+        JPanel pnlRemoteProjects = new JPanel(new BorderLayout());
 
-        ClientPreferences prefs = ClientPreferences.getInstance();
-        ArrayList<String> serverLocations = new ArrayList<String>(prefs.getServerLocations());
-
-        Collections.sort(serverLocations);
-        for (String serverLocation : serverLocations) {
-            serverLocationsList.addItem(serverLocation);
-        }
-        String lastLocation = prefs.getLastServerLocation();
-        if (serverLocations.contains(lastLocation)) {
-            serverLocationsList.setSelectedItem(lastLocation);
-        }
-        return serverLocationsList;
-    }
-
-    private JPanel getServerContentPanel() {
-        JPanel panel = new JPanel(new BorderLayout());
-        CompoundBorder border = BorderFactory.createCompoundBorder(
-                BorderFactory.createTitledBorder(BorderFactory.createLineBorder(Color.gray), "Server Content"),
-                BorderFactory.createEmptyBorder(12, 12, 11, 11));
-        panel.setBorder(border);
-
-        tableModel = new ServerTableModel();
-        serverContentTable = new JTable(tableModel);
-        serverContentTable.addMouseListener(new MouseAdapter() {
+        remoteProjectModel = new ServerTableModel();
+        tblRemoteProjects = new JTable(remoteProjectModel);
+        tblRemoteProjects.addMouseListener(new MouseAdapter() {
             @Override
             public void mouseClicked(MouseEvent e) {
                 if (e.getClickCount() == 2) {
-                    int row = serverContentTable.getSelectedRow();
+                    int row = tblRemoteProjects.getSelectedRow();
                     openOntologyDocument(row);
                 }
             }
         });
-
-        JScrollPane scrollPane = new JScrollPane(serverContentTable);
-        panel.add(scrollPane, BorderLayout.CENTER);
-
-        return panel;
+        JScrollPane scrollPane = new JScrollPane(tblRemoteProjects);
+        pnlRemoteProjects.add(scrollPane, BorderLayout.CENTER);
+        return pnlRemoteProjects;
     }
 
-    private JPanel getButtonPanel() {
-        JPanel panel = new JPanel(new FlowLayout(FlowLayout.CENTER));
-
-        openButton = new JButton("Open");
-        openButton.addActionListener(new OpenActionListener());
-        panel.add(openButton);
-
-        cancelButton = new JButton("Cancel");
-        cancelButton.addActionListener(new ActionListener() {
-            @Override
-            public void actionPerformed(ActionEvent e) {
+    private void showLoginWhenNecessary() {
+        if (!clientSession.hasActiveClient()) {
+            showLoginDialog();
+            if (!clientSession.hasActiveClient()) {
                 closeDialog();
             }
-        });
-        panel.add(cancelButton);
-        return panel;
+        }
+        else {
+            Client client = clientSession.getActiveClient();
+            loadProjectList(client);
+        }
     }
 
-    private void saveServerConnectionData() {
-        ClientPreferences prefs = ClientPreferences.getInstance();
-
-        // Save server location information
-        ArrayList<String> serverLocations = new ArrayList<String>();
-
-        String serverLocation = (String) serverLocationsList.getEditor().getItem();
-        if (((DefaultComboBoxModel<String>) serverLocationsList.getModel()).getIndexOf(serverLocation) == -1) {
-            serverLocationsList.addItem(serverLocation);
-        }
-
-        int count = serverLocationsList.getItemCount();
-        for (int i = 0; i < count; i++) {
-            serverLocations.add((String) serverLocationsList.getItemAt(i));
-        }
-
-        // Save which server was last connected to
-        prefs.setServerLocations(serverLocations);
-        prefs.setLastServerLocation((String) serverLocationsList.getSelectedItem());
-
-        // Save username
-        prefs.setCurrentUsername(username.getText());
+    private void showLoginDialog() {
+        final JDialog dialog = new JDialog(null, "Login to Protege OWL Server", Dialog.ModalityType.DOCUMENT_MODAL);
+        UserLoginPanel userLoginPanel = new UserLoginPanel(clientSession, editorKit);
+        userLoginPanel.getInputMap(JComponent.WHEN_ANCESTOR_OF_FOCUSED_COMPONENT).put(KeyStroke.getKeyStroke(KeyEvent.VK_ESCAPE, 0), "CLOSE_DIALOG");
+        userLoginPanel.getActionMap().put("CLOSE_DIALOG", new AbstractAction()
+        {
+           private static final long serialVersionUID = 1L;
+           @Override
+           public void actionPerformed(ActionEvent e)
+           {
+               dialog.setVisible(false);
+               dialog.dispose();
+           }
+        });
+        dialog.addWindowListener(new WindowAdapter()
+        {
+           @Override
+           public void windowClosing(WindowEvent e)
+           {
+               dialog.setVisible(false);
+               dialog.dispose();
+           }
+        });
+        dialog.setContentPane(userLoginPanel);
+        dialog.setSize(415, 185);
+        dialog.setResizable(false);
+        dialog.setLocationRelativeTo(OpenFromServerPanel.this);
+        dialog.setVisible(true);
     }
 
     private void loadProjectList(Client client) {
         try {
-            tableModel.initialize(client);
-            serverContentTable.changeSelection(0, 0, false, false); // select the first item as default
+            remoteProjectModel.initialize(client);
+            tblRemoteProjects.changeSelection(0, 0, false, false); // select the first item as default
         }
         catch (OWLClientException e) {
             JOptionPaneEx.showConfirmDialog(editorKit.getWorkspace(), "Error opening project",
@@ -275,51 +168,16 @@ public class OpenFromServerPanel extends JPanel {
         }
     }
 
-    private class ConnectServerActionListener implements ActionListener {
-        @Override
-        public void actionPerformed(ActionEvent evt) {
-            String serverAddress = (String) serverLocationsList.getSelectedItem();
-            String registryPortStr = registryPort.getText().trim();
-            try {
-                // TODO Make it switchable for different transport implementation
-                Integer registryPort = null;
-                if (!registryPortStr.isEmpty()) {
-                    registryPort = Integer.parseInt(registryPortStr);
-                }
-                RemoteLoginService loginService = (RemoteLoginService) ServerUtils
-                        .getRemoteService(serverAddress, registryPort, RmiLoginService.LOGIN_SERVICE);
-                DefaultUserAuthenticator authenticator = new DefaultUserAuthenticator(loginService);
-
-                MetaprojectFactory f = Manager.getFactory();
-                UserId userId = f.getUserId(username.getText());
-                PlainPassword plainPassword = f.getPlainPassword(new String(password.getPassword()));
-
-                AuthToken authToken = authenticator.hasValidCredentials(userId, plainPassword);
-                LocalClient client = new LocalClient(authToken, serverAddress, registryPort);
-                clientSession.setActiveClient(client);
-                clientSession.addListener(client);
-
-                saveServerConnectionData();
-                loadProjectList(client);
-            }
-            catch (Exception e) {
-                JOptionPaneEx.showConfirmDialog(editorKit.getWorkspace(), "Error connecting to server",
-                        new JLabel("Connection failed: " + e.getMessage()),
-                        JOptionPane.ERROR_MESSAGE, JOptionPane.DEFAULT_OPTION, null);
-            }
-        }
-    }
-
     private class OpenActionListener implements ActionListener {
         @Override
         public void actionPerformed(ActionEvent e) {
-            int row = serverContentTable.getSelectedRow();
+            int row = tblRemoteProjects.getSelectedRow();
             openOntologyDocument(row);
         }
     }
 
     protected void openOntologyDocument(int row) {
-        ProjectId pid = tableModel.getValueAt(row);
+        ProjectId pid = remoteProjectModel.getValueAt(row);
         try {
             ServerDocument serverDocument = clientSession.getActiveClient().openProject(pid);
             VersionedOWLOntology vont = ClientUtils.buildVersionedOntology(serverDocument, owlManager);

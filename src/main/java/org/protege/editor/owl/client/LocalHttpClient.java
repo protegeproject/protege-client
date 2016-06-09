@@ -14,6 +14,7 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
+import java.util.concurrent.TimeUnit;
 
 import org.apache.commons.codec.binary.Base64;
 import org.protege.editor.owl.client.api.Client;
@@ -94,8 +95,7 @@ public class LocalHttpClient implements Client, ClientSessionListener {
 
 	private MetaprojectFactory fact = Manager.getFactory();
 
-	OkHttpClient req_client = new OkHttpClient.Builder().build();
-			//new OkHttpClient.Builder().readTimeout(180, TimeUnit.SECONDS).build();
+	OkHttpClient req_client = new OkHttpClient.Builder().readTimeout(180, TimeUnit.SECONDS).build();
 	
 	private ServerConfiguration config;
 	private AuthenticationRegistry auth_registry;
@@ -648,6 +648,7 @@ public class LocalHttpClient implements Client, ClientSessionListener {
 	public ChangeHistory getAllChanges(ServerDocument sdoc) throws ClientRequestException {
 		ChangeHistory history = null;
 		try {
+			long beg = System.currentTimeMillis();
 
 
 			// TODO: get all changes
@@ -661,8 +662,12 @@ public class LocalHttpClient implements Client, ClientSessionListener {
 			Response response = post(url, req, true);
 
 			ObjectInputStream ois = new ObjectInputStream(response.body().byteStream());
+			
+			
 
 			history = (ChangeHistory) ois.readObject();
+			
+			System.out.println("Time to execute get all changes " + (System.currentTimeMillis() - beg)/1000);
 
 
 		} catch (Exception e) {

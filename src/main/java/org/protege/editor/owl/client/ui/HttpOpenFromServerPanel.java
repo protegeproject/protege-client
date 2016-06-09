@@ -321,7 +321,7 @@ public class HttpOpenFromServerPanel extends JPanel {
     			Client client = clientRegistry.getActiveClient();
     			ServerDocument sdoc = client.openProject(pid);
     			VersionedOWLOntology vont = ((LocalHttpClient) client).buildVersionedOntology(sdoc, owlManager);
-    			editorKit.getOWLModelManager().setActiveOntology(vont.getOntology());
+    			//editorKit.getOWLModelManager().setActiveOntology(vont.getOntology());
     			clientRegistry.setActiveProject(pid, vont);    			
     			closeDialog();
     		}

@@ -7,7 +7,7 @@ package org.protege.editor.owl.client;
 public class ClientSessionChangeEvent {
 
     public enum EventCategory {
-        REGISTER_USER, UNREGISTER_USER, SWITCH_ONTOLOGY
+        SWITCH_CLIENT, SWITCH_ONTOLOGY, CLEAR_SESSION
     }
 
     private ClientSession source;

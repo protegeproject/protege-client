@@ -73,14 +73,7 @@ public class ClientSession extends OWLEditorKitHook {
             unregisterAllVersionOntologies();
         }
         activeClient = client;
-        fireChangeEvent(EventCategory.REGISTER_USER);
-    }
-
-    public void unsetActiveClient() {
-        activeClient = null;
-        unregisterAllProjects();
-        unregisterAllVersionOntologies();
-        fireChangeEvent(EventCategory.UNREGISTER_USER);
+        fireChangeEvent(EventCategory.SWITCH_CLIENT);
     }
 
     public Client getActiveClient() {
@@ -107,11 +100,16 @@ public class ClientSession extends OWLEditorKitHook {
         return ontologyMap.get(ontologyId);
     }
 
+    public void clear() {
+        activeClient = null;
+        unregisterAllProjects();
+        unregisterAllVersionOntologies();
+        fireChangeEvent(EventCategory.CLEAR_SESSION);
+    }
+
     @Override
     public void dispose() throws Exception {
         getEditorKit().getOWLModelManager().removeListener(changeActiveProject);
-        unregisterAllProjects();
-        unregisterAllVersionOntologies();
     }
 
     private void registerProject(OWLOntologyID ontologyId, ProjectId projectId) {

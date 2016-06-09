@@ -73,7 +73,6 @@ public class CommitAction extends AbstractClientAction implements ClientSessionL
 
     @Override
     public void actionPerformed(ActionEvent arg0) {
-        String comment = "";
         while (true) {
             JTextArea commentArea = new JTextArea(4, 45);
             Object[] message = { "Commit message (do not leave blank):", commentArea };
@@ -83,13 +82,13 @@ public class CommitAction extends AbstractClientAction implements ClientSessionL
                 break;
             }
             else if (option == JOptionPane.OK_OPTION) {
-                comment = commentArea.getText().trim();
+                String comment = commentArea.getText().trim();
                 if (!comment.isEmpty()) {
+                    performCommit(activeVersionOntology.get(), comment);
                     break;
                 }
             }
         }
-        performCommit(activeVersionOntology.get(), comment);
     }
 
     private void performCommit(VersionedOWLOntology vont, String comment) {
@@ -99,8 +98,7 @@ public class CommitAction extends AbstractClientAction implements ClientSessionL
             if (acceptedChanges.isPresent()) {
                 ChangeHistory changes = acceptedChanges.get();
                 vont.update(changes); // update the local ontology
-                setEnabled(false); // disable the commit action after the
-                                   // changes got committed successfully
+                setEnabled(false); // disable the commit action after the changes got committed successfully
                 showInfoDialog("Commit",
                         "Commit success (uploaded as revision " + changes.getHeadRevision() + ")");
             }

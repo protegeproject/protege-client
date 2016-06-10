@@ -110,7 +110,7 @@ public class LocalHttpClient implements Client, ClientSessionListener {
 	private boolean config_state_changed = false;
 	
 
-	private static LocalHttpClient current_user;
+	private static LocalHttpClient current_user = null;
 
 	public static LocalHttpClient current_user() {
 		return current_user;

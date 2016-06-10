@@ -120,7 +120,8 @@
                         <Import-Package>
                             org.protege.editor.core.*;version="5.0", <!-- equivalent to [5.0,infinity) -->
                             org.protege.editor.owl.*;version="5.0", 
-                            org.protege.editor.owl.server.*;version="3.0",                           
+                            org.protege.editor.owl.server.*;version="3.0",  
+                            org.protege.editor.owl.server.http.*;version="3.0",                         
                             *
                         </Import-Package>
                         <Include-Resource>{maven-resources}</Include-Resource>

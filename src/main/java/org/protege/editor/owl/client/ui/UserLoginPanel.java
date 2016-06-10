@@ -1,11 +1,13 @@
 package org.protege.editor.owl.client.ui;
 
 import java.awt.BorderLayout;
+import java.awt.Color;
 import java.awt.FlowLayout;
 import java.awt.GridLayout;
 import java.awt.Window;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
+import java.rmi.RemoteException;
 import java.util.ArrayList;
 import java.util.Collections;
 
@@ -22,11 +24,8 @@ import javax.swing.SwingUtilities;
 
 import edu.stanford.protege.metaproject.Manager;
 import edu.stanford.protege.metaproject.api.AuthToken;
-import edu.stanford.protege.metaproject.api.MetaprojectFactory;
-import edu.stanford.protege.metaproject.api.PlainPassword;
-import edu.stanford.protege.metaproject.api.UserId;
+import edu.stanford.protege.metaproject.api.UserAuthenticator;
 
-import org.protege.editor.core.ui.util.AugmentedJTextField;
 import org.protege.editor.core.ui.util.JOptionPaneEx;
 import org.protege.editor.owl.OWLEditorKit;
 import org.protege.editor.owl.client.ClientPreferences;
@@ -47,7 +46,7 @@ public class UserLoginPanel extends JPanel {
     private OWLEditorKit editorKit;
 
     private JComboBox<String> cmbServerList;
-    private AugmentedJTextField txtRegistryPort;
+    private JTextField txtRegistryPort;
     private JTextField txtUsername;
     private JPasswordField txtPassword;
 
@@ -73,7 +72,7 @@ public class UserLoginPanel extends JPanel {
         JPanel pnlRegistryPort = new JPanel(new FlowLayout(FlowLayout.LEFT));
         JLabel lblRegistryPort = new JLabel("Registry port:");
         pnlRegistryPort.add(lblRegistryPort);
-        txtRegistryPort = new AugmentedJTextField(15, "(optional)");
+        txtRegistryPort = new JTextField("", 15);
         pnlRegistryPort.add(txtRegistryPort);
         pnlLogin.add(pnlRegistryPort);
 
@@ -163,34 +162,71 @@ public class UserLoginPanel extends JPanel {
     private class LoginActionListener implements ActionListener {
         @Override
         public void actionPerformed(ActionEvent evt) {
+            String username = txtUsername.getText();
+            String password = new String(txtPassword.getPassword());
             String serverAddress = (String) cmbServerList.getSelectedItem();
-            String registryPortStr = txtRegistryPort.getText().trim();
+            String registryStr = txtRegistryPort.getText().trim();
+            Integer registryPort = !registryStr.isEmpty() ? Integer.parseInt(registryStr) : null;
             try {
-                Integer registryPort = null;
-                if (!registryPortStr.isEmpty()) {
-                    registryPort = Integer.parseInt(registryPortStr);
+                if (!serverAddress.isEmpty() && !registryStr.isEmpty() && !username.isEmpty() && !password.isEmpty()) {
+                    UserAuthenticator authenticator = setupAuthenticator(serverAddress, registryPort);
+                    AuthToken authToken = authenticator.hasValidCredentials(
+                            Manager.getFactory().getUserId(username),
+                            Manager.getFactory().getPlainPassword(password));
+                    
+                    LocalClient client = new LocalClient(authToken, serverAddress, registryPort);
+                    clientSession.addListener(client);
+                    clientSession.setActiveClient(client);
+                    
+                    saveServerConnectionData();
+                    closeDialog();
                 }
-                RemoteLoginService loginService = (RemoteLoginService) ServerUtils
-                        .getRemoteService(serverAddress, registryPort, RmiLoginService.LOGIN_SERVICE);
-                DefaultUserAuthenticator authenticator = new DefaultUserAuthenticator(loginService);
-
-                MetaprojectFactory f = Manager.getFactory();
-                UserId userId = f.getUserId(txtUsername.getText());
-                PlainPassword plainPassword = f.getPlainPassword(new String(txtPassword.getPassword()));
-
-                AuthToken authToken = authenticator.hasValidCredentials(userId, plainPassword);
-                LocalClient client = new LocalClient(authToken, serverAddress, registryPort);
-                clientSession.addListener(client);
-                clientSession.setActiveClient(client);
-
-                saveServerConnectionData();
-                closeDialog();
+                else {
+                    setUIFeedback(serverAddress.isEmpty(),
+                            registryStr.isEmpty(),
+                            username.isEmpty(),
+                            password.isEmpty());
+                }
             }
             catch (Exception e) {
                 JOptionPaneEx.showConfirmDialog(editorKit.getWorkspace(), "Error connecting to server",
-                        new JLabel("Connection failed: " + e.getMessage()),
+                        new JLabel("Connection failed: " + e.getCause().getMessage()),
                         JOptionPane.ERROR_MESSAGE, JOptionPane.DEFAULT_OPTION, null);
             }
+        }
+
+        private void setUIFeedback(boolean isServerAddressEmpty, boolean isRegistryPortEmpty,
+                boolean isUsernameEmpty, boolean isPasswordEmpty) {
+            if (isServerAddressEmpty) {
+                cmbServerList.setBackground(Color.YELLOW);
+            }
+            else {
+                cmbServerList.setBackground(Color.WHITE);
+            }
+            if (isRegistryPortEmpty) {
+                txtRegistryPort.setBackground(Color.YELLOW);
+            }
+            else {
+                txtRegistryPort.setBackground(Color.WHITE);
+            }
+            if (isUsernameEmpty) {
+                txtUsername.setBackground(Color.YELLOW);
+            }
+            else {
+                txtUsername.setBackground(Color.WHITE);
+            }
+            if (isPasswordEmpty) {
+                txtPassword.setBackground(Color.YELLOW);
+            }
+            else {
+                txtPassword.setBackground(Color.WHITE);
+            }
+        }
+
+        private UserAuthenticator setupAuthenticator(String serverAddress, Integer registryPort) throws RemoteException {
+            RemoteLoginService loginService = (RemoteLoginService) ServerUtils
+                   .getRemoteService(serverAddress, registryPort, RmiLoginService.LOGIN_SERVICE);
+            return new DefaultUserAuthenticator(loginService);
         }
     }
 

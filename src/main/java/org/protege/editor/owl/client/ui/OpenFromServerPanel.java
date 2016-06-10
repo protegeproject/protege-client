@@ -32,6 +32,7 @@ import edu.stanford.protege.metaproject.api.ProjectId;
 import org.protege.editor.core.ui.util.JOptionPaneEx;
 import org.protege.editor.owl.OWLEditorKit;
 import org.protege.editor.owl.client.ClientSession;
+import org.protege.editor.owl.client.LocalHttpClient;
 import org.protege.editor.owl.client.api.Client;
 import org.protege.editor.owl.client.api.exception.OWLClientException;
 import org.protege.editor.owl.client.util.ClientUtils;
@@ -179,8 +180,11 @@ public class OpenFromServerPanel extends JPanel {
     protected void openOntologyDocument(int row) {
         ProjectId pid = remoteProjectModel.getValueAt(row);
         try {
-            ServerDocument serverDocument = clientSession.getActiveClient().openProject(pid);
-            VersionedOWLOntology vont = ClientUtils.buildVersionedOntology(serverDocument, owlManager);
+        	Client client = clientSession.getActiveClient();
+            ServerDocument serverDocument = client.openProject(pid);
+            
+            VersionedOWLOntology vont = ((LocalHttpClient) client).buildVersionedOntology(serverDocument, owlManager);
+			
             clientSession.setActiveProject(pid, vont);
             closeDialog();
         }

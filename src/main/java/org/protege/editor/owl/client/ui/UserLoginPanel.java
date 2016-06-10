@@ -22,18 +22,16 @@ import javax.swing.JPasswordField;
 import javax.swing.JTextField;
 import javax.swing.SwingUtilities;
 
-import edu.stanford.protege.metaproject.Manager;
-import edu.stanford.protege.metaproject.api.AuthToken;
-import edu.stanford.protege.metaproject.api.UserAuthenticator;
-
 import org.protege.editor.core.ui.util.JOptionPaneEx;
 import org.protege.editor.owl.OWLEditorKit;
 import org.protege.editor.owl.client.ClientPreferences;
 import org.protege.editor.owl.client.ClientSession;
-import org.protege.editor.owl.client.LocalClient;
+import org.protege.editor.owl.client.LocalHttpClient;
 import org.protege.editor.owl.client.util.ServerUtils;
 import org.protege.editor.owl.server.transport.rmi.RemoteLoginService;
 import org.protege.editor.owl.server.transport.rmi.RmiLoginService;
+
+import edu.stanford.protege.metaproject.api.UserAuthenticator;
 
 public class UserLoginPanel extends JPanel {
 
@@ -46,7 +44,7 @@ public class UserLoginPanel extends JPanel {
     private OWLEditorKit editorKit;
 
     private JComboBox<String> cmbServerList;
-    private JTextField txtRegistryPort;
+    //private JTextField txtRegistryPort;
     private JTextField txtUsername;
     private JPasswordField txtPassword;
 
@@ -69,12 +67,14 @@ public class UserLoginPanel extends JPanel {
         pnlServerAddress.add(getServerLocationsList());
         pnlLogin.add(pnlServerAddress);
 
+        /**
         JPanel pnlRegistryPort = new JPanel(new FlowLayout(FlowLayout.LEFT));
         JLabel lblRegistryPort = new JLabel("Registry port:");
         pnlRegistryPort.add(lblRegistryPort);
         txtRegistryPort = new JTextField("", 15);
         pnlRegistryPort.add(txtRegistryPort);
         pnlLogin.add(pnlRegistryPort);
+        **/
 
         JPanel pnlUsername = new JPanel(new FlowLayout(FlowLayout.LEFT));
         JLabel lblUsername = new JLabel("Username:");
@@ -165,25 +165,20 @@ public class UserLoginPanel extends JPanel {
             String username = txtUsername.getText();
             String password = new String(txtPassword.getPassword());
             String serverAddress = (String) cmbServerList.getSelectedItem();
-            String registryStr = txtRegistryPort.getText().trim();
-            Integer registryPort = !registryStr.isEmpty() ? Integer.parseInt(registryStr) : null;
+            //String registryStr = txtRegistryPort.getText().trim();
+            //Integer registryPort = !registryStr.isEmpty() ? Integer.parseInt(registryStr) : null;
             try {
-                if (!serverAddress.isEmpty() && !registryStr.isEmpty() && !username.isEmpty() && !password.isEmpty()) {
-                    UserAuthenticator authenticator = setupAuthenticator(serverAddress, registryPort);
-                    AuthToken authToken = authenticator.hasValidCredentials(
-                            Manager.getFactory().getUserId(username),
-                            Manager.getFactory().getPlainPassword(password));
-                    
-                    LocalClient client = new LocalClient(authToken, serverAddress, registryPort);
-                    clientSession.addListener(client);
+                if (!serverAddress.isEmpty() && !username.isEmpty() && !password.isEmpty()) {
+                	
+                	LocalHttpClient client = new LocalHttpClient(username, password, serverAddress);
                     clientSession.setActiveClient(client);
-                    
+                    clientSession.addListener(client);
+                                        
                     saveServerConnectionData();
                     closeDialog();
                 }
                 else {
                     setUIFeedback(serverAddress.isEmpty(),
-                            registryStr.isEmpty(),
                             username.isEmpty(),
                             password.isEmpty());
                 }
@@ -195,7 +190,7 @@ public class UserLoginPanel extends JPanel {
             }
         }
 
-        private void setUIFeedback(boolean isServerAddressEmpty, boolean isRegistryPortEmpty,
+        private void setUIFeedback(boolean isServerAddressEmpty, 
                 boolean isUsernameEmpty, boolean isPasswordEmpty) {
             if (isServerAddressEmpty) {
                 cmbServerList.setBackground(Color.YELLOW);
@@ -203,12 +198,7 @@ public class UserLoginPanel extends JPanel {
             else {
                 cmbServerList.setBackground(Color.WHITE);
             }
-            if (isRegistryPortEmpty) {
-                txtRegistryPort.setBackground(Color.YELLOW);
-            }
-            else {
-                txtRegistryPort.setBackground(Color.WHITE);
-            }
+            
             if (isUsernameEmpty) {
                 txtUsername.setBackground(Color.YELLOW);
             }

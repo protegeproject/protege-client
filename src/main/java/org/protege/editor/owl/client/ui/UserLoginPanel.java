@@ -225,20 +225,24 @@ public class UserLoginPanel extends JPanel implements VerifiedInputEditor {
         ClientSession clientSession = ClientSession.getInstance(editorKit);
         UserLoginPanel userLoginPanel = new UserLoginPanel(clientSession);
 
-        int res = JOptionPaneEx.showValidatingConfirmDialog(
-                parent, "Login to Protege OWL Server", userLoginPanel, JOptionPane.QUESTION_MESSAGE, JOptionPane.OK_CANCEL_OPTION, null);
-
-        if(res == JOptionPane.OK_OPTION) {
-            AuthToken authToken = null;
-            try {
-                authToken = userLoginPanel.authenticateUser();
-            } catch (Exception e) {
-                JOptionPaneEx.showConfirmDialog(parent, "Error connecting to server",
-                        new JLabel("Connection failed: " + e.getCause().getMessage()),
-                        JOptionPane.ERROR_MESSAGE, JOptionPane.DEFAULT_OPTION, null);
+        while (true) {
+            int res = JOptionPaneEx.showValidatingConfirmDialog(
+                    parent, "Login to Protege OWL Server", userLoginPanel, JOptionPane.QUESTION_MESSAGE, JOptionPane.OK_CANCEL_OPTION, null);
+            if (res == JOptionPane.CANCEL_OPTION) {
+                break;
             }
-            userLoginPanel.saveServerConnectionData();
-            return Optional.ofNullable(authToken);
+            if (res == JOptionPane.OK_OPTION) {
+                try {
+                    AuthToken authToken = userLoginPanel.authenticateUser();
+                    userLoginPanel.saveServerConnectionData();
+                    return Optional.of(authToken);
+                }
+                catch (Exception e) {
+                    JOptionPaneEx.showConfirmDialog(parent, "Error connecting to server",
+                            new JLabel("Connection failed: " + e.getCause().getMessage()),
+                            JOptionPane.ERROR_MESSAGE, JOptionPane.DEFAULT_OPTION, null);
+                }
+            }
         }
         return Optional.empty();
     }

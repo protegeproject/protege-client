@@ -1,32 +1,26 @@
 package org.protege.editor.owl.client.ui;
 
 import java.awt.BorderLayout;
-import java.awt.Dialog;
 import java.awt.FlowLayout;
 import java.awt.Window;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.awt.event.FocusEvent;
 import java.awt.event.FocusListener;
-import java.awt.event.KeyEvent;
 import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
-import java.awt.event.WindowAdapter;
-import java.awt.event.WindowEvent;
+import java.util.Optional;
 
-import javax.swing.AbstractAction;
 import javax.swing.BorderFactory;
 import javax.swing.JButton;
-import javax.swing.JComponent;
-import javax.swing.JDialog;
 import javax.swing.JLabel;
 import javax.swing.JOptionPane;
 import javax.swing.JPanel;
 import javax.swing.JScrollPane;
 import javax.swing.JTable;
-import javax.swing.KeyStroke;
 import javax.swing.SwingUtilities;
 
+import edu.stanford.protege.metaproject.api.AuthToken;
 import edu.stanford.protege.metaproject.api.ProjectId;
 
 import org.protege.editor.core.ui.util.JOptionPaneEx;
@@ -115,8 +109,8 @@ public class OpenFromServerPanel extends JPanel {
 
     private void showLoginWhenNecessary() {
         if (!clientSession.hasActiveClient()) {
-            showLoginDialog();
-            if (!clientSession.hasActiveClient()) {
+            Optional<AuthToken> authToken = UserLoginPanel.showDialog(editorKit, OpenFromServerPanel.this);
+            if (!authToken.isPresent()) {
                 closeDialog();
             }
         }
@@ -124,36 +118,6 @@ public class OpenFromServerPanel extends JPanel {
             Client client = clientSession.getActiveClient();
             loadProjectList(client);
         }
-    }
-
-    private void showLoginDialog() {
-        final JDialog dialog = new JDialog(null, "Login to Protege OWL Server", Dialog.ModalityType.DOCUMENT_MODAL);
-        UserLoginPanel userLoginPanel = new UserLoginPanel(clientSession, editorKit);
-        userLoginPanel.getInputMap(JComponent.WHEN_ANCESTOR_OF_FOCUSED_COMPONENT).put(KeyStroke.getKeyStroke(KeyEvent.VK_ESCAPE, 0), "CLOSE_DIALOG");
-        userLoginPanel.getActionMap().put("CLOSE_DIALOG", new AbstractAction()
-        {
-           private static final long serialVersionUID = 1L;
-           @Override
-           public void actionPerformed(ActionEvent e)
-           {
-               dialog.setVisible(false);
-               dialog.dispose();
-           }
-        });
-        dialog.addWindowListener(new WindowAdapter()
-        {
-           @Override
-           public void windowClosing(WindowEvent e)
-           {
-               dialog.setVisible(false);
-               dialog.dispose();
-           }
-        });
-        dialog.setContentPane(userLoginPanel);
-        dialog.setSize(415, 185);
-        dialog.setResizable(false);
-        dialog.setLocationRelativeTo(OpenFromServerPanel.this);
-        dialog.setVisible(true);
     }
 
     private void loadProjectList(Client client) {

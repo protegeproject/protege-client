@@ -99,7 +99,7 @@ public class PolicyPanel extends JPanel implements Disposable {
 
         JPanel rolePanel = new JPanel(new BorderLayout());
         JScrollPane roleScrollpane = new JScrollPane(roleList);
-        roleScrollpane.setBorder(GuiUtils.EMPTY_BORDER);
+        roleScrollpane.setBorder(GuiUtils.MATTE_BORDER);
         rolePanel.add(roleScrollpane);
 
         JSplitPane splitPane = new JSplitPane(JSplitPane.HORIZONTAL_SPLIT, projectPanel, rolePanel);

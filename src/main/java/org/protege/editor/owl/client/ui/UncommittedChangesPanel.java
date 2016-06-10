@@ -55,7 +55,7 @@ public class UncommittedChangesPanel extends JPanel {
         if (uncommittedChanges.isEmpty()) {
             Window window = SwingUtilities.getWindowAncestor(UncommittedChangesPanel.this);
             JOptionPaneEx.showConfirmDialog(window, "Message", new JLabel("No uncommitted changes"),
-                    JOptionPane.PLAIN_MESSAGE, JOptionPane.DEFAULT_OPTION, null);
+                    JOptionPane.INFORMATION_MESSAGE, JOptionPane.DEFAULT_OPTION, null);
             closeDialog();
         }
         ChangeListTableModel tableModel = new ChangeListTableModel(uncommittedChanges);

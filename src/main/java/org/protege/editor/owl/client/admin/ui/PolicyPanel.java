@@ -23,7 +23,6 @@ import org.protege.editor.owl.client.diff.ui.GuiUtils;
 import org.protege.editor.owl.server.api.exception.AuthorizationException;
 
 import javax.swing.*;
-import javax.swing.border.EmptyBorder;
 import javax.swing.event.ListSelectionListener;
 import java.awt.*;
 import java.awt.event.KeyAdapter;
@@ -95,12 +94,12 @@ public class PolicyPanel extends JPanel implements Disposable {
 
         JPanel projectPanel = new JPanel(new BorderLayout());
         JScrollPane projectScrollpane = new JScrollPane(projectList);
-        projectScrollpane.setBorder(new EmptyBorder(3, 0, 0, 0));
+        projectScrollpane.setBorder(GuiUtils.MATTE_BORDER);
         projectPanel.add(projectScrollpane, BorderLayout.CENTER);
 
         JPanel rolePanel = new JPanel(new BorderLayout());
         JScrollPane roleScrollpane = new JScrollPane(roleList);
-        roleScrollpane.setBorder(new EmptyBorder(3, 0, 0, 0));
+        roleScrollpane.setBorder(GuiUtils.EMPTY_BORDER);
         rolePanel.add(roleScrollpane);
 
         JSplitPane splitPane = new JSplitPane(JSplitPane.HORIZONTAL_SPLIT, projectPanel, rolePanel);

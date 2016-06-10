@@ -17,6 +17,11 @@ import org.protege.editor.owl.client.util.ChangeUtils;
 import org.protege.editor.owl.client.util.ClientUtils;
 import org.protege.editor.owl.server.versioning.api.VersionedOWLOntology;
 
+/**
+ * @author Josef Hardi <johardi@stanford.edu> <br>
+ * @author Timothy Redmond <tredmond@stanford.edu> <br>
+ * Stanford Center for Biomedical Informatics Research
+ */
 public class ShowStatusAction extends AbstractClientAction implements ClientSessionListener {
 
     private static final long serialVersionUID = 4601012273632698091L;

@@ -28,6 +28,10 @@ import java.util.List;
 import java.util.Set;
 import java.util.TreeSet;
 
+/**
+ * @author Josef Hardi <johardi@stanford.edu> <br>
+ * Stanford Center for Biomedical Informatics Research
+ */
 public class ClientUtils {
 
     /**

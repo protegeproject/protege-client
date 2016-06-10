@@ -8,6 +8,10 @@ import java.rmi.registry.LocateRegistry;
 import java.rmi.registry.Registry;
 import java.util.Optional;
 
+/**
+ * @author Josef Hardi <johardi@stanford.edu> <br>
+ * Stanford Center for Biomedical Informatics Research
+ */
 public class ServerUtils {
 
     public static Registry getRmiRegistry(String serverAddress, Optional<Integer> registryPort) throws RemoteException {

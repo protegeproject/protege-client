@@ -12,6 +12,11 @@ import org.protege.editor.owl.client.ClientSessionChangeEvent.EventCategory;
 import org.protege.editor.owl.client.ClientSessionListener;
 import org.protege.editor.owl.server.versioning.api.VersionedOWLOntology;
 
+/**
+ * @author Josef Hardi <johardi@stanford.edu> <br>
+ * @author Timothy Redmond <tredmond@stanford.edu> <br>
+ * Stanford Center for Biomedical Informatics Research
+ */
 public class EnableAutoUpdateAction extends AbstractClientAction implements ClientSessionListener {
 
     private static final long serialVersionUID = 1098490684799516207L;

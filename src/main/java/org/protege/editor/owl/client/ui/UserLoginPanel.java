@@ -27,6 +27,11 @@ import java.util.Optional;
 
 import static com.google.common.base.Preconditions.checkNotNull;
 
+/**
+ * @author Josef Hardi <johardi@stanford.edu> <br>
+ * @author Rafael Gonçalves <br>
+ * Stanford Center for Biomedical Informatics Research
+ */
 public class UserLoginPanel extends JPanel implements VerifiedInputEditor {
     private static final long serialVersionUID = -6708992419156552723L;
     private static final int FIELD_WIDTH = 20;

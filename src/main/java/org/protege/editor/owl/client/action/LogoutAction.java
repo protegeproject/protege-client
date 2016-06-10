@@ -8,6 +8,10 @@ import org.protege.editor.owl.client.ClientSessionListener;
 import org.protege.editor.owl.client.api.Client;
 import org.protege.editor.owl.client.util.ClientUtils;
 
+/**
+ * @author Josef Hardi <johardi@stanford.edu> <br>
+ * Stanford Center for Biomedical Informatics Research
+ */
 public class LogoutAction extends AbstractClientAction implements ClientSessionListener {
 
     private static final long serialVersionUID = -7606089236286884895L;

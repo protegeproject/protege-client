@@ -13,6 +13,10 @@ import org.protege.editor.owl.client.ClientSessionChangeEvent.EventCategory;
 import org.protege.editor.owl.client.ClientSessionListener;
 import org.protege.editor.owl.client.ui.UserLoginPanel;
 
+/**
+ * @author Josef Hardi <johardi@stanford.edu> <br>
+ * Stanford Center for Biomedical Informatics Research
+ */
 public class LoginAction extends AbstractClientAction implements ClientSessionListener {
 
     private static final long serialVersionUID = -467953803650067917L;

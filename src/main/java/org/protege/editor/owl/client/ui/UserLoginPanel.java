@@ -31,7 +31,6 @@ public class UserLoginPanel extends JPanel implements VerifiedInputEditor {
     private static final long serialVersionUID = -6708992419156552723L;
     private static final int FIELD_WIDTH = 20;
     private ClientSession clientSession;
-    private OWLEditorKit editorKit;
     private final JTextArea errorArea = new JTextArea(1, FIELD_WIDTH*2);
     private JLabel lblServerAddress, lblRegistryPort, lblUsername, lblPassword;
     private AugmentedJTextField txtRegistryPort, txtUsername;
@@ -46,9 +45,8 @@ public class UserLoginPanel extends JPanel implements VerifiedInputEditor {
      * @param clientSession Client session
      * @param editorKit OWL Editor Kit
      */
-    public UserLoginPanel(ClientSession clientSession, OWLEditorKit editorKit) {
+    public UserLoginPanel(ClientSession clientSession) {
         this.clientSession = checkNotNull(clientSession);
-        this.editorKit = checkNotNull(editorKit);
         initInputFields();
         initUi();
     }
@@ -223,19 +221,19 @@ public class UserLoginPanel extends JPanel implements VerifiedInputEditor {
         return token;
     }
 
-    public static Optional<AuthToken> showDialog(OWLEditorKit editorKit) {
+    public static Optional<AuthToken> showDialog(OWLEditorKit editorKit, JComponent parent) {
         ClientSession clientSession = ClientSession.getInstance(editorKit);
-        UserLoginPanel userLoginPanel = new UserLoginPanel(clientSession, editorKit);
+        UserLoginPanel userLoginPanel = new UserLoginPanel(clientSession);
 
         int res = JOptionPaneEx.showValidatingConfirmDialog(
-                editorKit.getOWLWorkspace(), "Login to Protege OWL Server", userLoginPanel, JOptionPane.QUESTION_MESSAGE, JOptionPane.OK_CANCEL_OPTION, null);
+                parent, "Login to Protege OWL Server", userLoginPanel, JOptionPane.QUESTION_MESSAGE, JOptionPane.OK_CANCEL_OPTION, null);
 
         if(res == JOptionPane.OK_OPTION) {
             AuthToken authToken = null;
             try {
                 authToken = userLoginPanel.authenticateUser();
             } catch (Exception e) {
-                JOptionPaneEx.showConfirmDialog(editorKit.getWorkspace(), "Error connecting to server",
+                JOptionPaneEx.showConfirmDialog(parent, "Error connecting to server",
                         new JLabel("Connection failed: " + e.getCause().getMessage()),
                         JOptionPane.ERROR_MESSAGE, JOptionPane.DEFAULT_OPTION, null);
             }

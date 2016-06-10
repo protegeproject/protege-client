@@ -70,7 +70,7 @@ public class LoginAction extends AbstractClientAction implements ClientSessionLi
 
     @Override
     public void actionPerformed(ActionEvent e) {
-        UserLoginPanel.showDialog(getOWLEditorKit());
+        UserLoginPanel.showDialog(getOWLEditorKit(), getOWLEditorKit().getOWLWorkspace());
     }
 
     private void changeLoginMenuText(String newText) {

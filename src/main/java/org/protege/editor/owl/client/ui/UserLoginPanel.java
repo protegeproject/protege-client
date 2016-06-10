@@ -1,121 +1,111 @@
 package org.protege.editor.owl.client.ui;
 
-import java.awt.BorderLayout;
-import java.awt.Color;
-import java.awt.FlowLayout;
-import java.awt.GridLayout;
-import java.awt.Window;
-import java.awt.event.ActionEvent;
-import java.awt.event.ActionListener;
-import java.rmi.RemoteException;
-import java.util.ArrayList;
-import java.util.Collections;
-
-import javax.swing.BorderFactory;
-import javax.swing.DefaultComboBoxModel;
-import javax.swing.JButton;
-import javax.swing.JComboBox;
-import javax.swing.JLabel;
-import javax.swing.JOptionPane;
-import javax.swing.JPanel;
-import javax.swing.JPasswordField;
-import javax.swing.JTextField;
-import javax.swing.SwingUtilities;
-
 import edu.stanford.protege.metaproject.Manager;
 import edu.stanford.protege.metaproject.api.AuthToken;
 import edu.stanford.protege.metaproject.api.UserAuthenticator;
-
+import org.protege.editor.core.ui.util.AugmentedJTextField;
+import org.protege.editor.core.ui.util.InputVerificationStatusChangedListener;
 import org.protege.editor.core.ui.util.JOptionPaneEx;
+import org.protege.editor.core.ui.util.VerifiedInputEditor;
 import org.protege.editor.owl.OWLEditorKit;
 import org.protege.editor.owl.client.ClientPreferences;
 import org.protege.editor.owl.client.ClientSession;
 import org.protege.editor.owl.client.LocalClient;
+import org.protege.editor.owl.client.diff.ui.GuiUtils;
 import org.protege.editor.owl.client.util.ServerUtils;
 import org.protege.editor.owl.server.transport.rmi.RemoteLoginService;
 import org.protege.editor.owl.server.transport.rmi.RmiLoginService;
 
-public class UserLoginPanel extends JPanel {
+import javax.swing.*;
+import javax.swing.event.DocumentEvent;
+import javax.swing.event.DocumentListener;
+import java.awt.*;
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.List;
+import java.util.Optional;
 
-    private static final long serialVersionUID = 9204192451059622356L;
+import static com.google.common.base.Preconditions.checkNotNull;
 
-    private static String currentPassword = null;
-
+public class UserLoginPanel extends JPanel implements VerifiedInputEditor {
+    private static final long serialVersionUID = -6708992419156552723L;
+    private static final int FIELD_WIDTH = 20;
     private ClientSession clientSession;
-
     private OWLEditorKit editorKit;
-
-    private JComboBox<String> cmbServerList;
-    private JTextField txtRegistryPort;
-    private JTextField txtUsername;
+    private final JTextArea errorArea = new JTextArea(1, FIELD_WIDTH*2);
+    private JLabel lblServerAddress, lblRegistryPort, lblUsername, lblPassword;
+    private AugmentedJTextField txtRegistryPort, txtUsername;
     private JPasswordField txtPassword;
+    private JComboBox<String> cmbServerList;
+    private boolean currentlyValid = false;
+    private List<InputVerificationStatusChangedListener> listeners = new ArrayList<>();
 
-    private JButton btnLogin;
-    private JButton btnCancel;
-
+    /**
+     * Constructor
+     *
+     * @param clientSession Client session
+     * @param editorKit OWL Editor Kit
+     */
     public UserLoginPanel(ClientSession clientSession, OWLEditorKit editorKit) {
-        this.clientSession = clientSession;
-        this.editorKit = editorKit;
+        this.clientSession = checkNotNull(clientSession);
+        this.editorKit = checkNotNull(editorKit);
+        initInputFields();
+        initUi();
+    }
 
-        setLayout(new BorderLayout());
-        setBorder(BorderFactory.createEmptyBorder(6, 6, 6, 6));
+    private void initInputFields() {
+        lblServerAddress = new JLabel("Server address:");
+        lblRegistryPort = new JLabel("Registry port:");
+        lblUsername = new JLabel("Username:");
+        lblPassword = new JLabel("Password:");
 
-        JPanel pnlLogin = new JPanel();
-        pnlLogin.setLayout(new GridLayout(4, 1));
+        cmbServerList = getServerLocationsList();
+        txtRegistryPort = new AugmentedJTextField(FIELD_WIDTH, "RMI registry port");
+        txtUsername = new AugmentedJTextField(FIELD_WIDTH, "User name");
+        txtPassword = new JPasswordField(FIELD_WIDTH);
+        txtPassword.setBorder(GuiUtils.MATTE_BORDER);
 
-        JPanel pnlServerAddress = new JPanel(new FlowLayout(FlowLayout.LEFT));
-        JLabel lblServerAddress = new JLabel("Server address:");
-        pnlServerAddress.add(lblServerAddress);
-        pnlServerAddress.add(getServerLocationsList());
-        pnlLogin.add(pnlServerAddress);
-
-        JPanel pnlRegistryPort = new JPanel(new FlowLayout(FlowLayout.LEFT));
-        JLabel lblRegistryPort = new JLabel("Registry port:");
-        pnlRegistryPort.add(lblRegistryPort);
-        txtRegistryPort = new JTextField("", 15);
-        pnlRegistryPort.add(txtRegistryPort);
-        pnlLogin.add(pnlRegistryPort);
-
-        JPanel pnlUsername = new JPanel(new FlowLayout(FlowLayout.LEFT));
-        JLabel lblUsername = new JLabel("Username:");
-        pnlUsername.add(lblUsername);
-        txtUsername = new JTextField("", 25);
         ClientPreferences prefs = ClientPreferences.getInstance();
         String currentUsername = prefs.getCurrentUsername();
         if (currentUsername != null) {
             txtUsername.setText(currentUsername);
         }
-        pnlUsername.add(txtUsername);
-        pnlLogin.add(pnlUsername);
 
-        JPanel pnlPassword = new JPanel(new FlowLayout(FlowLayout.LEFT));
-        JLabel lblPassword = new JLabel("Password:");
-        pnlPassword.add(lblPassword);
-        txtPassword = new JPasswordField("", 25);
-        if (currentPassword != null) {
-            txtPassword.setText(currentPassword);
-        }
-        pnlPassword.add(txtPassword);
-        pnlLogin.add(pnlPassword);
+        addListener(txtRegistryPort);
+        addListener(txtUsername);
+        addListener(txtPassword);
+        addListener(txtRegistryPort);
+        cmbServerList.addActionListener(e -> handleValueChange());
+    }
 
-        add(pnlLogin, BorderLayout.CENTER);
+    private void initUi() {
+        JPanel holderPanel = new JPanel(new GridBagLayout());
+        add(holderPanel);
+        Insets insets = new Insets(0, 2, 2, 2);
+        int rowIndex = 0;
+        holderPanel.add(lblServerAddress, new GridBagConstraints(0, rowIndex, 1, 1, 0.0, 0.0, GridBagConstraints.BASELINE_TRAILING, GridBagConstraints.NONE, new Insets(15,2,2,2), 0, 0));
+        holderPanel.add(cmbServerList, new GridBagConstraints(1, rowIndex, 1, 1, 100.0, 0.0, GridBagConstraints.BASELINE_LEADING, GridBagConstraints.HORIZONTAL, insets, 0, 0));
+        rowIndex++;
+        holderPanel.add(lblRegistryPort, new GridBagConstraints(0, rowIndex, 1, 1, 0.0, 0.0, GridBagConstraints.BASELINE_TRAILING, GridBagConstraints.NONE, insets, 0, 0));
+        holderPanel.add(txtRegistryPort, new GridBagConstraints(1, rowIndex, 1, 1, 100.0, 0.0, GridBagConstraints.BASELINE_LEADING, GridBagConstraints.HORIZONTAL, insets, 0, 0));
+        rowIndex++;
+        holderPanel.add(new JSeparator(), new GridBagConstraints(0, rowIndex, 2, 1, 100.0, 0.0, GridBagConstraints.CENTER, GridBagConstraints.HORIZONTAL, new Insets(5, 2, 5, 2), 0, 0));
+        rowIndex++;
+        holderPanel.add(lblUsername, new GridBagConstraints(0, rowIndex, 1, 1, 0.0, 0.0, GridBagConstraints.BASELINE_TRAILING, GridBagConstraints.NONE, insets, 0, 0));
+        holderPanel.add(txtUsername, new GridBagConstraints(1, rowIndex, 1, 1, 100.0, 0.0, GridBagConstraints.BASELINE_LEADING, GridBagConstraints.HORIZONTAL, insets, 0, 0));
+        rowIndex++;
+        holderPanel.add(lblPassword, new GridBagConstraints(0, rowIndex, 1, 1, 0.0, 0.0, GridBagConstraints.BASELINE_TRAILING, GridBagConstraints.NONE, insets, 0, 0));
+        holderPanel.add(txtPassword, new GridBagConstraints(1, rowIndex, 1, 1, 100.0, 0.0, GridBagConstraints.BASELINE_LEADING, GridBagConstraints.HORIZONTAL, insets, 0, 0));
+        rowIndex++;
 
-        JPanel pnlButtons = new JPanel();
-        pnlButtons.setLayout(new FlowLayout(FlowLayout.RIGHT));
-        pnlButtons.setBorder(BorderFactory.createEmptyBorder(3, 0, 0, 0)); // padding-top
-
-        btnLogin = new JButton("Login");
-        btnLogin.setSelected(true);
-        btnLogin.addActionListener(new LoginActionListener());
-        pnlButtons.add(btnLogin);
-
-        btnCancel = new JButton("Cancel");
-        btnCancel.addActionListener(e -> {
-            closeDialog();
-        });
-        pnlButtons.add(btnCancel);
-
-        add(pnlButtons, BorderLayout.SOUTH);
+        errorArea.setBackground(null);
+        errorArea.setBorder(null);
+        errorArea.setEditable(false);
+        errorArea.setWrapStyleWord(true);
+        errorArea.setLineWrap(true);
+        errorArea.setFont(errorArea.getFont().deriveFont(12.0f));
+        errorArea.setForeground(Color.RED);
+        holderPanel.add(errorArea, new GridBagConstraints(0, rowIndex, 2, 1, 0, 0, GridBagConstraints.SOUTHWEST, GridBagConstraints.NONE, new Insets(12, 2, 0, 2), 0, 0));
     }
 
     private JComboBox<String> getServerLocationsList() {
@@ -137,7 +127,7 @@ public class UserLoginPanel extends JPanel {
         return cmbServerList;
     }
 
-    private void saveServerConnectionData() {
+    public void saveServerConnectionData() {
         ClientPreferences prefs = ClientPreferences.getInstance();
 
         // Save server location information
@@ -159,80 +149,117 @@ public class UserLoginPanel extends JPanel {
         prefs.setCurrentUsername(txtUsername.getText());
     }
 
-    private class LoginActionListener implements ActionListener {
-        @Override
-        public void actionPerformed(ActionEvent evt) {
-            String username = txtUsername.getText();
-            String password = new String(txtPassword.getPassword());
-            String serverAddress = (String) cmbServerList.getSelectedItem();
-            String registryStr = txtRegistryPort.getText().trim();
-            Integer registryPort = !registryStr.isEmpty() ? Integer.parseInt(registryStr) : null;
-            try {
-                if (!serverAddress.isEmpty() && !registryStr.isEmpty() && !username.isEmpty() && !password.isEmpty()) {
-                    UserAuthenticator authenticator = setupAuthenticator(serverAddress, registryPort);
-                    AuthToken authToken = authenticator.hasValidCredentials(
-                            Manager.getFactory().getUserId(username),
-                            Manager.getFactory().getPlainPassword(password));
-                    
-                    LocalClient client = new LocalClient(authToken, serverAddress, registryPort);
-                    clientSession.addListener(client);
-                    clientSession.setActiveClient(client);
-                    
-                    saveServerConnectionData();
-                    closeDialog();
-                }
-                else {
-                    setUIFeedback(serverAddress.isEmpty(),
-                            registryStr.isEmpty(),
-                            username.isEmpty(),
-                            password.isEmpty());
-                }
+
+    private void addListener(JTextField field) {
+        field.getDocument().addDocumentListener(new DocumentListener() {
+            public void insertUpdate(DocumentEvent e) {
+                handleValueChange();
             }
-            catch (Exception e) {
+
+            public void removeUpdate(DocumentEvent e) {
+                handleValueChange();
+            }
+
+            public void changedUpdate(DocumentEvent e) {
+                handleValueChange();
+            }
+        });
+    }
+
+    private void handleValueChange() {
+        errorArea.setText("");
+        try {
+            setValid(checkInputs());
+        } catch (NumberFormatException e) {
+            setValid(false);
+            Throwable cause = e.getCause();
+            if(cause != null) {
+                errorArea.setText(cause.getMessage());
+            }
+            else {
+                errorArea.setText(e.toString());
+            }
+        }
+    }
+
+    private boolean checkInputs() throws NumberFormatException {
+        boolean allValid = true;
+        if(txtUsername.getText().trim().isEmpty()) {
+            allValid = false;
+        }
+        if(txtPassword.getPassword().length == 0) {
+            allValid = false;
+        }
+        if(cmbServerList.getSelectedItem() == null || cmbServerList.getSelectedItem().equals("")) {
+            allValid = false;
+        }
+        if(txtRegistryPort.getText().isEmpty()) {
+            allValid = false;
+        } else {
+            Integer.parseInt(txtRegistryPort.getText());
+        }
+        return allValid;
+    }
+
+    public AuthToken authenticateUser() throws Exception {
+        RemoteLoginService loginService;
+        if(!txtRegistryPort.getText().isEmpty()) {
+            loginService = (RemoteLoginService) ServerUtils
+                    .getRemoteService((String)cmbServerList.getSelectedItem(), Integer.parseInt(txtRegistryPort.getText()), RmiLoginService.LOGIN_SERVICE);
+        } else {
+            loginService = (RemoteLoginService) ServerUtils
+                    .getRemoteService((String)cmbServerList.getSelectedItem(), RmiLoginService.LOGIN_SERVICE);
+        }
+
+        UserAuthenticator authenticator = new DefaultUserAuthenticator(loginService);
+        AuthToken token = authenticator.hasValidCredentials(Manager.getFactory().getUserId(txtUsername.getText()),
+                Manager.getFactory().getPlainPassword(new String(txtPassword.getPassword())));
+
+        if(token.isAuthorized()) {
+            LocalClient client = new LocalClient(token, (String) cmbServerList.getSelectedItem(), Integer.parseInt(txtRegistryPort.getText()));
+            clientSession.addListener(client);
+            clientSession.setActiveClient(client);
+        }
+        return token;
+    }
+
+    public static Optional<AuthToken> showDialog(OWLEditorKit editorKit) {
+        ClientSession clientSession = ClientSession.getInstance(editorKit);
+        UserLoginPanel userLoginPanel = new UserLoginPanel(clientSession, editorKit);
+
+        int res = JOptionPaneEx.showValidatingConfirmDialog(
+                editorKit.getOWLWorkspace(), "Login to Protege OWL Server", userLoginPanel, JOptionPane.QUESTION_MESSAGE, JOptionPane.OK_CANCEL_OPTION, null);
+
+        if(res == JOptionPane.OK_OPTION) {
+            AuthToken authToken = null;
+            try {
+                authToken = userLoginPanel.authenticateUser();
+            } catch (Exception e) {
                 JOptionPaneEx.showConfirmDialog(editorKit.getWorkspace(), "Error connecting to server",
                         new JLabel("Connection failed: " + e.getCause().getMessage()),
                         JOptionPane.ERROR_MESSAGE, JOptionPane.DEFAULT_OPTION, null);
             }
+            userLoginPanel.saveServerConnectionData();
+            return Optional.ofNullable(authToken);
         }
+        return Optional.empty();
+    }
 
-        private void setUIFeedback(boolean isServerAddressEmpty, boolean isRegistryPortEmpty,
-                boolean isUsernameEmpty, boolean isPasswordEmpty) {
-            if (isServerAddressEmpty) {
-                cmbServerList.setBackground(Color.YELLOW);
-            }
-            else {
-                cmbServerList.setBackground(Color.WHITE);
-            }
-            if (isRegistryPortEmpty) {
-                txtRegistryPort.setBackground(Color.YELLOW);
-            }
-            else {
-                txtRegistryPort.setBackground(Color.WHITE);
-            }
-            if (isUsernameEmpty) {
-                txtUsername.setBackground(Color.YELLOW);
-            }
-            else {
-                txtUsername.setBackground(Color.WHITE);
-            }
-            if (isPasswordEmpty) {
-                txtPassword.setBackground(Color.YELLOW);
-            }
-            else {
-                txtPassword.setBackground(Color.WHITE);
-            }
-        }
-
-        private UserAuthenticator setupAuthenticator(String serverAddress, Integer registryPort) throws RemoteException {
-            RemoteLoginService loginService = (RemoteLoginService) ServerUtils
-                   .getRemoteService(serverAddress, registryPort, RmiLoginService.LOGIN_SERVICE);
-            return new DefaultUserAuthenticator(loginService);
+    private void setValid(boolean valid) {
+        currentlyValid = valid;
+        for (InputVerificationStatusChangedListener l : listeners){
+            l.verifiedStatusChanged(currentlyValid);
         }
     }
 
-    private void closeDialog() {
-        Window window = SwingUtilities.getWindowAncestor(UserLoginPanel.this);
-        window.setVisible(false);
-        window.dispose();
+    @Override
+    public void addStatusChangedListener(InputVerificationStatusChangedListener listener) {
+        listeners.add(listener);
+        listener.verifiedStatusChanged(currentlyValid);
+    }
+
+    @Override
+    public void removeStatusChangedListener(InputVerificationStatusChangedListener listener) {
+        listeners.remove(listener);
     }
 }

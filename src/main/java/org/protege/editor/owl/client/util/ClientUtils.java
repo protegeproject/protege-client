@@ -1,5 +1,11 @@
 package org.protege.editor.owl.client.util;
 
+import java.util.List;
+import java.util.Set;
+import java.util.TreeSet;
+
+import org.protege.editor.owl.client.ClientSession;
+import org.protege.editor.owl.client.ClientSessionListener;
 import org.protege.editor.owl.client.api.Client;
 import org.protege.editor.owl.client.api.exception.ClientRequestException;
 import org.protege.editor.owl.server.util.GetUncommittedChangesVisitor;
@@ -12,7 +18,6 @@ import org.protege.editor.owl.server.versioning.api.DocumentRevision;
 import org.protege.editor.owl.server.versioning.api.RevisionMetadata;
 import org.protege.editor.owl.server.versioning.api.ServerDocument;
 import org.protege.editor.owl.server.versioning.api.VersionedOWLOntology;
-
 import org.semanticweb.owlapi.model.AddImport;
 import org.semanticweb.owlapi.model.MissingImportHandlingStrategy;
 import org.semanticweb.owlapi.model.OWLImportsDeclaration;
@@ -23,11 +28,23 @@ import org.semanticweb.owlapi.model.OWLOntologyLoaderConfiguration;
 import org.semanticweb.owlapi.model.OWLOntologyLoaderConfiguration.MissingOntologyHeaderStrategy;
 import org.semanticweb.owlapi.model.OWLOntologyManager;
 
-import java.util.List;
-import java.util.Set;
-import java.util.TreeSet;
-
 public class ClientUtils {
+
+    /**
+     * Perform logout from the Protege client-server application.
+     *
+     * @param clientSession
+     *          The existing client session
+     * @param client
+     *          The client to log out
+     */
+    public static void performLogout(ClientSession clientSession, Client client)
+    {
+        if (client instanceof ClientSessionListener) {
+            clientSession.removeListener((ClientSessionListener) client);
+        }
+        clientSession.clear();
+    }
 
     /**
      * Compute the uncommitted changes given the input <code>ontology</code>. This method will use an

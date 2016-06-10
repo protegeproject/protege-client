@@ -1,9 +1,5 @@
 package org.protege.editor.owl.client.util;
 
-import java.util.List;
-import java.util.Set;
-import java.util.TreeSet;
-
 import org.protege.editor.owl.client.ClientSession;
 import org.protege.editor.owl.client.ClientSessionListener;
 import org.protege.editor.owl.client.api.Client;
@@ -28,6 +24,10 @@ import org.semanticweb.owlapi.model.OWLOntologyLoaderConfiguration;
 import org.semanticweb.owlapi.model.OWLOntologyLoaderConfiguration.MissingOntologyHeaderStrategy;
 import org.semanticweb.owlapi.model.OWLOntologyManager;
 
+import java.util.List;
+import java.util.Set;
+import java.util.TreeSet;
+
 public class ClientUtils {
 
     /**
@@ -38,7 +38,7 @@ public class ClientUtils {
      * @param client
      *          The client to log out
      */
-    public static void performLogout(ClientSession clientSession, Client client)
+    public static void performLogout(ClientSession clientSession, Client client) throws Exception
     {
         if (client instanceof ClientSessionListener) {
             clientSession.removeListener((ClientSessionListener) client);

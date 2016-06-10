@@ -27,10 +27,15 @@ public class LogoutAction extends AbstractClientAction implements ClientSessionL
     }
 
     @Override
-    public void actionPerformed(ActionEvent e) {
+    public void actionPerformed(ActionEvent event) {
         if (activeClient != null) {
-            ClientUtils.performLogout(getClientSession(), activeClient);
-            setEnabled(false);
+            try {
+                ClientUtils.performLogout(getClientSession(), activeClient);
+                setEnabled(false);
+            }
+            catch (Exception e) {
+                showErrorDialog("Logout error", e.getMessage(), e);
+            }
         }
     }
 

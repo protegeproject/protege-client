@@ -1,6 +1,5 @@
 package org.protege.editor.owl.client.action;
 
-import org.protege.editor.owl.client.ui.HttpOpenFromServerPanel;
 import org.protege.editor.owl.client.ui.OpenFromServerPanel;
 import org.protege.editor.owl.model.OWLWorkspace;
 

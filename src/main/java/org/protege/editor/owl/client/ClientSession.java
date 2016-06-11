@@ -90,7 +90,7 @@ public class ClientSession extends OWLEditorKitHook {
         registerProject(versionOntology.getOntology().getOntologyID(), projectId);
         registerVersionOntology(versionOntology.getOntology().getOntologyID(), versionOntology);
         getEditorKit().getOWLModelManager().setActiveOntology(versionOntology.getOntology());
-        //fireChangeEvent();
+        //fireChangeEvent(EventCategory.SWITCH_ONTOLOGY);
 
     }
 

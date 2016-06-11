@@ -6,6 +6,7 @@ import org.protege.editor.core.ui.error.ErrorLogPanel;
 import org.protege.editor.core.ui.util.*;
 import org.protege.editor.owl.OWLEditorKit;
 import org.protege.editor.owl.client.ClientSession;
+import org.protege.editor.owl.client.LocalHttpClient;
 import org.protege.editor.owl.client.admin.exception.InvalidInputFileException;
 import org.protege.editor.owl.client.admin.model.ProjectOption;
 import org.protege.editor.owl.client.api.Client;
@@ -279,10 +280,11 @@ public class ProjectDialogPanel extends JPanel implements VerifiedInputEditor {
             Optional<ProjectOption> optionOpt = ProjectOptionDialogPanel.showDialog(editorKit, projectOptions.keySet());
             if (optionOpt.isPresent()) {
                 projectOptions.put(optionOpt.get().getKey(), new TreeSet<>(optionOpt.get().getValues()));
+                optionsTableModel.setOptions(createProjectOptions(projectOptions));
+                handleValueChange();
+                updateProjectWithOptions();
             }
-            optionsTableModel.setOptions(createProjectOptions(projectOptions));
-            handleValueChange();
-            updateProjectWithOptions();
+            
             refresh();
         }
     };
@@ -420,9 +422,8 @@ public class ProjectDialogPanel extends JPanel implements VerifiedInputEditor {
 
     private void addProject(Project project) {
         Client client = ClientSession.getInstance(editorKit).getActiveClient();
-        try {
-            CommitBundle bundle = getCommitBundle(project.getFile());
-            client.createProject(project.getId(), project.getName(), project.getDescription(), project.getOwner(), project.getOptions(), Optional.ofNullable(bundle));
+        try {            
+            ((LocalHttpClient) client).createProject(project);
         } catch (AuthorizationException | ClientRequestException | RemoteException e) {
             ErrorLogPanel.showErrorDialog(e);
         }
@@ -435,21 +436,6 @@ public class ProjectDialogPanel extends JPanel implements VerifiedInputEditor {
         } catch (AuthorizationException | ClientRequestException | RemoteException e) {
             ErrorLogPanel.showErrorDialog(e);
         }
-    }
-
-    private CommitBundle getCommitBundle(File file) {
-        OWLOntology ont = null;
-        try {
-            ont = OWLManager.createOWLOntologyManager().loadOntologyFromOntologyDocument(file);
-        } catch (OWLOntologyCreationException e) {
-            ErrorLogPanel.showErrorDialog(e);
-        }
-        if (ont != null) {
-            List<OWLOntologyChange> changes = ClientUtils.getUncommittedChanges(ont);
-            Commit commit = ClientUtils.createCommit(ClientSession.getInstance(editorKit).getActiveClient(), "Initial Commit", changes);
-            return new CommitBundleImpl(DocumentRevision.START_REVISION, commit);
-        }
-        return null;
     }
 
     public static Optional<Project> showDialog(OWLEditorKit editorKit) {

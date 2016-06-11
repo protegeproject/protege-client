@@ -62,6 +62,9 @@ public abstract class AbstractClientAction extends ProtegeOWLAction {
         return executorService.schedule(task, delay, TimeUnit.SECONDS);
     }
 
+    protected ScheduledFuture<?> submitPeriodic(Runnable task, long period) {
+        return executorService.scheduleAtFixedRate(task, period, period, TimeUnit.SECONDS);
+    }
     protected Future<?> submit(Callable<?> task) {
         return executorService.submit(task);
     }

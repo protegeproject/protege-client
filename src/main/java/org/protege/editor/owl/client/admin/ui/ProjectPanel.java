@@ -14,7 +14,6 @@ import org.protege.editor.core.ui.util.JOptionPaneEx;
 import org.protege.editor.owl.OWLEditorKit;
 import org.protege.editor.owl.client.ClientSession;
 import org.protege.editor.owl.client.ClientSessionListener;
-import org.protege.editor.owl.client.LocalClient;
 import org.protege.editor.owl.client.admin.AdminTabManager;
 import org.protege.editor.owl.client.admin.model.AdminTabEvent;
 import org.protege.editor.owl.client.admin.model.AdminTabListener;
@@ -233,11 +232,11 @@ public class ProjectPanel extends JPanel implements Disposable {
     }
 
     private boolean canDeleteProject(Project project) {
-        return client instanceof LocalClient && ((LocalClient) client).queryProjectPolicy(userId, project.getId(), Operations.REMOVE_PROJECT.getId());
+        return client.queryProjectPolicy(userId, project.getId(), Operations.REMOVE_PROJECT.getId());
     }
 
     private boolean canModifyProject(Project project) {
-        return client instanceof LocalClient && ((LocalClient) client).queryProjectPolicy(userId, project.getId(), Operations.MODIFY_PROJECT.getId());
+        return client.queryProjectPolicy(userId, project.getId(), Operations.MODIFY_PROJECT.getId());
     }
 
 

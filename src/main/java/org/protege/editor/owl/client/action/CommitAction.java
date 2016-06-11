@@ -18,6 +18,9 @@ import org.protege.editor.owl.client.ClientSessionChangeEvent.EventCategory;
 import org.protege.editor.owl.client.api.Client;
 import org.protege.editor.owl.client.api.exception.ClientRequestException;
 import org.protege.editor.owl.client.util.ClientUtils;
+import org.protege.editor.owl.model.OWLModelManagerImpl;
+import org.protege.editor.owl.model.history.HistoryManager;
+import org.protege.editor.owl.model.history.UndoManagerListener;
 import org.protege.editor.owl.server.api.CommitBundle;
 import org.protege.editor.owl.server.api.exception.AuthorizationException;
 import org.protege.editor.owl.server.api.exception.OutOfSyncException;
@@ -44,16 +47,17 @@ public class CommitAction extends AbstractClientAction implements ClientSessionL
 
     private List<OWLOntologyChange> localChanges = new ArrayList<>();
 
-    private OWLOntologyChangeListener checkUncommittedChanges = new OWLOntologyChangeListener() {
-        @Override
-        public void ontologiesChanged(List<? extends OWLOntologyChange> changes) throws OWLException {
-            OWLOntology activeOntology = getOWLEditorKit().getOWLModelManager().getActiveOntology();
+    private UndoManagerListener checkUncommittedChanges = new UndoManagerListener() {
+        
+		@Override
+		public void stateChanged(HistoryManager source) {
+			OWLOntology activeOntology = getOWLEditorKit().getOWLModelManager().getActiveOntology();
             if (activeVersionOntology.isPresent()) {
                 ChangeHistory baseline = activeVersionOntology.get().getChangeHistory();
-                localChanges = ClientUtils.getUncommittedChanges(activeOntology, baseline);
+                localChanges = ClientUtils.getUncommittedChanges(getOWLModelManager().getHistoryManager(), activeOntology, baseline);
                 setEnabled(!localChanges.isEmpty());
-            }
-        }
+            }			
+		}
     };
 
     @Override
@@ -61,13 +65,13 @@ public class CommitAction extends AbstractClientAction implements ClientSessionL
         super.initialise();
         setEnabled(false); // initially the menu item is disabled
         getClientSession().addListener(this);
-        getOWLModelManager().addOntologyChangeListener(checkUncommittedChanges);
+        getOWLModelManager().getHistoryManager().addUndoManagerListener(checkUncommittedChanges);
     }
 
     @Override
     public void dispose() throws Exception {
         super.dispose();
-        getOWLModelManager().removeOntologyChangeListener(checkUncommittedChanges);
+        getOWLModelManager().getHistoryManager().removeUndoManagerListener(checkUncommittedChanges);
     }
 
     @Override
@@ -111,6 +115,7 @@ public class CommitAction extends AbstractClientAction implements ClientSessionL
                 ChangeHistory changes = acceptedChanges.get();
                 vont.update(changes); // update the local ontology
                 setEnabled(false); // disable the commit action after the changes got committed successfully
+                ((OWLModelManagerImpl) this.getOWLModelManager()).resetHistory();
                 showInfoDialog("Commit", "Commit success (uploaded as revision " + changes.getHeadRevision() + ")");
             }
         }

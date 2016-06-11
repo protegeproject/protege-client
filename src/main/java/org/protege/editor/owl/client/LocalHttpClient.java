@@ -1,8 +1,13 @@
 package org.protege.editor.owl.client;
 
+import java.io.BufferedInputStream;
+import java.io.BufferedOutputStream;
 import java.io.ByteArrayOutputStream;
+import java.io.DataOutputStream;
 import java.io.File;
+import java.io.FileInputStream;
 import java.io.FileNotFoundException;
+import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStreamReader;
 import java.io.ObjectInputStream;
@@ -14,11 +19,17 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
+import java.util.SortedMap;
 import java.util.concurrent.TimeUnit;
 
+import javax.net.ssl.HostnameVerifier;
+import javax.net.ssl.SSLContext;
+import javax.net.ssl.SSLSession;
+import javax.net.ssl.TrustManager;
+
 import org.apache.commons.codec.binary.Base64;
+import org.apache.http.conn.ssl.SSLSocketFactory;
 import org.protege.editor.owl.client.api.Client;
-import org.protege.editor.owl.client.api.PolicyMediator;
 import org.protege.editor.owl.client.api.UserInfo;
 import org.protege.editor.owl.client.api.exception.ClientRequestException;
 import org.protege.editor.owl.client.util.ClientUtils;
@@ -26,14 +37,27 @@ import org.protege.editor.owl.server.api.CommitBundle;
 import org.protege.editor.owl.server.api.exception.AuthorizationException;
 import org.protege.editor.owl.server.api.exception.OutOfSyncException;
 import org.protege.editor.owl.server.http.HTTPServer;
+import org.protege.editor.owl.server.http.exception.ServerException;
 import org.protege.editor.owl.server.http.messages.HttpAuthResponse;
 import org.protege.editor.owl.server.http.messages.LoginCreds;
+import org.protege.editor.owl.server.policy.CommitBundleImpl;
+import org.protege.editor.owl.server.security.DummyTrustManager;
+import org.protege.editor.owl.server.security.SSLContextFactory;
+import org.protege.editor.owl.server.util.SnapShot;
+import org.protege.editor.owl.server.versioning.ChangeHistoryImpl;
+import org.protege.editor.owl.server.versioning.Commit;
 import org.protege.editor.owl.server.versioning.VersionedOWLOntologyImpl;
 import org.protege.editor.owl.server.versioning.api.ChangeHistory;
 import org.protege.editor.owl.server.versioning.api.DocumentRevision;
+import org.protege.editor.owl.server.versioning.api.RevisionMetadata;
 import org.protege.editor.owl.server.versioning.api.ServerDocument;
 import org.protege.editor.owl.server.versioning.api.VersionedOWLOntology;
+import org.semanticweb.binaryowl.BinaryOWLOntologyDocumentSerializer;
+import org.semanticweb.binaryowl.owlapi.BinaryOWLOntologyBuildingHandler;
+import org.semanticweb.binaryowl.owlapi.OWLOntologyWrapper;
+import org.semanticweb.owlapi.apibinding.OWLManager;
 import org.semanticweb.owlapi.model.OWLOntology;
+import org.semanticweb.owlapi.model.OWLOntologyChange;
 import org.semanticweb.owlapi.model.OWLOntologyCreationException;
 import org.semanticweb.owlapi.model.OWLOntologyManager;
 
@@ -72,6 +96,7 @@ import edu.stanford.protege.metaproject.api.exception.UnknownMetaprojectObjectId
 import edu.stanford.protege.metaproject.api.exception.UserNotInPolicyException;
 import edu.stanford.protege.metaproject.api.exception.UserNotRegisteredException;
 import edu.stanford.protege.metaproject.impl.AuthorizedUserToken;
+import edu.stanford.protege.metaproject.impl.Operations;
 import edu.stanford.protege.metaproject.impl.UserIdImpl;
 import edu.stanford.protege.metaproject.serialization.DefaultJsonSerializer;
 import okhttp3.MediaType;
@@ -86,7 +111,8 @@ public class LocalHttpClient implements Client, ClientSessionListener {
 	private String serverAddress;
 
 	private ProjectId projectId;
-	private String userId;
+	private Project project = null;
+	private UserId userId = null;
 
 	private UserInfo userInfo;
 	private AuthToken auth_token = null;
@@ -96,7 +122,7 @@ public class LocalHttpClient implements Client, ClientSessionListener {
 
 	private MetaprojectFactory fact = Manager.getFactory();
 
-	OkHttpClient req_client = new OkHttpClient.Builder().readTimeout(180, TimeUnit.SECONDS).build();
+	OkHttpClient req_client = null; 
 	
 	private ServerConfiguration config;
 	private AuthenticationRegistry auth_registry;
@@ -112,6 +138,8 @@ public class LocalHttpClient implements Client, ClientSessionListener {
 	
 
 	private static LocalHttpClient current_user = null;
+	
+	private ClientSession current_session = null;
 
 	public static LocalHttpClient current_user() {
 		return current_user;
@@ -121,11 +149,25 @@ public class LocalHttpClient implements Client, ClientSessionListener {
 		return config;		
 	}
 
-	public LocalHttpClient(String user, String pwd, String serverAddress) {
+	public LocalHttpClient(String user, String pwd, String serverAddress) {	
+		
+		req_client = new OkHttpClient.Builder().readTimeout(360, TimeUnit.SECONDS).build();
+		/**
+		 * using SSL
+		try {
+			SSLContext ctx = new SSLContextFactory().createSslContext();
+			req_client = new OkHttpClient.Builder().readTimeout(360, TimeUnit.SECONDS).sslSocketFactory(ctx.getSocketFactory()).build();
+		} catch (IOException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
+		**/
+		
+		
 		this.serverAddress = serverAddress;
 		this.userInfo = login(user, pwd);
-		this.userId = user;
-		String toenc = this.userId + ":" + userInfo.getNonce();
+		this.userId = new UserIdImpl(user);
+		String toenc = this.userId.get() + ":" + userInfo.getNonce();
 		this.auth_header_value = "Basic " + new String(Base64.encodeBase64(toenc.getBytes()));
 		LocalHttpClient.current_user = this;
 		//check if user is allowed to edit config
@@ -162,6 +204,7 @@ public class LocalHttpClient implements Client, ClientSessionListener {
 
 		try {
 			resp = (HttpAuthResponse) serl.parse(new InputStreamReader(response.body().byteStream()), HttpAuthResponse.class);
+			response.body().close();
 		} catch (FileNotFoundException | ObjectConversionException e) {
 			e.printStackTrace();
 		}
@@ -172,6 +215,7 @@ public class LocalHttpClient implements Client, ClientSessionListener {
 	
 	@Override
 	public void handleChange(ClientSessionChangeEvent event) {
+		current_session = event.getSource();
 		projectId = event.getSource().getActiveProject();
 	}
 	
@@ -180,6 +224,9 @@ public class LocalHttpClient implements Client, ClientSessionListener {
         this.projectId = projectId;
     }
 
+	public Project getCurrentProject() {
+		return project;
+	}
 	
 	@Override
 	public AuthToken getAuthToken() {
@@ -188,7 +235,7 @@ public class LocalHttpClient implements Client, ClientSessionListener {
 		} else {
 			User user = null;
 			try {
-				user = user_registry.get(new UserIdImpl(userId));
+				user = user_registry.get(userId);
 			} catch (UnknownMetaprojectObjectIdException e) {
 				// TODO Auto-generated catch block
 				e.printStackTrace();
@@ -250,15 +297,20 @@ public class LocalHttpClient implements Client, ClientSessionListener {
         }
 	}
 	
-	@Override
-	public ServerDocument createProject(ProjectId projectId, Name projectName, Description description, UserId owner,
-			Optional<ProjectOptions> options, Optional<CommitBundle> initialCommit)
-					throws AuthorizationException, ClientRequestException, RemoteException {
+	
+	public ServerDocument createProject(Project proj)
+			throws AuthorizationException, ClientRequestException, RemoteException {
+
+		ProjectId projectId = proj.getId();
+		Name projectName = proj.getName();
+		Description description = proj.getDescription();
+		UserId owner = proj.getOwner();
+		Optional<ProjectOptions> options = proj.getOptions();
 
 		String url = HTTPServer.PROJECT;
 
 		Response response;
-		ServerDocument serverDoc = null;
+		ServerDocument sdoc = null;
 
 		try {
 
@@ -277,28 +329,19 @@ public class LocalHttpClient implements Client, ClientSessionListener {
 			response = post(url, req, true);
 
 			ObjectInputStream ois = new ObjectInputStream(response.body().byteStream());
-			serverDoc = (ServerDocument) ois.readObject();
+			sdoc = (ServerDocument) ois.readObject();
+			
+			response.body().close();
 
+			// send snapshot to server
+			OWLOntology ont = putSnapShot(proj.getFile(), sdoc);
+
+			initConfig();
+			return sdoc;
 
 		} catch (Exception e) {
 			throw new ClientRequestException(e.getMessage(), e.getCause());
 		}
-
-
-		// Do initial commit if the commit bundle is not empty
-		if (initialCommit.isPresent()) {
-
-			try {
-
-				commit(projectId, initialCommit.get());
-
-			} catch (Exception e) {
-				throw new ClientRequestException(e.getMessage(), e.getCause());
-			}
-
-		}
-		initConfig();
-		return serverDoc;
 
 	}
 	
@@ -330,6 +373,8 @@ public class LocalHttpClient implements Client, ClientSessionListener {
 
 			ObjectInputStream ois = new ObjectInputStream(response.body().byteStream());
 			sdoc = (ServerDocument) ois.readObject();
+			
+			response.body().close();
 
 
 		} catch (Exception e) {
@@ -338,7 +383,301 @@ public class LocalHttpClient implements Client, ClientSessionListener {
 		return sdoc;
 
 	}
+	
+	@Override
+	public ChangeHistory commit(ProjectId projectId, CommitBundle commitBundle)
+			throws AuthorizationException, OutOfSyncException, ClientRequestException, RemoteException {
 
+		String url = HTTPServer.COMMIT;
+
+		ByteArrayOutputStream b = new ByteArrayOutputStream();
+		ObjectOutputStream os = null;
+		Response response = null;
+		ChangeHistory hist = null;
+		try {
+			os = new ObjectOutputStream(b);
+			os.writeObject(projectId);
+			os.writeObject(commitBundle);
+			RequestBody req = RequestBody.create(MediaType.parse("application"), b.toByteArray());
+
+			response = post(url, req, true);
+			
+			ObjectInputStream ois = new ObjectInputStream(response.body().byteStream());
+			
+			if (response.code() == 200) {
+				hist = (ChangeHistory) ois.readObject();
+				
+			} else if (response.code() == 500) {
+				ServerException ex = (ServerException) ois.readObject();
+				if (ex.getCause() instanceof OutOfSyncException) {
+					throw (OutOfSyncException) ex.getCause();
+				} else {
+					throw new ClientRequestException(ex.getMessage());
+				}
+			}
+
+
+			
+
+		} catch (IOException | ClassNotFoundException e) {
+			throw new ClientRequestException(e.getMessage(), e.getCause());
+		} finally {
+			response.body().close();
+		}
+
+
+		return hist;
+	}
+
+
+	public VersionedOWLOntology buildVersionedOntology(ServerDocument sdoc, OWLOntologyManager owlManager,
+			ProjectId pid)
+			throws ClientRequestException, OWLOntologyCreationException {
+		
+		projectId = pid;
+		try {
+			project = proj_registry.get(pid);
+		} catch (UnknownMetaprojectObjectIdException e) {
+			// TODO Log this
+			e.printStackTrace();
+		}
+		
+		OWLOntology targetOntology = null;
+		ChangeHistory remoteChangeHistory = null;
+		
+		if (snapShotExists(sdoc)) {			
+			
+		} else {
+			getSnapShot(sdoc);					
+		}
+		
+		targetOntology = loadSnapShot(owlManager, sdoc);		
+		
+		remoteChangeHistory = getLatestChanges(sdoc, DocumentRevision.START_REVISION);		
+		
+		
+		ClientUtils.updateOntology(targetOntology, remoteChangeHistory, owlManager);
+		
+		return new VersionedOWLOntologyImpl(sdoc, targetOntology, remoteChangeHistory);
+	}
+	
+	public boolean snapShotExists(ServerDocument sdoc) {
+		String fileName = sdoc.getHistoryFile().getName() + "-snapshot";
+		return (new File(fileName)).exists();	
+	}
+	
+	public OWLOntology loadSnapShot(OWLOntologyManager manIn, ServerDocument sdoc) {
+		try {
+			long beg = System.currentTimeMillis();
+			BinaryOWLOntologyDocumentSerializer serializer = new BinaryOWLOntologyDocumentSerializer();
+			//OWLOntologyManager manIn = OWLManager.createOWLOntologyManager();
+	        OWLOntology ontIn = manIn.createOntology();
+	        String fileName = sdoc.getHistoryFile().getName() + "-snapshot";
+	        BufferedInputStream inputStream = new BufferedInputStream(new FileInputStream(new File(fileName)));
+	        serializer.read(inputStream, new BinaryOWLOntologyBuildingHandler(ontIn), manIn.getOWLDataFactory());
+	        System.out.println("Time to serialize in " + (System.currentTimeMillis() - beg)/1000);
+	        return ontIn;
+		} catch (Exception e) {
+			e.printStackTrace();
+		}
+		return null;
+		
+	}
+	
+	public OWLOntology putSnapShot(File file, ServerDocument sdoc) {
+		OWLOntology ont = null;
+		try {
+			ont = OWLManager.createOWLOntologyManager().loadOntologyFromOntologyDocument(file);
+			
+			
+			String url = HTTPServer.PROJECT_SNAPSHOT;
+
+			ByteArrayOutputStream b = new ByteArrayOutputStream();
+			ObjectOutputStream os = null;
+			Response response = null;
+			
+			try {
+				os = new ObjectOutputStream(b);
+				os.writeObject(sdoc);
+				os.writeObject(new SnapShot(ont));
+				RequestBody req = RequestBody.create(MediaType.parse("application"), b.toByteArray());
+
+				response = post(url, req, true);
+
+
+				ObjectInputStream ois = new ObjectInputStream(response.body().byteStream());
+				ServerDocument new_sdoc = (ServerDocument) ois.readObject();
+				System.out.println("got it");
+
+			} catch (IOException | ClassNotFoundException e) {
+				throw new ClientRequestException(e.getMessage(), e.getCause());
+			} finally {
+				response.body().close();
+			}
+
+			
+			
+		} catch (Exception e) {
+			e.printStackTrace();
+		}
+		return ont;
+	}
+	
+	public void createLocalSnapShot(OWLOntology ont, ServerDocument sdoc) {
+		try {
+			
+			long beg = System.currentTimeMillis();
+			BinaryOWLOntologyDocumentSerializer serializer = new BinaryOWLOntologyDocumentSerializer();
+			BufferedOutputStream outputStream = null;
+			
+			String fileName = sdoc.getHistoryFile().getName() + "-snapshot";
+
+			outputStream = new BufferedOutputStream(new FileOutputStream(new File(fileName)));
+			serializer.write(new OWLOntologyWrapper(ont), new DataOutputStream(outputStream));
+			outputStream.close();
+			System.out.println("Time to serialize out snapshot " + (System.currentTimeMillis() - beg)/1000);
+		} catch (Exception e1) {
+			// TODO Auto-generated catch block
+			e1.printStackTrace();
+		}     
+
+	}
+	
+	public void getSnapShot(ServerDocument sdoc) {
+		try {
+			String url = HTTPServer.PROJECT_SNAPSHOT_GET;
+			
+			ByteArrayOutputStream b = new ByteArrayOutputStream();
+			ObjectOutputStream os = null;
+			
+			
+			os = new ObjectOutputStream(b);
+			os.writeObject(sdoc);
+			RequestBody req = RequestBody.create(MediaType.parse("application"), b.toByteArray());
+
+			Response resp = post(url, req, true);
+			
+			ObjectInputStream ois = new ObjectInputStream(resp.body().byteStream());
+			
+			SnapShot shot = (SnapShot) ois.readObject();
+			createLocalSnapShot(shot.getOntology(), sdoc);
+			
+			resp.body().close();
+			
+		} catch (Exception e) {
+			e.printStackTrace();
+		}
+		
+		
+		
+	}
+
+	public ChangeHistory getAllChanges(ServerDocument sdoc) throws ClientRequestException {
+		ChangeHistory history = null;
+		try {
+			long beg = System.currentTimeMillis();
+
+
+			// TODO: get all changes
+			String url = HTTPServer.ALL_CHANGES;
+			ByteArrayOutputStream b = new ByteArrayOutputStream();
+			ObjectOutputStream os = new ObjectOutputStream(b);
+
+			os.writeObject(sdoc.getHistoryFile());
+			RequestBody req = RequestBody.create(MediaType.parse("application"), b.toByteArray());
+
+			Response response = post(url, req, true);
+
+			ObjectInputStream ois = new ObjectInputStream(response.body().byteStream());
+			
+			
+
+			history = (ChangeHistory) ois.readObject();
+			
+			System.out.println("Time to execute get all changes " + (System.currentTimeMillis() - beg)/1000);
+			
+			response.body().close();
+
+
+		} catch (Exception e) {
+			throw new ClientRequestException(e.getMessage(), e.getCause());
+		}  
+		return history;
+
+	}
+	
+	public DocumentRevision getRemoteHeadRevision(VersionedOWLOntology vont) throws
+		ClientRequestException {	
+		DocumentRevision remoteHead = null;
+		try {
+			long beg = System.currentTimeMillis();
+
+
+			// TODO: get all changes
+			String url = HTTPServer.HEAD;
+			ByteArrayOutputStream b = new ByteArrayOutputStream();
+			ObjectOutputStream os = new ObjectOutputStream(b);
+
+			os.writeObject(vont.getServerDocument().getHistoryFile());
+			RequestBody req = RequestBody.create(MediaType.parse("application"), b.toByteArray());
+
+			Response response = post(url, req, true);
+
+			ObjectInputStream ois = new ObjectInputStream(response.body().byteStream());
+			
+			
+
+			remoteHead = (DocumentRevision) ois.readObject();
+			
+			System.out.println("Time to execute get all changes " + (System.currentTimeMillis() - beg)/1000);
+			
+			response.body().close();
+
+
+		} catch (Exception e) {
+			throw new ClientRequestException(e.getMessage(), e.getCause());
+		}  
+		return remoteHead;
+	}
+	
+	public ChangeHistory getLatestChanges(VersionedOWLOntology vont) throws
+		ClientRequestException {
+		DocumentRevision start = vont.getChangeHistory().getHeadRevision();
+		return getLatestChanges(vont.getServerDocument(), start);
+	}
+	
+	public ChangeHistory getLatestChanges(ServerDocument sdoc, DocumentRevision start)
+		throws ClientRequestException {
+		ChangeHistory history = null;
+		try {
+
+
+			// TODO: get all changes
+			String url = HTTPServer.LATEST_CHANGES;
+			ByteArrayOutputStream b = new ByteArrayOutputStream();
+			ObjectOutputStream os = new ObjectOutputStream(b);
+
+			os.writeObject(sdoc.getHistoryFile());
+			
+			os.writeObject(start);
+			RequestBody req = RequestBody.create(MediaType.parse("application"), b.toByteArray());
+
+			Response response = post(url, req, true);
+
+			ObjectInputStream ois = new ObjectInputStream(response.body().byteStream());
+
+			history = (ChangeHistory) ois.readObject();
+			
+			response.body().close();
+
+
+		} catch (Exception e) {
+			throw new ClientRequestException(e.getMessage(), e.getCause());
+		}  
+		return history;
+
+	}
+	
 	@Override
 	public List<Project> getProjects(UserId userId)
 			throws AuthorizationException, ClientRequestException, RemoteException {
@@ -574,35 +913,17 @@ public class LocalHttpClient implements Client, ClientSessionListener {
 
 	}
 	
-	@Override
-	public ChangeHistory commit(ProjectId projectId, CommitBundle commitBundle)
-			throws AuthorizationException, OutOfSyncException, ClientRequestException, RemoteException {
-
-		String url = HTTPServer.COMMIT;
-
-		ByteArrayOutputStream b = new ByteArrayOutputStream();
-		ObjectOutputStream os = null;
-		Response response = null;
-		ChangeHistory hist = null;
+	public Role getRole(RoleId id) {
 		try {
-			os = new ObjectOutputStream(b);
-			os.writeObject(projectId);
-			os.writeObject(commitBundle);
-			RequestBody req = RequestBody.create(MediaType.parse("application"), b.toByteArray());
-
-			response = post(url, req, true);
-
-
-			ObjectInputStream ois = new ObjectInputStream(response.body().byteStream());
-			hist = (ChangeHistory) ois.readObject();
-
-		} catch (IOException | ClassNotFoundException e) {
-			throw new ClientRequestException(e.getMessage(), e.getCause());
+			return role_registry.get(id);
+		} catch (UnknownMetaprojectObjectIdException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
 		}
-
-
-		return hist;
+		return null;
 	}
+	
+
 
 	
 
@@ -614,7 +935,7 @@ public class LocalHttpClient implements Client, ClientSessionListener {
 	@Override
 	public List<Project> getProjects() throws ClientRequestException {
 		try {
-			return getProjects(fact.getUserId(userId));
+			return getProjects(userId);
 		}
 		catch (AuthorizationException | RemoteException e) {
 			throw new ClientRequestException(e.getMessage(), e);
@@ -623,101 +944,38 @@ public class LocalHttpClient implements Client, ClientSessionListener {
 
 	@Override
 	public List<Role> getActiveRoles() throws ClientRequestException {
-		// TODO Auto-generated method stub
-		return null;
+		try {
+            List<Role> activeRoles = new ArrayList<>();
+            if (getRemoteProject().isPresent()) {
+                activeRoles = getRoles(userId, getRemoteProject().get());
+            }
+            return activeRoles;
+        }
+        catch (AuthorizationException | RemoteException e) {
+            throw new ClientRequestException(e.getMessage(), e);
+        }
 	}
 
 	@Override
 	public List<Operation> getActiveOperations() throws ClientRequestException {
-		// TODO Auto-generated method stub
-		return null;
+		
+            List<Operation> activeOperations = new ArrayList<>();
+            if (getRemoteProject().isPresent()) {
+                
+					try {
+						activeOperations = getOperations(userId, getRemoteProject().get());
+					} catch (AuthorizationException | RemoteException e) {
+						throw new ClientRequestException(e.getCause());						
+					}
+				
+            }
+            return activeOperations;
+        
+		
 	}
 
 
 
-	public VersionedOWLOntology buildVersionedOntology(ServerDocument sdoc, OWLOntologyManager owlManager)
-			throws ClientRequestException, OWLOntologyCreationException {
-
-		ChangeHistory remoteChangeHistory = getAllChanges(sdoc);
-
-
-		OWLOntology targetOntology = owlManager.createOntology();
-		ClientUtils.updateOntology(targetOntology, remoteChangeHistory, owlManager);
-		return new VersionedOWLOntologyImpl(sdoc, targetOntology, remoteChangeHistory);
-	}
-
-	public ChangeHistory getAllChanges(ServerDocument sdoc) throws ClientRequestException {
-		ChangeHistory history = null;
-		try {
-			long beg = System.currentTimeMillis();
-
-
-			// TODO: get all changes
-			String url = HTTPServer.ALL_CHANGES;
-			ByteArrayOutputStream b = new ByteArrayOutputStream();
-			ObjectOutputStream os = new ObjectOutputStream(b);
-
-			os.writeObject(sdoc.getHistoryFile());
-			RequestBody req = RequestBody.create(MediaType.parse("application"), b.toByteArray());
-
-			Response response = post(url, req, true);
-
-			ObjectInputStream ois = new ObjectInputStream(response.body().byteStream());
-			
-			
-
-			history = (ChangeHistory) ois.readObject();
-			
-			System.out.println("Time to execute get all changes " + (System.currentTimeMillis() - beg)/1000);
-
-
-		} catch (Exception e) {
-			throw new ClientRequestException(e.getMessage(), e.getCause());
-		}  
-		return history;
-
-	}
-	
-	public DocumentRevision getRemoteHeadRevision(VersionedOWLOntology vont) throws
-		ClientRequestException {		
-		return getLatestChanges(vont).getHeadRevision();
-	}
-	
-	public ChangeHistory getLatestChanges(VersionedOWLOntology vont) throws
-		ClientRequestException {
-		DocumentRevision start = vont.getChangeHistory().getHeadRevision();
-		return getLatestChanges(vont.getServerDocument(), start);
-	}
-	
-	public ChangeHistory getLatestChanges(ServerDocument sdoc, DocumentRevision start)
-		throws ClientRequestException {
-		ChangeHistory history = null;
-		try {
-
-
-			// TODO: get all changes
-			String url = HTTPServer.ALL_CHANGES;
-			ByteArrayOutputStream b = new ByteArrayOutputStream();
-			ObjectOutputStream os = new ObjectOutputStream(b);
-
-			os.writeObject(sdoc.getHistoryFile());
-			
-			os.writeObject(start);
-			RequestBody req = RequestBody.create(MediaType.parse("application"), b.toByteArray());
-
-			Response response = post(url, req, true);
-
-			ObjectInputStream ois = new ObjectInputStream(response.body().byteStream());
-
-			history = (ChangeHistory) ois.readObject();
-
-
-		} catch (Exception e) {
-			throw new ClientRequestException(e.getMessage(), e.getCause());
-		}  
-		return history;
-
-	}
 
 
 
@@ -808,7 +1066,26 @@ public class LocalHttpClient implements Client, ClientSessionListener {
 		} catch (FileNotFoundException | ObjectConversionException e) {
 			e.printStackTrace();
 		}
+		response.body().close();
 		return scfg;
+		
+	}
+	
+	public String getCode() {
+		String url = HTTPServer.GEN_CODE;
+		
+		Response response = get(url);
+		
+		String code = null;
+		
+
+		try {
+			code = response.body().string();
+		} catch (Exception e) {
+			e.printStackTrace();
+		}
+		response.body().close();
+		return code;
 		
 	}
 	
@@ -834,167 +1111,212 @@ public class LocalHttpClient implements Client, ClientSessionListener {
 		RequestBody body = RequestBody.create(JSON, serl.write(this.config, ServerConfiguration.class));
 
 		post(url, body, true);
+		try {
+			// give the server some time to reboot
+			Thread.sleep(1000);
+		} catch (InterruptedException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
 		initConfig();
 	}
+	
+	/*
+     * Utility methods for querying the client permissions. All these methods will initially check if the client
+     * is linked to a remote project before sending the query. All the methods will return false as the default
+     * answer.
+     */
+
+    @Override
+    public boolean canAddAxiom() {
+        if (!getRemoteProject().isPresent()) {
+            return false;
+        }
+        return queryProjectPolicy(userId, getRemoteProject().get(), Operations.ADD_AXIOM.getId());
+    }
+
+    @Override
+    public boolean canRemoveAxiom() {
+        if (!getRemoteProject().isPresent()) {
+            return false;
+        }
+        return queryProjectPolicy(userId, getRemoteProject().get(), Operations.REMOVE_AXIOM.getId());
+    }
+
+    @Override
+    public boolean canAddAnnotation() {
+        if (!getRemoteProject().isPresent()) {
+            return false;
+        }
+        return queryProjectPolicy(userId, getRemoteProject().get(), Operations.ADD_ONTOLOGY_ANNOTATION.getId());
+    }
+
+    @Override
+    public boolean canRemoveAnnotation() {
+        if (!getRemoteProject().isPresent()) {
+            return false;
+        }
+        return queryProjectPolicy(userId, getRemoteProject().get(), Operations.REMOVE_ONTOLOGY_ANNOTATION.getId());
+    }
+
+    @Override
+    public boolean canAddImport() {
+        if (!getRemoteProject().isPresent()) {
+            return false;
+        }
+        return queryProjectPolicy(userId, getRemoteProject().get(), Operations.ADD_IMPORT.getId());
+    }
+
+    @Override
+    public boolean canRemoveImport() {
+        if (!getRemoteProject().isPresent()) {
+            return false;
+        }
+        return queryProjectPolicy(userId, getRemoteProject().get(), Operations.REMOVE_IMPORT.getId());
+    }
+
+    @Override
+    public boolean canModifyOntologyId() {
+        if (!getRemoteProject().isPresent()) {
+            return false;
+        }
+        return queryProjectPolicy(userId, getRemoteProject().get(), Operations.MODIFY_ONTOLOGY_IRI.getId());
+    }
+
+    @Override
+    public boolean canCreateUser() {
+        return queryAdminPolicy(userId, Operations.ADD_USER.getId());
+    }
+
+    @Override
+    public boolean canDeleteUser() {
+        return queryAdminPolicy(userId, Operations.REMOVE_USER.getId());
+    }
+
+    @Override
+    public boolean canUpdateUser() {
+        return queryAdminPolicy(userId, Operations.MODIFY_USER.getId());
+    }
+
+    @Override
+    public boolean canCreateProject() {
+        return queryAdminPolicy(userId, Operations.ADD_PROJECT.getId());
+    }
+
+    @Override
+    public boolean canDeleteProject() {
+        if (!getRemoteProject().isPresent()) {
+            return false;
+        }
+        return queryProjectPolicy(userId, getRemoteProject().get(), Operations.REMOVE_PROJECT.getId());
+    }
+
+    @Override
+    public boolean canUpdateProject() {
+        if (!getRemoteProject().isPresent()) {
+            return false;
+        }
+        return queryProjectPolicy(userId, getRemoteProject().get(), Operations.MODIFY_PROJECT.getId());
+    }
+
+    @Override
+    public boolean canOpenProject() {
+        if (!getRemoteProject().isPresent()) {
+            return false;
+        }
+        return queryProjectPolicy(userId, getRemoteProject().get(), Operations.OPEN_PROJECT.getId());
+    }
+
+    @Override
+    public boolean canCreateRole() {
+        return queryAdminPolicy(userId, Operations.ADD_ROLE.getId());
+    }
+
+    @Override
+    public boolean canDeleteRole() {
+        return queryAdminPolicy(userId, Operations.REMOVE_ROLE.getId());
+    }
+
+    @Override
+    public boolean canUpdateRole() {
+        return queryAdminPolicy(userId, Operations.MODIFY_ROLE.getId());
+    }
+
+    @Override
+    public boolean canCreateOperation() {
+        return queryAdminPolicy(userId, Operations.ADD_OPERATION.getId());
+    }
+
+    @Override
+    public boolean canDeleteOperation() {
+        return queryAdminPolicy(userId, Operations.REMOVE_OPERATION.getId());
+    }
+
+    @Override
+    public boolean canUpdateOperation() {
+        return queryAdminPolicy(userId, Operations.MODIFY_OPERATION.getId());
+    }
+
+    @Override
+    public boolean canAssignRole() {
+        return queryAdminPolicy(userId, Operations.ASSIGN_ROLE.getId());
+    }
+
+    @Override
+    public boolean canRetractRole() {
+        return queryAdminPolicy(userId, Operations.RETRACT_ROLE.getId());
+    }
+
+    @Override
+    public boolean canStopServer() {
+        return queryAdminPolicy(userId, Operations.STOP_SERVER.getId());
+    }
+
+    @Override
+    public boolean canUpdateServerConfig() {
+        return queryAdminPolicy(userId, Operations.MODIFY_SERVER_SETTINGS.getId());
+    }
+
+    @Override
+    public boolean canPerformProjectOperation(OperationId operationId) {
+        if (!getRemoteProject().isPresent()) {
+            return false;
+        }
+        return queryProjectPolicy(userId, getRemoteProject().get(), operationId);
+    }
+
+    @Override
+    public boolean canPerformAdminOperation(OperationId operationId) {
+        if (!getRemoteProject().isPresent()) {
+            return false;
+        }
+        return queryAdminPolicy(userId, operationId);
+    }
+
+    /*
+     * Utility methods
+     */
+    public boolean queryProjectPolicy(UserId userId, ProjectId projectId, OperationId operationId) {
+    	return meta_agent.isOperationAllowed(operationId, projectId, userId);        
+    }
+
+    private boolean queryAdminPolicy(UserId userId, OperationId operationId) {
+    	return meta_agent.isOperationAllowed(operationId, userId);
+        
+    }
+    
+    private Optional<ProjectId> getRemoteProject() {
+        return Optional.ofNullable(projectId);
+    }
 
 	@Override
-	public boolean canAddAxiom() {
+	public ServerDocument createProject(ProjectId projectId, Name projectName, Description description, UserId owner,
+			Optional<ProjectOptions> options, Optional<CommitBundle> initialCommit)
+					throws AuthorizationException, ClientRequestException, RemoteException {
 		// TODO Auto-generated method stub
-		return false;
+		return null;
 	}
 
-	@Override
-	public boolean canRemoveAxiom() {
-		// TODO Auto-generated method stub
-		return false;
-	}
-
-	@Override
-	public boolean canAddAnnotation() {
-		// TODO Auto-generated method stub
-		return false;
-	}
-
-	@Override
-	public boolean canRemoveAnnotation() {
-		// TODO Auto-generated method stub
-		return false;
-	}
-
-	@Override
-	public boolean canAddImport() {
-		// TODO Auto-generated method stub
-		return false;
-	}
-
-	@Override
-	public boolean canRemoveImport() {
-		// TODO Auto-generated method stub
-		return false;
-	}
-
-	@Override
-	public boolean canModifyOntologyId() {
-		// TODO Auto-generated method stub
-		return false;
-	}
-
-	@Override
-	public boolean canUpdateServerConfig() {
-		// TODO Auto-generated method stub
-		return false;
-	}
-
-	@Override
-	public boolean canCreateUser() {
-		// TODO Auto-generated method stub
-		return false;
-	}
-
-	@Override
-	public boolean canDeleteUser() {
-		// TODO Auto-generated method stub
-		return false;
-	}
-
-	@Override
-	public boolean canUpdateUser() {
-		// TODO Auto-generated method stub
-		return false;
-	}
-
-	@Override
-	public boolean canCreateProject() {
-		// TODO Auto-generated method stub
-		return false;
-	}
-
-	@Override
-	public boolean canDeleteProject() {
-		// TODO Auto-generated method stub
-		return false;
-	}
-
-	@Override
-	public boolean canUpdateProject() {
-		// TODO Auto-generated method stub
-		return false;
-	}
-
-	@Override
-	public boolean canOpenProject() {
-		// TODO Auto-generated method stub
-		return false;
-	}
-
-	@Override
-	public boolean canCreateRole() {
-		// TODO Auto-generated method stub
-		return false;
-	}
-
-	@Override
-	public boolean canDeleteRole() {
-		// TODO Auto-generated method stub
-		return false;
-	}
-
-	@Override
-	public boolean canUpdateRole() {
-		// TODO Auto-generated method stub
-		return false;
-	}
-
-	@Override
-	public boolean canCreateOperation() {
-		// TODO Auto-generated method stub
-		return false;
-	}
-
-	@Override
-	public boolean canDeleteOperation() {
-		// TODO Auto-generated method stub
-		return false;
-	}
-
-	@Override
-	public boolean canUpdateOperation() {
-		// TODO Auto-generated method stub
-		return false;
-	}
-
-	@Override
-	public boolean canAssignRole() {
-		// TODO Auto-generated method stub
-		return false;
-	}
-
-	@Override
-	public boolean canRetractRole() {
-		// TODO Auto-generated method stub
-		return false;
-	}
-
-	@Override
-	public boolean canStopServer() {
-		// TODO Auto-generated method stub
-		return false;
-	}
-
-	@Override
-	public boolean canPerformProjectOperation(OperationId operationId) {
-		// TODO Auto-generated method stub
-		return false;
-	}
-
-	@Override
-	public boolean canPerformAdminOperation(OperationId operationId) {
-		// TODO Auto-generated method stub
-		return false;
-	}
-
-
-
-
+	
 	
 }

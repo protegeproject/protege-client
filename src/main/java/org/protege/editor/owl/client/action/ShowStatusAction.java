@@ -66,7 +66,7 @@ public class ShowStatusAction extends AbstractClientAction implements ClientSess
             panel.add(new JLabel(LocalHttpClient.current_user().getRemoteHeadRevision(vont).toString()));
 
             panel.add(new JLabel("#Uncommitted Changes:"));
-            panel.add(new JLabel(ClientUtils.getUncommittedChanges(vont.getOntology(), vont.getChangeHistory()).size()+""));
+            panel.add(new JLabel(ClientUtils.getUncommittedChanges(getOWLModelManager().getHistoryManager(), vont.getOntology(), vont.getChangeHistory()).size()+""));
 
             dialog.getContentPane().setLayout(new BorderLayout());
             dialog.getContentPane().add(panel, BorderLayout.CENTER);

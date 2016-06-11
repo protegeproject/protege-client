@@ -13,15 +13,13 @@ import java.util.concurrent.ExecutionException;
 import java.util.concurrent.Future;
 
 import org.protege.editor.owl.client.ClientSessionChangeEvent;
-import org.protege.editor.owl.client.ClientSessionListener;
-
-import org.protege.editor.owl.client.LocalHttpClient;
-
 import org.protege.editor.owl.client.ClientSessionChangeEvent.EventCategory;
-import org.protege.editor.owl.client.api.exception.ClientRequestException;
-
+import org.protege.editor.owl.client.ClientSessionListener;
+import org.protege.editor.owl.client.LocalHttpClient;
 import org.protege.editor.owl.client.api.exception.SynchronizationException;
 import org.protege.editor.owl.client.util.ClientUtils;
+import org.protege.editor.owl.model.OWLModelManager;
+import org.protege.editor.owl.model.OWLModelManagerImpl;
 import org.protege.editor.owl.server.versioning.ChangeHistoryUtils;
 import org.protege.editor.owl.server.versioning.CollectingChangeVisitor;
 import org.protege.editor.owl.server.versioning.api.ChangeHistory;
@@ -75,7 +73,7 @@ public class UpdateAction extends AbstractClientAction implements ClientSessionL
     @Override
     public void actionPerformed(ActionEvent event) {
         try {
-            Future<?> task = submit(new DoUpdate(activeVersionOntology.get()));
+            Future<?> task = submit(new DoUpdate(getOWLModelManager(), activeVersionOntology.get()));
             @SuppressWarnings("unchecked")
             List<OWLOntologyChange> incomingChanges = (List<OWLOntologyChange>) task.get();
             if (incomingChanges.isEmpty()) {
@@ -95,10 +93,13 @@ public class UpdateAction extends AbstractClientAction implements ClientSessionL
         
         private VersionedOWLOntology vont;
         private OWLOntology ontology;
+        
+        private OWLModelManagerImpl modMan;
 
-        public DoUpdate(VersionedOWLOntology vont) {
+        public DoUpdate(OWLModelManager modMan, VersionedOWLOntology vont) {
             this.vont = vont;
             ontology = vont.getOntology();
+            this.modMan = (OWLModelManagerImpl) modMan;
         }
 
         @Override
@@ -106,11 +107,15 @@ public class UpdateAction extends AbstractClientAction implements ClientSessionL
             List<OWLOntologyChange> incomingChanges = new ArrayList<>();
             if (!isUpdated()) {
                 List<OWLOntologyChange> localChanges = getLatestChangesFromClient();
-                List<OWLOntologyChange> remoteChanges = getLatestChangesFromServer();
+                ChangeHistory remoteChangeHistory = getLatestChangesFromServer();
+                List<OWLOntologyChange> remoteChanges = ChangeHistoryUtils.getOntologyChanges(remoteChangeHistory, ontology);
+                
                 List<OWLOntologyChange> conflictChanges = getConflicts(localChanges, remoteChanges);
                 if (conflictChanges.isEmpty()) {
-                    performUpdate(remoteChanges);
+                	performUpdate(remoteChanges);
                     incomingChanges = remoteChanges;
+                    vont.update(remoteChangeHistory);
+                    
                 }
                 else {
                     throw new SynchronizationException("Conflict was detected and unable to merge changes from the server");
@@ -120,7 +125,11 @@ public class UpdateAction extends AbstractClientAction implements ClientSessionL
         }
 
         private void performUpdate(List<OWLOntologyChange> updates) {
+        	modMan.stashHistory();        	
             ontology.getOWLOntologyManager().applyChanges(updates);
+            modMan.resetHistory();
+            modMan.stashApplyHistory();
+            
             adjustImports(updates);
         }
 
@@ -137,19 +146,20 @@ public class UpdateAction extends AbstractClientAction implements ClientSessionL
         }
 
         public List<OWLOntologyChange> getLatestChangesFromClient() {
-            return ClientUtils.getUncommittedChanges(vont.getOntology(), vont.getChangeHistory());
+            return ClientUtils.getUncommittedChanges(getOWLModelManager().getHistoryManager(), vont.getOntology(), vont.getChangeHistory());
         }
 
-        private List<OWLOntologyChange> getLatestChangesFromServer() {
-            List<OWLOntologyChange> changes = new ArrayList<>();
+        private ChangeHistory getLatestChangesFromServer() {
+            //List<OWLOntologyChange> changes = new ArrayList<>();
+        	ChangeHistory remoteChangeHistory = null;
             try {
-                ChangeHistory remoteChangeHistory = LocalHttpClient.current_user().getLatestChanges(vont);
-                changes = ChangeHistoryUtils.getOntologyChanges(remoteChangeHistory, ontology);
+                remoteChangeHistory = LocalHttpClient.current_user().getLatestChanges(vont);
+                //changes = ChangeHistoryUtils.getOntologyChanges(remoteChangeHistory, ontology);
             }
             catch (Exception e) {
                 showErrorDialog("Update error", "Error while fetching the latest changes from server", e);
             }
-            return changes;
+            return remoteChangeHistory;
         }
 
         private List<OWLOntologyChange> getConflicts(List<OWLOntologyChange> localChanges, List<OWLOntologyChange> remoteChanges) {
@@ -169,21 +179,21 @@ public class UpdateAction extends AbstractClientAction implements ClientSessionL
             final Map<OWLImportsDeclaration, ImportChange> importChanges = clientChanges.getLastImportChangeMap();
             for (Entry<OWLImportsDeclaration, ImportChange> entry : importChanges.entrySet()) {
                 OWLImportsDeclaration decl = entry.getKey();
-                if (importChanges.containsKey(decl)) {
+                if (serverChanges.getLastImportChangeMap().containsKey(decl)) {
                     conflictChanges.add(entry.getValue());
                 }
             }
             final Map<OWLAnnotation, AnnotationChange> annotationChanges = clientChanges.getLastOntologyAnnotationChangeMap();
             for (Entry<OWLAnnotation, AnnotationChange> entry : annotationChanges.entrySet()) {
                 OWLAnnotation annotation = entry.getKey();
-                if (annotationChanges.containsKey(annotation)) {
+                if (serverChanges.getLastOntologyAnnotationChangeMap().containsKey(annotation)) {
                     conflictChanges.add(entry.getValue());
                 }
             }
             final Map<OWLAxiom, OWLAxiomChange> axiomChanges = clientChanges.getLastAxiomChangeMap();
             for (Entry<OWLAxiom, OWLAxiomChange> entry : axiomChanges.entrySet()) {
                 OWLAxiom axiom = entry.getKey();
-                if (axiomChanges.containsKey(axiom)) {
+                if (serverChanges.getLastAxiomChangeMap().containsKey(axiom)) {
                     conflictChanges.add(entry.getValue());
                 }
             }

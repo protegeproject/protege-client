@@ -11,16 +11,17 @@ import javax.swing.JLabel;
 import javax.swing.JPanel;
 
 import org.protege.editor.owl.client.ClientSessionChangeEvent;
-import org.protege.editor.owl.client.ClientSessionListener;
-
-import org.protege.editor.owl.client.LocalHttpClient;
-
 import org.protege.editor.owl.client.ClientSessionChangeEvent.EventCategory;
-
-import org.protege.editor.owl.client.api.exception.ClientRequestException;
+import org.protege.editor.owl.client.ClientSessionListener;
+import org.protege.editor.owl.client.LocalHttpClient;
 import org.protege.editor.owl.client.util.ClientUtils;
 import org.protege.editor.owl.server.versioning.api.VersionedOWLOntology;
 
+/**
+ * @author Josef Hardi <johardi@stanford.edu> <br>
+ * @author Timothy Redmond <tredmond@stanford.edu> <br>
+ * Stanford Center for Biomedical Informatics Research
+ */
 public class ShowStatusAction extends AbstractClientAction implements ClientSessionListener {
 
     private static final long serialVersionUID = 4601012273632698091L;

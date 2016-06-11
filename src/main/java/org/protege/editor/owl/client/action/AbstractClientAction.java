@@ -15,6 +15,11 @@ import java.util.concurrent.TimeUnit;
 import javax.swing.JLabel;
 import javax.swing.JOptionPane;
 
+/**
+ * @author Josef Hardi <johardi@stanford.edu> <br>
+ * @author Timothy Redmond <tredmond@stanford.edu> <br>
+ * Stanford Center for Biomedical Informatics Research
+ */
 public abstract class AbstractClientAction extends ProtegeOWLAction {
 
     private static final long serialVersionUID = 8677318010907902600L;

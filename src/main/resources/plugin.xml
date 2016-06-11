@@ -169,6 +169,16 @@
       	<editorKitId value="OWLEditorKit"/>
       	<class value="org.protege.editor.owl.client.action.LoginAction"/>
 	</extension>
+
+	<extension id="Logout"
+               name="Logout Menu"
+               point="org.protege.editor.core.application.EditorKitMenuAction">
+		<name value="Logout"/>
+      	<path value="org.protege.editor.owl.client.Server/SlotA-I"/>
+      	<editorKitId value="OWLEditorKit"/>
+      	<class value="org.protege.editor.owl.client.action.LogoutAction"/>
+	</extension>
+
 	
 	<extension id="Commit"
                name="Commit Menu"
@@ -226,6 +236,8 @@
       	<class value="org.protege.editor.owl.client.action.EnableAutoUpdateAction"/>
       	<checkbox value="true"/>
 	</extension>
+
+	<!-- Editor Hook -->
 
 	<extension id="ClientSession"
 			   name="Client Session"

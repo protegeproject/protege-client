@@ -14,7 +14,7 @@ import edu.stanford.protege.metaproject.api.Role;
  * @author Josef Hardi <johardi@stanford.edu> <br>
  * Stanford Center for Biomedical Informatics Research
  */
-public interface Client extends ClientRequests {
+public interface Client extends ClientRequests, PolicyMediator {
 
     /**
      * Gets the authentication token owned by this client

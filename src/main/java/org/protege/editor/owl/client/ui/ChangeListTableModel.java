@@ -18,6 +18,11 @@ import java.util.List;
 
 import javax.swing.table.AbstractTableModel;
 
+/**
+ * @author Josef Hardi <johardi@stanford.edu> <br>
+ * @author Timothy Redmond <tredmond@stanford.edu> <br>
+ * Stanford Center for Biomedical Informatics Research
+ */
 public class ChangeListTableModel extends AbstractTableModel {
 
     private static final long serialVersionUID = -3184570774482187890L;

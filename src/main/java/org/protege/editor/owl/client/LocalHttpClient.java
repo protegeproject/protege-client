@@ -18,6 +18,7 @@ import java.util.concurrent.TimeUnit;
 
 import org.apache.commons.codec.binary.Base64;
 import org.protege.editor.owl.client.api.Client;
+import org.protege.editor.owl.client.api.PolicyMediator;
 import org.protege.editor.owl.client.api.UserInfo;
 import org.protege.editor.owl.client.api.exception.ClientRequestException;
 import org.protege.editor.owl.client.util.ClientUtils;
@@ -834,6 +835,162 @@ public class LocalHttpClient implements Client, ClientSessionListener {
 
 		post(url, body, true);
 		initConfig();
+	}
+
+	@Override
+	public boolean canAddAxiom() {
+		// TODO Auto-generated method stub
+		return false;
+	}
+
+	@Override
+	public boolean canRemoveAxiom() {
+		// TODO Auto-generated method stub
+		return false;
+	}
+
+	@Override
+	public boolean canAddAnnotation() {
+		// TODO Auto-generated method stub
+		return false;
+	}
+
+	@Override
+	public boolean canRemoveAnnotation() {
+		// TODO Auto-generated method stub
+		return false;
+	}
+
+	@Override
+	public boolean canAddImport() {
+		// TODO Auto-generated method stub
+		return false;
+	}
+
+	@Override
+	public boolean canRemoveImport() {
+		// TODO Auto-generated method stub
+		return false;
+	}
+
+	@Override
+	public boolean canModifyOntologyId() {
+		// TODO Auto-generated method stub
+		return false;
+	}
+
+	@Override
+	public boolean canUpdateServerConfig() {
+		// TODO Auto-generated method stub
+		return false;
+	}
+
+	@Override
+	public boolean canCreateUser() {
+		// TODO Auto-generated method stub
+		return false;
+	}
+
+	@Override
+	public boolean canDeleteUser() {
+		// TODO Auto-generated method stub
+		return false;
+	}
+
+	@Override
+	public boolean canUpdateUser() {
+		// TODO Auto-generated method stub
+		return false;
+	}
+
+	@Override
+	public boolean canCreateProject() {
+		// TODO Auto-generated method stub
+		return false;
+	}
+
+	@Override
+	public boolean canDeleteProject() {
+		// TODO Auto-generated method stub
+		return false;
+	}
+
+	@Override
+	public boolean canUpdateProject() {
+		// TODO Auto-generated method stub
+		return false;
+	}
+
+	@Override
+	public boolean canOpenProject() {
+		// TODO Auto-generated method stub
+		return false;
+	}
+
+	@Override
+	public boolean canCreateRole() {
+		// TODO Auto-generated method stub
+		return false;
+	}
+
+	@Override
+	public boolean canDeleteRole() {
+		// TODO Auto-generated method stub
+		return false;
+	}
+
+	@Override
+	public boolean canUpdateRole() {
+		// TODO Auto-generated method stub
+		return false;
+	}
+
+	@Override
+	public boolean canCreateOperation() {
+		// TODO Auto-generated method stub
+		return false;
+	}
+
+	@Override
+	public boolean canDeleteOperation() {
+		// TODO Auto-generated method stub
+		return false;
+	}
+
+	@Override
+	public boolean canUpdateOperation() {
+		// TODO Auto-generated method stub
+		return false;
+	}
+
+	@Override
+	public boolean canAssignRole() {
+		// TODO Auto-generated method stub
+		return false;
+	}
+
+	@Override
+	public boolean canRetractRole() {
+		// TODO Auto-generated method stub
+		return false;
+	}
+
+	@Override
+	public boolean canStopServer() {
+		// TODO Auto-generated method stub
+		return false;
+	}
+
+	@Override
+	public boolean canPerformProjectOperation(OperationId operationId) {
+		// TODO Auto-generated method stub
+		return false;
+	}
+
+	@Override
+	public boolean canPerformAdminOperation(OperationId operationId) {
+		// TODO Auto-generated method stub
+		return false;
 	}
 
 

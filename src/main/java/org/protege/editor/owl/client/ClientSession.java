@@ -15,6 +15,8 @@ import org.protege.editor.owl.model.event.EventType;
 import org.protege.editor.owl.model.event.OWLModelManagerChangeEvent;
 import org.protege.editor.owl.model.event.OWLModelManagerListener;
 import org.protege.editor.owl.server.versioning.api.VersionedOWLOntology;
+
+import org.semanticweb.owlapi.model.OWLOntology;
 import org.semanticweb.owlapi.model.OWLOntologyID;
 
 /**
@@ -102,11 +104,35 @@ public class ClientSession extends OWLEditorKitHook {
         return ontologyMap.get(ontologyId);
     }
 
-    public void clear() {
+
+    public void clear() throws Exception {
         activeClient = null;
+        closeOpenOntologies();
         unregisterAllProjects();
         unregisterAllVersionOntologies();
         fireChangeEvent(EventCategory.CLEAR_SESSION);
+    }
+
+    private void closeOpenOntologies() throws Exception {
+        OWLOntology lastOntology = null;
+        for (VersionedOWLOntology vont : ontologyMap.values()) {
+            OWLOntology openOntology = vont.getOntology();
+            if (!getEditorKit().getOWLModelManager().removeOntology(openOntology)) {
+                /*
+                 * If the open ontology couldn't be removed then it means the ontology
+                 * was the last ontology.
+                 */
+                lastOntology = openOntology;
+            }
+        }
+        /*
+         * Remove the last ontology by first creating a dummy new ontology (it then
+         * becomes the last ontology) and then remove the recorded last ontology.
+         */
+        if (lastOntology != null) {
+            getEditorKit().handleNewRequest();
+            getEditorKit().getModelManager().removeOntology(lastOntology);
+        }
     }
 
     @Override

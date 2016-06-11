@@ -15,6 +15,11 @@ import javax.swing.JComponent;
 import javax.swing.JDialog;
 import javax.swing.KeyStroke;
 
+/**
+ * @author Josef Hardi <johardi@stanford.edu> <br>
+ * @author Timothy Redmond <tredmond@stanford.edu> <br>
+ * Stanford Center for Biomedical Informatics Research
+ */
 public class OpenFromServerAction extends AbstractClientAction {
 
     private static final long serialVersionUID = 1921872278936323557L;

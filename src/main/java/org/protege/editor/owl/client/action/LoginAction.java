@@ -1,27 +1,42 @@
 package org.protege.editor.owl.client.action;
 
-import java.awt.Dialog;
+
+import java.awt.Component;
 import java.awt.event.ActionEvent;
-import java.awt.event.KeyEvent;
-import java.awt.event.WindowAdapter;
-import java.awt.event.WindowEvent;
 
-import javax.swing.AbstractAction;
-import javax.swing.JComponent;
-import javax.swing.JDialog;
-import javax.swing.KeyStroke;
+import javax.swing.JMenu;
+import javax.swing.JMenuItem;
 
+import org.protege.editor.core.ProtegeManager;
+import org.protege.editor.core.ui.workspace.WorkspaceFrame;
+import org.protege.editor.owl.client.ClientSessionChangeEvent;
+import org.protege.editor.owl.client.ClientSessionChangeEvent.EventCategory;
+import org.protege.editor.owl.client.ClientSessionListener;
 import org.protege.editor.owl.client.ui.UserLoginPanel;
-import org.protege.editor.owl.model.OWLWorkspace;
 
-public class LoginAction extends AbstractClientAction {
+/**
+ * @author Josef Hardi <johardi@stanford.edu> <br>
+ * Stanford Center for Biomedical Informatics Research
+ */
+public class LoginAction extends AbstractClientAction implements ClientSessionListener {
 
-    private static final long serialVersionUID = 8068484183504794638L;
+    private static final long serialVersionUID = -467953803650067917L;
+
+    /*
+     * The names below must be the same as the <name value=...> entry in plugin.xml
+     */
+    private static final String SERVER_MENU_NAME = "Server";
+    private static final String LOGIN_MENU_ITEM_NAME = "Login";
+
+    private JMenuItem loginMenuItem;
 
     @Override
     public void initialise() throws Exception {
         super.initialise();
         setEnabled(true);
+
+        getClientSession().addListener(this);
+
     }
 
     @Override
@@ -30,39 +45,44 @@ public class LoginAction extends AbstractClientAction {
     }
 
     @Override
-    public void actionPerformed(ActionEvent e) {
-        final OWLWorkspace editorWindow = getOWLEditorKit().getOWLWorkspace();
-        JDialog dialog = createDialog();
-        dialog.setLocationRelativeTo(editorWindow);
-        dialog.setVisible(true);
+    public void handleChange(ClientSessionChangeEvent event) {
+        detectLoginMenuItem();
+        if (event.hasCategory(EventCategory.SWITCH_CLIENT)) {
+            setEnabled(false);
+            changeLoginMenuText(String.format("Logged in as %s (%s)",
+                    event.getSource().getActiveClient().getUserInfo().getId(),
+                    event.getSource().getActiveClient().getUserInfo().getName()));
+        }
+        else if (event.hasCategory(EventCategory.CLEAR_SESSION)) {
+            setEnabled(true);
+            changeLoginMenuText(LOGIN_MENU_ITEM_NAME);
+        }
     }
 
-    private JDialog createDialog() {
-        final JDialog dialog = new JDialog(null, "Login to Protege OWL Server", Dialog.ModalityType.MODELESS);
-        UserLoginPanel userLoginPanel = new UserLoginPanel(getClientSession(), getOWLEditorKit());
-        userLoginPanel.getInputMap(JComponent.WHEN_ANCESTOR_OF_FOCUSED_COMPONENT).put(KeyStroke.getKeyStroke(KeyEvent.VK_ESCAPE, 0), "CLOSE_DIALOG");
-        userLoginPanel.getActionMap().put("CLOSE_DIALOG", new AbstractAction()
-        {
-           private static final long serialVersionUID = 1L;
-           @Override
-           public void actionPerformed(ActionEvent e)
-           {
-               dialog.setVisible(false);
-               dialog.dispose();
-           }
-        });
-        dialog.addWindowListener(new WindowAdapter()
-        {
-           @Override
-           public void windowClosing(WindowEvent e)
-           {
-               dialog.setVisible(false);
-               dialog.dispose();
-           }
-        });
-        dialog.setContentPane(userLoginPanel);
-        dialog.setSize(415, 185);
-        dialog.setResizable(false);
-        return dialog;
+    private void detectLoginMenuItem() {
+        if (loginMenuItem == null) {
+            WorkspaceFrame wf = ProtegeManager.getInstance().getFrame(getWorkspace());
+            JMenu serverMenu = wf.getMenu(SERVER_MENU_NAME);
+            for (Component c : serverMenu.getMenuComponents()) {
+                if (c instanceof JMenuItem) {
+                    JMenuItem menuItem = (JMenuItem) c;
+                    if (menuItem.getText().equals(LOGIN_MENU_ITEM_NAME)) {
+                        loginMenuItem = menuItem;
+                        break;
+                    }
+                }
+            }
+        }
+    }
+
+    @Override
+    public void actionPerformed(ActionEvent e) {
+        UserLoginPanel.showDialog(getOWLEditorKit(), getOWLEditorKit().getOWLWorkspace());
+    }
+
+    private void changeLoginMenuText(String newText) {
+        if (loginMenuItem != null) {
+            loginMenuItem.setText(newText);
+        }
     }
 }

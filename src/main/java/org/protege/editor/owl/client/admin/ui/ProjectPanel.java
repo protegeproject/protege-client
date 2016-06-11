@@ -1,7 +1,11 @@
 package org.protege.editor.owl.client.admin.ui;
 
 import com.google.common.base.Objects;
+import edu.stanford.protege.metaproject.Manager;
+import edu.stanford.protege.metaproject.api.MetaprojectFactory;
 import edu.stanford.protege.metaproject.api.Project;
+import edu.stanford.protege.metaproject.api.UserId;
+import edu.stanford.protege.metaproject.impl.Operations;
 import org.protege.editor.core.Disposable;
 import org.protege.editor.core.ui.error.ErrorLogPanel;
 import org.protege.editor.core.ui.list.MList;
@@ -9,6 +13,8 @@ import org.protege.editor.core.ui.list.MListSectionHeader;
 import org.protege.editor.core.ui.util.JOptionPaneEx;
 import org.protege.editor.owl.OWLEditorKit;
 import org.protege.editor.owl.client.ClientSession;
+import org.protege.editor.owl.client.ClientSessionListener;
+import org.protege.editor.owl.client.LocalClient;
 import org.protege.editor.owl.client.admin.AdminTabManager;
 import org.protege.editor.owl.client.admin.model.AdminTabEvent;
 import org.protege.editor.owl.client.admin.model.AdminTabListener;
@@ -39,11 +45,15 @@ import static com.google.common.base.Preconditions.checkNotNull;
  * Stanford Center for Biomedical Informatics Research
  */
 public class ProjectPanel extends JPanel implements Disposable {
-    private static final long serialVersionUID = 5919830988663977652L;
+    private static final long serialVersionUID = -6832671439689809834L;
+    private static MetaprojectFactory f = Manager.getFactory();
     private OWLEditorKit editorKit;
     private AdminTabManager configManager;
     private MList projectList;
     private Project selectedProject;
+    private ClientSession session;
+    private Client client;
+    private UserId userId;
 
     /**
      * Constructor
@@ -54,7 +64,11 @@ public class ProjectPanel extends JPanel implements Disposable {
         this.editorKit = checkNotNull(editorKit);
         configManager = AdminTabManager.get(editorKit);
         configManager.addListener(tabListener);
-        initUiComponents();
+        session = ClientSession.getInstance(editorKit);
+        session.addListener(sessionListener);
+        client = session.getActiveClient();
+        userId = (client != null ? f.getUserId(client.getUserInfo().getId()) : null);
+        initUi();
     }
 
     private AdminTabListener tabListener = event -> {
@@ -65,7 +79,14 @@ public class ProjectPanel extends JPanel implements Disposable {
         }
     };
 
-    private void initUiComponents() {
+    private ClientSessionListener sessionListener = event -> {
+        client = session.getActiveClient();
+        userId = f.getUserId(client.getUserInfo().getId());
+        removeAll();
+        initUi();
+    };
+
+    private void initUi() {
         setupList();
         setLayout(new BorderLayout());
         JScrollPane scrollpane = new JScrollPane(projectList);
@@ -135,7 +156,6 @@ public class ProjectPanel extends JPanel implements Disposable {
     };
 
     private void listProjects() {
-        Client client = ClientSession.getInstance(editorKit).getActiveClient();
         ArrayList<Object> data = new ArrayList<>();
         data.add(new ProjectListHeaderItem());
         try {
@@ -151,47 +171,52 @@ public class ProjectPanel extends JPanel implements Disposable {
     }
 
     private void addProject() {
-        Optional<Project> project = ProjectDialogPanel.showDialog(editorKit);
-        if(project.isPresent()) {
-            configManager.statusChanged(AdminTabEvent.CONFIGURATION_CHANGED);
-            listProjects();
-            selectProject(project.get());
+        if(client != null && client.canCreateProject()) {
+            Optional<Project> project = ProjectDialogPanel.showDialog(editorKit);
+            if (project.isPresent()) {
+                configManager.statusChanged(AdminTabEvent.CONFIGURATION_CHANGED);
+                listProjects();
+                selectProject(project.get());
+            }
         }
     }
 
     private void editProject() {
-        Optional<Project> project = ProjectDialogPanel.showDialog(editorKit, selectedProject);
-        if(project.isPresent()) {
-            configManager.statusChanged(AdminTabEvent.CONFIGURATION_CHANGED);
-            listProjects();
-            selectProject(project.get());
+        if(client != null && canModifyProject(selectedProject)) {
+            Optional<Project> project = ProjectDialogPanel.showDialog(editorKit, selectedProject);
+            if (project.isPresent()) {
+                configManager.statusChanged(AdminTabEvent.CONFIGURATION_CHANGED);
+                listProjects();
+                selectProject(project.get());
+            }
         }
     }
 
     private void deleteProject() {
-        Object selectedObj = projectList.getSelectedValue();
-        if (selectedObj instanceof ProjectListItem) {
-            Project project = ((ProjectListItem) selectedObj).getProject();
-            String projectName = project.getName().get();
+        if(client != null && canDeleteProject(selectedProject)) {
+            Object selectedObj = projectList.getSelectedValue();
+            if (selectedObj instanceof ProjectListItem) {
+                Project project = ((ProjectListItem) selectedObj).getProject();
+                String projectName = project.getName().get();
 
-            JPanel panel = new JPanel(new GridLayout(0, 1));
-            panel.add(new JLabel("Proceed to delete project '" + projectName + "'? All policy entries involving '" + projectName + "' will be removed."));
-            JCheckBox checkBox = new JCheckBox("Delete the history file of the project");
-            panel.add(checkBox);
+                JPanel panel = new JPanel(new GridLayout(0, 1));
+                panel.add(new JLabel("Proceed to delete project '" + projectName + "'? All policy entries involving '" + projectName + "' will be removed."));
+                JCheckBox checkBox = new JCheckBox("Delete the history file of the project");
+                panel.add(checkBox);
 
-            int res = JOptionPaneEx.showConfirmDialog(editorKit.getWorkspace(), "Delete Project '" + projectName + "'", panel,
-                    JOptionPane.WARNING_MESSAGE, JOptionPane.YES_NO_OPTION, null);
-            if (res != JOptionPane.OK_OPTION) {
-                return;
+                int res = JOptionPaneEx.showConfirmDialog(editorKit.getWorkspace(), "Delete Project '" + projectName + "'", panel,
+                        JOptionPane.WARNING_MESSAGE, JOptionPane.YES_NO_OPTION, null);
+                if (res != JOptionPane.OK_OPTION) {
+                    return;
+                }
+                try {
+                    client.deleteProject(project.getId(), checkBox.isSelected());
+                } catch (AuthorizationException | ClientRequestException | RemoteException e) {
+                    ErrorLogPanel.showErrorDialog(e);
+                }
+                configManager.statusChanged(AdminTabEvent.CONFIGURATION_CHANGED);
+                listProjects();
             }
-            Client client = ClientSession.getInstance(editorKit).getActiveClient();
-            try {
-                client.deleteProject(project.getId(), checkBox.isSelected());
-            } catch (AuthorizationException | ClientRequestException | RemoteException e) {
-                ErrorLogPanel.showErrorDialog(e);
-            }
-            configManager.statusChanged(AdminTabEvent.CONFIGURATION_CHANGED);
-            listProjects();
         }
     }
 
@@ -207,6 +232,15 @@ public class ProjectPanel extends JPanel implements Disposable {
         }
     }
 
+    private boolean canDeleteProject(Project project) {
+        return client instanceof LocalClient && ((LocalClient) client).queryProjectPolicy(userId, project.getId(), Operations.REMOVE_PROJECT.getId());
+    }
+
+    private boolean canModifyProject(Project project) {
+        return client instanceof LocalClient && ((LocalClient) client).queryProjectPolicy(userId, project.getId(), Operations.MODIFY_PROJECT.getId());
+    }
+
+
     /**
      * Add Project item
      */
@@ -219,7 +253,7 @@ public class ProjectPanel extends JPanel implements Disposable {
 
         @Override
         public boolean canAdd() {
-            return true;
+            return (client != null && client.canCreateProject());
         }
     }
 
@@ -245,7 +279,7 @@ public class ProjectPanel extends JPanel implements Disposable {
 
         @Override
         public boolean isEditable() {
-            return true;
+            return (client != null && canModifyProject(project));
         }
 
         @Override
@@ -255,7 +289,7 @@ public class ProjectPanel extends JPanel implements Disposable {
 
         @Override
         public boolean isDeleteable() {
-            return true;
+            return (client != null && canDeleteProject(project));
         }
 
         @Override
@@ -290,5 +324,6 @@ public class ProjectPanel extends JPanel implements Disposable {
     public void dispose() {
         projectList.removeListSelectionListener(listSelectionListener);
         configManager.removeListener(tabListener);
+        session.removeListener(sessionListener);
     }
 }

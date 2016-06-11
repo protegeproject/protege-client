@@ -26,6 +26,11 @@ import org.semanticweb.owlapi.model.OWLObject;
 import org.semanticweb.owlapi.model.OWLOntology;
 import org.semanticweb.owlapi.model.OWLOntologyChange;
 
+/**
+ * @author Josef Hardi <johardi@stanford.edu> <br>
+ * @author Timothy Redmond <tredmond@stanford.edu> <br>
+ * Stanford Center for Biomedical Informatics Research
+ */
 public class UncommittedChangesPanel extends JPanel {
 
     private static final long serialVersionUID = -7076342089755329250L;
@@ -55,7 +60,7 @@ public class UncommittedChangesPanel extends JPanel {
         if (uncommittedChanges.isEmpty()) {
             Window window = SwingUtilities.getWindowAncestor(UncommittedChangesPanel.this);
             JOptionPaneEx.showConfirmDialog(window, "Message", new JLabel("No uncommitted changes"),
-                    JOptionPane.PLAIN_MESSAGE, JOptionPane.DEFAULT_OPTION, null);
+                    JOptionPane.INFORMATION_MESSAGE, JOptionPane.DEFAULT_OPTION, null);
             closeDialog();
         }
         ChangeListTableModel tableModel = new ChangeListTableModel(uncommittedChanges);

@@ -30,7 +30,7 @@ import java.util.Optional;
  * @author Josef Hardi <johardi@stanford.edu> <br>
  * Stanford Center for Biomedical Informatics Research
  */
-public class LocalClient implements Client, PolicyMediator, ClientSessionListener  {
+public class LocalClient implements Client, ClientSessionListener  {
     private AuthToken authToken;
     private String serverAddress;
     private int registryPort;
@@ -721,8 +721,7 @@ public class LocalClient implements Client, PolicyMediator, ClientSessionListene
     /*
      * Utility methods
      */
-
-    private boolean queryProjectPolicy(UserId userId, ProjectId projectId, OperationId operationId) {
+    public boolean queryProjectPolicy(UserId userId, ProjectId projectId, OperationId operationId) {
         boolean isAllowed = false;
         try {
             connect();

@@ -11,6 +11,7 @@ import org.protege.editor.core.ui.list.MListSectionHeader;
 import org.protege.editor.core.ui.util.JOptionPaneEx;
 import org.protege.editor.owl.OWLEditorKit;
 import org.protege.editor.owl.client.ClientSession;
+import org.protege.editor.owl.client.ClientSessionListener;
 import org.protege.editor.owl.client.admin.AdminTabManager;
 import org.protege.editor.owl.client.admin.model.AdminTabEvent;
 import org.protege.editor.owl.client.admin.model.AdminTabListener;
@@ -22,7 +23,6 @@ import org.protege.editor.owl.client.diff.ui.GuiUtils;
 import org.protege.editor.owl.server.api.exception.AuthorizationException;
 
 import javax.swing.*;
-import javax.swing.border.EmptyBorder;
 import javax.swing.event.ListSelectionListener;
 import java.awt.*;
 import java.awt.event.KeyAdapter;
@@ -43,11 +43,13 @@ import static com.google.common.base.Preconditions.checkNotNull;
  * Stanford Center for Biomedical Informatics Research
  */
 public class PolicyPanel extends JPanel implements Disposable {
-    private static final long serialVersionUID = -7419215167017892008L;
+    private static final long serialVersionUID = 6066487586948730875L;
     private OWLEditorKit editorKit;
     private AdminTabManager configManager;
     private MList projectList, roleList;
     private Project selectedProject;
+    private ClientSession session;
+    private Client client;
 
     /**
      * Constructor
@@ -58,7 +60,10 @@ public class PolicyPanel extends JPanel implements Disposable {
         this.editorKit = checkNotNull(editorKit);
         configManager = AdminTabManager.get(editorKit);
         configManager.addListener(tabListener);
-        initUiComponents();
+        session = ClientSession.getInstance(editorKit);
+        session.addListener(sessionListener);
+        client = session.getActiveClient();
+        initUi();
     }
 
     private AdminTabListener tabListener = event -> {
@@ -76,7 +81,13 @@ public class PolicyPanel extends JPanel implements Disposable {
         }
     };
 
-    private void initUiComponents() {
+    private ClientSessionListener sessionListener = event -> {
+        client = session.getActiveClient();
+        removeAll();
+        initUi();
+    };
+
+    private void initUi() {
         setBackground(getBackground());
         setLayout(new BorderLayout());
         setupProjectList();
@@ -84,12 +95,12 @@ public class PolicyPanel extends JPanel implements Disposable {
 
         JPanel projectPanel = new JPanel(new BorderLayout());
         JScrollPane projectScrollpane = new JScrollPane(projectList);
-        projectScrollpane.setBorder(new EmptyBorder(3, 0, 0, 0));
+        projectScrollpane.setBorder(GuiUtils.MATTE_BORDER);
         projectPanel.add(projectScrollpane, BorderLayout.CENTER);
 
         JPanel rolePanel = new JPanel(new BorderLayout());
         JScrollPane roleScrollpane = new JScrollPane(roleList);
-        roleScrollpane.setBorder(new EmptyBorder(3, 0, 0, 0));
+        roleScrollpane.setBorder(GuiUtils.MATTE_BORDER);
         rolePanel.add(roleScrollpane);
 
         JSplitPane splitPane = new JSplitPane(JSplitPane.HORIZONTAL_SPLIT, projectPanel, rolePanel);
@@ -204,7 +215,6 @@ public class PolicyPanel extends JPanel implements Disposable {
     private void listProjects() {
         if(configManager.getSelection() != null && configManager.getSelection().isUser()) {
             User user = (User) configManager.getSelection();
-            Client client = ClientSession.getInstance(editorKit).getActiveClient();
             ArrayList<Object> data = new ArrayList<>();
             data.add(new ProjectListHeaderItem());
             try {
@@ -221,7 +231,6 @@ public class PolicyPanel extends JPanel implements Disposable {
     private void listRoles() {
         if(selectedProject != null && configManager.getSelection().isUser()) {
             User user = (User)configManager.getSelection();
-            Client client = ClientSession.getInstance(editorKit).getActiveClient();
             ArrayList<Object> data = new ArrayList<>();
             data.add(new RoleListHeaderItem());
             try {
@@ -243,39 +252,45 @@ public class PolicyPanel extends JPanel implements Disposable {
     }
 
     private void addProjectAssignment() {
-        Optional<Project> project = PolicyAssignmentDialogPanel.showDialog(editorKit, (User)configManager.getSelection());
-        if(project.isPresent()) {
-            listProjects();
-            selectProject(project.get());
-            configManager.statusChanged(AdminTabEvent.CONFIGURATION_CHANGED);
+
+        if(client != null && client.canAssignRole()) {
+            Optional<Project> project = PolicyAssignmentDialogPanel.showDialog(editorKit, (User) configManager.getSelection());
+            if (project.isPresent()) {
+                configManager.statusChanged(AdminTabEvent.CONFIGURATION_CHANGED);
+                listProjects();
+                selectProject(project.get());
+            }
+
         }
     }
 
     private void deleteProjectAssignment() {
-        Object selectedObj = projectList.getSelectedValue();
-        if (selectedObj instanceof ProjectListItem) {
-            Project project = ((ProjectListItem) selectedObj).getProject();
-            User user = (User)configManager.getSelection();
-            String projectName = project.getName().get();
-            int res = JOptionPaneEx.showConfirmDialog(editorKit.getWorkspace(), "Delete Project Assignment '" + projectName + "'",
-                    new JLabel("Proceed to delete permissions of user '" + user.getName().get() + "' on project '" + projectName + "'?\n" +
-                            "All role assignments to '" + projectName + "' will be removed."),
-                    JOptionPane.WARNING_MESSAGE, JOptionPane.YES_NO_OPTION, null);
-            if (res != JOptionPane.OK_OPTION) {
-                return;
-            }
-            Client client = ClientSession.getInstance(editorKit).getActiveClient();
-            try {
-                List<Role> roles = client.getRoles(user.getId(), project.getId());
-                for(Role role : roles) {
-                    client.retractRole(user.getId(), project.getId(), role.getId());
-                    configManager.statusChanged(AdminTabEvent.CONFIGURATION_CHANGED);
+
+        if(client != null && client.canRetractRole()) {
+            Object selectedObj = projectList.getSelectedValue();
+            if (selectedObj instanceof ProjectListItem) {
+                Project project = ((ProjectListItem) selectedObj).getProject();
+                User user = (User) configManager.getSelection();
+                String projectName = project.getName().get();
+                int res = JOptionPaneEx.showConfirmDialog(editorKit.getWorkspace(), "Delete Project Assignment '" + projectName + "'",
+                        new JLabel("Proceed to delete permissions of user '" + user.getName().get() + "' on project '" + projectName + "'?\n" +
+                                "All role assignments to '" + projectName + "' will be removed."),
+                        JOptionPane.WARNING_MESSAGE, JOptionPane.YES_NO_OPTION, null);
+                if (res != JOptionPane.OK_OPTION) {
+                    return;
                 }
-            } catch (AuthorizationException | ClientRequestException | RemoteException e) {
-                ErrorLogPanel.showErrorDialog(e);
+                try {
+                    List<Role> roles = client.getRoles(user.getId(), project.getId());
+                    for (Role role : roles) {
+                        client.retractRole(user.getId(), project.getId(), role.getId());
+                        configManager.statusChanged(AdminTabEvent.CONFIGURATION_CHANGED);
+                    }
+                } catch (AuthorizationException | ClientRequestException | RemoteException e) {
+                    ErrorLogPanel.showErrorDialog(e);
+                }
+                clearList(projectList, roleList);
+                listProjects();
             }
-            clearList(projectList, roleList);
-            listProjects();
         }
     }
 
@@ -292,36 +307,43 @@ public class PolicyPanel extends JPanel implements Disposable {
     }
 
     private void addRoleAssignment() {
-        if(projectList.getSelectedValue() != null && projectList.getSelectedValue() instanceof ProjectListItem) {
-            Project project = ((ProjectListItem) projectList.getSelectedValue()).getProject();
-            PolicyAssignmentDialogPanel.showDialog(editorKit, (User)configManager.getSelection(), project);
-            listRoles();
-            selectProject(project);
+        if(client != null && client.canAssignRole()) {
+            if (projectList.getSelectedValue() != null && projectList.getSelectedValue() instanceof ProjectListItem) {
+                Project project = ((ProjectListItem) projectList.getSelectedValue()).getProject();
+                boolean added = PolicyAssignmentDialogPanel.showDialog(editorKit, (User) configManager.getSelection(), project);
+                if(added) {
+                    configManager.statusChanged(AdminTabEvent.CONFIGURATION_CHANGED);
+                    listRoles();
+                    selectProject(project);
+                }
+            }
         }
     }
 
     private void deleteRoleAssignment() {
-        Object selectedObj = roleList.getSelectedValue();
-        if (selectedObj instanceof RoleListItem) {
-            Role role = ((RoleListItem) selectedObj).getRole();
-            User user = (User)configManager.getSelection();
-            String roleName = role.getName().get();
-            int res = JOptionPaneEx.showConfirmDialog(editorKit.getWorkspace(), "Delete Role Assignment '" + roleName + "'",
-                    new JLabel("Proceed to delete assignment of role '" + roleName + "' to user '" + user.getName().get() + "' on project '" +
-                            selectedProject.getName().get() + "'?"),
-                    JOptionPane.WARNING_MESSAGE, JOptionPane.YES_NO_OPTION, null);
-            if (res != JOptionPane.OK_OPTION) {
-                return;
+        if(client != null && client.canRetractRole()) {
+            Object selectedObj = roleList.getSelectedValue();
+            if (selectedObj instanceof RoleListItem) {
+                Role role = ((RoleListItem) selectedObj).getRole();
+                User user = (User) configManager.getSelection();
+                String roleName = role.getName().get();
+                int res = JOptionPaneEx.showConfirmDialog(editorKit.getWorkspace(), "Delete Role Assignment '" + roleName + "'",
+                        new JLabel("Proceed to delete assignment of role '" + roleName + "' to user '" + user.getName().get() + "' on project '" +
+                                selectedProject.getName().get() + "'?"),
+                        JOptionPane.WARNING_MESSAGE, JOptionPane.YES_NO_OPTION, null);
+                if (res != JOptionPane.OK_OPTION) {
+                    return;
+                }
+                try {
+                    client.retractRole(user.getId(), selectedProject.getId(), role.getId());
+                    configManager.statusChanged(AdminTabEvent.CONFIGURATION_CHANGED);
+                } catch (AuthorizationException | ClientRequestException | RemoteException e) {
+                    ErrorLogPanel.showErrorDialog(e);
+                }
+                listProjects();
+                listRoles();
+                selectProject(selectedProject);
             }
-            Client client = ClientSession.getInstance(editorKit).getActiveClient();
-            try {
-                client.retractRole(user.getId(), selectedProject.getId(), role.getId());
-            } catch (AuthorizationException | ClientRequestException | RemoteException e) {
-                ErrorLogPanel.showErrorDialog(e);
-            }
-            listProjects();
-            listRoles();
-            selectProject(selectedProject);
         }
     }
 
@@ -344,7 +366,7 @@ public class PolicyPanel extends JPanel implements Disposable {
 
         @Override
         public boolean canAdd() {
-            return true;
+            return (client != null && client.canAssignRole());
         }
     }
 
@@ -380,7 +402,7 @@ public class PolicyPanel extends JPanel implements Disposable {
 
         @Override
         public boolean isDeleteable() {
-            return true;
+            return (client != null && client.canRetractRole());
         }
 
         @Override
@@ -406,7 +428,7 @@ public class PolicyPanel extends JPanel implements Disposable {
 
         @Override
         public boolean canAdd() {
-            return true;
+            return (client != null && client.canAssignRole());
         }
     }
 
@@ -442,7 +464,7 @@ public class PolicyPanel extends JPanel implements Disposable {
 
         @Override
         public boolean isDeleteable() {
-            return true;
+            return (client != null && client.canRetractRole());
         }
 
         @Override
@@ -461,5 +483,6 @@ public class PolicyPanel extends JPanel implements Disposable {
         projectList.removeListSelectionListener(projectListSelectionListener);
         roleList.removeListSelectionListener(roleListSelectionListener);
         configManager.removeListener(tabListener);
+        session.removeListener(sessionListener);
     }
 }

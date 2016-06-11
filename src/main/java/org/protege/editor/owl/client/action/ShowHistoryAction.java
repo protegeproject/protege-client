@@ -21,6 +21,11 @@ import org.protege.editor.owl.client.ui.ChangeHistoryPanel;
 import org.protege.editor.owl.model.OWLWorkspace;
 import org.protege.editor.owl.server.versioning.api.VersionedOWLOntology;
 
+/**
+ * @author Josef Hardi <johardi@stanford.edu> <br>
+ * @author Timothy Redmond <tredmond@stanford.edu> <br>
+ * Stanford Center for Biomedical Informatics Research
+ */
 public class ShowHistoryAction extends AbstractClientAction implements ClientSessionListener {
 
     private static final long serialVersionUID = -7628375950917155764L;

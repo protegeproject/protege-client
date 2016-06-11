@@ -15,6 +15,10 @@ import org.protege.editor.owl.server.versioning.api.VersionedOWLOntology;
 import org.semanticweb.owlapi.model.OWLOntology;
 import org.semanticweb.owlapi.model.OWLOntologyChange;
 
+/**
+ * @author Josef Hardi <johardi@stanford.edu> <br>
+ * Stanford Center for Biomedical Informatics Research
+ */
 public class ChangeUtils {
 
     /**

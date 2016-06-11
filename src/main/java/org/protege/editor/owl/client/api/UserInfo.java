@@ -2,6 +2,10 @@ package org.protege.editor.owl.client.api;
 
 import javax.annotation.Nonnull;
 
+/**
+ * @author Josef Hardi <johardi@stanford.edu> <br>
+ * Stanford Center for Biomedical Informatics Research
+ */
 public class UserInfo {
 
     private String id;

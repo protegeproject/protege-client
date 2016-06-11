@@ -4,6 +4,8 @@ import org.protege.editor.core.Disposable;
 import org.protege.editor.core.ui.error.ErrorLogPanel;
 import org.protege.editor.owl.OWLEditorKit;
 import org.protege.editor.owl.client.LocalHttpClient;
+import org.protege.editor.owl.client.ClientSession;
+import org.protege.editor.owl.client.ClientSessionListener;
 import org.protege.editor.owl.client.admin.AdminTabManager;
 import org.protege.editor.owl.client.admin.model.AdminTabEvent;
 import org.protege.editor.owl.client.admin.model.AdminTabListener;
@@ -25,10 +27,11 @@ import java.awt.*;
  * Stanford Center for Biomedical Informatics Research
  */
 public class JsonSerializationPanel extends JPanel implements Disposable {
-    private static final long serialVersionUID = 156882077246136454L;
+    private static final long serialVersionUID = -4421313001789643140L;
     private AdminTabManager configManager;
     private JTextArea textArea;
     private JScrollPane scrollpane;
+    private ClientSession session;
 
     /**
      * Constructor
@@ -38,10 +41,12 @@ public class JsonSerializationPanel extends JPanel implements Disposable {
     public JsonSerializationPanel(OWLEditorKit editorKit) {
         configManager = AdminTabManager.get(editorKit);
         configManager.addListener(listener);
-        initUiComponents();
+        session = ClientSession.getInstance(editorKit);
+        session.addListener(sessionListener);
+        initUi();
     }
 
-    private void initUiComponents() {
+    private void initUi() {
         setLayout(new BorderLayout());
         textArea = new JTextArea(getJsonString());
         textArea.setEditable(false);
@@ -59,6 +64,11 @@ public class JsonSerializationPanel extends JPanel implements Disposable {
         		event.equals(AdminTabEvent.CONFIGURATION_RESET)) {
             update();
         }
+    };
+
+    private ClientSessionListener sessionListener = event -> {
+        removeAll();
+        initUi();
     };
 
     private void update() {
@@ -91,6 +101,7 @@ public class JsonSerializationPanel extends JPanel implements Disposable {
     @Override
     public void dispose() {
         configManager.removeListener(listener);
+        session.removeListener(sessionListener);
     }
     
 }

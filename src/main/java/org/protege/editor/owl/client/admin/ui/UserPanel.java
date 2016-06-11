@@ -10,6 +10,7 @@ import org.protege.editor.core.ui.list.MListSectionHeader;
 import org.protege.editor.core.ui.util.JOptionPaneEx;
 import org.protege.editor.owl.OWLEditorKit;
 import org.protege.editor.owl.client.ClientSession;
+import org.protege.editor.owl.client.ClientSessionListener;
 import org.protege.editor.owl.client.admin.AdminTabManager;
 import org.protege.editor.owl.client.admin.model.AdminTabEvent;
 import org.protege.editor.owl.client.admin.model.AdminTabListener;
@@ -39,11 +40,13 @@ import static com.google.common.base.Preconditions.checkNotNull;
  * Stanford Center for Biomedical Informatics Research
  */
 public class UserPanel extends JPanel implements Disposable {
-    private static final long serialVersionUID = 1495161684558867063L;
+    private static final long serialVersionUID = 631771601957397823L;
     private OWLEditorKit editorKit;
     private AdminTabManager configManager;
     private MList userList;
     private User selectedUser;
+    private ClientSession session;
+    private Client client;
 
     /**
      * Constructor
@@ -54,7 +57,10 @@ public class UserPanel extends JPanel implements Disposable {
         this.editorKit = checkNotNull(editorKit);
         configManager = AdminTabManager.get(editorKit);
         configManager.addListener(tabListener);
-        initUiComponents();
+        session = ClientSession.getInstance(editorKit);
+        session.addListener(sessionListener);
+        client = session.getActiveClient();
+        initUi();
     }
 
     private AdminTabListener tabListener = event -> {
@@ -67,7 +73,14 @@ public class UserPanel extends JPanel implements Disposable {
         }
     };
 
-    private void initUiComponents() {
+    private ClientSessionListener sessionListener = event -> {
+        client = session.getActiveClient();
+        removeAll();
+        revalidate();
+        initUi();
+    };
+
+    private void initUi() {
         setupList();
         setLayout(new BorderLayout());
         JScrollPane scrollpane = new JScrollPane(userList);
@@ -137,7 +150,6 @@ public class UserPanel extends JPanel implements Disposable {
     };
 
     private void listUsers() {
-        Client client = ClientSession.getInstance(editorKit).getActiveClient();
         ArrayList<Object> data = new ArrayList<>();
         data.add(new UserListHeaderItem());
         try {
@@ -153,42 +165,48 @@ public class UserPanel extends JPanel implements Disposable {
     }
 
     private void addUser() {
-        Optional<User> user = UserDialogPanel.showDialog(editorKit);
-        if (user.isPresent()) {
-            configManager.statusChanged(AdminTabEvent.CONFIGURATION_CHANGED);
-            listUsers();
-            userList.setSelectedValue(new UserListItem(user.get()), true);
+        if(client != null && client.canCreateUser()) {
+            Optional<User> user = UserDialogPanel.showDialog(editorKit);
+            if (user.isPresent()) {
+                configManager.statusChanged(AdminTabEvent.CONFIGURATION_CHANGED);
+                listUsers();
+                userList.setSelectedValue(new UserListItem(user.get()), true);
+            }
         }
     }
 
     private void editUser() {
-        Optional<User> user = UserDialogPanel.showDialog(editorKit, selectedUser);
-        if (user.isPresent()) {
-            configManager.statusChanged(AdminTabEvent.CONFIGURATION_CHANGED);
-            listUsers();
-            userList.setSelectedValue(new UserListItem(user.get()), true);
+        if(client != null && client.canUpdateUser()) {
+            Optional<User> user = UserDialogPanel.showDialog(editorKit, selectedUser);
+            if (user.isPresent()) {
+                configManager.statusChanged(AdminTabEvent.CONFIGURATION_CHANGED);
+                listUsers();
+                userList.setSelectedValue(new UserListItem(user.get()), true);
+            }
         }
     }
 
     private void deleteUser() {
-        Object selectedObj = userList.getSelectedValue();
-        if (selectedObj instanceof UserListItem) {
-            User user = ((UserListItem) selectedObj).getUser();
-            String userName = user.getName().get();
-            int res = JOptionPaneEx.showConfirmDialog(editorKit.getWorkspace(), "Delete User '" + userName + "'",
-                    new JLabel("Proceed to delete user '" + userName + "'?\n" + "All policy entries involving '" + userName + "' will be removed."),
-                    JOptionPane.WARNING_MESSAGE, JOptionPane.YES_NO_OPTION, null);
-            if (res != JOptionPane.OK_OPTION) {
-                return;
+        if(client != null && client.canDeleteUser()) {
+            Object selectedObj = userList.getSelectedValue();
+            if (selectedObj instanceof UserListItem) {
+                User user = ((UserListItem) selectedObj).getUser();
+                String userName = user.getName().get();
+                int res = JOptionPaneEx.showConfirmDialog(editorKit.getWorkspace(), "Delete User '" + userName + "'",
+                        new JLabel("Proceed to delete user '" + userName + "'?\n" + "All policy entries involving '" + userName + "' will be removed."),
+                        JOptionPane.WARNING_MESSAGE, JOptionPane.YES_NO_OPTION, null);
+                if (res != JOptionPane.OK_OPTION) {
+                    return;
+                }
+                Client client = ClientSession.getInstance(editorKit).getActiveClient();
+                try {
+                    client.deleteUser(user.getId());
+                } catch (AuthorizationException | ClientRequestException | RemoteException e) {
+                    ErrorLogPanel.showErrorDialog(e);
+                }
+                configManager.statusChanged(AdminTabEvent.CONFIGURATION_CHANGED);
+                listUsers();
             }
-            Client client = ClientSession.getInstance(editorKit).getActiveClient();
-            try {
-                client.deleteUser(user.getId());
-            } catch (AuthorizationException | ClientRequestException | RemoteException e) {
-                ErrorLogPanel.showErrorDialog(e);
-            }
-            configManager.statusChanged(AdminTabEvent.CONFIGURATION_CHANGED);
-            listUsers();
         }
     }
 
@@ -205,7 +223,7 @@ public class UserPanel extends JPanel implements Disposable {
 
         @Override
         public boolean canAdd() {
-            return true;
+            return (client != null && client.canCreateUser());
         }
     }
 
@@ -230,7 +248,7 @@ public class UserPanel extends JPanel implements Disposable {
 
         @Override
         public boolean isEditable() {
-            return true;
+            return (client != null && client.canUpdateUser());
         }
 
         @Override
@@ -240,7 +258,7 @@ public class UserPanel extends JPanel implements Disposable {
 
         @Override
         public boolean isDeleteable() {
-            return true;
+            return (client != null && client.canDeleteUser());
         }
 
         @Override
@@ -275,5 +293,6 @@ public class UserPanel extends JPanel implements Disposable {
     public void dispose() {
         userList.removeListSelectionListener(listSelectionListener);
         configManager.removeListener(tabListener);
+        session.removeListener(sessionListener);
     }
 }

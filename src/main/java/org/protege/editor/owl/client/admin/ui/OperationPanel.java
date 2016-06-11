@@ -10,6 +10,7 @@ import org.protege.editor.core.ui.list.MListSectionHeader;
 import org.protege.editor.core.ui.util.JOptionPaneEx;
 import org.protege.editor.owl.OWLEditorKit;
 import org.protege.editor.owl.client.ClientSession;
+import org.protege.editor.owl.client.ClientSessionListener;
 import org.protege.editor.owl.client.admin.AdminTabManager;
 import org.protege.editor.owl.client.admin.model.AdminTabEvent;
 import org.protege.editor.owl.client.admin.model.AdminTabListener;
@@ -39,11 +40,13 @@ import static com.google.common.base.Preconditions.checkNotNull;
  * Stanford Center for Biomedical Informatics Research
  */
 public class OperationPanel extends JPanel implements Disposable {
-    private static final long serialVersionUID = 15156421981394404L;
+    private static final long serialVersionUID = -6374121042315963259L;
     private OWLEditorKit editorKit;
     private AdminTabManager configManager;
     private MList operationList;
     private Operation selectedOperation;
+    private ClientSession session;
+    private Client client;
 
     /**
      * Constructor
@@ -54,7 +57,10 @@ public class OperationPanel extends JPanel implements Disposable {
         this.editorKit = checkNotNull(editorKit);
         configManager = AdminTabManager.get(editorKit);
         configManager.addListener(tabListener);
-        initUiComponents();
+        session = ClientSession.getInstance(editorKit);
+        session.addListener(sessionListener);
+        client = session.getActiveClient();
+        initUi();
     }
 
     private AdminTabListener tabListener = event -> {
@@ -65,7 +71,13 @@ public class OperationPanel extends JPanel implements Disposable {
         }
     };
 
-    private void initUiComponents() {
+    private ClientSessionListener sessionListener = event -> {
+        client = session.getActiveClient();
+        removeAll();
+        initUi();
+    };
+
+    private void initUi() {
         setupList();
         setLayout(new BorderLayout());
         JScrollPane scrollpane = new JScrollPane(operationList);
@@ -135,7 +147,6 @@ public class OperationPanel extends JPanel implements Disposable {
     };
 
     private void listOperations() {
-        Client client = ClientSession.getInstance(editorKit).getActiveClient();
         ArrayList<Object> data = new ArrayList<>();
         data.add(new OperationListHeaderItem());
         try {
@@ -151,42 +162,47 @@ public class OperationPanel extends JPanel implements Disposable {
     }
 
     private void addOperation() {
-        Optional<Operation> operation = OperationDialogPanel.showDialog(editorKit);
-        if(operation.isPresent()) {
-            configManager.statusChanged(AdminTabEvent.CONFIGURATION_CHANGED);
-            listOperations();
-            operationList.setSelectedValue(new OperationListItem(operation.get()), true);
+        if(client != null && client.canCreateOperation()) {
+            Optional<Operation> operation = OperationDialogPanel.showDialog(editorKit);
+            if (operation.isPresent()) {
+                configManager.statusChanged(AdminTabEvent.CONFIGURATION_CHANGED);
+                listOperations();
+                operationList.setSelectedValue(new OperationListItem(operation.get()), true);
+            }
         }
     }
 
     private void editOperation() {
-        Optional<Operation> operation = OperationDialogPanel.showDialog(editorKit, selectedOperation);
-        if(operation.isPresent()) {
-            configManager.statusChanged(AdminTabEvent.CONFIGURATION_CHANGED);
-            listOperations();
-            operationList.setSelectedValue(new OperationListItem(operation.get()), true);
+        if(client != null && client.canUpdateOperation() && !selectedOperation.isSystemOperation()) {
+            Optional<Operation> operation = OperationDialogPanel.showDialog(editorKit, selectedOperation);
+            if (operation.isPresent()) {
+                configManager.statusChanged(AdminTabEvent.CONFIGURATION_CHANGED);
+                listOperations();
+                operationList.setSelectedValue(new OperationListItem(operation.get()), true);
+            }
         }
     }
 
     private void deleteOperation() {
-        Object selectedObj = operationList.getSelectedValue();
-        if(selectedObj instanceof OperationListItem) {
-            Operation operation = ((OperationListItem)selectedObj).getOperation();
-            String operationName = operation.getName().get();
-            int res = JOptionPaneEx.showConfirmDialog(editorKit.getWorkspace(), "Delete Operation '" + operationName + "'",
-                    new JLabel("Proceed to delete operation '" + operationName + "'? All policy entries involving '" + operationName + "' will be removed."),
-                    JOptionPane.WARNING_MESSAGE, JOptionPane.YES_NO_OPTION, null);
-            if (res != JOptionPane.OK_OPTION){
-                return;
+        if(client != null && client.canDeleteOperation()) {
+            Object selectedObj = operationList.getSelectedValue();
+            if (selectedObj instanceof OperationListItem) {
+                Operation operation = ((OperationListItem) selectedObj).getOperation();
+                String operationName = operation.getName().get();
+                int res = JOptionPaneEx.showConfirmDialog(editorKit.getWorkspace(), "Delete Operation '" + operationName + "'",
+                        new JLabel("Proceed to delete operation '" + operationName + "'? All policy entries involving '" + operationName + "' will be removed."),
+                        JOptionPane.WARNING_MESSAGE, JOptionPane.YES_NO_OPTION, null);
+                if (res != JOptionPane.OK_OPTION) {
+                    return;
+                }
+                try {
+                    client.deleteOperation(operation.getId());
+                } catch (AuthorizationException | ClientRequestException | RemoteException e) {
+                    ErrorLogPanel.showErrorDialog(e);
+                }
+                configManager.statusChanged(AdminTabEvent.CONFIGURATION_CHANGED);
+                listOperations();
             }
-            Client client = ClientSession.getInstance(editorKit).getActiveClient();
-            try {
-                client.deleteOperation(operation.getId());
-            } catch (AuthorizationException | ClientRequestException | RemoteException e) {
-                ErrorLogPanel.showErrorDialog(e);
-            }
-            configManager.statusChanged(AdminTabEvent.CONFIGURATION_CHANGED);
-            listOperations();
         }
     }
 
@@ -203,7 +219,7 @@ public class OperationPanel extends JPanel implements Disposable {
 
         @Override
         public boolean canAdd() {
-            return true;
+            return (client != null && client.canCreateOperation());
         }
     }
 
@@ -228,7 +244,7 @@ public class OperationPanel extends JPanel implements Disposable {
 
         @Override
         public boolean isEditable() {
-            return !operation.isSystemOperation();
+            return (!operation.isSystemOperation() && client != null && client.canUpdateOperation());
         }
 
         @Override
@@ -238,7 +254,7 @@ public class OperationPanel extends JPanel implements Disposable {
 
         @Override
         public boolean isDeleteable() {
-            return !operation.isSystemOperation();
+            return (!operation.isSystemOperation() && client != null && client.canDeleteOperation());
         }
 
         @Override
@@ -273,5 +289,6 @@ public class OperationPanel extends JPanel implements Disposable {
     public void dispose() {
         operationList.removeListSelectionListener(listSelectionListener);
         configManager.removeListener(tabListener);
+        session.removeListener(sessionListener);
     }
 }

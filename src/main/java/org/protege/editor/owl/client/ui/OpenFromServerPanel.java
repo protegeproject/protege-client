@@ -27,18 +27,24 @@ import javax.swing.JTable;
 import javax.swing.KeyStroke;
 import javax.swing.SwingUtilities;
 
-import edu.stanford.protege.metaproject.api.ProjectId;
-
 import org.protege.editor.core.ui.util.JOptionPaneEx;
 import org.protege.editor.owl.OWLEditorKit;
 import org.protege.editor.owl.client.ClientSession;
 import org.protege.editor.owl.client.LocalHttpClient;
 import org.protege.editor.owl.client.api.Client;
 import org.protege.editor.owl.client.api.exception.OWLClientException;
-import org.protege.editor.owl.client.util.ClientUtils;
 import org.protege.editor.owl.server.versioning.api.ServerDocument;
 import org.protege.editor.owl.server.versioning.api.VersionedOWLOntology;
 import org.semanticweb.owlapi.model.OWLOntologyManager;
+
+import edu.stanford.protege.metaproject.api.ProjectId;
+
+
+/**
+ * @author Josef Hardi <johardi@stanford.edu> <br>
+ * @author Timothy Redmond <tredmond@stanford.edu> <br>
+ * Stanford Center for Biomedical Informatics Research
+ */
 
 public class OpenFromServerPanel extends JPanel {
 
@@ -98,6 +104,7 @@ public class OpenFromServerPanel extends JPanel {
     private JPanel getRemoteProjectsPanel() {
         JPanel pnlRemoteProjects = new JPanel(new BorderLayout());
 
+
         remoteProjectModel = new ServerTableModel();
         tblRemoteProjects = new JTable(remoteProjectModel);
         tblRemoteProjects.addMouseListener(new MouseAdapter() {
@@ -116,8 +123,10 @@ public class OpenFromServerPanel extends JPanel {
 
     private void showLoginWhenNecessary() {
         if (!clientSession.hasActiveClient()) {
+
             showLoginDialog();
             if (!clientSession.hasActiveClient()) {
+
                 closeDialog();
             }
         }
@@ -129,7 +138,7 @@ public class OpenFromServerPanel extends JPanel {
 
     private void showLoginDialog() {
         final JDialog dialog = new JDialog(null, "Login to Protege OWL Server", Dialog.ModalityType.DOCUMENT_MODAL);
-        UserLoginPanel userLoginPanel = new UserLoginPanel(clientSession, editorKit);
+        UserLoginPanel userLoginPanel = new UserLoginPanel(clientSession);
         userLoginPanel.getInputMap(JComponent.WHEN_ANCESTOR_OF_FOCUSED_COMPONENT).put(KeyStroke.getKeyStroke(KeyEvent.VK_ESCAPE, 0), "CLOSE_DIALOG");
         userLoginPanel.getActionMap().put("CLOSE_DIALOG", new AbstractAction()
         {
@@ -155,6 +164,7 @@ public class OpenFromServerPanel extends JPanel {
         dialog.setResizable(false);
         dialog.setLocationRelativeTo(OpenFromServerPanel.this);
         dialog.setVisible(true);
+
     }
 
     private void loadProjectList(Client client) {

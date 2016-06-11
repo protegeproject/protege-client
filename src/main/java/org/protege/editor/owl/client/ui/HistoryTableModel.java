@@ -8,6 +8,11 @@ import java.util.Date;
 
 import javax.swing.table.AbstractTableModel;
 
+/**
+ * @author Josef Hardi <johardi@stanford.edu> <br>
+ * @author Timothy Redmond <tredmond@stanford.edu> <br>
+ * Stanford Center for Biomedical Informatics Research
+ */
 public class HistoryTableModel extends AbstractTableModel {
 
     private static final long serialVersionUID = -1510343786742688724L;

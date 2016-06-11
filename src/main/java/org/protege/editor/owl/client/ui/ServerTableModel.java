@@ -1,6 +1,5 @@
 package org.protege.editor.owl.client.ui;
 
-import edu.stanford.protege.metaproject.api.Name;
 import edu.stanford.protege.metaproject.api.Project;
 import edu.stanford.protege.metaproject.api.ProjectId;
 import edu.stanford.protege.metaproject.impl.MetaprojectUtils;
@@ -20,11 +19,10 @@ import java.util.List;
  * Stanford Center for Biomedical Informatics Research
  */
 public class ServerTableModel extends AbstractTableModel {
-
-    private static final long serialVersionUID = -1677982790864801841L;
+    private static final long serialVersionUID = 7786667531755850848L;
 
     public enum Column {
-        REMOTE_PROJECT;
+        PROJECT_NAME, PROJECT_DESCRIPTION, PROJECT_OWNER
     }
 
     private List<Project> remoteProjects;
@@ -52,10 +50,14 @@ public class ServerTableModel extends AbstractTableModel {
     public String getColumnName(int col) {
         Column column = Column.values()[col];
         switch (column) {
-        case REMOTE_PROJECT:
-            return "Available projects";
-        default:
-            throw new IllegalStateException("Programmer missed a case");
+            case PROJECT_NAME:
+                return "Project Name";
+            case PROJECT_DESCRIPTION:
+                return "Description";
+            case PROJECT_OWNER:
+                return "Owner";
+            default:
+                throw new IllegalStateException("Programmer missed a case");
         }
     }
 
@@ -67,35 +69,21 @@ public class ServerTableModel extends AbstractTableModel {
     @Override
     public Object getValueAt(int row, int col) {
         Project project = remoteProjects.get(row);
-        return new ProjectItem(project.getId(), project.getName());
+        Column c = Column.values()[col];
+        switch (c) {
+            case PROJECT_NAME:
+                return project.getName().get();
+            case PROJECT_DESCRIPTION:
+                return project.getDescription().get();
+            case PROJECT_OWNER:
+                return project.getOwner().get();
+            default:
+                throw new IllegalStateException("Programmer missed a case");
+        }
     }
 
     public ProjectId getValueAt(int row) {
-        ProjectItem projectItem = (ProjectItem) getValueAt(row, -1);
-        return projectItem.getId();
-    }
-
-    class ProjectItem {
-
-        private ProjectId projectId;
-        private Name projectName;
-
-        ProjectItem(ProjectId projectId, Name projectName) {
-            this.projectId = projectId;
-            this.projectName = projectName;
-        }
-
-        public ProjectId getId() {
-            return projectId;
-        }
-
-        public Name getName() {
-            return projectName;
-        }
-
-        @Override
-        public String toString() {
-            return projectName.get();
-        }
+        Project project = remoteProjects.get(row);
+        return project.getId();
     }
 }

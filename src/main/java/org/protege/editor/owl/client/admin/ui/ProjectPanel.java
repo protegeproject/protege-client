@@ -1,7 +1,11 @@
 package org.protege.editor.owl.client.admin.ui;
 
 import com.google.common.base.Objects;
+import edu.stanford.protege.metaproject.Manager;
+import edu.stanford.protege.metaproject.api.MetaprojectFactory;
 import edu.stanford.protege.metaproject.api.Project;
+import edu.stanford.protege.metaproject.api.UserId;
+import edu.stanford.protege.metaproject.impl.Operations;
 import org.protege.editor.core.Disposable;
 import org.protege.editor.core.ui.error.ErrorLogPanel;
 import org.protege.editor.core.ui.list.MList;
@@ -10,6 +14,7 @@ import org.protege.editor.core.ui.util.JOptionPaneEx;
 import org.protege.editor.owl.OWLEditorKit;
 import org.protege.editor.owl.client.ClientSession;
 import org.protege.editor.owl.client.ClientSessionListener;
+import org.protege.editor.owl.client.LocalClient;
 import org.protege.editor.owl.client.admin.AdminTabManager;
 import org.protege.editor.owl.client.admin.model.AdminTabEvent;
 import org.protege.editor.owl.client.admin.model.AdminTabListener;
@@ -40,13 +45,15 @@ import static com.google.common.base.Preconditions.checkNotNull;
  * Stanford Center for Biomedical Informatics Research
  */
 public class ProjectPanel extends JPanel implements Disposable {
-    private static final long serialVersionUID = 3288714216715860825L;
+    private static final long serialVersionUID = -6832671439689809834L;
+    private static MetaprojectFactory f = Manager.getFactory();
     private OWLEditorKit editorKit;
     private AdminTabManager configManager;
     private MList projectList;
     private Project selectedProject;
     private ClientSession session;
     private Client client;
+    private UserId userId;
 
     /**
      * Constructor
@@ -60,6 +67,7 @@ public class ProjectPanel extends JPanel implements Disposable {
         session = ClientSession.getInstance(editorKit);
         session.addListener(sessionListener);
         client = session.getActiveClient();
+        userId = (client != null ? f.getUserId(client.getUserInfo().getId()) : null);
         initUi();
     }
 
@@ -73,6 +81,7 @@ public class ProjectPanel extends JPanel implements Disposable {
 
     private ClientSessionListener sessionListener = event -> {
         client = session.getActiveClient();
+        userId = f.getUserId(client.getUserInfo().getId());
         removeAll();
         initUi();
     };
@@ -173,7 +182,7 @@ public class ProjectPanel extends JPanel implements Disposable {
     }
 
     private void editProject() {
-        if(client != null && client.canUpdateProject()) {
+        if(client != null && canModifyProject(selectedProject)) {
             Optional<Project> project = ProjectDialogPanel.showDialog(editorKit, selectedProject);
             if (project.isPresent()) {
                 configManager.statusChanged(AdminTabEvent.CONFIGURATION_CHANGED);
@@ -184,7 +193,7 @@ public class ProjectPanel extends JPanel implements Disposable {
     }
 
     private void deleteProject() {
-        if(client != null && client.canDeleteProject()) {
+        if(client != null && canDeleteProject(selectedProject)) {
             Object selectedObj = projectList.getSelectedValue();
             if (selectedObj instanceof ProjectListItem) {
                 Project project = ((ProjectListItem) selectedObj).getProject();
@@ -222,6 +231,15 @@ public class ProjectPanel extends JPanel implements Disposable {
             }
         }
     }
+
+    private boolean canDeleteProject(Project project) {
+        return client instanceof LocalClient && ((LocalClient) client).queryProjectPolicy(userId, project.getId(), Operations.REMOVE_PROJECT.getId());
+    }
+
+    private boolean canModifyProject(Project project) {
+        return client instanceof LocalClient && ((LocalClient) client).queryProjectPolicy(userId, project.getId(), Operations.MODIFY_PROJECT.getId());
+    }
+
 
     /**
      * Add Project item
@@ -261,7 +279,7 @@ public class ProjectPanel extends JPanel implements Disposable {
 
         @Override
         public boolean isEditable() {
-            return (client != null && client.canUpdateProject());
+            return (client != null && canModifyProject(project));
         }
 
         @Override
@@ -271,7 +289,7 @@ public class ProjectPanel extends JPanel implements Disposable {
 
         @Override
         public boolean isDeleteable() {
-            return (client != null && client.canDeleteProject());
+            return (client != null && canDeleteProject(project));
         }
 
         @Override

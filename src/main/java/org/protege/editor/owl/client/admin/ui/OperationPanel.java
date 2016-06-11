@@ -173,7 +173,7 @@ public class OperationPanel extends JPanel implements Disposable {
     }
 
     private void editOperation() {
-        if(client != null && client.canUpdateOperation()) {
+        if(client != null && client.canUpdateOperation() && !selectedOperation.isSystemOperation()) {
             Optional<Operation> operation = OperationDialogPanel.showDialog(editorKit, selectedOperation);
             if (operation.isPresent()) {
                 configManager.statusChanged(AdminTabEvent.CONFIGURATION_CHANGED);

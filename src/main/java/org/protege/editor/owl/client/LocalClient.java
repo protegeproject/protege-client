@@ -720,7 +720,7 @@ public class LocalClient implements Client, ClientSessionListener {
      * Utility methods
      */
 
-    private boolean queryProjectPolicy(UserId userId, ProjectId projectId, OperationId operationId) {
+    public boolean queryProjectPolicy(UserId userId, ProjectId projectId, OperationId operationId) {
         boolean isAllowed = false;
         try {
             connect();

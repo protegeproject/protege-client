@@ -266,11 +266,11 @@ public class ProjectDialogPanel extends JPanel implements VerifiedInputEditor {
             if (!selectedOptionKeys.isEmpty()) {
                 for (String s : selectedOptionKeys) {
                     projectOptions.remove(s);
+                    optionsTableModel.setOptions(createProjectOptions(projectOptions));
+                    updateProjectWithOptions();
+                    handleValueChange();
+                    refresh();
                 }
-                optionsTableModel.setOptions(createProjectOptions(projectOptions));
-                updateProjectWithOptions();
-                handleValueChange();
-                refresh();
             }
         }
     };
@@ -283,9 +283,8 @@ public class ProjectDialogPanel extends JPanel implements VerifiedInputEditor {
                 optionsTableModel.setOptions(createProjectOptions(projectOptions));
                 handleValueChange();
                 updateProjectWithOptions();
+                refresh();
             }
-            
-            refresh();
         }
     };
 
@@ -299,11 +298,11 @@ public class ProjectDialogPanel extends JPanel implements VerifiedInputEditor {
                     projectOptions.put(optionOpt.get().getKey(), new TreeSet<>(optionOpt.get().getValues()));
                     if (!optionOpt.get().getKey().equals(key)) {
                         projectOptions.remove(key);
+                        optionsTableModel.setOptions(createProjectOptions(projectOptions));
+                        handleValueChange();
+                        updateProjectWithOptions();
                     }
                 }
-                optionsTableModel.setOptions(createProjectOptions(projectOptions));
-                handleValueChange();
-                updateProjectWithOptions();
             }
         }
     };

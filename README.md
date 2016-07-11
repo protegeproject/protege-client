@@ -1,13 +1,12 @@
 Protege Ontology Client
 ======================
 
-Provides client functionality for the Protege Desktop application to connect to an [OWL Ontology Server][], allowing end users to collaboratively edit collections of OWL ontologies.
-
-  [OWL Ontology Server]: http://github.com/protegeproject/org.protege.owl.server
+Provides client functionality for the Protege Desktop application to connect to an [OWL Ontology Server][1], allowing end users to collaboratively edit collections of OWL ontologies.
+  
   
 Compatible with Protege Desktop versions 5.0 and above.
 
-This branch differs from metaproject-integration in several ways:
+This branch differs from `metaproject-integration` in a few ways:
 
  * Uses HTTP instead of RMI. The client APIs are almost identical, but
    the operational semantics are somewhat different. The metaproject
@@ -36,7 +35,7 @@ Some suggested next TODOs:
 
  * More testing
 
- * Run another listener on an admin port, to be used insode the
+ * Run another listener on an admin port, to be used inside the
    firewall to remotely administer the web server (sleep, restart,
    update the config, check logs..)
 
@@ -56,9 +55,7 @@ Some suggested next TODOs:
    squashed in Git.
 
 
-
-
-
 ----
-[1]: https://github.com/bdionne/protege/commits/5.0.1-history-search
+[1]: http://github.com/protegeproject/protege-server
+[2]: https://github.com/bdionne/protege/commits/5.0.1-history-search
  

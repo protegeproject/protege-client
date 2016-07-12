@@ -38,6 +38,7 @@ import org.protege.editor.owl.server.api.exception.AuthorizationException;
 import org.protege.editor.owl.server.api.exception.OutOfSyncException;
 import org.protege.editor.owl.server.http.HTTPServer;
 import org.protege.editor.owl.server.http.exception.ServerException;
+import org.protege.editor.owl.server.http.messages.EVSHistory;
 import org.protege.editor.owl.server.http.messages.HttpAuthResponse;
 import org.protege.editor.owl.server.http.messages.LoginCreds;
 import org.protege.editor.owl.server.policy.CommitBundleImpl;
@@ -470,7 +471,6 @@ public class LocalHttpClient implements Client, ClientSessionListener {
 		try {
 			long beg = System.currentTimeMillis();
 			BinaryOWLOntologyDocumentSerializer serializer = new BinaryOWLOntologyDocumentSerializer();
-			//OWLOntologyManager manIn = OWLManager.createOWLOntologyManager();
 	        OWLOntology ontIn = manIn.createOntology();
 	        String fileName = sdoc.getHistoryFile().getName() + "-snapshot";
 	        BufferedInputStream inputStream = new BufferedInputStream(new FileInputStream(new File(fileName)));
@@ -1120,6 +1120,42 @@ public class LocalHttpClient implements Client, ClientSessionListener {
 		}
 		initConfig();
 	}
+	
+	public void putEVSHistory(String code, String name, String operation, String reference) throws ClientRequestException {
+
+		String url = HTTPServer.EVS_REC;
+
+		ByteArrayOutputStream b = new ByteArrayOutputStream();
+		ObjectOutputStream os = null;
+		Response response = null;
+
+		EVSHistory hist = new EVSHistory(code, name, operation, reference);
+
+		try {
+			os = new ObjectOutputStream(b);
+			os.writeObject(hist);
+			RequestBody req = RequestBody.create(MediaType.parse("application"), b.toByteArray());
+
+			response = post(url, req, true);
+
+			ObjectInputStream ois = new ObjectInputStream(response.body().byteStream());
+
+			if (response.code() == 200) {
+				// ok, do nothing
+			} else if (response.code() == 500) {
+				ServerException ex = (ServerException) ois.readObject();
+				throw new ClientRequestException(ex.getMessage());
+			}
+		} catch (IOException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		} catch (ClassNotFoundException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
+		
+	}
+
 	
 	/*
      * Utility methods for querying the client permissions. All these methods will initially check if the client

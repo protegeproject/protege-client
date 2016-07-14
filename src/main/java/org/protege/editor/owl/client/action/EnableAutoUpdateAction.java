@@ -196,21 +196,21 @@ public class EnableAutoUpdateAction extends AbstractClientAction implements Clie
             final Map<OWLImportsDeclaration, ImportChange> importChanges = clientChanges.getLastImportChangeMap();
             for (Entry<OWLImportsDeclaration, ImportChange> entry : importChanges.entrySet()) {
                 OWLImportsDeclaration decl = entry.getKey();
-                if (importChanges.containsKey(decl)) {
+                if (serverChanges.getLastImportChangeMap().containsKey(decl)) {
                     conflictChanges.add(entry.getValue());
                 }
             }
             final Map<OWLAnnotation, AnnotationChange> annotationChanges = clientChanges.getLastOntologyAnnotationChangeMap();
             for (Entry<OWLAnnotation, AnnotationChange> entry : annotationChanges.entrySet()) {
                 OWLAnnotation annotation = entry.getKey();
-                if (annotationChanges.containsKey(annotation)) {
+                if (serverChanges.getLastOntologyAnnotationChangeMap().containsKey(annotation)) {
                     conflictChanges.add(entry.getValue());
                 }
             }
             final Map<OWLAxiom, OWLAxiomChange> axiomChanges = clientChanges.getLastAxiomChangeMap();
             for (Entry<OWLAxiom, OWLAxiomChange> entry : axiomChanges.entrySet()) {
                 OWLAxiom axiom = entry.getKey();
-                if (axiomChanges.containsKey(axiom)) {
+                if (serverChanges.getLastAxiomChangeMap().containsKey(axiom)) {
                     conflictChanges.add(entry.getValue());
                 }
             }

@@ -120,7 +120,6 @@
                             org.protege.editor.core.*;
                             org.protege.editor.owl.ui.*;
                             org.protege.editor.owl.ui.model.*,
-                            edu.stanford.protege.metaproject.*;resolution:=optional,
                             org.protege.editor.owl.server.*;resolution:=optional,
                             android.util,                        
                             *

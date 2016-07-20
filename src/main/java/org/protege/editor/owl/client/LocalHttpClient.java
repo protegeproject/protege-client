@@ -6,9 +6,9 @@ import java.io.ByteArrayOutputStream;
 import java.io.DataOutputStream;
 import java.io.File;
 import java.io.FileInputStream;
-import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
 import java.io.IOException;
+import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.io.ObjectInputStream;
 import java.io.ObjectOutputStream;
@@ -50,13 +50,11 @@ import org.semanticweb.owlapi.model.OWLOntologyManager;
 
 import com.google.gson.Gson;
 
-import edu.stanford.protege.metaproject.Manager;
 import edu.stanford.protege.metaproject.api.AuthToken;
 import edu.stanford.protege.metaproject.api.AuthenticationRegistry;
 import edu.stanford.protege.metaproject.api.Description;
 import edu.stanford.protege.metaproject.api.Host;
 import edu.stanford.protege.metaproject.api.MetaprojectAgent;
-import edu.stanford.protege.metaproject.api.MetaprojectFactory;
 import edu.stanford.protege.metaproject.api.Name;
 import edu.stanford.protege.metaproject.api.Operation;
 import edu.stanford.protege.metaproject.api.OperationId;
@@ -147,7 +145,7 @@ public class LocalHttpClient implements Client, ClientSessionListener {
 		initConfig();
 	}
 	
-	public void initConfig() {
+	public void initConfig() throws ClientRequestException {
 		config = getConfig();
 		proj_registry = config.getMetaproject().getProjectRegistry();
 		user_registry = config.getMetaproject().getUserRegistry();
@@ -1010,59 +1008,62 @@ public class LocalHttpClient implements Client, ClientSessionListener {
 		return null;
 	}
 
-	private Response get(String url) {
+	private Response get(String url) throws ClientRequestException {
 		Request request = new Request.Builder()
 				.url(serverAddress + url)
 				.addHeader(AUTH_HEADER, auth_header_value)
 				.get()
-				.build();    	
+				.build();
 		try {
-			return req_client.newCall(request).execute();    		
-
-		} catch (Exception e) {
-			e.printStackTrace();
+			Response response = req_client.newCall(request).execute();
+			if (!response.isSuccessful()) {
+				throw new ClientRequestException(response.header("Error-Message"));
+			}
+			return response;
 		}
-		return null;
+		catch (IOException e) {
+			throw new ClientRequestException(e);
+		}
 	}
 	
-	private ServerConfiguration getConfig() {
+	private ServerConfiguration getConfig() throws ClientRequestException {
 		String url = HTTPServer.METAPROJECT;
 		Response response = get(url);
-	
-		Serializer<Gson> serl = new DefaultJsonSerializer();
-		
-		ServerConfiguration scfg = null;
-		
-
 		try {
-			scfg = (ServerConfiguration) serl.parse(new InputStreamReader(response.body().byteStream()), ServerConfiguration.class);
-		} catch (FileNotFoundException | ObjectConversionException e) {
-			e.printStackTrace();
+			Serializer<Gson> serl = new DefaultJsonSerializer();
+			InputStream is = response.body().byteStream();
+			return (ServerConfiguration) serl.parse(new InputStreamReader(is), ServerConfiguration.class);
 		}
-		response.body().close();
-		return scfg;
-		
+		catch (ObjectConversionException e) {
+			throw new ClientRequestException("Unable to parse the incoming server configuration data", e);
+		}
+		catch (IOException e) {
+			throw new ClientRequestException("Data transmission error", e);
+		}
+		finally {
+			if (response != null) {
+				response.body().close();
+			}
+		}
 	}
 	
-	public String getCode() {
+	public String getCode() throws ClientRequestException {
 		String url = HTTPServer.GEN_CODE;
-		
 		Response response = get(url);
-		
-		String code = null;
-		
-
 		try {
-			code = response.body().string();
-		} catch (Exception e) {
-			e.printStackTrace();
+			return response.body().string();
 		}
-		response.body().close();
-		return code;
-		
+		catch (IOException e) {
+			throw new ClientRequestException("Data transmission error", e);
+		}
+		finally {
+			if (response != null) {
+				response.body().close();
+			}
+		}
 	}
 	
-	public void putConfig() {
+	public void putConfig() throws ClientRequestException {
 		if (save_cancel_semantics) {
 			config_state_changed = true;		
 			
@@ -1075,7 +1076,7 @@ public class LocalHttpClient implements Client, ClientSessionListener {
 		return config_state_changed;
 	}
 	
-	public void reallyPutConfig() {
+	public void reallyPutConfig() throws ClientRequestException {
 		
 		final MediaType JSON  = MediaType.parse("application/json; charset=utf-8");
 		String url = HTTPServer.METAPROJECT;

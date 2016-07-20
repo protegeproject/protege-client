@@ -1,18 +1,21 @@
 package org.protege.editor.owl.client.admin.ui;
 
-import org.protege.editor.owl.client.LocalHttpClient;
-import org.protege.editor.owl.client.admin.AdminTabManager;
-import org.protege.editor.owl.client.admin.model.AdminTabEvent;
-import org.protege.editor.owl.client.admin.model.AdminTabListener;
-import org.protege.editor.owl.client.diff.ui.GuiUtils;
-import org.protege.editor.owl.ui.view.AbstractOWLViewComponent;
-
-import java.awt.*;
+import java.awt.BorderLayout;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 
 import javax.swing.JButton;
+import javax.swing.JLabel;
+import javax.swing.JOptionPane;
 import javax.swing.JPanel;
+
+import org.protege.editor.owl.client.LocalHttpClient;
+import org.protege.editor.owl.client.admin.AdminTabManager;
+import org.protege.editor.owl.client.admin.model.AdminTabEvent;
+import org.protege.editor.owl.client.admin.model.AdminTabListener;
+import org.protege.editor.owl.client.api.exception.ClientRequestException;
+import org.protege.editor.owl.client.diff.ui.GuiUtils;
+import org.protege.editor.owl.ui.view.AbstractOWLViewComponent;
 
 /**
  * @author Rafael Gonçalves <br>
@@ -57,29 +60,38 @@ public class JsonSerializationView extends AbstractOWLViewComponent implements A
 		saveButton.setEnabled(false);
 		
 		saveButton.addActionListener(new ActionListener() {
-			 
-            public void actionPerformed(ActionEvent e)
-            {
-            	LocalHttpClient.current_user().reallyPutConfig();
-            	setButtons(false);
-            	
-            }
-        });     
+			public void actionPerformed(ActionEvent event)
+			{
+				try {
+					LocalHttpClient.current_user().reallyPutConfig();
+					setButtons(false);
+				}
+				catch (ClientRequestException e) {
+					JOptionPane.showMessageDialog(getOWLEditorKit().getOWLWorkspace(),
+							new JLabel(e.getMessage()), "Failed to save changes",
+							JOptionPane.ERROR_MESSAGE);
+				}
+			}
+		});
 		
 		cancelButton = new JButton("Cancel");
 		cancelButton.setEnabled(false);
 		
 		cancelButton.addActionListener(new ActionListener() {
-			 
-            public void actionPerformed(ActionEvent e)
-            {
-            	LocalHttpClient.current_user().initConfig();
-            	setButtons(false);
-            	manager.statusChanged(AdminTabEvent.CONFIGURATION_RESET);
-            	
-            	
-            }
-        });     
+			public void actionPerformed(ActionEvent event)
+			{
+				try {
+					LocalHttpClient.current_user().initConfig();
+					setButtons(false);
+					manager.statusChanged(AdminTabEvent.CONFIGURATION_RESET);
+				}
+				catch (ClientRequestException e) {
+					JOptionPane.showMessageDialog(getOWLEditorKit().getOWLWorkspace(),
+							new JLabel(e.getMessage()), "Failed to reset changes",
+							JOptionPane.ERROR_MESSAGE);
+				}
+			}
+		});
 		
 		buttonPanel.add(saveButton);
 		buttonPanel.add(cancelButton);

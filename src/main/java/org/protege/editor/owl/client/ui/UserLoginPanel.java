@@ -239,8 +239,14 @@ public class UserLoginPanel extends JPanel implements VerifiedInputEditor {
                     return Optional.of(authToken);
                 }
                 catch (Exception e) {
+                	String msg = null;
+                	if (e.getCause() != null) {
+                		msg = e.getCause().getMessage();
+                	} else {
+                		msg = e.getMessage();
+                	}
                     JOptionPaneEx.showConfirmDialog(parent, "Error connecting to server",
-                            new JLabel("Connection failed: " + e.getCause().getMessage()),
+                            new JLabel("Connection failed: " + msg),
                             JOptionPane.ERROR_MESSAGE, JOptionPane.DEFAULT_OPTION, null);
                 }
             }

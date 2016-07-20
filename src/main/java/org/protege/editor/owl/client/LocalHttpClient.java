@@ -100,6 +100,7 @@ import edu.stanford.protege.metaproject.impl.AuthorizedUserToken;
 import edu.stanford.protege.metaproject.impl.Operations;
 import edu.stanford.protege.metaproject.impl.UserIdImpl;
 import edu.stanford.protege.metaproject.serialization.DefaultJsonSerializer;
+import io.undertow.util.StatusCodes;
 import okhttp3.MediaType;
 import okhttp3.OkHttpClient;
 import okhttp3.Request;
@@ -150,21 +151,10 @@ public class LocalHttpClient implements Client, ClientSessionListener {
 		return config;		
 	}
 
-	public LocalHttpClient(String user, String pwd, String serverAddress) {	
+	public LocalHttpClient(String user, String pwd, String serverAddress) throws Exception {	
 		
 		req_client = new OkHttpClient.Builder().readTimeout(360, TimeUnit.SECONDS).build();
-		/**
-		 * using SSL
-		try {
-			SSLContext ctx = new SSLContextFactory().createSslContext();
-			req_client = new OkHttpClient.Builder().readTimeout(360, TimeUnit.SECONDS).sslSocketFactory(ctx.getSocketFactory()).build();
-		} catch (IOException e) {
-			// TODO Auto-generated catch block
-			e.printStackTrace();
-		}
-		**/
-		
-		
+				
 		this.serverAddress = serverAddress;
 		this.userInfo = login(user, pwd);
 		this.userId = new UserIdImpl(user);
@@ -189,7 +179,7 @@ public class LocalHttpClient implements Client, ClientSessionListener {
 	}
 	
 	
-	private UserInfo login(String user, String pwd) {
+	private UserInfo login(String user, String pwd) throws Exception {
 
 		final MediaType JSON  = MediaType.parse("application/json; charset=utf-8");
 		String url = HTTPServer.LOGIN;
@@ -203,15 +193,17 @@ public class LocalHttpClient implements Client, ClientSessionListener {
 
 		Response response = post(url, body, false);
 
-		try {
+		if (response.code() == StatusCodes.UNAUTHORIZED) {
+			String error = (String) serl.parse(new InputStreamReader(response.body().byteStream()), String.class);
+			throw new Exception(error);
+		} else if (response.code() == StatusCodes.INTERNAL_SERVER_ERROR) {
+			throw new Exception("Internal server error");
+			
+		} else {
 			resp = (HttpAuthResponse) serl.parse(new InputStreamReader(response.body().byteStream()), HttpAuthResponse.class);
 			response.body().close();
-		} catch (FileNotFoundException | ObjectConversionException e) {
-			e.printStackTrace();
+			return new UserInfo(resp.getId(), resp.getName(), resp.getEmail(), resp.getToken());
 		}
-		return new UserInfo(resp.getId(), resp.getName(), resp.getEmail(), resp.getToken());
-
-
 	}
 	
 	@Override
@@ -1138,11 +1130,12 @@ public class LocalHttpClient implements Client, ClientSessionListener {
 
 			response = post(url, req, true);
 
-			ObjectInputStream ois = new ObjectInputStream(response.body().byteStream());
+			
 
 			if (response.code() == 200) {
 				// ok, do nothing
 			} else if (response.code() == 500) {
+				ObjectInputStream ois = new ObjectInputStream(response.body().byteStream());
 				ServerException ex = (ServerException) ois.readObject();
 				throw new ClientRequestException(ex.getMessage());
 			}

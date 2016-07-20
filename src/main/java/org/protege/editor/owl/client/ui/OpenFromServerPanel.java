@@ -26,6 +26,7 @@ import org.protege.editor.owl.client.ClientSession;
 import org.protege.editor.owl.client.LocalHttpClient;
 import org.protege.editor.owl.client.api.Client;
 import org.protege.editor.owl.client.api.exception.OWLClientException;
+import org.protege.editor.owl.model.OWLModelManagerImpl;
 import org.protege.editor.owl.server.versioning.api.ServerDocument;
 import org.protege.editor.owl.server.versioning.api.VersionedOWLOntology;
 import org.semanticweb.owlapi.model.OWLOntologyManager;
@@ -156,6 +157,8 @@ public class OpenFromServerPanel extends JPanel {
             ServerDocument serverDocument = client.openProject(pid);
             
             VersionedOWLOntology vont = ((LocalHttpClient) client).buildVersionedOntology(serverDocument, owlManager, pid);
+            
+            ((OWLModelManagerImpl) editorKit.getOWLModelManager()).resetHistory();
 			
             clientSession.setActiveProject(pid, vont);
             closeDialog();

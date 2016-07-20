@@ -108,8 +108,6 @@ public class LocalHttpClient implements Client, ClientSessionListener {
 	private String auth_header_value;
 	private final String AUTH_HEADER = "Authorization";
 
-	private MetaprojectFactory fact = Manager.getFactory();
-
 	OkHttpClient req_client = null; 
 	
 	private ServerConfiguration config;
@@ -127,8 +125,6 @@ public class LocalHttpClient implements Client, ClientSessionListener {
 
 	private static LocalHttpClient current_user = null;
 	
-	private ClientSession current_session = null;
-
 	public static LocalHttpClient current_user() {
 		return current_user;
 	}
@@ -194,7 +190,6 @@ public class LocalHttpClient implements Client, ClientSessionListener {
 	
 	@Override
 	public void handleChange(ClientSessionChangeEvent event) {
-		current_session = event.getSource();
 		projectId = event.getSource().getActiveProject();
 	}
 	

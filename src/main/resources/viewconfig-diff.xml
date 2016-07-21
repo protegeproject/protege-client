@@ -20,7 +20,7 @@
                 </Component>
             </CNode>
             <CNode>
-                <Component label="Details">
+                <Component label="Change Details">
                     <Property id="pluginId" value="org.protege.editor.owl.client.ChangeDetailsView"/>
                 </Component>
             </CNode>

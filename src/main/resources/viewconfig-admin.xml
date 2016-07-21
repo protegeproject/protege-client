@@ -32,7 +32,7 @@
                 </Component>
             </CNode>
             <CNode>
-                <Component label="Details">
+                <Component label="Policy Object Details">
                     <Property id="pluginId" value="org.protege.editor.owl.client.DetailsView"/>
                 </Component>
             </CNode>

@@ -3,6 +3,7 @@ package org.protege.editor.owl.client.admin.ui;
 import org.protege.editor.core.Disposable;
 import org.protege.editor.core.ui.error.ErrorLogPanel;
 import org.protege.editor.owl.OWLEditorKit;
+import org.protege.editor.owl.client.ClientSessionChangeEvent;
 import org.protege.editor.owl.client.LocalHttpClient;
 import org.protege.editor.owl.client.ClientSession;
 import org.protege.editor.owl.client.ClientSessionListener;
@@ -67,8 +68,10 @@ public class JsonSerializationPanel extends JPanel implements Disposable {
     };
 
     private ClientSessionListener sessionListener = event -> {
-        removeAll();
-        initUi();
+        if(event.hasCategory(ClientSessionChangeEvent.EventCategory.SWITCH_CLIENT)) {
+            removeAll();
+            initUi();
+        }
     };
 
     private void update() {

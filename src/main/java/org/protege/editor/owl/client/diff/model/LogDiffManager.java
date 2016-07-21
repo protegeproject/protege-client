@@ -123,6 +123,7 @@ public class LogDiffManager implements Disposable {
         ChangeHistory changes = vont.getChangeHistory();
         DocumentRevision base = changes.getBaseRevision();
         DocumentRevision head = changes.getHeadRevision();
+        commits = new ArrayList<>();
         for (DocumentRevision rev = base.next(); rev.behindOrSameAs(head); rev = rev.next()) {
             RevisionMetadata metaData = changes.getMetadataForRevision(rev);
             if (event.equals(LogDiffEvent.AUTHOR_SELECTION_CHANGED) && getSelectedAuthor() != null &&
@@ -130,9 +131,7 @@ public class LogDiffManager implements Disposable {
                     event.equals(LogDiffEvent.ONTOLOGY_UPDATED)) {
                 CommitMetadata c = diffFactory.createCommitMetadata(diffFactory.createCommitId(metaData.hashCode() + ""),
                         metaData.getAuthorId(), metaData.getDate(), metaData.getComment());
-                if (!commits.contains(c)) {
-                    commits.add(c);
-                }
+                commits.add(c);
             }
         }
         Collections.sort(commits);

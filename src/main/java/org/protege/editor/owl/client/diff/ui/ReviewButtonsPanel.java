@@ -1,45 +1,37 @@
 package org.protege.editor.owl.client.diff.ui;
 
-import static com.google.common.base.Preconditions.checkNotNull;
-
 import org.protege.editor.core.Disposable;
+import org.protege.editor.core.ui.error.ErrorLogPanel;
 import org.protege.editor.owl.OWLEditorKit;
 import org.protege.editor.owl.client.ClientSession;
 import org.protege.editor.owl.client.api.Client;
-import org.protege.editor.owl.client.diff.model.Change;
-import org.protege.editor.owl.client.diff.model.LogDiffEvent;
-import org.protege.editor.owl.client.diff.model.LogDiffListener;
-import org.protege.editor.owl.client.diff.model.LogDiffManager;
-import org.protege.editor.owl.client.diff.model.ReviewManager;
-import org.protege.editor.owl.client.diff.model.ReviewStatus;
+import org.protege.editor.owl.client.api.exception.ClientRequestException;
+import org.protege.editor.owl.client.diff.model.*;
 import org.protege.editor.owl.model.OWLModelManager;
+import org.protege.editor.owl.server.api.CommitBundle;
+import org.protege.editor.owl.server.api.exception.OWLServerException;
+import org.protege.editor.owl.server.policy.CommitBundleImpl;
+import org.protege.editor.owl.server.versioning.Commit;
+import org.protege.editor.owl.server.versioning.api.ChangeHistory;
 import org.protege.editor.owl.server.versioning.api.RevisionMetadata;
 import org.protege.editor.owl.server.versioning.api.VersionedOWLOntology;
-
 import org.semanticweb.owlapi.model.OWLOntologyChange;
 
-import java.awt.Container;
-import java.awt.Dimension;
-import java.awt.FlowLayout;
-import java.awt.Frame;
+import javax.swing.*;
+import java.awt.*;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
+import java.rmi.RemoteException;
 import java.util.List;
 
-import javax.swing.JButton;
-import javax.swing.JComponent;
-import javax.swing.JOptionPane;
-import javax.swing.JPanel;
-import javax.swing.JSeparator;
-import javax.swing.SwingConstants;
-import javax.swing.SwingUtilities;
+import static com.google.common.base.Preconditions.checkNotNull;
 
 /**
  * @author Rafael Gonçalves <br>
  * Stanford Center for Biomedical Informatics Research
  */
 public class ReviewButtonsPanel extends JPanel implements Disposable {
-    private static final long serialVersionUID = 2970244966462590949L;
+    private static final long serialVersionUID = -5575738883023751161L;
     private LogDiffManager diffManager;
     private ReviewManager reviewManager;
     private OWLEditorKit editorKit;
@@ -158,8 +150,6 @@ public class ReviewButtonsPanel extends JPanel implements Disposable {
             reviewManager.clearUncommittedReviews();
             enable(false, commitBtn);
             if(!changes.isEmpty()) {
-                diffManager.commitChanges(changes);
-
                 VersionedOWLOntology vont = diffManager.getVersionedOntologyDocument().get();
                 String commitComment = JOptionPane.showInputDialog(owner, "Comment for the review: ", "Commit reviews");
                 if (vont == null) {
@@ -169,16 +159,22 @@ public class ReviewButtonsPanel extends JPanel implements Disposable {
                 if (commitComment == null) {
                     return; // user pressed cancel
                 }
-                Client client = ClientSession.getInstance(editorKit).getActiveClient();
+                diffManager.commitChanges(changes); // commit changes to active ontology
+
+                ClientSession clientSession = ClientSession.getInstance(editorKit);
+                Client client = clientSession.getActiveClient();
                 RevisionMetadata metaData = new RevisionMetadata(
                         client.getUserInfo().getId(),
                         client.getUserInfo().getName(),
                         client.getUserInfo().getEmailAddress(), "[Review] " + commitComment);
-//                try {
-//                    client.commit(client, metaData, vont); TODO: Implement commit later
-//                } catch (OWLServerException e1) {
-//                    ErrorLogPanel.showErrorDialog(e1);
-//                }
+                try {
+                    Commit commit = new Commit(metaData, changes);
+                    CommitBundle bundle = new CommitBundleImpl(vont.getHeadRevision(), commit);
+                    ChangeHistory history = client.commit(clientSession.getActiveProject(), bundle);
+                    vont.update(history);
+                } catch (OWLServerException | RemoteException | ClientRequestException ex) {
+                    ErrorLogPanel.showErrorDialog(ex);
+                }
                 diffManager.setSelectedCommitToLatest();
             }
             JOptionPane.showMessageDialog(owner, "The reviews have been successfully committed", "Reviews committed", JOptionPane.INFORMATION_MESSAGE);

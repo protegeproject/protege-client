@@ -90,20 +90,14 @@ public class CommitAction extends AbstractClientAction implements ClientSessionL
 
     @Override
     public void actionPerformed(ActionEvent arg0) {
-        while (true) {
-            JTextArea commentArea = new JTextArea(4, 45);
-            Object[] message = { "Commit message (do not leave blank):", commentArea };
-            int option = JOptionPane.showConfirmDialog(null, message, "Commit",
-                    JOptionPane.OK_CANCEL_OPTION, JOptionPane.PLAIN_MESSAGE);
-            if (option == JOptionPane.CANCEL_OPTION) {
-                break;
-            }
-            else if (option == JOptionPane.OK_OPTION) {
-                String comment = commentArea.getText().trim();
-                if (!comment.isEmpty()) {
-                    performCommit(activeVersionOntology.get(), comment);
-                    break;
-                }
+        JTextArea commentArea = new JTextArea(4, 45);
+        Object[] message = {"Commit message (do not leave blank):", commentArea};
+        int option = JOptionPane.showConfirmDialog(null, message, "Commit",
+                JOptionPane.OK_CANCEL_OPTION, JOptionPane.PLAIN_MESSAGE);
+        if (option == JOptionPane.OK_OPTION) {
+            String comment = commentArea.getText().trim();
+            if (!comment.isEmpty()) {
+                performCommit(activeVersionOntology.get(), comment);
             }
         }
     }

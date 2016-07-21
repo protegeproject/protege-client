@@ -49,5 +49,8 @@ public class LogoutAction extends AbstractClientAction implements ClientSessionL
             activeClient = event.getSource().getActiveClient();
             setEnabled(true);
         }
+        else if (event.hasCategory(EventCategory.CLEAR_SESSION)) {
+            setEnabled(false);
+       }
     }
 }

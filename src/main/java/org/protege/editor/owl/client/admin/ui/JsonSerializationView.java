@@ -9,12 +9,19 @@ import javax.swing.JLabel;
 import javax.swing.JOptionPane;
 import javax.swing.JPanel;
 
+import org.protege.editor.core.ui.error.ErrorLogPanel;
+import org.protege.editor.owl.client.ClientSession;
 import org.protege.editor.owl.client.LocalHttpClient;
 import org.protege.editor.owl.client.admin.AdminTabManager;
 import org.protege.editor.owl.client.admin.model.AdminTabEvent;
 import org.protege.editor.owl.client.admin.model.AdminTabListener;
+import org.protege.editor.owl.client.api.Client;
 import org.protege.editor.owl.client.api.exception.ClientRequestException;
+import org.protege.editor.owl.client.api.exception.LoginTimeoutException;
 import org.protege.editor.owl.client.diff.ui.GuiUtils;
+import org.protege.editor.owl.client.ui.UserLoginPanel;
+import org.protege.editor.owl.client.util.ClientUtils;
+import org.protege.editor.owl.server.api.exception.AuthorizationException;
 import org.protege.editor.owl.ui.view.AbstractOWLViewComponent;
 
 /**
@@ -49,6 +56,10 @@ public class JsonSerializationView extends AbstractOWLViewComponent implements A
         }
     }
 
+    private ClientSession getClientSession() {
+        return ClientSession.getInstance(getOWLEditorKit());
+    }
+
     @Override
     protected void disposeOWLView() {
         serializationPanel.dispose();
@@ -66,7 +77,14 @@ public class JsonSerializationView extends AbstractOWLViewComponent implements A
 					LocalHttpClient.current_user().reallyPutConfig();
 					setButtons(false);
 				}
-				catch (ClientRequestException e) {
+				catch (LoginTimeoutException e) {
+					JOptionPane.showMessageDialog(getOWLEditorKit().getOWLWorkspace(),
+							new JLabel(e.getMessage()), "Failed to save changes",
+							JOptionPane.ERROR_MESSAGE);
+					localClientLogout();
+					UserLoginPanel.showDialog(getOWLEditorKit(), JsonSerializationView.this);
+				}
+				catch (AuthorizationException | ClientRequestException e) {
 					JOptionPane.showMessageDialog(getOWLEditorKit().getOWLWorkspace(),
 							new JLabel(e.getMessage()), "Failed to save changes",
 							JOptionPane.ERROR_MESSAGE);
@@ -85,7 +103,14 @@ public class JsonSerializationView extends AbstractOWLViewComponent implements A
 					setButtons(false);
 					manager.statusChanged(AdminTabEvent.CONFIGURATION_RESET);
 				}
-				catch (ClientRequestException e) {
+				catch (LoginTimeoutException e) {
+					JOptionPane.showMessageDialog(getOWLEditorKit().getOWLWorkspace(),
+							new JLabel(e.getMessage()), "Failed to reset changes",
+							JOptionPane.ERROR_MESSAGE);
+					localClientLogout();
+					UserLoginPanel.showDialog(getOWLEditorKit(), JsonSerializationView.this);
+				}
+				catch (AuthorizationException | ClientRequestException e) {
 					JOptionPane.showMessageDialog(getOWLEditorKit().getOWLWorkspace(),
 							new JLabel(e.getMessage()), "Failed to reset changes",
 							JOptionPane.ERROR_MESSAGE);
@@ -96,6 +121,16 @@ public class JsonSerializationView extends AbstractOWLViewComponent implements A
 		buttonPanel.add(saveButton);
 		buttonPanel.add(cancelButton);
 		return buttonPanel;
+	}
+
+	private void localClientLogout() {
+		try {
+			Client activeClient = getClientSession().getActiveClient();
+			ClientUtils.performLogout(getClientSession(), activeClient);
+		}
+		catch (Exception e) {
+			ErrorLogPanel.showErrorDialog(e);
+		}
 	}
 
 	@Override

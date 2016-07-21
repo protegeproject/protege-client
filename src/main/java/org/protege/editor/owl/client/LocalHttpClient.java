@@ -25,6 +25,7 @@ import org.apache.commons.codec.binary.Base64;
 import org.protege.editor.owl.client.api.Client;
 import org.protege.editor.owl.client.api.UserInfo;
 import org.protege.editor.owl.client.api.exception.ClientRequestException;
+import org.protege.editor.owl.client.api.exception.LoginTimeoutException;
 import org.protege.editor.owl.client.util.ClientUtils;
 import org.protege.editor.owl.server.api.CommitBundle;
 import org.protege.editor.owl.server.api.exception.AuthorizationException;
@@ -146,7 +147,7 @@ public class LocalHttpClient implements Client, ClientSessionListener {
 		initConfig();
 	}
 	
-	public void initConfig() throws ClientRequestException {
+	public void initConfig() throws LoginTimeoutException, AuthorizationException, ClientRequestException {
 		config = getConfig();
 		proj_registry = config.getMetaproject().getProjectRegistry();
 		user_registry = config.getMetaproject().getUserRegistry();
@@ -272,7 +273,7 @@ public class LocalHttpClient implements Client, ClientSessionListener {
 	
 	
 	public ServerDocument createProject(Project proj)
-			throws AuthorizationException, ClientRequestException, RemoteException {
+			throws LoginTimeoutException, AuthorizationException, ClientRequestException, RemoteException {
 
 		ProjectId projectId = proj.getId();
 		Name projectName = proj.getName();
@@ -312,8 +313,8 @@ public class LocalHttpClient implements Client, ClientSessionListener {
 			initConfig();
 			return sdoc;
 
-		} catch (Exception e) {
-			throw new ClientRequestException(e.getMessage(), e.getCause());
+		} catch (IOException | ClassNotFoundException e) {
+			throw new ClientRequestException("Data transmission error", e);
 		}
 
 	}
@@ -1016,7 +1017,7 @@ public class LocalHttpClient implements Client, ClientSessionListener {
 		return null;
 	}
 
-	private Response get(String url) throws ClientRequestException {
+	private Response get(String url) throws LoginTimeoutException, AuthorizationException, ClientRequestException {
 		Request request = new Request.Builder()
 				.url(serverAddress + url)
 				.addHeader(AUTH_HEADER, auth_header_value)
@@ -1025,7 +1026,19 @@ public class LocalHttpClient implements Client, ClientSessionListener {
 		try {
 			Response response = req_client.newCall(request).execute();
 			if (!response.isSuccessful()) {
-				throw new ClientRequestException(response.header("Error-Message"));
+				String msg = response.header("Error-Message");
+				if (response.code() == StatusCodes.UNAUTHORIZED) {
+					throw new AuthorizationException(msg);
+				}
+				/*
+				 * 440 Login Timeout. Reference: https://support.microsoft.com/en-us/kb/941201
+				 */
+				else if (response.code() == 440) {
+					throw new LoginTimeoutException(msg);
+				}
+				else {
+					throw new ClientRequestException(msg);
+				}
 			}
 			return response;
 		}
@@ -1034,7 +1047,7 @@ public class LocalHttpClient implements Client, ClientSessionListener {
 		}
 	}
 	
-	private ServerConfiguration getConfig() throws ClientRequestException {
+	private ServerConfiguration getConfig() throws LoginTimeoutException, AuthorizationException, ClientRequestException {
 		String url = HTTPServer.METAPROJECT;
 		Response response = get(url);
 		try {
@@ -1055,7 +1068,7 @@ public class LocalHttpClient implements Client, ClientSessionListener {
 		}
 	}
 	
-	public String getCode() throws ClientRequestException {
+	public String getCode() throws LoginTimeoutException, AuthorizationException, ClientRequestException {
 		String url = HTTPServer.GEN_CODE;
 		Response response = get(url);
 		try {
@@ -1071,7 +1084,7 @@ public class LocalHttpClient implements Client, ClientSessionListener {
 		}
 	}
 	
-	public void putConfig() throws ClientRequestException {
+	public void putConfig() throws LoginTimeoutException, AuthorizationException, ClientRequestException {
 		if (save_cancel_semantics) {
 			config_state_changed = true;		
 			
@@ -1084,7 +1097,7 @@ public class LocalHttpClient implements Client, ClientSessionListener {
 		return config_state_changed;
 	}
 	
-	public void reallyPutConfig() throws ClientRequestException {
+	public void reallyPutConfig() throws LoginTimeoutException, AuthorizationException, ClientRequestException {
 		
 		final MediaType JSON  = MediaType.parse("application/json; charset=utf-8");
 		String url = HTTPServer.METAPROJECT;

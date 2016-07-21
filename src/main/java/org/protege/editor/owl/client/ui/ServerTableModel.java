@@ -28,14 +28,15 @@ public class ServerTableModel extends AbstractTableModel {
     private List<Project> remoteProjects;
 
     public void initialize(Client client) throws OWLClientException {
-        remoteProjects = new ArrayList<>(client.getProjects());
-        if(remoteProjects.contains(MetaprojectUtils.getUniversalProject())) {
-            remoteProjects.remove(MetaprojectUtils.getUniversalProject());
+        if(client.getProjects().contains(MetaprojectUtils.getUniversalProject())) {
             try {
-                remoteProjects.addAll(client.getAllProjects());
+                remoteProjects = new ArrayList<>(client.getAllProjects());
+                remoteProjects.remove(MetaprojectUtils.getUniversalProject());
             } catch (AuthorizationException | RemoteException e) {
                 throw new OWLClientException(e.getCause());
             }
+        } else {
+            remoteProjects = new ArrayList<>(client.getProjects());
         }
         Collections.sort(remoteProjects);
         fireTableStructureChanged();

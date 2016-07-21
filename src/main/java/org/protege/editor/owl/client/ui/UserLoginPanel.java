@@ -1,29 +1,6 @@
 package org.protege.editor.owl.client.ui;
 
-import static com.google.common.base.Preconditions.checkNotNull;
-
-import java.awt.Color;
-import java.awt.GridBagConstraints;
-import java.awt.GridBagLayout;
-import java.awt.Insets;
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.List;
-import java.util.Optional;
-
-import javax.swing.DefaultComboBoxModel;
-import javax.swing.JComboBox;
-import javax.swing.JComponent;
-import javax.swing.JLabel;
-import javax.swing.JOptionPane;
-import javax.swing.JPanel;
-import javax.swing.JPasswordField;
-import javax.swing.JSeparator;
-import javax.swing.JTextArea;
-import javax.swing.JTextField;
-import javax.swing.event.DocumentEvent;
-import javax.swing.event.DocumentListener;
-
+import edu.stanford.protege.metaproject.api.AuthToken;
 import org.protege.editor.core.ui.util.AugmentedJTextField;
 import org.protege.editor.core.ui.util.InputVerificationStatusChangedListener;
 import org.protege.editor.core.ui.util.JOptionPaneEx;
@@ -34,7 +11,16 @@ import org.protege.editor.owl.client.ClientSession;
 import org.protege.editor.owl.client.LocalHttpClient;
 import org.protege.editor.owl.client.diff.ui.GuiUtils;
 
-import edu.stanford.protege.metaproject.api.AuthToken;
+import javax.swing.*;
+import javax.swing.event.DocumentEvent;
+import javax.swing.event.DocumentListener;
+import java.awt.*;
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.List;
+import java.util.Optional;
+
+import static com.google.common.base.Preconditions.checkNotNull;
 
 /**
  * @author Josef Hardi <johardi@stanford.edu> <br>
@@ -42,7 +28,7 @@ import edu.stanford.protege.metaproject.api.AuthToken;
  * Stanford Center for Biomedical Informatics Research
  */
 public class UserLoginPanel extends JPanel implements VerifiedInputEditor {
-    private static final long serialVersionUID = -6708992419156552723L;
+    private static final long serialVersionUID = 7096961238522927373L;
     private static final int FIELD_WIDTH = 20;
     private ClientSession clientSession;
     private final JTextArea errorArea = new JTextArea(1, FIELD_WIDTH*2);
@@ -57,7 +43,6 @@ public class UserLoginPanel extends JPanel implements VerifiedInputEditor {
      * Constructor
      *
      * @param clientSession Client session
-     * @param editorKit OWL Editor Kit
      */
     public UserLoginPanel(ClientSession clientSession) {
         this.clientSession = checkNotNull(clientSession);
@@ -80,8 +65,6 @@ public class UserLoginPanel extends JPanel implements VerifiedInputEditor {
         if (currentUsername != null) {
             txtUsername.setText(currentUsername);
         }
-
-
         addListener(txtUsername);
         addListener(txtPassword);
         cmbServerList.addActionListener(e -> handleValueChange());
@@ -112,7 +95,6 @@ public class UserLoginPanel extends JPanel implements VerifiedInputEditor {
         errorArea.setFont(errorArea.getFont().deriveFont(12.0f));
         errorArea.setForeground(Color.RED);
         holderPanel.add(errorArea, new GridBagConstraints(0, rowIndex, 2, 1, 0, 0, GridBagConstraints.SOUTHWEST, GridBagConstraints.NONE, new Insets(12, 2, 0, 2), 0, 0));
-
     }
 
     private JComboBox<String> getServerLocationsList() {
@@ -134,9 +116,7 @@ public class UserLoginPanel extends JPanel implements VerifiedInputEditor {
         return cmbServerList;
     }
 
-
     public void saveServerConnectionData() {
-
         ClientPreferences prefs = ClientPreferences.getInstance();
 
         // Save server location information
@@ -158,18 +138,19 @@ public class UserLoginPanel extends JPanel implements VerifiedInputEditor {
         prefs.setCurrentUsername(txtUsername.getText());
     }
 
-
-
     private void addListener(JTextField field) {
         field.getDocument().addDocumentListener(new DocumentListener() {
+            @Override
             public void insertUpdate(DocumentEvent e) {
                 handleValueChange();
             }
 
+            @Override
             public void removeUpdate(DocumentEvent e) {
                 handleValueChange();
             }
 
+            @Override
             public void changedUpdate(DocumentEvent e) {
                 handleValueChange();
             }
@@ -203,12 +184,10 @@ public class UserLoginPanel extends JPanel implements VerifiedInputEditor {
         if(cmbServerList.getSelectedItem() == null || cmbServerList.getSelectedItem().equals("")) {
             allValid = false;
         }
-        
         return allValid;
     }
 
     public AuthToken authenticateUser() throws Exception {
-        
         String serverAddress = (String)cmbServerList.getSelectedItem();
         String username = txtUsername.getText();
         String password = new String(txtPassword.getPassword());
@@ -218,37 +197,31 @@ public class UserLoginPanel extends JPanel implements VerifiedInputEditor {
         clientSession.addListener(client);
         
         return client.getAuthToken();
-
-        
     }
 
     public static Optional<AuthToken> showDialog(OWLEditorKit editorKit, JComponent parent) {
         ClientSession clientSession = ClientSession.getInstance(editorKit);
         UserLoginPanel userLoginPanel = new UserLoginPanel(clientSession);
-
-        while (true) {
-            int res = JOptionPaneEx.showValidatingConfirmDialog(
-                    parent, "Login to Protege OWL Server", userLoginPanel, JOptionPane.QUESTION_MESSAGE, JOptionPane.OK_CANCEL_OPTION, null);
-            if (res == JOptionPane.CANCEL_OPTION) {
-                break;
-            }
-            if (res == JOptionPane.OK_OPTION) {
-                try {
-                    AuthToken authToken = userLoginPanel.authenticateUser();
-                    userLoginPanel.saveServerConnectionData();
-                    return Optional.of(authToken);
+        int res = JOptionPaneEx.showValidatingConfirmDialog(
+                parent, "Login to Protege OWL Server", userLoginPanel, JOptionPane.QUESTION_MESSAGE, JOptionPane.OK_CANCEL_OPTION, null);
+        if (res == JOptionPane.CANCEL_OPTION) {
+            return Optional.empty();
+        }
+        if (res == JOptionPane.OK_OPTION) {
+            try {
+                AuthToken authToken = userLoginPanel.authenticateUser();
+                userLoginPanel.saveServerConnectionData();
+                return Optional.of(authToken);
+            } catch (Exception e) {
+                String msg;
+                if (e.getCause() != null) {
+                    msg = e.getCause().getMessage();
+                } else {
+                    msg = e.getMessage();
                 }
-                catch (Exception e) {
-                	String msg = null;
-                	if (e.getCause() != null) {
-                		msg = e.getCause().getMessage();
-                	} else {
-                		msg = e.getMessage();
-                	}
-                    JOptionPaneEx.showConfirmDialog(parent, "Error connecting to server",
-                            new JLabel("Connection failed: " + msg),
-                            JOptionPane.ERROR_MESSAGE, JOptionPane.DEFAULT_OPTION, null);
-                }
+                JOptionPaneEx.showConfirmDialog(parent, "Error connecting to server",
+                        new JLabel("Connection failed: " + msg),
+                        JOptionPane.ERROR_MESSAGE, JOptionPane.DEFAULT_OPTION, null);
             }
         }
         return Optional.empty();

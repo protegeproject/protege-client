@@ -29,6 +29,7 @@ import org.protege.editor.owl.client.util.ClientUtils;
 import org.protege.editor.owl.server.api.CommitBundle;
 import org.protege.editor.owl.server.api.exception.AuthorizationException;
 import org.protege.editor.owl.server.api.exception.OutOfSyncException;
+import org.protege.editor.owl.server.api.exception.ServerServiceException;
 import org.protege.editor.owl.server.http.HTTPServer;
 import org.protege.editor.owl.server.http.exception.ServerException;
 import org.protege.editor.owl.server.http.messages.EVSHistory;
@@ -373,23 +374,30 @@ public class LocalHttpClient implements Client, ClientSessionListener {
 			RequestBody req = RequestBody.create(MediaType.parse("application"), b.toByteArray());
 
 			response = post(url, req, true);
-			
+
 			ObjectInputStream ois = new ObjectInputStream(response.body().byteStream());
-			
+
 			if (response.code() == 200) {
 				hist = (ChangeHistory) ois.readObject();
-				
+
 			} else if (response.code() == 500) {
 				ServerException ex = (ServerException) ois.readObject();
-				if (ex.getCause() instanceof OutOfSyncException) {
-					throw (OutOfSyncException) ex.getCause();
+				if (ex.getCause() instanceof ServerServiceException) {
+					ServerServiceException iex = (ServerServiceException) ex.getCause();
+					if (iex.getCause() instanceof OutOfSyncException) {
+						throw (OutOfSyncException) iex.getCause();
+					} else if (iex.getCause() instanceof AuthorizationException) {
+						throw (AuthorizationException) iex.getCause();						
+					} else {
+						throw new ClientRequestException(iex.getMessage(), iex);						
+					}
 				} else {
-					throw new ClientRequestException(ex.getMessage());
+					throw new ClientRequestException(ex.getMessage(), ex);
 				}
 			}
 
 
-			
+
 
 		} catch (IOException | ClassNotFoundException e) {
 			throw new ClientRequestException(e.getMessage(), e.getCause());

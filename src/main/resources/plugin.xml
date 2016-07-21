@@ -4,9 +4,9 @@
 
 	<!-- Tabs -->
 
-	<extension id="RevisionLogDiffTab"
+	<extension id="RevisionHistoryTab"
 			   point="org.protege.editor.core.application.WorkspaceTab">
-		<label value="Revision Log diff"/>
+		<label value="Revision History"/>
 		<class value="org.protege.editor.owl.ui.OWLWorkspaceViewsTab"/>
 		<index value="X"/>
 		<editorKitId value="OWLEditorKit"/>
@@ -29,15 +29,15 @@
 		<label value="Changes"/>
 		<class value="org.protege.editor.owl.client.diff.ui.ChangesView"/>
 		<headerColor value="@org.protege.ontologycolor"/>
-		<category value="@org.protege.differencecategory"/>
+		<category value="Client-Server"/>
 	</extension>
 
 	<extension id="ChangeDetailsView"
 			   point="org.protege.editor.core.application.ViewComponent">
-		<label value="Details"/>
+		<label value="Change Details"/>
 		<class value="org.protege.editor.owl.client.diff.ui.ChangeDetailsView"/>
 		<headerColor value="@org.protege.ontologycolor"/>
-		<category value="@org.protege.differencecategory"/>
+		<category value="Client-Server"/>
 	</extension>
 
 	<extension id="ConflictsGridView"
@@ -45,7 +45,7 @@
 		<label value="Conflicts (grid)"/>
 		<class value="org.protege.editor.owl.client.diff.ui.ConflictsGridView"/>
 		<headerColor value="@org.protege.ontologycolor"/>
-		<category value="@org.protege.differencecategory"/>
+		<category value="Client-Server"/>
 	</extension>
 
 	<extension id="ConflictsListView"
@@ -53,7 +53,7 @@
 		<label value="Conflicts (list)"/>
 		<class value="org.protege.editor.owl.client.diff.ui.ConflictsListView"/>
 		<headerColor value="@org.protege.ontologycolor"/>
-		<category value="@org.protege.differencecategory"/>
+		<category value="Client-Server"/>
 	</extension>
 
 	<extension id="AuthorView"
@@ -61,7 +61,7 @@
 		<label value="Authors"/>
 		<class value="org.protege.editor.owl.client.diff.ui.AuthorView"/>
 		<headerColor value="@org.protege.ontologycolor"/>
-		<category value="@org.protege.differencecategory"/>
+		<category value="Client-Server"/>
 	</extension>
 
 	<extension id="CommitView"
@@ -69,7 +69,7 @@
 		<label value="Commits"/>
 		<class value="org.protege.editor.owl.client.diff.ui.CommitView"/>
 		<headerColor value="@org.protege.ontologycolor"/>
-		<category value="@org.protege.differencecategory"/>
+		<category value="Client-Server"/>
 	</extension>
 
 	<!-- Admin Tab Views -->
@@ -79,7 +79,7 @@
 		<label value="Users"/>
 		<class value="org.protege.editor.owl.client.admin.ui.UserView"/>
 		<headerColor value="@org.protege.ontologycolor"/>
-		<!--<category value="@org.protege.differencecategory"/>-->
+		<category value="Client-Server"/>
 	</extension>
 
 	<extension id="RoleView"
@@ -95,7 +95,7 @@
 		<label value="Operations"/>
 		<class value="org.protege.editor.owl.client.admin.ui.OperationView"/>
 		<headerColor value="@org.protege.ontologycolor"/>
-		<!--<category value="@org.protege.differencecategory"/>-->
+		<category value="Client-Server"/>
 	</extension>
 
 	<extension id="ProjectView"
@@ -103,15 +103,15 @@
 		<label value="Projects"/>
 		<class value="org.protege.editor.owl.client.admin.ui.ProjectView"/>
 		<headerColor value="@org.protege.ontologycolor"/>
-		<!--<category value="@org.protege.differencecategory"/>-->
+		<category value="Client-Server"/>
 	</extension>
 
 	<extension id="DetailsView"
 			   point="org.protege.editor.core.application.ViewComponent">
-		<label value="Details"/>
+		<label value="Policy Object Details"/>
 		<class value="org.protege.editor.owl.client.admin.ui.DetailsView"/>
 		<headerColor value="@org.protege.ontologycolor"/>
-		<!--<category value="@org.protege.differencecategory"/>-->
+		<category value="Client-Server"/>
 	</extension>
 
 	<extension id="JsonSerializationView"
@@ -119,7 +119,7 @@
 		<label value="JSON Serialization"/>
 		<class value="org.protege.editor.owl.client.admin.ui.JsonSerializationView"/>
 		<headerColor value="@org.protege.ontologycolor"/>
-		<!--<category value="@org.protege.differencecategory"/>-->
+		<category value="Client-Server"/>
 	</extension>
 
 	<extension id="PolicyView"
@@ -127,7 +127,7 @@
 		<label value="Access Control Policy"/>
 		<class value="org.protege.editor.owl.client.admin.ui.PolicyView"/>
 		<headerColor value="@org.protege.ontologycolor"/>
-		<!--<category value="@org.protege.differencecategory"/>-->
+		<category value="Client-Server"/>
 	</extension>
 
 	<extension id="ServerSettingsView"
@@ -135,7 +135,7 @@
 		<label value="Server settings"/>
 		<class value="org.protege.editor.owl.client.admin.ui.ServerSettingsView"/>
 		<headerColor value="@org.protege.ontologycolor"/>
-		<!--<category value="@org.protege.differencecategory"/>-->
+		<category value="Client-Server"/>
 	</extension>
 
 	<!-- Menu items -->

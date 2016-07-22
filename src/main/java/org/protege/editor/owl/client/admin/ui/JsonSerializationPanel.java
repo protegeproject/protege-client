@@ -3,14 +3,14 @@ package org.protege.editor.owl.client.admin.ui;
 import org.protege.editor.core.Disposable;
 import org.protege.editor.core.ui.error.ErrorLogPanel;
 import org.protege.editor.owl.OWLEditorKit;
-import org.protege.editor.owl.client.ClientSessionChangeEvent;
 import org.protege.editor.owl.client.LocalHttpClient;
 import org.protege.editor.owl.client.ClientSession;
-import org.protege.editor.owl.client.ClientSessionListener;
 import org.protege.editor.owl.client.admin.AdminTabManager;
 import org.protege.editor.owl.client.admin.model.AdminTabEvent;
 import org.protege.editor.owl.client.admin.model.AdminTabListener;
 import org.protege.editor.owl.client.diff.ui.GuiUtils;
+import org.protege.editor.owl.client.event.ClientSessionChangeEvent;
+import org.protege.editor.owl.client.event.ClientSessionListener;
 
 import edu.stanford.protege.metaproject.api.ServerConfiguration;
 import edu.stanford.protege.metaproject.serialization.DefaultJsonSerializer;

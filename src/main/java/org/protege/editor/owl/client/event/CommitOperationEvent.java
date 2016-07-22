@@ -1,4 +1,4 @@
-package org.protege.editor.owl.client.diff.ui;
+package org.protege.editor.owl.client.event;
 
 import java.util.Collections;
 import java.util.List;

@@ -28,7 +28,6 @@ public class LogoutAction extends AbstractClientAction implements ClientSessionL
     @Override
     public void dispose() throws Exception {
         super.dispose();
-        getClientSession().removeListener(this);
     }
 
     @Override

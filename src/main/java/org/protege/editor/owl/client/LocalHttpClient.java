@@ -22,6 +22,7 @@ import java.util.Optional;
 import java.util.concurrent.TimeUnit;
 
 import org.apache.commons.codec.binary.Base64;
+import org.protege.editor.owl.client.ClientSessionChangeEvent.EventCategory;
 import org.protege.editor.owl.client.api.Client;
 import org.protege.editor.owl.client.api.UserInfo;
 import org.protege.editor.owl.client.api.exception.ClientRequestException;
@@ -190,7 +191,9 @@ public class LocalHttpClient implements Client, ClientSessionListener {
 	
 	@Override
 	public void handleChange(ClientSessionChangeEvent event) {
-		projectId = event.getSource().getActiveProject();
+		if (event.equals(EventCategory.SWITCH_ONTOLOGY)) {
+			projectId = event.getSource().getActiveProject();
+		}
 	}
 	
 	@Override

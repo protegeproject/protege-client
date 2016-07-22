@@ -2,10 +2,10 @@ package org.protege.editor.owl.client.action;
 
 import java.awt.event.ActionEvent;
 
-import org.protege.editor.owl.client.ClientSessionChangeEvent;
-import org.protege.editor.owl.client.ClientSessionChangeEvent.EventCategory;
-import org.protege.editor.owl.client.ClientSessionListener;
 import org.protege.editor.owl.client.api.Client;
+import org.protege.editor.owl.client.event.ClientSessionChangeEvent;
+import org.protege.editor.owl.client.event.ClientSessionListener;
+import org.protege.editor.owl.client.event.ClientSessionChangeEvent.EventCategory;
 import org.protege.editor.owl.client.util.ClientUtils;
 
 /**

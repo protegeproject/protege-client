@@ -7,6 +7,7 @@ import org.protege.editor.owl.client.ClientSession;
 import org.protege.editor.owl.client.api.Client;
 import org.protege.editor.owl.client.api.exception.ClientRequestException;
 import org.protege.editor.owl.client.diff.model.*;
+import org.protege.editor.owl.client.event.CommitOperationEvent;
 import org.protege.editor.owl.model.OWLModelManager;
 import org.protege.editor.owl.server.api.CommitBundle;
 import org.protege.editor.owl.server.api.exception.OWLServerException;

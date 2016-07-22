@@ -7,8 +7,8 @@ import java.util.Set;
 import java.util.TreeSet;
 
 import org.protege.editor.owl.client.ClientSession;
-import org.protege.editor.owl.client.ClientSessionListener;
 import org.protege.editor.owl.client.api.Client;
+import org.protege.editor.owl.client.event.ClientSessionListener;
 import org.protege.editor.owl.model.history.HistoryManager;
 import org.protege.editor.owl.server.versioning.ChangeHistoryUtils;
 import org.protege.editor.owl.server.versioning.Commit;

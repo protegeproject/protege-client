@@ -1,4 +1,6 @@
-package org.protege.editor.owl.client;
+package org.protege.editor.owl.client.event;
+
+import org.protege.editor.owl.client.ClientSession;
 
 /**
  * @author Josef Hardi <johardi@stanford.edu> <br>

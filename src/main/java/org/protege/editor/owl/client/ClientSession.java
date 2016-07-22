@@ -2,10 +2,12 @@ package org.protege.editor.owl.client;
 
 import edu.stanford.protege.metaproject.api.ProjectId;
 import org.protege.editor.owl.OWLEditorKit;
-import org.protege.editor.owl.client.ClientSessionChangeEvent.EventCategory;
 import org.protege.editor.owl.client.api.Client;
-import org.protege.editor.owl.client.diff.ui.CommitOperationEvent;
-import org.protege.editor.owl.client.diff.ui.CommitOperationListener;
+import org.protege.editor.owl.client.event.ClientSessionChangeEvent;
+import org.protege.editor.owl.client.event.ClientSessionListener;
+import org.protege.editor.owl.client.event.CommitOperationEvent;
+import org.protege.editor.owl.client.event.CommitOperationListener;
+import org.protege.editor.owl.client.event.ClientSessionChangeEvent.EventCategory;
 import org.protege.editor.owl.model.OWLEditorKitHook;
 import org.protege.editor.owl.model.event.EventType;
 import org.protege.editor.owl.model.event.OWLModelManagerChangeEvent;

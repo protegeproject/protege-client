@@ -14,13 +14,13 @@ import java.util.concurrent.ScheduledFuture;
 import javax.swing.JCheckBoxMenuItem;
 import javax.swing.JMenuItem;
 
-import org.protege.editor.owl.client.ClientSessionChangeEvent;
-import org.protege.editor.owl.client.ClientSessionChangeEvent.EventCategory;
 import org.protege.editor.owl.client.api.exception.SynchronizationException;
+import org.protege.editor.owl.client.event.ClientSessionChangeEvent;
+import org.protege.editor.owl.client.event.ClientSessionListener;
+import org.protege.editor.owl.client.event.ClientSessionChangeEvent.EventCategory;
 import org.protege.editor.owl.client.util.ClientUtils;
 import org.protege.editor.owl.model.OWLModelManager;
 import org.protege.editor.owl.model.OWLModelManagerImpl;
-import org.protege.editor.owl.client.ClientSessionListener;
 import org.protege.editor.owl.client.LocalHttpClient;
 import org.protege.editor.owl.server.versioning.ChangeHistoryUtils;
 import org.protege.editor.owl.server.versioning.CollectingChangeVisitor;

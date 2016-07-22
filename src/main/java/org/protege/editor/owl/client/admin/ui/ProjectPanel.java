@@ -13,6 +13,7 @@ import org.protege.editor.core.ui.list.MListSectionHeader;
 import org.protege.editor.core.ui.util.JOptionPaneEx;
 import org.protege.editor.owl.OWLEditorKit;
 import org.protege.editor.owl.client.ClientSession;
+import org.protege.editor.owl.client.ClientSessionChangeEvent.EventCategory;
 import org.protege.editor.owl.client.ClientSessionListener;
 import org.protege.editor.owl.client.admin.AdminTabManager;
 import org.protege.editor.owl.client.admin.model.AdminTabEvent;
@@ -79,10 +80,12 @@ public class ProjectPanel extends JPanel implements Disposable {
     };
 
     private ClientSessionListener sessionListener = event -> {
-        client = session.getActiveClient();
-        userId = f.getUserId(client.getUserInfo().getId());
-        removeAll();
-        initUi();
+        if (event.hasCategory(EventCategory.SWITCH_CLIENT)) {
+            client = session.getActiveClient();
+            userId = f.getUserId(client.getUserInfo().getId());
+            removeAll();
+            initUi();
+        }
     };
 
     private void initUi() {

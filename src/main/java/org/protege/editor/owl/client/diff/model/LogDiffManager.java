@@ -8,6 +8,8 @@ import org.protege.editor.owl.client.diff.DiffFactory;
 import org.protege.editor.owl.client.diff.DiffFactoryImpl;
 import org.protege.editor.owl.client.diff.ui.CommitOperationListener;
 import org.protege.editor.owl.model.OWLModelManager;
+import org.protege.editor.owl.model.event.EventType;
+import org.protege.editor.owl.model.event.OWLModelManagerListener;
 import org.protege.editor.owl.server.versioning.api.ChangeHistory;
 import org.protege.editor.owl.server.versioning.api.DocumentRevision;
 import org.protege.editor.owl.server.versioning.api.RevisionMetadata;
@@ -68,7 +70,11 @@ public class LogDiffManager implements Disposable {
     private LogDiffManager(OWLModelManager modelManager, OWLEditorKit editorKit) {
         this.modelManager = checkNotNull(modelManager);
         this.editorKit = checkNotNull(editorKit);
+
+        // add listeners
         ClientSession.getInstance(editorKit).addCommitOperationListener(commitListener);
+        modelManager.getOWLOntologyManager().addOntologyChangeListener(ontologyChangeListener);
+        modelManager.addListener(ontologyLoadListener);
     }
 
     public Optional<VersionedOWLOntology> getVersionedOntologyDocument() {
@@ -82,6 +88,18 @@ public class LogDiffManager implements Disposable {
 
     private CommitOperationListener commitListener = event -> {
         statusChanged(COMMIT_OCCURRED);
+    };
+
+    private OWLOntologyChangeListener ontologyChangeListener = changes -> {
+        clearSelections();
+        statusChanged(LogDiffEvent.ONTOLOGY_UPDATED);
+    };
+
+    private OWLModelManagerListener ontologyLoadListener = event -> {
+        if (event.isType(EventType.ONTOLOGY_LOADED) || event.isType(EventType.ACTIVE_ONTOLOGY_CHANGED)) {
+            clearSelections();
+            statusChanged(LogDiffEvent.ONTOLOGY_UPDATED);
+        }
     };
 
     public Change getFirstSelectedChange() {
@@ -227,5 +245,7 @@ public class LogDiffManager implements Disposable {
     @Override
     public void dispose() throws Exception {
         ClientSession.getInstance(editorKit).removeCommitOperationListener(commitListener);
+        modelManager.getOWLOntologyManager().removeOntologyChangeListener(ontologyChangeListener);
+        modelManager.removeListener(ontologyLoadListener);
     }
 }

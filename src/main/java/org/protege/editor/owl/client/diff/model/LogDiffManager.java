@@ -6,6 +6,7 @@ import org.protege.editor.owl.OWLEditorKit;
 import org.protege.editor.owl.client.ClientSession;
 import org.protege.editor.owl.client.diff.DiffFactory;
 import org.protege.editor.owl.client.diff.DiffFactoryImpl;
+import org.protege.editor.owl.client.diff.ui.CommitOperationListener;
 import org.protege.editor.owl.model.OWLModelManager;
 import org.protege.editor.owl.server.versioning.api.ChangeHistory;
 import org.protege.editor.owl.server.versioning.api.DocumentRevision;
@@ -17,6 +18,7 @@ import java.util.*;
 import java.util.stream.Collectors;
 
 import static com.google.common.base.Preconditions.checkNotNull;
+import static org.protege.editor.owl.client.diff.model.LogDiffEvent.COMMIT_OCCURRED;
 
 /**
  * @author Rafael Gonçalves <br>
@@ -66,6 +68,7 @@ public class LogDiffManager implements Disposable {
     private LogDiffManager(OWLModelManager modelManager, OWLEditorKit editorKit) {
         this.modelManager = checkNotNull(modelManager);
         this.editorKit = checkNotNull(editorKit);
+        ClientSession.getInstance(editorKit).addCommitOperationListener(commitListener);
     }
 
     public Optional<VersionedOWLOntology> getVersionedOntologyDocument() {
@@ -76,6 +79,10 @@ public class LogDiffManager implements Disposable {
     public OWLOntology getActiveOntology() {
         return modelManager.getActiveOntology();
     }
+
+    private CommitOperationListener commitListener = event -> {
+        statusChanged(COMMIT_OCCURRED);
+    };
 
     public Change getFirstSelectedChange() {
         checkNotNull(selectedChanges);
@@ -218,5 +225,7 @@ public class LogDiffManager implements Disposable {
     }
 
     @Override
-    public void dispose() throws Exception { }
+    public void dispose() throws Exception {
+        ClientSession.getInstance(editorKit).removeCommitOperationListener(commitListener);
+    }
 }

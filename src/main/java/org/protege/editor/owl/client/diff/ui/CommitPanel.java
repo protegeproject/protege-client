@@ -49,7 +49,7 @@ public class CommitPanel extends JPanel implements Disposable {
     };
 
     private LogDiffListener diffListener = event -> {
-        if (event.equals(LogDiffEvent.AUTHOR_SELECTION_CHANGED) || event.equals(LogDiffEvent.ONTOLOGY_UPDATED)) {
+        if (event.equals(LogDiffEvent.AUTHOR_SELECTION_CHANGED) || event.equals(LogDiffEvent.ONTOLOGY_UPDATED) || event.equals(LogDiffEvent.COMMIT_OCCURRED)) {
             diffManager.clearSelectedChanges();
             listCommits(event);
         }
@@ -77,5 +77,6 @@ public class CommitPanel extends JPanel implements Disposable {
     @Override
     public void dispose() {
         commitList.removeListSelectionListener(listSelectionListener);
+        diffManager.removeListener(diffListener);
     }
 }

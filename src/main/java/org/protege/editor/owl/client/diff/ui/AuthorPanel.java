@@ -3,20 +3,19 @@ package org.protege.editor.owl.client.diff.ui;
 import org.protege.editor.core.Disposable;
 import org.protege.editor.owl.OWLEditorKit;
 import org.protege.editor.owl.client.diff.model.LogDiffEvent;
+import org.protege.editor.owl.client.diff.model.LogDiffListener;
 import org.protege.editor.owl.client.diff.model.LogDiffManager;
 import org.protege.editor.owl.model.OWLModelManager;
-import org.protege.editor.owl.model.event.EventType;
-import org.protege.editor.owl.model.event.OWLModelManagerListener;
 import org.protege.editor.owl.server.versioning.api.ChangeHistory;
 import org.protege.editor.owl.server.versioning.api.DocumentRevision;
 import org.protege.editor.owl.server.versioning.api.RevisionMetadata;
 import org.protege.editor.owl.server.versioning.api.VersionedOWLOntology;
-import org.semanticweb.owlapi.model.OWLOntologyChangeListener;
 
 import javax.swing.*;
 import javax.swing.event.ListSelectionListener;
 import java.awt.*;
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
 
 /**
@@ -24,8 +23,7 @@ import java.util.List;
  * Stanford Center for Biomedical Informatics Research
  */
 public class AuthorPanel extends JPanel implements Disposable {
-    private static final long serialVersionUID = -211414461074963460L;
-    private OWLModelManager modelManager;
+    private static final long serialVersionUID = 8377485189413724504L;
     private LogDiffManager diffManager;
     private JList<String> authorsList = new JList<>();
 
@@ -36,14 +34,10 @@ public class AuthorPanel extends JPanel implements Disposable {
      * @param editorKit OWL editor kit
      */
     public AuthorPanel(OWLModelManager modelManager, OWLEditorKit editorKit) {
-        this.modelManager = modelManager;
         diffManager = LogDiffManager.get(modelManager, editorKit);
+        diffManager.addListener(diffListener);
         setLayout(new BorderLayout(20, 20));
         setupList();
-
-        // listeners
-        modelManager.getOWLOntologyManager().addOntologyChangeListener(ontologyChangeListener);
-        modelManager.addListener(ontologyLoadListener);
 
         JScrollPane scrollPane = new JScrollPane(authorsList);
         scrollPane.setBorder(GuiUtils.EMPTY_BORDER);
@@ -58,17 +52,13 @@ public class AuthorPanel extends JPanel implements Disposable {
         }
     };
 
-    private OWLOntologyChangeListener ontologyChangeListener = changes -> {
-        diffManager.clearSelections();
-        listAuthors();
-        diffManager.statusChanged(LogDiffEvent.ONTOLOGY_UPDATED);
-    };
-
-    private OWLModelManagerListener ontologyLoadListener = event -> {
-        if(event.isType(EventType.ONTOLOGY_LOADED) || event.isType(EventType.ACTIVE_ONTOLOGY_CHANGED)) {
-            diffManager.clearSelections();
-            listAuthors();
-            diffManager.statusChanged(LogDiffEvent.ONTOLOGY_UPDATED);
+    private LogDiffListener diffListener = new LogDiffListener() {
+        @Override
+        public void statusChanged(LogDiffEvent event) {
+            if (event.equals(LogDiffEvent.ONTOLOGY_UPDATED) || event.equals(LogDiffEvent.COMMIT_OCCURRED)) {
+                diffManager.clearSelections();
+                listAuthors();
+            }
         }
     };
 
@@ -94,7 +84,7 @@ public class AuthorPanel extends JPanel implements Disposable {
                     users.add(user);
                 }
             }
-//            Collections.sort(users); TODO: To review later
+            Collections.sort(users);
             users.add(0, LogDiffManager.ALL_AUTHORS);
             authorsList.setListData(users.toArray(new String[users.size()]));
         }
@@ -105,8 +95,7 @@ public class AuthorPanel extends JPanel implements Disposable {
 
     @Override
     public void dispose() {
-        modelManager.removeListener(ontologyLoadListener);
-        modelManager.getOWLOntologyManager().removeOntologyChangeListener(ontologyChangeListener);
         authorsList.removeListSelectionListener(listSelectionListener);
+        diffManager.removeListener(diffListener);
     }
 }

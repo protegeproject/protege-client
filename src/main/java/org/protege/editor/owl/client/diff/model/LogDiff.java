@@ -28,7 +28,7 @@ import static com.google.common.base.Preconditions.checkNotNull;
  * Stanford Center for Biomedical Informatics Research
  */
 public class LogDiff {
-    private static final Logger log = LoggerFactory.getLogger(LogDiff.class);
+    private static final Logger logger = LoggerFactory.getLogger(LogDiff.class.getName());
     private static final DocumentRevision INITIAL_COMMIT_REVISION = DocumentRevision.create(1);
     private final LogDiffManager diffManager;
     private final OWLModelManager modelManager;
@@ -56,7 +56,7 @@ public class LogDiff {
     public void initDiff() {
         if (diffManager.getVersionedOntologyDocument().isPresent()) {
             VersionedOWLOntology vont = diffManager.getVersionedOntologyDocument().get();
-            OWLOntology ontology = modelManager.getActiveOntology();
+            OWLOntology ontology = diffManager.getActiveOntology();
             ChangeHistory changes = vont.getChangeHistory();
             DocumentRevision base = changes.getBaseRevision();
             DocumentRevision head = changes.getHeadRevision();
@@ -143,7 +143,7 @@ public class LogDiff {
                     BuiltInChangeType.ONTOLOGY_IRI, Optional.empty(), Optional.of(getQuotedIri(newIri)));
             change = diffFactory.createChange(changeAxiomSet, changeDetails, commitMetadata, ChangeMode.ONTOLOGY_IRI);
         } else {
-            log.error("Unhandled ontology change type for change: " + ontChange);
+            logger.error("Unhandled ontology change type for change: " + ontChange);
         }
         return Optional.ofNullable(change);
     }
@@ -207,7 +207,7 @@ public class LogDiff {
             Collection<ChangeId> dateChangeIds = changesByDate.get(metadata.getDate());
             changes = getChangesForCommit(metadata, dateChangeIds);
         }
-        else if(event.equals(LogDiffEvent.ONTOLOGY_UPDATED)) {
+        else if(event.equals(LogDiffEvent.ONTOLOGY_UPDATED) || event.equals(LogDiffEvent.COMMIT_OCCURRED)) {
             clear();
             initDiff();
             changes = changeMap.values().stream().collect(Collectors.toList());
@@ -287,7 +287,7 @@ public class LogDiff {
             }
         }
         if (entity == null) {
-            log.error("The given IRI does not exist in active ontology (" + iri.toString() + ")");
+            logger.error("The given IRI does not exist in active ontology (" + iri.toString() + ")");
         }
         return entity;
     }

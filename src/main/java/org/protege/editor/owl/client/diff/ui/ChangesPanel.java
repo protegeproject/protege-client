@@ -22,6 +22,7 @@ import static com.google.common.base.Preconditions.checkNotNull;
  * Stanford Center for Biomedical Informatics Research
  */
 public class ChangesPanel extends JPanel implements Disposable {
+    private static final long serialVersionUID = -6318728935982700515L;
     private OWLEditorKit editorKit;
     private LogDiffManager diffManager;
     private ChangesTableModel diffTableModel;
@@ -64,19 +65,19 @@ public class ChangesPanel extends JPanel implements Disposable {
     private LogDiffListener diffListener = new LogDiffListener() {
         @Override
         public void statusChanged(LogDiffEvent event) {
-            if(event.equals(LogDiffEvent.AUTHOR_SELECTION_CHANGED) || event.equals(LogDiffEvent.COMMIT_SELECTION_CHANGED)) {
+            if(event.equals(LogDiffEvent.AUTHOR_SELECTION_CHANGED) || event.equals(LogDiffEvent.COMMIT_SELECTION_CHANGED) || event.equals(LogDiffEvent.COMMIT_OCCURRED)) {
                 diffManager.clearSelectedChanges();
                 updateDiff(event);
-            }
-            else if(event.equals(LogDiffEvent.ONTOLOGY_UPDATED)) { // TODO incrementally update change indices
+                if(event.equals(LogDiffEvent.COMMIT_OCCURRED)) {
+                    diffTableModel.clear();
+                }
+            } else if(event.equals(LogDiffEvent.ONTOLOGY_UPDATED)) { // TODO incrementally update change indices
                 diff.clear();
                 diff.initDiff();
-                diffTableModel.setChanges(Collections.<Change>emptyList());
-            }
-            else if(event.equals(LogDiffEvent.CHANGE_REVIEWED)) {
+                diffTableModel.setChanges(Collections.emptyList());
+            } else if(event.equals(LogDiffEvent.CHANGE_REVIEWED)) {
                 revalidate(); repaint();
-            }
-            else if(event.equals(LogDiffEvent.RESET)) {
+            } else if(event.equals(LogDiffEvent.RESET)) {
                 diffTableModel.clear();
             }
         }

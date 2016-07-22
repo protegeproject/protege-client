@@ -1,7 +1,10 @@
 package org.protege.editor.owl.client.diff.ui;
 
-import org.protege.editor.owl.client.diff.model.*;
 import edu.stanford.protege.metaproject.api.UserId;
+import org.protege.editor.owl.client.diff.model.Change;
+import org.protege.editor.owl.client.diff.model.ChangeMode;
+import org.protege.editor.owl.client.diff.model.ChangeType;
+import org.protege.editor.owl.client.diff.model.Review;
 import org.semanticweb.owlapi.model.OWLObject;
 
 import javax.swing.table.AbstractTableModel;
@@ -16,7 +19,7 @@ import static com.google.common.base.Preconditions.checkNotNull;
  * Stanford Center for Biomedical Informatics Research
  */
 public class ChangesTableModel extends AbstractTableModel {
-    private static final long serialVersionUID = -2515070763652227164L;
+    private static final long serialVersionUID = 2145701527431928323L;
     private List<Change> changes = new ArrayList<>();
 
     /**
@@ -103,6 +106,7 @@ public class ChangesTableModel extends AbstractTableModel {
 
     public void clear() {
         changes.clear();
+        fireTableDataChanged();
     }
 
     public enum Column {

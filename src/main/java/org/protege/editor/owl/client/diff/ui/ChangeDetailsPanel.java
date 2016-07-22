@@ -16,6 +16,7 @@ import static com.google.common.base.Preconditions.checkNotNull;
  * Stanford Center for Biomedical Informatics Research
  */
 public class ChangeDetailsPanel extends JPanel implements Disposable {
+    private static final long serialVersionUID = -5433982406494139888L;
     private OWLEditorKit editorKit;
     private LogDiffManager diffManager;
 
@@ -47,7 +48,8 @@ public class ChangeDetailsPanel extends JPanel implements Disposable {
                     createContents();
                 }
             }
-            else if(event.equals(LogDiffEvent.AUTHOR_SELECTION_CHANGED) || event.equals(LogDiffEvent.COMMIT_SELECTION_CHANGED) || event.equals(LogDiffEvent.ONTOLOGY_UPDATED)) {
+            else if(event.equals(LogDiffEvent.AUTHOR_SELECTION_CHANGED) || event.equals(LogDiffEvent.COMMIT_SELECTION_CHANGED) ||
+                    event.equals(LogDiffEvent.ONTOLOGY_UPDATED) || event.equals(LogDiffEvent.COMMIT_OCCURRED)) {
                 removeAll();
                 repaint();
             }

@@ -5,6 +5,7 @@ import org.protege.editor.owl.client.ClientSessionChangeEvent.EventCategory;
 import org.protege.editor.owl.client.ClientSessionListener;
 import org.protege.editor.owl.client.api.Client;
 import org.protege.editor.owl.client.api.exception.ClientRequestException;
+import org.protege.editor.owl.client.diff.ui.CommitOperationEvent;
 import org.protege.editor.owl.client.ui.RequestFocusListener;
 import org.protege.editor.owl.client.util.ClientUtils;
 import org.protege.editor.owl.model.OWLModelManagerImpl;
@@ -110,6 +111,10 @@ public class CommitAction extends AbstractClientAction implements ClientSessionL
                 vont.update(changes); // update the local ontology
                 setEnabled(false); // disable the commit action after the changes got committed successfully
                 ((OWLModelManagerImpl) this.getOWLModelManager()).resetHistory();
+                getClientSession().fireCommitPerformedEvent(new CommitOperationEvent(
+                        changes.getHeadRevision(),
+                        changes.getMetadataForRevision(changes.getHeadRevision()),
+                        changes.getChangesForRevision(changes.getHeadRevision())));
                 showInfoDialog("Commit", "Commit success (uploaded as revision " + changes.getHeadRevision() + ")");
             }
         }

@@ -1,23 +1,23 @@
 package org.protege.editor.owl.client;
 
-import java.util.HashSet;
-import java.util.Map;
-import java.util.Set;
-import java.util.TreeMap;
-
 import edu.stanford.protege.metaproject.api.ProjectId;
-
 import org.protege.editor.owl.OWLEditorKit;
 import org.protege.editor.owl.client.ClientSessionChangeEvent.EventCategory;
 import org.protege.editor.owl.client.api.Client;
+import org.protege.editor.owl.client.diff.ui.CommitOperationEvent;
+import org.protege.editor.owl.client.diff.ui.CommitOperationListener;
 import org.protege.editor.owl.model.OWLEditorKitHook;
 import org.protege.editor.owl.model.event.EventType;
 import org.protege.editor.owl.model.event.OWLModelManagerChangeEvent;
 import org.protege.editor.owl.model.event.OWLModelManagerListener;
 import org.protege.editor.owl.server.versioning.api.VersionedOWLOntology;
-
 import org.semanticweb.owlapi.model.OWLOntology;
 import org.semanticweb.owlapi.model.OWLOntologyID;
+
+import java.util.HashSet;
+import java.util.Map;
+import java.util.Set;
+import java.util.TreeMap;
 
 /**
  * @author Josef Hardi <johardi@stanford.edu> <br>
@@ -34,6 +34,8 @@ public class ClientSession extends OWLEditorKitHook {
     private Map<OWLOntologyID, ProjectId> projectMap = new TreeMap<>();
 
     private Set<ClientSessionListener> clientSessionListeners = new HashSet<>();
+
+    private Set<CommitOperationListener> commitListeners = new HashSet<>();
 
     private OWLModelManagerListener changeActiveProject = new OWLModelManagerListener() {
         @Override
@@ -66,6 +68,20 @@ public class ClientSession extends OWLEditorKitHook {
 
     public void removeListener(ClientSessionListener listener) {
         clientSessionListeners.remove(listener);
+    }
+
+    public void fireCommitPerformedEvent(CommitOperationEvent event) {
+        for (CommitOperationListener listener : commitListeners) {
+            listener.operationPerformed(event);
+        }
+    }
+
+    public void addCommitOperationListener(CommitOperationListener listener) {
+        commitListeners.add(listener);
+    }
+
+    public void removeCommitOperationListener(CommitOperationListener listener) {
+        commitListeners.remove(listener);
     }
 
     public void setActiveClient(Client client) {

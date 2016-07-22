@@ -22,7 +22,6 @@ import java.awt.*;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.rmi.RemoteException;
-import java.util.ArrayList;
 import java.util.List;
 
 import static com.google.common.base.Preconditions.checkNotNull;
@@ -37,7 +36,6 @@ public class ReviewButtonsPanel extends JPanel implements Disposable {
     private ReviewManager reviewManager;
     private OWLEditorKit editorKit;
     private JButton rejectBtn, clearBtn, acceptBtn, commitBtn, downloadBtn;
-    private List<CommitOperationListener> listeners = new ArrayList<>();
 
     /**
      * Constructor
@@ -51,14 +49,6 @@ public class ReviewButtonsPanel extends JPanel implements Disposable {
         this.reviewManager = diffManager.getReviewManager();
         setLayout(new FlowLayout(FlowLayout.CENTER, 2, 3));
         addButtons();
-    }
-
-    public void addCommitOperationListener(CommitOperationListener listener) {
-        listeners.add(listener);
-    }
-
-    public void removeCommitOperationListener(CommitOperationListener listener) {
-        listeners.remove(listener);
     }
 
     private void addButtons() {
@@ -182,7 +172,7 @@ public class ReviewButtonsPanel extends JPanel implements Disposable {
                     CommitBundle bundle = new CommitBundleImpl(vont.getHeadRevision(), commit);
                     ChangeHistory history = client.commit(clientSession.getActiveProject(), bundle);
                     vont.update(history);
-                    fireCommitPerformedEvent(new CommitOperationEvent(
+                    ClientSession.getInstance(editorKit).fireCommitPerformedEvent(new CommitOperationEvent(
                             history.getHeadRevision(),
                             history.getMetadataForRevision(history.getHeadRevision()),
                             history.getChangesForRevision(history.getHeadRevision())));
@@ -194,12 +184,6 @@ public class ReviewButtonsPanel extends JPanel implements Disposable {
             JOptionPane.showMessageDialog(owner, "The reviews have been successfully committed", "Reviews committed", JOptionPane.INFORMATION_MESSAGE);
         }
     };
-
-    private void fireCommitPerformedEvent(CommitOperationEvent event) {
-        for (CommitOperationListener listener : listeners) {
-            listener.operationPerformed(event);
-        }
-    }
 
     private JButton getButton(String text, ActionListener listener) {
         JButton button = new JButton();

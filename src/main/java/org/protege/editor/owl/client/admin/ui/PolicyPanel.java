@@ -84,7 +84,7 @@ public class PolicyPanel extends JPanel implements Disposable {
     };
 
     private ClientSessionListener sessionListener = event -> {
-        if(event.hasCategory(ClientSessionChangeEvent.EventCategory.SWITCH_CLIENT)) {
+        if(event.hasCategory(ClientSessionChangeEvent.EventCategory.SWITCH_CLIENT) || event.hasCategory(ClientSessionChangeEvent.EventCategory.CLEAR_SESSION)) {
             client = session.getActiveClient();
             removeAll();
             initUi();
@@ -223,9 +223,11 @@ public class PolicyPanel extends JPanel implements Disposable {
             ArrayList<Object> data = new ArrayList<>();
             data.add(new ProjectListHeaderItem());
             try {
-                List<Project> projects = client.getProjects(user.getId());
-                Collections.sort(projects);
-                data.addAll(projects.stream().map(ProjectListItem::new).collect(Collectors.toList()));
+                if (client != null) {
+                    List<Project> projects = client.getProjects(user.getId());
+                    Collections.sort(projects);
+                    data.addAll(projects.stream().map(ProjectListItem::new).collect(Collectors.toList()));
+                }
             } catch (AuthorizationException | ClientRequestException | RemoteException e) {
                 handleException(e);
             }
@@ -239,9 +241,11 @@ public class PolicyPanel extends JPanel implements Disposable {
             ArrayList<Object> data = new ArrayList<>();
             data.add(new RoleListHeaderItem());
             try {
-                List<Role> roles = client.getRoles(user.getId(), selectedProject.getId());
-                Collections.sort(roles);
-                data.addAll(roles.stream().map(RoleListItem::new).collect(Collectors.toList()));
+                if (client != null) {
+                    List<Role> roles = client.getRoles(user.getId(), selectedProject.getId());
+                    Collections.sort(roles);
+                    data.addAll(roles.stream().map(RoleListItem::new).collect(Collectors.toList()));
+                }
             } catch (AuthorizationException | ClientRequestException | RemoteException e) {
                 handleException(e);
             }

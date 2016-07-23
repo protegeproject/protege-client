@@ -3,6 +3,9 @@ package org.protege.editor.owl.client.admin.ui;
 import edu.stanford.protege.metaproject.api.*;
 import org.protege.editor.core.Disposable;
 import org.protege.editor.owl.OWLEditorKit;
+import org.protege.editor.owl.client.ClientSession;
+import org.protege.editor.owl.client.ClientSessionChangeEvent;
+import org.protege.editor.owl.client.ClientSessionListener;
 import org.protege.editor.owl.client.admin.AdminTabManager;
 import org.protege.editor.owl.client.admin.model.AdminTabEvent;
 import org.protege.editor.owl.client.admin.model.AdminTabListener;
@@ -14,12 +17,15 @@ import java.awt.*;
 import java.util.ArrayList;
 import java.util.List;
 
+import static com.google.common.base.Preconditions.checkNotNull;
+
 /**
  * @author Rafael Gonçalves <br>
  * Stanford Center for Biomedical Informatics Research
  */
 public class DetailsPanel extends JPanel implements Disposable {
     private static final long serialVersionUID = 3603869997542571318L;
+    private OWLEditorKit editorKit;
     private AdminTabManager configManager;
 
     /**
@@ -28,8 +34,10 @@ public class DetailsPanel extends JPanel implements Disposable {
      * @param editorKit OWL editor kit
      */
     public DetailsPanel(OWLEditorKit editorKit) {
+        this.editorKit = checkNotNull(editorKit);
         configManager = AdminTabManager.get(editorKit);
         configManager.addListener(tabListener);
+        ClientSession.getInstance(editorKit).addListener(sessionListener);
         initUi();
     }
 
@@ -42,6 +50,15 @@ public class DetailsPanel extends JPanel implements Disposable {
             initUi(configManager.getPolicySelection());
         } else if(event.equals(AdminTabEvent.CONFIGURATION_CHANGED)) {
             removeAll();
+            initUi();
+        }
+    };
+
+    private ClientSessionListener sessionListener = event -> {
+        if(event.hasCategory(ClientSessionChangeEvent.EventCategory.CLEAR_SESSION)) {
+            removeAll();
+            revalidate();
+            repaint();
             initUi();
         }
     };
@@ -174,5 +191,6 @@ public class DetailsPanel extends JPanel implements Disposable {
     @Override
     public void dispose() {
         configManager.removeListener(tabListener);
+        ClientSession.getInstance(editorKit).removeListener(sessionListener);
     }
 }

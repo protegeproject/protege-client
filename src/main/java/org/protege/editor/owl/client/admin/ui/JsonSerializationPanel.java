@@ -49,7 +49,7 @@ public class JsonSerializationPanel extends JPanel implements Disposable {
 
     private void initUi() {
         setLayout(new BorderLayout());
-        textArea = new JTextArea(getJsonString());
+        textArea = new JTextArea((session.getActiveClient() != null ? getJsonString() : ""));
         textArea.setEditable(false);
         textArea.setLineWrap(true);
         textArea.setBorder(GuiUtils.EMPTY_BORDER);
@@ -61,14 +61,13 @@ public class JsonSerializationPanel extends JPanel implements Disposable {
     }
 
     private AdminTabListener listener = event -> {
-        if( event.equals(AdminTabEvent.CONFIGURATION_CHANGED) ||
-        		event.equals(AdminTabEvent.CONFIGURATION_RESET)) {
+        if( event.equals(AdminTabEvent.CONFIGURATION_CHANGED) || event.equals(AdminTabEvent.CONFIGURATION_RESET)) {
             update();
         }
     };
 
     private ClientSessionListener sessionListener = event -> {
-        if(event.hasCategory(ClientSessionChangeEvent.EventCategory.SWITCH_CLIENT)) {
+        if(event.hasCategory(ClientSessionChangeEvent.EventCategory.SWITCH_CLIENT) || event.hasCategory(ClientSessionChangeEvent.EventCategory.CLEAR_SESSION)) {
             removeAll();
             initUi();
         }

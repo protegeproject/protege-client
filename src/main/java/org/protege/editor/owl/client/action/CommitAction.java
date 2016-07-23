@@ -53,7 +53,7 @@ public class CommitAction extends AbstractClientAction implements ClientSessionL
 			OWLOntology activeOntology = getOWLEditorKit().getOWLModelManager().getActiveOntology();
             if (activeVersionOntology.isPresent()) {
                 ChangeHistory baseline = activeVersionOntology.get().getChangeHistory();
-                localChanges = ClientUtils.getUncommittedChanges(getOWLModelManager().getHistoryManager(), activeOntology, baseline);
+                localChanges = ClientUtils.getUncommittedChanges(source, activeOntology, baseline);
                 setEnabled(!localChanges.isEmpty());
             }			
 		}
@@ -64,13 +64,13 @@ public class CommitAction extends AbstractClientAction implements ClientSessionL
         super.initialise();
         setEnabled(false); // initially the menu item is disabled
         getClientSession().addListener(this);
-        getOWLModelManager().getHistoryManager().addUndoManagerListener(checkUncommittedChanges);
+        getSessionRecorder().addUndoManagerListener(checkUncommittedChanges);
     }
 
     @Override
     public void dispose() throws Exception {
         super.dispose();
-        getOWLModelManager().getHistoryManager().removeUndoManagerListener(checkUncommittedChanges);
+        getSessionRecorder().removeUndoManagerListener(checkUncommittedChanges);
     }
 
     @Override
@@ -110,7 +110,7 @@ public class CommitAction extends AbstractClientAction implements ClientSessionL
                 ChangeHistory changes = acceptedChanges.get();
                 vont.update(changes); // update the local ontology
                 setEnabled(false); // disable the commit action after the changes got committed successfully
-                ((OWLModelManagerImpl) this.getOWLModelManager()).resetHistory();
+                getSessionRecorder().reset();
                 getClientSession().fireCommitPerformedEvent(new CommitOperationEvent(
                         changes.getHeadRevision(),
                         changes.getMetadataForRevision(changes.getHeadRevision()),

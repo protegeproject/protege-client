@@ -24,6 +24,7 @@ import org.protege.editor.core.ui.util.JOptionPaneEx;
 import org.protege.editor.owl.OWLEditorKit;
 import org.protege.editor.owl.client.ClientSession;
 import org.protege.editor.owl.client.LocalHttpClient;
+import org.protege.editor.owl.client.SessionRecorder;
 import org.protege.editor.owl.client.api.Client;
 import org.protege.editor.owl.client.api.exception.OWLClientException;
 import org.protege.editor.owl.model.OWLModelManagerImpl;
@@ -156,9 +157,13 @@ public class OpenFromServerPanel extends JPanel {
         	Client client = clientSession.getActiveClient();
             ServerDocument serverDocument = client.openProject(pid);
             
+            SessionRecorder.getInstance(this.editorKit).stopRecording();
+            
             VersionedOWLOntology vont = ((LocalHttpClient) client).buildVersionedOntology(serverDocument, owlManager, pid);
             
-            ((OWLModelManagerImpl) editorKit.getOWLModelManager()).resetHistory();
+            SessionRecorder.getInstance(this.editorKit).startRecording();
+            
+            
 			
             clientSession.setActiveProject(pid, vont);
             closeDialog();

@@ -66,7 +66,7 @@ public class ShowUncommittedChangesAction extends AbstractClientAction implement
             OWLOntology activeOntology = getOWLEditorKit().getOWLModelManager().getActiveOntology();
             ChangeHistory baseline = activeVersionOntology.get().getChangeHistory();
             
-            List<OWLOntologyChange> uncommittedChanges = ClientUtils.getUncommittedChanges(this.getOWLModelManager().getHistoryManager(), activeOntology, baseline);
+            List<OWLOntologyChange> uncommittedChanges = ClientUtils.getUncommittedChanges(getSessionRecorder(), activeOntology, baseline);
             if (uncommittedChanges.isEmpty()) {
                 JOptionPaneEx.showConfirmDialog(editorWindow, "Message", new JLabel("No uncommitted changes"),
                         JOptionPane.INFORMATION_MESSAGE, JOptionPane.DEFAULT_OPTION, null);

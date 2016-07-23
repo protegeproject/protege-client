@@ -7,8 +7,10 @@ import java.util.Set;
 import java.util.TreeSet;
 
 import org.protege.editor.owl.client.ClientSession;
+import org.protege.editor.owl.client.SessionRecorder;
 import org.protege.editor.owl.client.api.Client;
 import org.protege.editor.owl.client.event.ClientSessionListener;
+import org.protege.editor.owl.model.ChangeListMinimizer;
 import org.protege.editor.owl.model.history.HistoryManager;
 import org.protege.editor.owl.server.versioning.ChangeHistoryUtils;
 import org.protege.editor.owl.server.versioning.Commit;
@@ -49,13 +51,8 @@ public class ClientUtils {
 
     public static List<OWLOntologyChange> getUncommittedChanges(HistoryManager man, OWLOntology ontology, ChangeHistory baseline) {
     	
+    	return ((SessionRecorder) man).getUncommittedChanges();    	
     	
-    	List<OWLOntologyChange> changes = new ArrayList<OWLOntologyChange>();
-    	for (List<OWLOntologyChange> cs : man.getLoggedChanges()) {
-    		changes.addAll(cs);
-    	}
-    	
-    	return changes;
     }
 
     /**
@@ -90,6 +87,7 @@ public class ClientUtils {
     	System.out.println("Loaded ontology, now updating from server");
 
         List<OWLOntologyChange> changes = ChangeHistoryUtils.getOntologyChanges(changeHistory, placeholder);
+        
         manager.applyChanges(changes);
         fixMissingImports(placeholder, changes, manager);
     }

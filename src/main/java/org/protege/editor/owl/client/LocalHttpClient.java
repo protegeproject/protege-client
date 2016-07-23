@@ -410,6 +410,8 @@ public class LocalHttpClient implements Client, ClientSessionListener {
 		} finally {
 			response.body().close();
 		}
+		
+		
 
 
 		return hist;
@@ -441,7 +443,7 @@ public class LocalHttpClient implements Client, ClientSessionListener {
 		
 		remoteChangeHistory = getLatestChanges(sdoc, DocumentRevision.START_REVISION);		
 		
-		
+				
 		ClientUtils.updateOntology(targetOntology, remoteChangeHistory, owlManager);
 		
 		return new VersionedOWLOntologyImpl(sdoc, targetOntology, remoteChangeHistory);

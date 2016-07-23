@@ -235,7 +235,7 @@
       	<editorKitId value="OWLEditorKit"/>
       	<class value="org.protege.editor.owl.client.action.EnableAutoUpdateAction"/>
       	<checkbox value="true"/>
-	</extension>
+	</extension>	
 
 	<!-- Editor Hook -->
 
@@ -243,6 +243,12 @@
 			   name="Client Session"
 			   point="org.protege.editor.core.application.EditorKitHook">
 		<class value="org.protege.editor.owl.client.ClientSession"/>
+		<editorKitId value="OWLEditorKit"/>
+	</extension>
+	<extension id="SessionRecorder"
+			   name="Session Recorder"
+			   point="org.protege.editor.core.application.EditorKitHook">
+		<class value="org.protege.editor.owl.client.SessionRecorder"/>
 		<editorKitId value="OWLEditorKit"/>
 	</extension>
 	

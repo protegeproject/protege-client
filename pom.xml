@@ -119,6 +119,7 @@
                         <Import-Package>
                             org.protege.editor.core.*;
                             org.protege.editor.owl.ui.*;
+                            org.protege.editor.owl.model.*;
                             org.protege.editor.owl.server.*;resolution:=optional,
                             android.util,                        
                             *

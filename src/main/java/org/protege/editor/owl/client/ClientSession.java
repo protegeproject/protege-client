@@ -1,13 +1,17 @@
 package org.protege.editor.owl.client;
 
-import edu.stanford.protege.metaproject.api.ProjectId;
+import java.util.HashSet;
+import java.util.Map;
+import java.util.Set;
+import java.util.TreeMap;
+
 import org.protege.editor.owl.OWLEditorKit;
 import org.protege.editor.owl.client.api.Client;
 import org.protege.editor.owl.client.event.ClientSessionChangeEvent;
+import org.protege.editor.owl.client.event.ClientSessionChangeEvent.EventCategory;
 import org.protege.editor.owl.client.event.ClientSessionListener;
 import org.protege.editor.owl.client.event.CommitOperationEvent;
 import org.protege.editor.owl.client.event.CommitOperationListener;
-import org.protege.editor.owl.client.event.ClientSessionChangeEvent.EventCategory;
 import org.protege.editor.owl.model.OWLEditorKitHook;
 import org.protege.editor.owl.model.event.EventType;
 import org.protege.editor.owl.model.event.OWLModelManagerChangeEvent;
@@ -16,10 +20,7 @@ import org.protege.editor.owl.server.versioning.api.VersionedOWLOntology;
 import org.semanticweb.owlapi.model.OWLOntology;
 import org.semanticweb.owlapi.model.OWLOntologyID;
 
-import java.util.HashSet;
-import java.util.Map;
-import java.util.Set;
-import java.util.TreeMap;
+import edu.stanford.protege.metaproject.api.ProjectId;
 
 /**
  * @author Josef Hardi <johardi@stanford.edu> <br>
@@ -38,7 +39,7 @@ public class ClientSession extends OWLEditorKitHook {
     private Set<ClientSessionListener> clientSessionListeners = new HashSet<>();
 
     private Set<CommitOperationListener> commitListeners = new HashSet<>();
-
+    
     private OWLModelManagerListener changeActiveProject = new OWLModelManagerListener() {
         @Override
         public void handleChange(OWLModelManagerChangeEvent event) {
@@ -55,6 +56,7 @@ public class ClientSession extends OWLEditorKitHook {
     @Override
     public void initialise() throws Exception {
         getEditorKit().getOWLModelManager().addListener(changeActiveProject);
+             
     }
 
     private void fireChangeEvent(EventCategory category) {
@@ -173,4 +175,6 @@ public class ClientSession extends OWLEditorKitHook {
     private void unregisterAllVersionOntologies() {
         ontologyMap.clear();
     }
+
+	
 }

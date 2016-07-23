@@ -125,10 +125,9 @@ public class UpdateAction extends AbstractClientAction implements ClientSessionL
         }
 
         private void performUpdate(List<OWLOntologyChange> updates) {
-        	modMan.stashHistory();        	
+        	getSessionRecorder().stopRecording();        	
             ontology.getOWLOntologyManager().applyChanges(updates);
-            modMan.resetHistory();
-            modMan.stashApplyHistory();
+            getSessionRecorder().startRecording();
             
             adjustImports(updates);
         }
@@ -146,7 +145,7 @@ public class UpdateAction extends AbstractClientAction implements ClientSessionL
         }
 
         public List<OWLOntologyChange> getLatestChangesFromClient() {
-            return ClientUtils.getUncommittedChanges(getOWLModelManager().getHistoryManager(), vont.getOntology(), vont.getChangeHistory());
+            return ClientUtils.getUncommittedChanges(getSessionRecorder(), vont.getOntology(), vont.getChangeHistory());
         }
 
         private ChangeHistory getLatestChangesFromServer() {

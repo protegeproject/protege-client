@@ -2,6 +2,7 @@ package org.protege.editor.owl.client.action;
 
 import org.protege.editor.core.ui.util.JOptionPaneEx;
 import org.protege.editor.owl.client.ClientSession;
+import org.protege.editor.owl.client.SessionRecorder;
 import org.protege.editor.owl.ui.action.ProtegeOWLAction;
 
 import java.util.concurrent.Callable;
@@ -46,6 +47,10 @@ public abstract class AbstractClientAction extends ProtegeOWLAction {
 
     protected ClientSession getClientSession() {
         return ClientSession.getInstance(getOWLEditorKit());
+    }
+    
+    protected SessionRecorder getSessionRecorder() {
+        return SessionRecorder.getInstance(getOWLEditorKit());
     }
 
     protected Future<?> submit(Runnable task) {

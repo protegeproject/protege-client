@@ -9,9 +9,9 @@ import javax.swing.JMenuItem;
 
 import org.protege.editor.core.ProtegeManager;
 import org.protege.editor.core.ui.workspace.WorkspaceFrame;
-import org.protege.editor.owl.client.ClientSessionChangeEvent;
-import org.protege.editor.owl.client.ClientSessionChangeEvent.EventCategory;
-import org.protege.editor.owl.client.ClientSessionListener;
+import org.protege.editor.owl.client.event.ClientSessionChangeEvent;
+import org.protege.editor.owl.client.event.ClientSessionListener;
+import org.protege.editor.owl.client.event.ClientSessionChangeEvent.EventCategory;
 import org.protege.editor.owl.client.ui.UserLoginPanel;
 
 /**

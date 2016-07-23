@@ -10,10 +10,10 @@ import javax.swing.JDialog;
 import javax.swing.JLabel;
 import javax.swing.JPanel;
 
-import org.protege.editor.owl.client.ClientSessionChangeEvent;
-import org.protege.editor.owl.client.ClientSessionChangeEvent.EventCategory;
-import org.protege.editor.owl.client.ClientSessionListener;
 import org.protege.editor.owl.client.LocalHttpClient;
+import org.protege.editor.owl.client.event.ClientSessionChangeEvent;
+import org.protege.editor.owl.client.event.ClientSessionListener;
+import org.protege.editor.owl.client.event.ClientSessionChangeEvent.EventCategory;
 import org.protege.editor.owl.client.util.ClientUtils;
 import org.protege.editor.owl.server.versioning.api.VersionedOWLOntology;
 

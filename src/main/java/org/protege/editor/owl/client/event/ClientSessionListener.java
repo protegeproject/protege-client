@@ -1,4 +1,4 @@
-package org.protege.editor.owl.client;
+package org.protege.editor.owl.client.event;
 
 /**
  * @author Josef Hardi <johardi@stanford.edu> <br>

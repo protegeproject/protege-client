@@ -65,13 +65,14 @@ public class ChangesPanel extends JPanel implements Disposable {
     private LogDiffListener diffListener = new LogDiffListener() {
         @Override
         public void statusChanged(LogDiffEvent event) {
-            if(event.equals(LogDiffEvent.AUTHOR_SELECTION_CHANGED) || event.equals(LogDiffEvent.COMMIT_SELECTION_CHANGED) || event.equals(LogDiffEvent.COMMIT_OCCURRED)) {
+            if(event.equals(LogDiffEvent.AUTHOR_SELECTION_CHANGED) || event.equals(LogDiffEvent.COMMIT_SELECTION_CHANGED)) {
                 diffManager.clearSelectedChanges();
                 updateDiff(event);
-                if(event.equals(LogDiffEvent.COMMIT_OCCURRED)) {
-                    diffTableModel.clear();
-                }
-            } else if(event.equals(LogDiffEvent.ONTOLOGY_UPDATED)) { // TODO incrementally update change indices
+            } else if(event.equals(LogDiffEvent.COMMIT_OCCURRED)) {
+                updateDiff(event);
+                diffTableModel.clear();
+            }
+            else if(event.equals(LogDiffEvent.ONTOLOGY_UPDATED)) { // TODO incrementally update change indices
                 diff.clear();
                 diff.initDiff();
                 diffTableModel.setChanges(Collections.emptyList());

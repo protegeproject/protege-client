@@ -52,13 +52,9 @@ public class AuthorPanel extends JPanel implements Disposable {
         }
     };
 
-    private LogDiffListener diffListener = new LogDiffListener() {
-        @Override
-        public void statusChanged(LogDiffEvent event) {
-            if (event.equals(LogDiffEvent.ONTOLOGY_UPDATED) || event.equals(LogDiffEvent.COMMIT_OCCURRED)) {
-                diffManager.clearSelections();
-                listAuthors();
-            }
+    private LogDiffListener diffListener = event -> {
+        if (event.equals(LogDiffEvent.ONTOLOGY_UPDATED) || event.equals(LogDiffEvent.COMMIT_OCCURRED)) {
+            listAuthors();
         }
     };
 

@@ -91,13 +91,11 @@ public class LogDiffManager implements Disposable {
     };
 
     private OWLOntologyChangeListener ontologyChangeListener = changes -> {
-        clearSelections();
         statusChanged(LogDiffEvent.ONTOLOGY_UPDATED);
     };
 
     private OWLModelManagerListener ontologyLoadListener = event -> {
         if (event.isType(EventType.ONTOLOGY_LOADED) || event.isType(EventType.ACTIVE_ONTOLOGY_CHANGED)) {
-            clearSelections();
             statusChanged(LogDiffEvent.ONTOLOGY_UPDATED);
         }
     };
@@ -139,10 +137,6 @@ public class LogDiffManager implements Disposable {
         statusChanged(LogDiffEvent.COMMIT_SELECTION_CHANGED);
     }
 
-    public void setSelectedCommitToLatest() {
-        setSelectedCommit(commits.get(0));
-    }
-
     public List<CommitMetadata> getCommits(LogDiffEvent event) {
         VersionedOWLOntology vont = getVersionedOntologyDocument().get();
         ChangeHistory changes = vont.getChangeHistory();
@@ -153,7 +147,7 @@ public class LogDiffManager implements Disposable {
             RevisionMetadata metaData = changes.getMetadataForRevision(rev);
             if (event.equals(LogDiffEvent.AUTHOR_SELECTION_CHANGED) && getSelectedAuthor() != null &&
                     (metaData.getAuthorId().equals(getSelectedAuthor()) || getSelectedAuthor().equals(LogDiffManager.ALL_AUTHORS)) ||
-                    event.equals(LogDiffEvent.ONTOLOGY_UPDATED)) {
+                    event.equals(LogDiffEvent.ONTOLOGY_UPDATED) || event.equals(LogDiffEvent.COMMIT_OCCURRED)) {
                 CommitMetadata c = diffFactory.createCommitMetadata(diffFactory.createCommitId(metaData.hashCode() + ""),
                         metaData.getAuthorId(), metaData.getDate(), metaData.getComment());
                 commits.add(c);
@@ -161,12 +155,6 @@ public class LogDiffManager implements Disposable {
         }
         Collections.sort(commits);
         return commits;
-    }
-
-    public void clearSelections() {
-        selectedAuthor = null;
-        selectedCommit = null;
-        selectedChanges.clear();
     }
 
     public LogDiff getDiffEngine() {
@@ -200,7 +188,7 @@ public class LogDiffManager implements Disposable {
         return reviewManager;
     }
 
-    public void commitChanges(List<OWLOntologyChange> changes) {
+    public void applyOntologyChanges(List<OWLOntologyChange> changes) {
         modelManager.applyChanges(changes);
     }
 
@@ -225,7 +213,7 @@ public class LogDiffManager implements Disposable {
         toRemove.addAll(ont.getDeclarationAxioms(property));
         List<OWLOntologyChange> changes = toRemove.stream().map(ax -> new RemoveAxiom(ont, ax)).collect(Collectors.toList());
         changes.addAll(toAdd.stream().map(ax -> new AddAxiom(ont, ax)).collect(Collectors.toList()));
-        commitChanges(changes);
+        applyOntologyChanges(changes);
         return changes;
     }
 
@@ -239,7 +227,7 @@ public class LogDiffManager implements Disposable {
                 changeList.add(new AddAxiom(change.getOntology(), change.getAxiom()));
             }
         }
-        commitChanges(changeList);
+        applyOntologyChanges(changeList);
     }
 
     @Override

@@ -160,8 +160,6 @@ public class ReviewButtonsPanel extends JPanel implements Disposable {
                 if (commitComment == null) {
                     return; // user pressed cancel
                 }
-                diffManager.commitChanges(changes); // commit changes to active ontology
-
                 ClientSession clientSession = ClientSession.getInstance(editorKit);
                 Client client = clientSession.getActiveClient();
                 RevisionMetadata metaData = new RevisionMetadata(
@@ -169,6 +167,7 @@ public class ReviewButtonsPanel extends JPanel implements Disposable {
                         client.getUserInfo().getName(),
                         client.getUserInfo().getEmailAddress(), "[Review] " + commitComment);
                 try {
+                    diffManager.applyOntologyChanges(changes); // apply changes to active ontology
                     Commit commit = new Commit(metaData, changes);
                     CommitBundle bundle = new CommitBundleImpl(vont.getHeadRevision(), commit);
                     ChangeHistory history = client.commit(clientSession.getActiveProject(), bundle);
@@ -180,7 +179,6 @@ public class ReviewButtonsPanel extends JPanel implements Disposable {
                 } catch (OWLServerException | RemoteException | ClientRequestException ex) {
                     ErrorLogPanel.showErrorDialog(ex);
                 }
-                diffManager.setSelectedCommitToLatest();
             }
             JOptionPane.showMessageDialog(owner, "The reviews have been successfully committed", "Reviews committed", JOptionPane.INFORMATION_MESSAGE);
         }

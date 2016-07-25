@@ -8,7 +8,7 @@ import static com.google.common.base.Preconditions.checkNotNull;
  */
 public class Detail {
     private String name, value;
-    private boolean isLabel = true, isTextArea = false;
+    private boolean isLabel = true, isTextArea = false, isLast = false;
 
     /**
      * Constructor
@@ -37,6 +37,10 @@ public class Detail {
         return isTextArea;
     }
 
+    public boolean isLast() {
+        return isLast;
+    }
+
     public void setIsLabel(boolean isLabel) {
         this.isLabel = checkNotNull(isLabel);
         isTextArea = !isLabel;
@@ -45,5 +49,9 @@ public class Detail {
     public void setIsTextArea(boolean isTextArea) {
         this.isTextArea = checkNotNull(isTextArea);
         isLabel = !isTextArea;
+    }
+
+    public void setIsLast(boolean isLast) {
+        this.isLast = checkNotNull(isLast);
     }
 }

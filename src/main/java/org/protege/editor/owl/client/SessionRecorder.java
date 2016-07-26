@@ -238,8 +238,9 @@ public class SessionRecorder extends OWLEditorKitHook implements OWLOntologyChan
 	@Override
 	public void dispose() throws Exception {
 		getEditorKit().getOWLModelManager().removeOntologyChangeListener(this);
-		
-		
+		getEditorKit().getModelManager().removeListener(changeActiveProject);
+
+
 	}
 
 	@Override

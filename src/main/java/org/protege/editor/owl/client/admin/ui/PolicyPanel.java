@@ -1,5 +1,6 @@
 package org.protege.editor.owl.client.admin.ui;
 
+import edu.stanford.protege.metaproject.api.GlobalPermissions;
 import edu.stanford.protege.metaproject.api.Project;
 import edu.stanford.protege.metaproject.api.Role;
 import edu.stanford.protege.metaproject.api.User;
@@ -242,7 +243,7 @@ public class PolicyPanel extends JPanel implements Disposable {
             data.add(new RoleListHeaderItem());
             try {
                 if (client != null) {
-                    List<Role> roles = client.getRoles(user.getId(), selectedProject.getId());
+                    List<Role> roles = client.getRoles(user.getId(), selectedProject.getId(), GlobalPermissions.EXCLUDED);
                     Collections.sort(roles);
                     data.addAll(roles.stream().map(RoleListItem::new).collect(Collectors.toList()));
                 }
@@ -261,7 +262,6 @@ public class PolicyPanel extends JPanel implements Disposable {
     }
 
     private void addProjectAssignment() {
-
         if(client != null && client.canAssignRole()) {
             Optional<Project> project = PolicyAssignmentDialogPanel.showDialog(editorKit, (User) configManager.getSelection());
             if (project.isPresent()) {
@@ -274,7 +274,6 @@ public class PolicyPanel extends JPanel implements Disposable {
     }
 
     private void deleteProjectAssignment() {
-
         if(client != null && client.canRetractRole()) {
             Object selectedObj = projectList.getSelectedValue();
             if (selectedObj instanceof ProjectListItem) {
@@ -289,7 +288,7 @@ public class PolicyPanel extends JPanel implements Disposable {
                     return;
                 }
                 try {
-                    List<Role> roles = client.getRoles(user.getId(), project.getId());
+                    List<Role> roles = client.getRoles(user.getId(), project.getId(), GlobalPermissions.EXCLUDED);
                     for (Role role : roles) {
                         client.retractRole(user.getId(), project.getId(), role.getId());
                         configManager.statusChanged(AdminTabEvent.CONFIGURATION_CHANGED);

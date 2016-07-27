@@ -1,9 +1,6 @@
 package org.protege.editor.owl.client.admin.ui;
 
-import edu.stanford.protege.metaproject.api.Operation;
-import edu.stanford.protege.metaproject.api.Project;
-import edu.stanford.protege.metaproject.api.Role;
-import edu.stanford.protege.metaproject.api.User;
+import edu.stanford.protege.metaproject.api.*;
 import edu.stanford.protege.metaproject.impl.MetaprojectUtils;
 import org.protege.editor.core.ui.error.ErrorLogPanel;
 import org.protege.editor.core.ui.util.InputVerificationStatusChangedListener;
@@ -214,7 +211,7 @@ public class PolicyAssignmentDialogPanel extends JPanel implements VerifiedInput
         if(selectedProject != null && selectedUser != null && !getSelectedRoleCheckboxes().isEmpty()) {
             Client client = ClientSession.getInstance(editorKit).getActiveClient();
             try {
-                List<Role> roles = client.getRoles(selectedUser.getId(), selectedProject.getId());
+                List<Role> roles = client.getRoles(selectedUser.getId(), selectedProject.getId(), GlobalPermissions.EXCLUDED);
                 for(Role r : getSelectedRoles()) {
                     if(roles.contains(r)) {
                         return true;

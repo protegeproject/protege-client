@@ -1,18 +1,6 @@
 package org.protege.editor.owl.client.api;
 
-import edu.stanford.protege.metaproject.api.Description;
-import edu.stanford.protege.metaproject.api.Host;
-import edu.stanford.protege.metaproject.api.Name;
-import edu.stanford.protege.metaproject.api.Operation;
-import edu.stanford.protege.metaproject.api.OperationId;
-import edu.stanford.protege.metaproject.api.Password;
-import edu.stanford.protege.metaproject.api.Project;
-import edu.stanford.protege.metaproject.api.ProjectId;
-import edu.stanford.protege.metaproject.api.ProjectOptions;
-import edu.stanford.protege.metaproject.api.Role;
-import edu.stanford.protege.metaproject.api.RoleId;
-import edu.stanford.protege.metaproject.api.User;
-import edu.stanford.protege.metaproject.api.UserId;
+import edu.stanford.protege.metaproject.api.*;
 
 import org.protege.editor.owl.client.api.exception.ClientRequestException;
 import org.protege.editor.owl.server.api.CommitBundle;
@@ -251,7 +239,7 @@ public interface ClientRequests {
      *             communication problems, failure during parameter or return
      *             value marshalling or unmarshalling, protocol errors.
      */
-    Map<ProjectId, List<Role>> getRoles(UserId userId)
+    Map<ProjectId, List<Role>> getRoles(UserId userId, GlobalPermissions globalPermissions)
             throws AuthorizationException, ClientRequestException, RemoteException;
 
     /**
@@ -272,7 +260,7 @@ public interface ClientRequests {
      *             communication problems, failure during parameter or return
      *             value marshalling or unmarshalling, protocol errors.
      */
-    List<Role> getRoles(UserId userId, ProjectId projectId)
+    List<Role> getRoles(UserId userId, ProjectId projectId, GlobalPermissions globalPermissions)
             throws AuthorizationException, ClientRequestException, RemoteException;
 
     /**

@@ -1,33 +1,21 @@
 package org.protege.editor.owl.client;
 
-import java.io.BufferedInputStream;
-import java.io.BufferedOutputStream;
-import java.io.ByteArrayOutputStream;
-import java.io.DataOutputStream;
-import java.io.File;
-import java.io.FileInputStream;
-import java.io.FileOutputStream;
-import java.io.IOException;
-import java.io.InputStream;
-import java.io.InputStreamReader;
-import java.io.ObjectInputStream;
-import java.io.ObjectOutputStream;
-import java.net.URI;
-import java.rmi.RemoteException;
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
-import java.util.Optional;
-import java.util.concurrent.TimeUnit;
-
+import com.google.gson.Gson;
+import edu.stanford.protege.metaproject.api.*;
+import edu.stanford.protege.metaproject.api.exception.*;
+import edu.stanford.protege.metaproject.impl.AuthorizedUserToken;
+import edu.stanford.protege.metaproject.impl.Operations;
+import edu.stanford.protege.metaproject.impl.UserIdImpl;
+import edu.stanford.protege.metaproject.serialization.DefaultJsonSerializer;
+import io.undertow.util.StatusCodes;
+import okhttp3.*;
 import org.apache.commons.codec.binary.Base64;
-import org.protege.editor.owl.client.event.ClientSessionChangeEvent.EventCategory;
 import org.protege.editor.owl.client.api.Client;
 import org.protege.editor.owl.client.api.UserInfo;
 import org.protege.editor.owl.client.api.exception.ClientRequestException;
 import org.protege.editor.owl.client.api.exception.LoginTimeoutException;
 import org.protege.editor.owl.client.event.ClientSessionChangeEvent;
+import org.protege.editor.owl.client.event.ClientSessionChangeEvent.EventCategory;
 import org.protege.editor.owl.client.event.ClientSessionListener;
 import org.protege.editor.owl.client.util.ClientUtils;
 import org.protege.editor.owl.server.api.CommitBundle;
@@ -53,48 +41,11 @@ import org.semanticweb.owlapi.model.OWLOntology;
 import org.semanticweb.owlapi.model.OWLOntologyCreationException;
 import org.semanticweb.owlapi.model.OWLOntologyManager;
 
-import com.google.gson.Gson;
-
-import edu.stanford.protege.metaproject.api.AuthToken;
-import edu.stanford.protege.metaproject.api.AuthenticationRegistry;
-import edu.stanford.protege.metaproject.api.Description;
-import edu.stanford.protege.metaproject.api.Host;
-import edu.stanford.protege.metaproject.api.MetaprojectAgent;
-import edu.stanford.protege.metaproject.api.Name;
-import edu.stanford.protege.metaproject.api.Operation;
-import edu.stanford.protege.metaproject.api.OperationId;
-import edu.stanford.protege.metaproject.api.OperationRegistry;
-import edu.stanford.protege.metaproject.api.Password;
-import edu.stanford.protege.metaproject.api.Policy;
-import edu.stanford.protege.metaproject.api.Project;
-import edu.stanford.protege.metaproject.api.ProjectId;
-import edu.stanford.protege.metaproject.api.ProjectOptions;
-import edu.stanford.protege.metaproject.api.ProjectRegistry;
-import edu.stanford.protege.metaproject.api.Role;
-import edu.stanford.protege.metaproject.api.RoleId;
-import edu.stanford.protege.metaproject.api.RoleRegistry;
-import edu.stanford.protege.metaproject.api.SaltedPasswordDigest;
-import edu.stanford.protege.metaproject.api.Serializer;
-import edu.stanford.protege.metaproject.api.ServerConfiguration;
-import edu.stanford.protege.metaproject.api.User;
-import edu.stanford.protege.metaproject.api.UserId;
-import edu.stanford.protege.metaproject.api.UserRegistry;
-import edu.stanford.protege.metaproject.api.exception.IdAlreadyInUseException;
-import edu.stanford.protege.metaproject.api.exception.ObjectConversionException;
-import edu.stanford.protege.metaproject.api.exception.ProjectNotInPolicyException;
-import edu.stanford.protege.metaproject.api.exception.UnknownMetaprojectObjectIdException;
-import edu.stanford.protege.metaproject.api.exception.UserNotInPolicyException;
-import edu.stanford.protege.metaproject.api.exception.UserNotRegisteredException;
-import edu.stanford.protege.metaproject.impl.AuthorizedUserToken;
-import edu.stanford.protege.metaproject.impl.Operations;
-import edu.stanford.protege.metaproject.impl.UserIdImpl;
-import edu.stanford.protege.metaproject.serialization.DefaultJsonSerializer;
-import io.undertow.util.StatusCodes;
-import okhttp3.MediaType;
-import okhttp3.OkHttpClient;
-import okhttp3.Request;
-import okhttp3.RequestBody;
-import okhttp3.Response;
+import java.io.*;
+import java.net.URI;
+import java.rmi.RemoteException;
+import java.util.*;
+import java.util.concurrent.TimeUnit;
 
 public class LocalHttpClient implements Client, ClientSessionListener {
 
@@ -698,20 +649,20 @@ public class LocalHttpClient implements Client, ClientSessionListener {
 	}
 
 	@Override
-	public Map<ProjectId, List<Role>> getRoles(UserId userId)
+	public Map<ProjectId, List<Role>> getRoles(UserId userId, GlobalPermissions globalPermissions)
 			throws AuthorizationException, ClientRequestException, RemoteException {
 		Map<ProjectId, List<Role>> roleMap = new HashMap<>();
         for (Project project : getAllProjects()) {
-            roleMap.put(project.getId(), getRoles(userId, project.getId()));
+            roleMap.put(project.getId(), getRoles(userId, project.getId(), globalPermissions));
         }
         return roleMap;
 	}
 
 	@Override
-	public List<Role> getRoles(UserId userId, ProjectId projectId)
+	public List<Role> getRoles(UserId userId, ProjectId projectId, GlobalPermissions globalPermissions)
 			throws AuthorizationException, ClientRequestException, RemoteException {
 		try {
-            return new ArrayList<>(meta_agent.getRoles(userId, projectId));
+            return new ArrayList<>(meta_agent.getRoles(userId, projectId, globalPermissions));
         }
         catch (UserNotInPolicyException | ProjectNotInPolicyException e) {
         	throw new ClientRequestException(e.getMessage(), e.getCause());
@@ -770,7 +721,7 @@ public class LocalHttpClient implements Client, ClientSessionListener {
 	public List<Operation> getOperations(UserId userId, ProjectId projectId)
 			throws AuthorizationException, ClientRequestException, RemoteException {
 		try {
-            return new ArrayList<>(meta_agent.getOperations(userId, projectId));
+            return new ArrayList<>(meta_agent.getOperations(userId, projectId, GlobalPermissions.INCLUDED));
         }
         catch (UserNotInPolicyException | ProjectNotInPolicyException e) {
         	throw new ClientRequestException(e.getMessage(), e.getCause());
@@ -934,7 +885,7 @@ public class LocalHttpClient implements Client, ClientSessionListener {
 		try {
             List<Role> activeRoles = new ArrayList<>();
             if (getRemoteProject().isPresent()) {
-                activeRoles = getRoles(userId, getRemoteProject().get());
+                activeRoles = getRoles(userId, getRemoteProject().get(), GlobalPermissions.INCLUDED);
             }
             return activeRoles;
         }

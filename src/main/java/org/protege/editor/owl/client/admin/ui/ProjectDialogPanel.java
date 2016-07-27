@@ -12,17 +12,8 @@ import org.protege.editor.owl.client.admin.model.ProjectOption;
 import org.protege.editor.owl.client.api.Client;
 import org.protege.editor.owl.client.api.exception.ClientRequestException;
 import org.protege.editor.owl.client.diff.ui.GuiUtils;
-import org.protege.editor.owl.client.util.ClientUtils;
-import org.protege.editor.owl.server.api.CommitBundle;
 import org.protege.editor.owl.server.api.exception.AuthorizationException;
-import org.protege.editor.owl.server.policy.CommitBundleImpl;
-import org.protege.editor.owl.server.versioning.Commit;
-import org.protege.editor.owl.server.versioning.api.DocumentRevision;
 import org.protege.editor.owl.ui.UIHelper;
-import org.semanticweb.owlapi.apibinding.OWLManager;
-import org.semanticweb.owlapi.model.OWLOntology;
-import org.semanticweb.owlapi.model.OWLOntologyChange;
-import org.semanticweb.owlapi.model.OWLOntologyCreationException;
 
 import javax.swing.*;
 import javax.swing.border.EmptyBorder;
@@ -57,7 +48,8 @@ public class ProjectDialogPanel extends JPanel implements VerifiedInputEditor {
     private AugmentedJTextArea description;
     private JTextField id;
     private JLabel idLbl, nameLbl, descriptionLbl, fileLbl, fileSelectionLbl, ownerLbl;
-    private JComboBox<User> ownerSelection;
+    private JComboBox<User> ownerComboBox;
+    private JComboBox<Project> projectComboBox;
     private final JTextArea errorArea = new JTextArea(1, FIELD_WIDTH * 2);
     private List<InputVerificationStatusChangedListener> listeners = new ArrayList<>();
     private JButton fileBtn = new JButton("Browse");
@@ -128,14 +120,11 @@ public class ProjectDialogPanel extends JPanel implements VerifiedInputEditor {
         description.setBorder(GuiUtils.EMPTY_BORDER);
 
         if (isEditing) {
-            initComboBox();
-            ItemListener comboBoxListener = e -> {
-                if (e.getStateChange() == ItemEvent.SELECTED) {
-                    ownerId = ((User) e.getItem()).getId();
-                    handleValueChange();
-                }
-            };
-            ownerSelection.addItemListener(comboBoxListener);
+            initOwnerComboBox();
+            ownerComboBox.addItemListener(ownerComboBoxListener);
+        } else {
+            initProjectComboBox();
+            projectComboBox.addItemListener(projectComboBoxListener);
         }
 
         Insets insets = id.getBorder().getBorderInsets(id);
@@ -159,6 +148,28 @@ public class ProjectDialogPanel extends JPanel implements VerifiedInputEditor {
         ownerId = getOwnerId();
     }
 
+    private ItemListener ownerComboBoxListener = e -> {
+        if (e.getStateChange() == ItemEvent.SELECTED) {
+            ownerId = ((User) e.getItem()).getId();
+            handleValueChange();
+        }
+    };
+
+    private ItemListener projectComboBoxListener = e -> {
+        if (e.getStateChange() == ItemEvent.SELECTED) {
+            Project project = (Project) projectComboBox.getSelectedItem();
+            if (project != null) {
+                name.setText(project.getName().get());
+                description.setText(project.getName().get());
+                Optional<ProjectOptions> options = project.getOptions();
+                if (options.isPresent()) {
+                    optionsTableModel.setOptions(options.get());
+                    projectOptions = options.get().getOptions();
+                }
+            }
+        }
+    };
+
     private class UploadActionListener implements ActionListener {
         @Override
         public void actionPerformed(ActionEvent e) {
@@ -173,11 +184,20 @@ public class ProjectDialogPanel extends JPanel implements VerifiedInputEditor {
     }
 
     private void initUi() {
+        setLayout(new BorderLayout());
         JPanel detailsPanel = new JPanel(new GridBagLayout());
         JTabbedPane tabbedPane = new JTabbedPane(SwingConstants.TOP);
         tabbedPane.addTab("Details", detailsPanel);
         tabbedPane.addTab("Options", getProjectOptionsPanel());
-        add(tabbedPane);
+        if (!isEditing) {
+            JPanel topPanel = new JPanel(new GridBagLayout());
+            Insets insets = new Insets(0, 2, 0, 2);
+            topPanel.add(new JLabel("Copy project:"), new GridBagConstraints(0, 0, 1, 1, 0.0, 0.0, GridBagConstraints.BASELINE_LEADING, GridBagConstraints.NONE, insets, 0, 0));
+            topPanel.add(projectComboBox, new GridBagConstraints(1, 0, 1, 1, 1.0, 0.0, GridBagConstraints.BASELINE_LEADING, GridBagConstraints.HORIZONTAL, insets, 0, 0));
+            topPanel.add(new JSeparator(), new GridBagConstraints(0, 1, 2, 1, 1.0, 0.0, GridBagConstraints.CENTER, GridBagConstraints.HORIZONTAL, new Insets(5, 0, 10, 0), 0, 0));
+            add(topPanel, BorderLayout.NORTH);
+        }
+        add(tabbedPane, BorderLayout.CENTER);
 
         JScrollPane descriptionScrollPane = new JScrollPane(description);
         descriptionScrollPane.setBorder(GuiUtils.MATTE_BORDER);
@@ -195,12 +215,10 @@ public class ProjectDialogPanel extends JPanel implements VerifiedInputEditor {
         rowIndex++;
         if (isEditing) {
             detailsPanel.add(ownerLbl, new GridBagConstraints(0, rowIndex, 1, 1, 0.0, 0.0, GridBagConstraints.BASELINE_TRAILING, GridBagConstraints.NONE, insets, 0, 0));
-            detailsPanel.add(ownerSelection, new GridBagConstraints(1, rowIndex, 2, 1, 1.0, 0.0, GridBagConstraints.BASELINE_LEADING, GridBagConstraints.HORIZONTAL, insets, 0, 0));
+            detailsPanel.add(ownerComboBox, new GridBagConstraints(1, rowIndex, 2, 1, 1.0, 0.0, GridBagConstraints.BASELINE_LEADING, GridBagConstraints.HORIZONTAL, insets, 0, 0));
             rowIndex++;
         }
-        if(!isEditing) {
-            detailsPanel.add(new JSeparator(), new GridBagConstraints(0, rowIndex, 3, 1, 1.0, 0.0, GridBagConstraints.CENTER, GridBagConstraints.HORIZONTAL, new Insets(5, 2, 5, 2), 0, 0));
-            rowIndex++;
+        if (!isEditing) {
             detailsPanel.add(fileLbl, new GridBagConstraints(0, rowIndex, 1, 1, 0.0, 0.0, GridBagConstraints.BASELINE_TRAILING, GridBagConstraints.NONE, insets, 0, 0));
             detailsPanel.add(fileBtn, new GridBagConstraints(1, rowIndex, 1, 1, 0.0, 0.0, GridBagConstraints.BASELINE_LEADING, GridBagConstraints.RELATIVE, new Insets(0, 0, 2, 0), 0, 0));
             detailsPanel.add(fileSelectionLbl, new GridBagConstraints(2, rowIndex, 1, 1, 1.0, 0.0, GridBagConstraints.BASELINE_LEADING, GridBagConstraints.HORIZONTAL, new Insets(0, 0, 2, 0), 0, 0));
@@ -331,7 +349,7 @@ public class ProjectDialogPanel extends JPanel implements VerifiedInputEditor {
         return Manager.getFactory().getProjectOptions(map);
     }
 
-    private void initComboBox() {
+    private void initOwnerComboBox() {
         User[] users = new User[0];
         try {
             Client client = ClientSession.getInstance(editorKit).getActiveClient();
@@ -341,8 +359,24 @@ public class ProjectDialogPanel extends JPanel implements VerifiedInputEditor {
         } catch (RemoteException | ClientRequestException | AuthorizationException e) {
             ErrorLogPanel.showErrorDialog(e);
         }
-        ownerSelection = new JComboBox<>(users);
-        ownerSelection.setRenderer(new MetaprojectObjectComboBoxRenderer());
+        ownerComboBox = new JComboBox<>(users);
+        ownerComboBox.setRenderer(new MetaprojectObjectComboBoxRenderer());
+    }
+
+    private void initProjectComboBox() {
+        Project[] projects = new Project[0];
+        try {
+            Client client = ClientSession.getInstance(editorKit).getActiveClient();
+            List<Project> projectList = client.getAllProjects();
+            Collections.sort(projectList);
+            projectList.add(0, null);
+            projects = projectList.toArray(new Project[projectList.size()]);
+        } catch (RemoteException | ClientRequestException | AuthorizationException e) {
+            ErrorLogPanel.showErrorDialog(e);
+        }
+        projectComboBox = new JComboBox<>(projects);
+        projectComboBox.setRenderer(new MetaprojectObjectComboBoxRenderer());
+        projectComboBox.setSelectedIndex(0);
     }
 
     private void setIsEditing(Project project) {
@@ -352,10 +386,10 @@ public class ProjectDialogPanel extends JPanel implements VerifiedInputEditor {
         description.setText(project.getDescription().get());
         file = project.getFile();
         fileSelectionLbl.setText(file.getName());
-        for (int i = 0; i < ownerSelection.getModel().getSize(); i++) {
-            User user = ownerSelection.getModel().getElementAt(i);
+        for (int i = 0; i < ownerComboBox.getModel().getSize(); i++) {
+            User user = ownerComboBox.getModel().getElementAt(i);
             if (user.getId().equals(project.getOwner())) {
-                ownerSelection.setSelectedItem(user);
+                ownerComboBox.setSelectedItem(user);
             }
         }
         if (project.getOptions().isPresent()) {
@@ -421,7 +455,7 @@ public class ProjectDialogPanel extends JPanel implements VerifiedInputEditor {
 
     private void addProject(Project project) {
         Client client = ClientSession.getInstance(editorKit).getActiveClient();
-        try {            
+        try {
             ((LocalHttpClient) client).createProject(project);
         } catch (AuthorizationException | ClientRequestException | RemoteException e) {
             ErrorLogPanel.showErrorDialog(e);

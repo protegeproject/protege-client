@@ -34,6 +34,7 @@ import javax.swing.table.TableRowSorter;
 import org.protege.editor.owl.OWLEditorKit;
 import org.protege.editor.owl.client.LocalHttpClient;
 import org.protege.editor.owl.client.api.exception.ClientRequestException;
+import org.protege.editor.owl.server.api.exception.AuthorizationException;
 import org.protege.editor.owl.server.versioning.ChangeHistoryUtils;
 import org.protege.editor.owl.server.versioning.api.ChangeHistory;
 import org.protege.editor.owl.server.versioning.api.DocumentRevision;
@@ -60,14 +61,14 @@ public class ChangeHistoryPanel extends JPanel {
     private JTable changeListTable;
     private ChangeListTableModel changeListTableModel;
 
-    public ChangeHistoryPanel(VersionedOWLOntology vont, OWLEditorKit editorKit) throws ClientRequestException {
+    public ChangeHistoryPanel(VersionedOWLOntology vont, OWLEditorKit editorKit) throws AuthorizationException, ClientRequestException {
         this.vont = vont;
         this.editorKit = editorKit;
         this.ontology = editorKit.getOWLModelManager().getActiveOntology();
         initUI();
     }
 
-    private void initUI() throws ClientRequestException {
+    private void initUI() throws AuthorizationException, ClientRequestException {
         String shortOntologyName = "";
         OWLOntologyID ontologyId = ontology.getOntologyID();
         if (!ontologyId.isAnonymous()) {
@@ -107,7 +108,7 @@ public class ChangeHistoryPanel extends JPanel {
         add(getButtonPanel(), BorderLayout.SOUTH);
     }
 
-    private JComponent getHistoryComponent() throws ClientRequestException {
+    private JComponent getHistoryComponent() throws AuthorizationException, ClientRequestException {
         ChangeHistory remoteChanges = LocalHttpClient.current_user().getAllChanges(vont.getServerDocument());
         HistoryTableModel model = new HistoryTableModel(remoteChanges);
         final JTable table = new JTable(model);

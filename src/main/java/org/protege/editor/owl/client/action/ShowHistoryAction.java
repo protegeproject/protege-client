@@ -15,10 +15,11 @@ import javax.swing.KeyStroke;
 import org.protege.editor.owl.client.api.exception.ClientRequestException;
 import org.protege.editor.owl.client.api.exception.SynchronizationException;
 import org.protege.editor.owl.client.event.ClientSessionChangeEvent;
-import org.protege.editor.owl.client.event.ClientSessionListener;
 import org.protege.editor.owl.client.event.ClientSessionChangeEvent.EventCategory;
+import org.protege.editor.owl.client.event.ClientSessionListener;
 import org.protege.editor.owl.client.ui.ChangeHistoryPanel;
 import org.protege.editor.owl.model.OWLWorkspace;
+import org.protege.editor.owl.server.api.exception.AuthorizationException;
 import org.protege.editor.owl.server.versioning.api.VersionedOWLOntology;
 
 /**
@@ -60,12 +61,12 @@ public class ShowHistoryAction extends AbstractClientAction implements ClientSes
             dialog.setLocationRelativeTo(editorWindow);
             dialog.setVisible(true);
         }
-        catch (ClientRequestException | SynchronizationException e) {
+        catch (AuthorizationException | ClientRequestException | SynchronizationException e) {
             showErrorDialog("Unable to show change history", e.getMessage(), e);
         }
     }
 
-    private JDialog createDialog() throws ClientRequestException, SynchronizationException {
+    private JDialog createDialog() throws AuthorizationException, ClientRequestException, SynchronizationException {
         final JDialog dialog = new JDialog(null, "Browse Change History", Dialog.ModalityType.MODELESS);
         ChangeHistoryPanel changeHistoryPanel = new ChangeHistoryPanel(activeVersionOntology.get(), getOWLEditorKit());
         changeHistoryPanel.getInputMap(JComponent.WHEN_ANCESTOR_OF_FOCUSED_COMPONENT).put(KeyStroke.getKeyStroke(KeyEvent.VK_ESCAPE, 0), "CLOSE_DIALOG");

@@ -21,9 +21,7 @@ import org.protege.editor.owl.client.util.ClientUtils;
 import org.protege.editor.owl.server.api.CommitBundle;
 import org.protege.editor.owl.server.api.exception.AuthorizationException;
 import org.protege.editor.owl.server.api.exception.OutOfSyncException;
-import org.protege.editor.owl.server.api.exception.ServerServiceException;
 import org.protege.editor.owl.server.http.HTTPServer;
-import org.protege.editor.owl.server.http.exception.ServerException;
 import org.protege.editor.owl.server.http.messages.EVSHistory;
 import org.protege.editor.owl.server.http.messages.HttpAuthResponse;
 import org.protege.editor.owl.server.http.messages.LoginCreds;
@@ -40,6 +38,8 @@ import org.semanticweb.owlapi.apibinding.OWLManager;
 import org.semanticweb.owlapi.model.OWLOntology;
 import org.semanticweb.owlapi.model.OWLOntologyCreationException;
 import org.semanticweb.owlapi.model.OWLOntologyManager;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import java.io.*;
 import java.net.URI;
@@ -48,6 +48,8 @@ import java.util.*;
 import java.util.concurrent.TimeUnit;
 
 public class LocalHttpClient implements Client, ClientSessionListener {
+
+	private static Logger logger = LoggerFactory.getLogger(LocalHttpClient.class);
 
 	//private AuthToken authToken;
 	private String serverAddress;
@@ -63,7 +65,7 @@ public class LocalHttpClient implements Client, ClientSessionListener {
 	private final String AUTH_HEADER = "Authorization";
 
 	OkHttpClient req_client = null; 
-	
+
 	private ServerConfiguration config;
 	private AuthenticationRegistry auth_registry;
 	private ProjectRegistry proj_registry;
@@ -72,25 +74,22 @@ public class LocalHttpClient implements Client, ClientSessionListener {
 	private RoleRegistry role_registry;
 	private Policy policy;
 	private OperationRegistry op_registry;
-	
+
 	private boolean save_cancel_semantics = true;
 	private boolean config_state_changed = false;
-	
 
 	private static LocalHttpClient current_user = null;
-	
+
 	public static LocalHttpClient current_user() {
 		return current_user;
 	}
-	
+
 	public ServerConfiguration getCurrentConfig() {
-		return config;		
+		return config;
 	}
 
-	public LocalHttpClient(String user, String pwd, String serverAddress) throws Exception {	
-		
+	public LocalHttpClient(String user, String pwd, String serverAddress) throws Exception {
 		req_client = new OkHttpClient.Builder().writeTimeout(360,  TimeUnit.SECONDS).readTimeout(360, TimeUnit.SECONDS).build();
-				
 		this.serverAddress = serverAddress;
 		this.userInfo = login(user, pwd);
 		this.userId = new UserIdImpl(user);
@@ -100,7 +99,7 @@ public class LocalHttpClient implements Client, ClientSessionListener {
 		//check if user is allowed to edit config
 		initConfig();
 	}
-	
+
 	public void initConfig() throws LoginTimeoutException, AuthorizationException, ClientRequestException {
 		config = getConfig();
 		proj_registry = config.getMetaproject().getProjectRegistry();
@@ -111,64 +110,59 @@ public class LocalHttpClient implements Client, ClientSessionListener {
 		op_registry = config.getMetaproject().getOperationRegistry();
 		policy = config.getMetaproject().getPolicy();
 		config_state_changed = false;
-		
 	}
-	
-	
-	private UserInfo login(String user, String pwd) throws Exception {
 
-		final MediaType JSON  = MediaType.parse("application/json; charset=utf-8");
+	private UserInfo login(String user, String pwd) throws LoginTimeoutException, AuthorizationException, ClientRequestException {
+		/*
+		 * Prepare the request body
+		 */
 		String url = HTTPServer.LOGIN;
-
-		LoginCreds creds = new LoginCreds(user, pwd);
-
-		HttpAuthResponse resp = null;
-
 		Serializer<Gson> serl = new DefaultJsonSerializer();
-		RequestBody body = RequestBody.create(JSON, serl.write(creds, LoginCreds.class));
-
-		Response response = post(url, body, false);
-
-		if (response.code() == StatusCodes.UNAUTHORIZED) {
-			String error = (String) serl.parse(new InputStreamReader(response.body().byteStream()), String.class);
-			throw new Exception(error);
-		} else if (response.code() == StatusCodes.INTERNAL_SERVER_ERROR) {
-			throw new Exception("Internal server error");
-			
-		} else {
-			resp = (HttpAuthResponse) serl.parse(new InputStreamReader(response.body().byteStream()), HttpAuthResponse.class);
-			response.body().close();
+		LoginCreds creds = new LoginCreds(user, pwd);
+		RequestBody req = RequestBody.create(MediaType.parse("application/json; charset=utf-8"), serl.write(creds, LoginCreds.class));
+		
+		/*
+		 * Send the request and stream the response data
+		 */
+		Response response = post(url, req, false);
+		try {
+			HttpAuthResponse resp = (HttpAuthResponse) serl.parse(new InputStreamReader(response.body().byteStream()), HttpAuthResponse.class);
 			return new UserInfo(resp.getId(), resp.getName(), resp.getEmail(), resp.getToken());
+		} catch (IOException | ObjectConversionException e) {
+			logger.error(e.getMessage(), e);
+			throw new ClientRequestException("Failed to read data from server (see error log for details)", e);
+		} finally {
+			if (response != null) {
+				response.body().close();
+			}
 		}
 	}
-	
+
 	@Override
 	public void handleChange(ClientSessionChangeEvent event) {
 		if (event.equals(EventCategory.SWITCH_ONTOLOGY)) {
 			projectId = event.getSource().getActiveProject();
 		}
 	}
-	
+
 	@Override
-    public void setActiveProject(ProjectId projectId) {
-        this.projectId = projectId;
-    }
+	public void setActiveProject(ProjectId projectId) {
+		this.projectId = projectId;
+	}
 
 	public Project getCurrentProject() {
 		return project;
 	}
-	
+
 	@Override
 	public AuthToken getAuthToken() {
-		if (auth_token != null) {
-			
-		} else {
+		if (auth_token == null) {
 			User user = null;
 			try {
 				user = user_registry.get(userId);
 			} catch (UnknownMetaprojectObjectIdException e) {
-				// TODO Auto-generated catch block
-				e.printStackTrace();
+				logger.error(e.getMessage());
+				throw new RuntimeException("Client failed to create auth token (see error log for details)", e);
 			}
 			auth_token = new AuthorizedUserToken(user);
 		}
@@ -187,486 +181,479 @@ public class LocalHttpClient implements Client, ClientSessionListener {
 			meta_agent.add(newUser);
 			if (password.isPresent()) {
 				Password newpassword = password.get();
-                if (newpassword instanceof SaltedPasswordDigest) {
-                    auth_registry.add(newUser.getId(), (SaltedPasswordDigest) newpassword);
-                }
+				if (newpassword instanceof SaltedPasswordDigest) {
+					auth_registry.add(newUser.getId(), (SaltedPasswordDigest) newpassword);
+				}
 			}
 			putConfig();
-		}
-		catch (IdAlreadyInUseException e) {
-			throw new ClientRequestException(e.getMessage(), e.getCause());
+		} catch (IdAlreadyInUseException e) {
+			logger.error(e.getMessage());
+			throw new ClientRequestException("Client failed to update user (see error log for details)", e);
 		}
 	}
 
 	@Override
-	public void deleteUser(UserId userId) throws AuthorizationException, ClientRequestException, RemoteException {
+	public void deleteUser(UserId userId) throws AuthorizationException, ClientRequestException,
+			RemoteException {
 		try {
-            meta_agent.remove(user_registry.get(userId));
-            putConfig();
-        }
-        catch (UnknownMetaprojectObjectIdException e) {
-        	throw new ClientRequestException(e.getMessage(), e.getCause());
-        }
+			meta_agent.remove(user_registry.get(userId));
+			putConfig();
+		} catch (UnknownMetaprojectObjectIdException e) {
+			logger.error(e.getMessage());
+			throw new ClientRequestException("Client failed to update user (see error log for details)", e);
+		}
 	}
 
 	@Override
 	public void updateUser(UserId userId, User updatedUser, Optional<? extends Password> updatedPassword)
 			throws AuthorizationException, ClientRequestException, RemoteException {
 		try {
-            user_registry.update(userId, updatedUser);
-            if (updatedPassword.isPresent()) {
-                Password password = updatedPassword.get();
-                if (password instanceof SaltedPasswordDigest) {
-                    auth_registry.changePassword(userId, (SaltedPasswordDigest) password);
-                }
-            }
-            putConfig();
-        }
-        catch (UnknownMetaprojectObjectIdException | UserNotRegisteredException e) {
-        	throw new ClientRequestException(e.getMessage(), e.getCause());
-        }
+			user_registry.update(userId, updatedUser);
+			if (updatedPassword.isPresent()) {
+				Password password = updatedPassword.get();
+				if (password instanceof SaltedPasswordDigest) {
+					auth_registry.changePassword(userId, (SaltedPasswordDigest) password);
+				}
+			}
+			putConfig();
+		} catch (UnknownMetaprojectObjectIdException | UserNotRegisteredException e) {
+			logger.error(e.getMessage());
+			throw new ClientRequestException("Client failed to update user (see error log for details)", e);
+		}
 	}
-	
-	
+
 	public ServerDocument createProject(Project proj)
 			throws LoginTimeoutException, AuthorizationException, ClientRequestException, RemoteException {
-
-		ProjectId projectId = proj.getId();
-		Name projectName = proj.getName();
-		Description description = proj.getDescription();
-		UserId owner = proj.getOwner();
-		Optional<ProjectOptions> options = proj.getOptions();
-
+		/*
+		 * Prepare the request body
+		 */
 		String url = HTTPServer.PROJECT;
-
-		Response response;
-		ServerDocument sdoc = null;
-
+		RequestBody req = null;
 		try {
-
 			ByteArrayOutputStream b = new ByteArrayOutputStream();
 			ObjectOutputStream os = new ObjectOutputStream(b);
-
-			os.writeObject(projectId);
-			os.writeObject(projectName);
-			os.writeObject(description);
-			os.writeObject(owner);
+			os.writeObject(proj.getId());
+			os.writeObject(proj.getName());
+			os.writeObject(proj.getDescription());
+			os.writeObject(proj.getOwner());
+			Optional<ProjectOptions> options = proj.getOptions();
 			ProjectOptions popts = (options.isPresent()) ? options.get() : null;
 			os.writeObject(popts);
-
-			RequestBody req = RequestBody.create(MediaType.parse("application"), b.toByteArray());
-
-			response = post(url, req, true);
-
+			req = RequestBody.create(MediaType.parse("application"), b.toByteArray());
+		} catch (IOException e) {
+			logger.error(e.getMessage(), e);
+			throw new ClientRequestException("Unable to send request to server (see error log for details)", e);
+		}
+		
+		/*
+		 * Send the request and stream the response data
+		 */
+		Response response = post(url, req, true);
+		try {
 			ObjectInputStream ois = new ObjectInputStream(response.body().byteStream());
-			sdoc = (ServerDocument) ois.readObject();
-			
-			response.body().close();
-
+			ServerDocument sdoc = (ServerDocument) ois.readObject();
 			// send snapshot to server
-			OWLOntology ont = putSnapShot(proj.getFile(), sdoc);
-
 			initConfig();
 			return sdoc;
-
 		} catch (IOException | ClassNotFoundException e) {
-			throw new ClientRequestException("Data transmission error", e);
+			logger.error(e.getMessage(), e);
+			throw new ClientRequestException("Failed to read data from server (see error log for details)", e);
+		} finally {
+			if (response != null) {
+				response.body().close();
+			}
 		}
-
 	}
-	
 
 	@Override
 	public void deleteProject(ProjectId projectId, boolean includeFile)
 			throws AuthorizationException, ClientRequestException, RemoteException {
+		/*
+		 * Prepare the request string
+		 */
 		String url = HTTPServer.PROJECT + "?projectid=" + projectId.get();
-
-		try {
-			delete(url, true);
-			initConfig();
-		} catch (Exception e) {
-			throw new ClientRequestException(e.getMessage(), e.getCause());
-		} 
+		
+		/*
+		 * Send the delete request
+		 */
+		delete(url, true);
+		initConfig();
 	}
 
 	@Override
 	public ServerDocument openProject(ProjectId projectId)
 			throws AuthorizationException, ClientRequestException, RemoteException {
-
+		/*
+		 * Prepare the request string
+		 */
 		String url = HTTPServer.PROJECT + "?projectid=" + projectId.get();
-
-
-		okhttp3.Response response;
-		ServerDocument sdoc = null;
+		
+		/*
+		 * Send the request and stream the response data
+		 */
+		Response response = get(url);
 		try {
-			response = get(url);
-
 			ObjectInputStream ois = new ObjectInputStream(response.body().byteStream());
-			sdoc = (ServerDocument) ois.readObject();
-			
-			response.body().close();
-
-
-		} catch (Exception e) {
-			throw new ClientRequestException(e.getMessage(), e.getCause());
-		}   
-		return sdoc;
-
+			ServerDocument sdoc = (ServerDocument) ois.readObject();
+			return sdoc;
+		} catch (IOException | ClassNotFoundException e) {
+			logger.error(e.getMessage(), e);
+			throw new ClientRequestException("Failed to read data from server (see error log for details)", e);
+		} finally {
+			if (response != null) {
+				response.body().close();
+			}
+		}
 	}
-	
+
 	@Override
 	public ChangeHistory commit(ProjectId projectId, CommitBundle commitBundle)
 			throws AuthorizationException, OutOfSyncException, ClientRequestException, RemoteException {
-
+		/*
+		 * Prepare the request body
+		 */
 		String url = HTTPServer.COMMIT;
-
-		ByteArrayOutputStream b = new ByteArrayOutputStream();
-		ObjectOutputStream os = null;
-		Response response = null;
-		ChangeHistory hist = null;
+		RequestBody req = null;
 		try {
-			os = new ObjectOutputStream(b);
+			ByteArrayOutputStream b = new ByteArrayOutputStream();
+			ObjectOutputStream os = new ObjectOutputStream(b);
 			os.writeObject(projectId);
 			os.writeObject(commitBundle);
-			RequestBody req = RequestBody.create(MediaType.parse("application"), b.toByteArray());
-
-			response = post(url, req, true);
-
-			ObjectInputStream ois = new ObjectInputStream(response.body().byteStream());
-
-			if (response.code() == 200) {
-				hist = (ChangeHistory) ois.readObject();
-
-			} else if (response.code() == 500) {
-				ServerException ex = (ServerException) ois.readObject();
-				if (ex.getCause() instanceof ServerServiceException) {
-					ServerServiceException iex = (ServerServiceException) ex.getCause();
-					if (iex.getCause() instanceof OutOfSyncException) {
-						throw (OutOfSyncException) iex.getCause();
-					} else if (iex.getCause() instanceof AuthorizationException) {
-						throw (AuthorizationException) iex.getCause();						
-					} else {
-						throw new ClientRequestException(iex.getMessage(), iex);						
-					}
-				} else {
-					throw new ClientRequestException(ex.getMessage(), ex);
-				}
-			}
-
-
-
-
-		} catch (IOException | ClassNotFoundException e) {
-			throw new ClientRequestException(e.getMessage(), e.getCause());
-		} finally {
-			response.body().close();
+			req = RequestBody.create(MediaType.parse("application"), b.toByteArray());
+		}
+		catch (IOException e) {
+			logger.error(e.getMessage(), e);
+			throw new ClientRequestException("Unable to send request to server (see error log for details)", e);
 		}
 		
-		
-
-
-		return hist;
+		/*
+		 * Send the request and stream the response data
+		 */
+		Response response = post(url, req, true);
+		try {
+			ObjectInputStream ois = new ObjectInputStream(response.body().byteStream());
+			ChangeHistory hist = (ChangeHistory) ois.readObject();
+			return hist;
+		} catch (IOException | ClassNotFoundException e) {
+			logger.error(e.getMessage(), e);
+			throw new ClientRequestException("Failed to read data from server (see error log for details)", e);
+		} finally {
+			if (response != null) {
+				response.body().close();
+			}
+		}
 	}
 
-
 	public VersionedOWLOntology buildVersionedOntology(ServerDocument sdoc, OWLOntologyManager owlManager,
-			ProjectId pid)
-			throws ClientRequestException, OWLOntologyCreationException {
-		
+			ProjectId pid) throws LoginTimeoutException, AuthorizationException, ClientRequestException {
 		projectId = pid;
 		try {
 			project = proj_registry.get(pid);
 		} catch (UnknownMetaprojectObjectIdException e) {
-			// TODO Log this
-			e.printStackTrace();
+			logger.error(e.getMessage());
+			throw new ClientRequestException("Client failed to get the project (see error log for details)", e);
 		}
 		
-		OWLOntology targetOntology = null;
-		ChangeHistory remoteChangeHistory = null;
-		
-		if (snapShotExists(sdoc)) {			
-			
-		} else {
-			getSnapShot(sdoc);					
+		if (!snapShotExists(sdoc)) {
+			getSnapShot(sdoc);
 		}
-		
-		targetOntology = loadSnapShot(owlManager, sdoc);		
-		
-		remoteChangeHistory = getLatestChanges(sdoc, DocumentRevision.START_REVISION);		
-		
-				
+		OWLOntology targetOntology = loadSnapShot(owlManager, sdoc);
+		ChangeHistory remoteChangeHistory = getLatestChanges(sdoc, DocumentRevision.START_REVISION);
 		ClientUtils.updateOntology(targetOntology, remoteChangeHistory, owlManager);
-		
 		return new VersionedOWLOntologyImpl(sdoc, targetOntology, remoteChangeHistory);
 	}
-	
+
 	public boolean snapShotExists(ServerDocument sdoc) {
 		String fileName = sdoc.getHistoryFile().getName() + "-snapshot";
 		return (new File(fileName)).exists();	
 	}
-	
-	public OWLOntology loadSnapShot(OWLOntologyManager manIn, ServerDocument sdoc) {
+
+	public OWLOntology loadSnapShot(OWLOntologyManager manIn, ServerDocument sdoc) throws ClientRequestException {
 		try {
-			long beg = System.currentTimeMillis();
+//			long beg = System.currentTimeMillis();
 			BinaryOWLOntologyDocumentSerializer serializer = new BinaryOWLOntologyDocumentSerializer();
-	        OWLOntology ontIn = manIn.createOntology();
-	        String fileName = sdoc.getHistoryFile().getName() + "-snapshot";
-	        BufferedInputStream inputStream = new BufferedInputStream(new FileInputStream(new File(fileName)));
-	        serializer.read(inputStream, new BinaryOWLOntologyBuildingHandler(ontIn), manIn.getOWLDataFactory());
-	        System.out.println("Time to serialize in " + (System.currentTimeMillis() - beg)/1000);
-	        return ontIn;
-		} catch (Exception e) {
-			e.printStackTrace();
+			OWLOntology ontIn = manIn.createOntology();
+			String fileName = sdoc.getHistoryFile().getName() + "-snapshot";
+			BufferedInputStream inputStream = new BufferedInputStream(new FileInputStream(new File(fileName)));
+			serializer.read(inputStream, new BinaryOWLOntologyBuildingHandler(ontIn), manIn.getOWLDataFactory());
+//			System.out.println("Time to serialize in " + (System.currentTimeMillis() - beg) / 1000);
+			return ontIn;
+		} catch (IOException | OWLOntologyCreationException e) {
+			logger.error(e.getMessage(), e);
+			throw new ClientRequestException("Unable to load the ontology snapshot (see error log for details)", e);
 		}
-		return null;
-		
 	}
-	
-	public OWLOntology putSnapShot(File file, ServerDocument sdoc) {
+
+	public OWLOntology putSnapShot(File file, ServerDocument sdoc) throws LoginTimeoutException,
+	AuthorizationException, ClientRequestException {
+		/*
+		 * Prepare the request body
+		 */
+		String url = HTTPServer.PROJECT_SNAPSHOT;
 		OWLOntology ont = null;
+		RequestBody req = null;
 		try {
 			ont = OWLManager.createOWLOntologyManager().loadOntologyFromOntologyDocument(file);
-			
-			
-			String url = HTTPServer.PROJECT_SNAPSHOT;
-
 			ByteArrayOutputStream b = new ByteArrayOutputStream();
-			ObjectOutputStream os = null;
-			Response response = null;
-			
-			try {
-				os = new ObjectOutputStream(b);
-				os.writeObject(sdoc);
-				os.writeObject(new SnapShot(ont));
-				RequestBody req = RequestBody.create(MediaType.parse("application"), b.toByteArray());
-
-				response = post(url, req, true);
-
-
-				ObjectInputStream ois = new ObjectInputStream(response.body().byteStream());
-				ServerDocument new_sdoc = (ServerDocument) ois.readObject();
-				System.out.println("got it");
-
-			} catch (IOException | ClassNotFoundException e) {
-				throw new ClientRequestException(e.getMessage(), e.getCause());
-			} finally {
+			ObjectOutputStream os = new ObjectOutputStream(b);
+			os.writeObject(sdoc);
+			os.writeObject(new SnapShot(ont));
+			req = RequestBody.create(MediaType.parse("application"), b.toByteArray());
+		}
+		catch (IOException | OWLOntologyCreationException e) {
+			logger.error(e.getMessage(), e);
+			throw new ClientRequestException("Unable to send request to server (see error log for details)", e);
+		}
+		
+		/*
+		 * Send the request and stream the response data
+		 */
+		Response	response = post(url, req, true);
+		try {
+			ObjectInputStream ois = new ObjectInputStream(response.body().byteStream());
+			ServerDocument new_sdoc = (ServerDocument) ois.readObject();
+			if (new_sdoc != null) {
+				return ont;
+			} else {
+				throw new ClientRequestException("Unexpected error when uploading snapshot to server "
+						+ "(contact server admin for further assistance)");
+			}
+		} catch (IOException | ClassNotFoundException e) {
+			logger.error(e.getMessage(), e);
+			throw new ClientRequestException("Failed to read data from server (see error log for details)", e);
+		} finally {
+			if (response != null) {
 				response.body().close();
 			}
-
-			
-			
-		} catch (Exception e) {
-			e.printStackTrace();
 		}
-		return ont;
 	}
-	
-	public void createLocalSnapShot(OWLOntology ont, ServerDocument sdoc) {
-		try {
-			
-			long beg = System.currentTimeMillis();
-			BinaryOWLOntologyDocumentSerializer serializer = new BinaryOWLOntologyDocumentSerializer();
-			BufferedOutputStream outputStream = null;
-			
-			String fileName = sdoc.getHistoryFile().getName() + "-snapshot";
 
+	public void createLocalSnapShot(OWLOntology ont, ServerDocument sdoc) throws ClientRequestException {
+		BufferedOutputStream outputStream = null;
+		try {
+//			long beg = System.currentTimeMillis();
+			String fileName = sdoc.getHistoryFile().getName() + "-snapshot";
+			BinaryOWLOntologyDocumentSerializer serializer = new BinaryOWLOntologyDocumentSerializer();
 			outputStream = new BufferedOutputStream(new FileOutputStream(new File(fileName)));
 			serializer.write(new OWLOntologyWrapper(ont), new DataOutputStream(outputStream));
-			outputStream.close();
-			System.out.println("Time to serialize out snapshot " + (System.currentTimeMillis() - beg)/1000);
-		} catch (Exception e1) {
-			// TODO Auto-generated catch block
-			e1.printStackTrace();
-		}     
-
+//			System.out.println("Time to serialize out snapshot " + (System.currentTimeMillis() - beg)/1000);
+		} catch (IOException e) {
+			logger.error(e.getMessage(), e);
+			throw new ClientRequestException("Failed to create local snapshot (see error log for details)", e);
+		} finally {
+			try {
+				if (outputStream != null) {
+					outputStream.close();
+				}
+			} catch (IOException e) {
+				throw new RuntimeException(e.getMessage(), e);
+			}
+		}
 	}
 	
-	public void getSnapShot(ServerDocument sdoc) {
+	public void getSnapShot(ServerDocument sdoc) throws LoginTimeoutException, AuthorizationException,
+			ClientRequestException {
+		/*
+		 * Prepare the request body
+		 */
+		String url = HTTPServer.PROJECT_SNAPSHOT_GET;
+		RequestBody req = null;
 		try {
-			String url = HTTPServer.PROJECT_SNAPSHOT_GET;
-			
 			ByteArrayOutputStream b = new ByteArrayOutputStream();
-			ObjectOutputStream os = null;
-			
-			
-			os = new ObjectOutputStream(b);
+			ObjectOutputStream os = new ObjectOutputStream(b);
 			os.writeObject(sdoc);
-			RequestBody req = RequestBody.create(MediaType.parse("application"), b.toByteArray());
-
-			Response resp = post(url, req, true);
-			
-			ObjectInputStream ois = new ObjectInputStream(resp.body().byteStream());
-			
-			SnapShot shot = (SnapShot) ois.readObject();
-			createLocalSnapShot(shot.getOntology(), sdoc);
-			
-			resp.body().close();
-			
-		} catch (Exception e) {
-			e.printStackTrace();
+			req = RequestBody.create(MediaType.parse("application"), b.toByteArray());
+		}
+		catch (IOException e) {
+			logger.error(e.getMessage(), e);
+			throw new ClientRequestException("Unable to send request to server (see error log for details)", e);
 		}
 		
-		
-		
+		/*
+		 * Send the request and stream the response data
+		 */
+		Response response = post(url, req, true);
+		try {
+			ObjectInputStream ois = new ObjectInputStream(response.body().byteStream());
+			SnapShot shot = (SnapShot) ois.readObject();
+			createLocalSnapShot(shot.getOntology(), sdoc);
+		} catch (IOException | ClassNotFoundException e) {
+			logger.error(e.getMessage(), e);
+			throw new ClientRequestException("Failed to read data from server (see error log for details)", e);
+		} finally {
+			if (response != null) {
+				response.body().close();
+			}
+		}
 	}
 
-	public ChangeHistory getAllChanges(ServerDocument sdoc) throws ClientRequestException {
-		ChangeHistory history = null;
+	public ChangeHistory getAllChanges(ServerDocument sdoc) throws LoginTimeoutException,
+			AuthorizationException, ClientRequestException {
+		/*
+		 * Prepare the request body
+		 */
+		String url = HTTPServer.ALL_CHANGES;
+		RequestBody req = null;
 		try {
-			long beg = System.currentTimeMillis();
-
-
+//			long beg = System.currentTimeMillis();
 			// TODO: get all changes
-			String url = HTTPServer.ALL_CHANGES;
 			ByteArrayOutputStream b = new ByteArrayOutputStream();
 			ObjectOutputStream os = new ObjectOutputStream(b);
-
 			os.writeObject(sdoc.getHistoryFile());
-			RequestBody req = RequestBody.create(MediaType.parse("application"), b.toByteArray());
-
-			Response response = post(url, req, true);
-
-			ObjectInputStream ois = new ObjectInputStream(response.body().byteStream());
-			
-			
-
-			history = (ChangeHistory) ois.readObject();
-			
-			System.out.println("Time to execute get all changes " + (System.currentTimeMillis() - beg)/1000);
-			
-			response.body().close();
-
-
-		} catch (Exception e) {
-			throw new ClientRequestException(e.getMessage(), e.getCause());
-		}  
-		return history;
-
-	}
-	
-	public DocumentRevision getRemoteHeadRevision(VersionedOWLOntology vont) throws
-		ClientRequestException {	
-		DocumentRevision remoteHead = null;
+			req = RequestBody.create(MediaType.parse("application"), b.toByteArray());
+		}
+		catch (IOException e) {
+			logger.error(e.getMessage(), e);
+			throw new ClientRequestException("Unable to send request to server (see error log for details)", e);
+		}
+		
+		/*
+		 * Send the request and stream the response data
+		 */
+		Response response = post(url, req, true);
 		try {
-			long beg = System.currentTimeMillis();
+			ObjectInputStream ois = new ObjectInputStream(response.body().byteStream());
+			ChangeHistory history = (ChangeHistory) ois.readObject();
+//			System.out.println("Time to execute get all changes " + (System.currentTimeMillis() - beg)/1000);
+			return history;
+		} catch (IOException | ClassNotFoundException e) {
+			logger.error(e.getMessage(), e);
+			throw new ClientRequestException("Failed to read data from server (see error log for details)", e);
+		} finally {
+			if (response != null) {
+				response.body().close();
+			}
+		}
+	}
 
-
+	public DocumentRevision getRemoteHeadRevision(VersionedOWLOntology vont) throws
+			LoginTimeoutException, AuthorizationException, ClientRequestException {
+		/*
+		 * Prepare the request body
+		 */
+		String url = HTTPServer.HEAD;
+		RequestBody req = null;
+		try {
+//			long beg = System.currentTimeMillis();
 			// TODO: get all changes
-			String url = HTTPServer.HEAD;
 			ByteArrayOutputStream b = new ByteArrayOutputStream();
 			ObjectOutputStream os = new ObjectOutputStream(b);
-
 			os.writeObject(vont.getServerDocument().getHistoryFile());
-			RequestBody req = RequestBody.create(MediaType.parse("application"), b.toByteArray());
-
-			Response response = post(url, req, true);
-
+			req = RequestBody.create(MediaType.parse("application"), b.toByteArray());
+		}
+		catch (IOException e) {
+			logger.error(e.getMessage(), e);
+			throw new ClientRequestException("Unable to send request to server (see error log for details)", e);
+		}
+		
+		/*
+		 * Send the request and stream the response data
+		 */
+		Response response = post(url, req, true);
+		try {
 			ObjectInputStream ois = new ObjectInputStream(response.body().byteStream());
-			
-			
-
-			remoteHead = (DocumentRevision) ois.readObject();
-			
-			System.out.println("Time to execute get all changes " + (System.currentTimeMillis() - beg)/1000);
-			
-			response.body().close();
-
-
-		} catch (Exception e) {
-			throw new ClientRequestException(e.getMessage(), e.getCause());
-		}  
-		return remoteHead;
+			DocumentRevision remoteHead = (DocumentRevision) ois.readObject();
+			return remoteHead;
+//			System.out.println("Time to execute get all changes " + (System.currentTimeMillis() - beg)/1000);
+		} catch (IOException | ClassNotFoundException e) {
+			logger.error(e.getMessage(), e);
+			throw new ClientRequestException("Failed to read data from server (see error log for details)", e);
+		} finally {
+			if (response != null) {
+				response.body().close();
+			}
+		}
 	}
-	
-	public ChangeHistory getLatestChanges(VersionedOWLOntology vont) throws
-		ClientRequestException {
+
+	public ChangeHistory getLatestChanges(VersionedOWLOntology vont) throws LoginTimeoutException,
+			AuthorizationException, ClientRequestException {
 		DocumentRevision start = vont.getChangeHistory().getHeadRevision();
 		return getLatestChanges(vont.getServerDocument(), start);
 	}
-	
+
 	public ChangeHistory getLatestChanges(ServerDocument sdoc, DocumentRevision start)
-		throws ClientRequestException {
-		ChangeHistory history = null;
+			throws LoginTimeoutException, AuthorizationException, ClientRequestException {
+		/*
+		 * Prepare the request body
+		 */
+		String url = HTTPServer.LATEST_CHANGES;
+		RequestBody req = null;
 		try {
-
-
 			// TODO: get all changes
-			String url = HTTPServer.LATEST_CHANGES;
 			ByteArrayOutputStream b = new ByteArrayOutputStream();
 			ObjectOutputStream os = new ObjectOutputStream(b);
-
 			os.writeObject(sdoc.getHistoryFile());
-			
 			os.writeObject(start);
-			RequestBody req = RequestBody.create(MediaType.parse("application"), b.toByteArray());
-
-			Response response = post(url, req, true);
-
+			req = RequestBody.create(MediaType.parse("application"), b.toByteArray());
+		}
+		catch (IOException e) {
+			logger.error(e.getMessage(), e);
+			throw new ClientRequestException("Unable to send request to server (see error log for details)", e);
+		}
+		
+		/*
+		 * Send the request and stream the response data
+		 */
+		Response response = post(url, req, true);
+		try {
 			ObjectInputStream ois = new ObjectInputStream(response.body().byteStream());
-
-			history = (ChangeHistory) ois.readObject();
-			
-			response.body().close();
-
-
-		} catch (Exception e) {
-			throw new ClientRequestException(e.getMessage(), e.getCause());
-		}  
-		return history;
-
+			return (ChangeHistory) ois.readObject();
+		} catch (IOException | ClassNotFoundException e) {
+			logger.error(e.getMessage(), e);
+			throw new ClientRequestException("Failed to read data from server (see error log for details)", e);
+		} finally {
+			if (response != null) {
+				response.body().close();
+			}
+		}
 	}
-	
-	@Override
-	public List<Project> getProjects(UserId userId)
-			throws AuthorizationException, ClientRequestException, RemoteException {
 
+	@Override
+	public List<Project> getProjects(UserId userId) throws ClientRequestException {
 		try {
 			return new ArrayList<>(meta_agent.getProjects(userId));
 		} catch (UserNotInPolicyException e) {
-			throw new ClientRequestException(e.getMessage(), e.getCause());
+			logger.error(e.getMessage());
+			throw new ClientRequestException("Client failed to get project list (see error log for details)", e);
 		}
-
-
 	}
 
 	@Override
-	public List<Project> getAllProjects() throws AuthorizationException, ClientRequestException, RemoteException {		
+	public List<Project> getAllProjects() throws AuthorizationException, ClientRequestException, RemoteException {
 		return new ArrayList<>(proj_registry.getEntries());
 	}
-
-
 
 	@Override
 	public void updateProject(ProjectId projectId, Project updatedProject)
 			throws AuthorizationException, ClientRequestException, RemoteException {
 		try {
-            proj_registry.update(projectId, updatedProject);
-            putConfig();
-        }
-        catch (UnknownMetaprojectObjectIdException e) {
-        	throw new ClientRequestException(e.getMessage(), e.getCause());
-        }
+			proj_registry.update(projectId, updatedProject);
+			putConfig();
+		} catch (UnknownMetaprojectObjectIdException e) {
+			logger.error(e.getMessage());
+			throw new ClientRequestException("Client failed to update project (see error log for details)", e);
+		}
 	}
 
 	@Override
 	public Map<ProjectId, List<Role>> getRoles(UserId userId, GlobalPermissions globalPermissions)
 			throws AuthorizationException, ClientRequestException, RemoteException {
 		Map<ProjectId, List<Role>> roleMap = new HashMap<>();
-        for (Project project : getAllProjects()) {
-            roleMap.put(project.getId(), getRoles(userId, project.getId(), globalPermissions));
-        }
-        return roleMap;
+		for (Project project : getAllProjects()) {
+			roleMap.put(project.getId(), getRoles(userId, project.getId(), globalPermissions));
+		}
+		return roleMap;
 	}
 
 	@Override
 	public List<Role> getRoles(UserId userId, ProjectId projectId, GlobalPermissions globalPermissions)
 			throws AuthorizationException, ClientRequestException, RemoteException {
 		try {
-            return new ArrayList<>(meta_agent.getRoles(userId, projectId, globalPermissions));
-        }
-        catch (UserNotInPolicyException | ProjectNotInPolicyException e) {
-        	throw new ClientRequestException(e.getMessage(), e.getCause());
-        }
+			return new ArrayList<>(meta_agent.getRoles(userId, projectId, globalPermissions));
+		} catch (UserNotInPolicyException | ProjectNotInPolicyException e) {
+			logger.error(e.getMessage());
+			throw new ClientRequestException("Client failed to get role list (see error log for details)", e);
+		}
 	}
 
 	@Override
@@ -680,7 +667,8 @@ public class LocalHttpClient implements Client, ClientSessionListener {
 			meta_agent.add(newRole);
 			putConfig();
 		} catch (IdAlreadyInUseException e) {
-			throw new ClientRequestException(e.getMessage(), e.getCause());
+			logger.error(e.getMessage());
+			throw new ClientRequestException("Client failed to create role (see error log for details)", e);
 		}
 	}
 
@@ -690,7 +678,8 @@ public class LocalHttpClient implements Client, ClientSessionListener {
 			meta_agent.remove(role_registry.get(roleId));
 			putConfig();
 		} catch (UnknownMetaprojectObjectIdException e) {
-			throw new ClientRequestException(e.getMessage(), e.getCause());
+			logger.error(e.getMessage());
+			throw new ClientRequestException("Client failed to delete role (see error log for details)", e);
 		}
 	}
 
@@ -698,47 +687,45 @@ public class LocalHttpClient implements Client, ClientSessionListener {
 	public void updateRole(RoleId roleId, Role updatedRole)
 			throws AuthorizationException, ClientRequestException, RemoteException {
 		try {
-            role_registry.update(roleId, updatedRole);
-            putConfig();
-        }
-        catch (UnknownMetaprojectObjectIdException e) {
-        	throw new ClientRequestException(e.getMessage(), e.getCause());
-        }
+			role_registry.update(roleId, updatedRole);
+			putConfig();
+		} catch (UnknownMetaprojectObjectIdException e) {
+			logger.error(e.getMessage());
+			throw new ClientRequestException("Client failed to update role (see error log for details)", e);
+		}
 	}
 
 	@Override
 	public Map<ProjectId, List<Operation>> getOperations(UserId userId)
 			throws AuthorizationException, ClientRequestException, RemoteException {
 		Map<ProjectId, List<Operation>> operationMap = new HashMap<>();
-        for (Project project : getAllProjects()) {
-            operationMap.put(project.getId(), getOperations(userId, project.getId()));
-        }
-        return operationMap;
-		
+		for (Project project : getAllProjects()) {
+			operationMap.put(project.getId(), getOperations(userId, project.getId()));
+		}
+		return operationMap;
 	}
 
 	@Override
 	public List<Operation> getOperations(UserId userId, ProjectId projectId)
 			throws AuthorizationException, ClientRequestException, RemoteException {
 		try {
-            return new ArrayList<>(meta_agent.getOperations(userId, projectId, GlobalPermissions.INCLUDED));
-        }
-        catch (UserNotInPolicyException | ProjectNotInPolicyException e) {
-        	throw new ClientRequestException(e.getMessage(), e.getCause());
-        }
+			return new ArrayList<>(meta_agent.getOperations(userId, projectId, GlobalPermissions.INCLUDED));
+		} catch (UserNotInPolicyException | ProjectNotInPolicyException e) {
+			logger.error(e.getMessage());
+			throw new ClientRequestException("Client failed to get operation list (see error log for details)", e);
+		}
 	}
-	
+
 	@Override
 	public List<Operation> getOperations(RoleId roleId)
 			throws AuthorizationException, ClientRequestException, RemoteException {
 		try {
-            return new ArrayList<>(meta_agent.getOperations(role_registry.get(roleId)));
-        }
-        catch (UnknownMetaprojectObjectIdException e) {
-        	throw new ClientRequestException(e.getMessage(), e.getCause());
-        }
-	}	
-
+			return new ArrayList<>(meta_agent.getOperations(role_registry.get(roleId)));
+		} catch (UnknownMetaprojectObjectIdException e) {
+			logger.error(e.getMessage());
+			throw new ClientRequestException("Client failed to get operation list (see error log for details)", e);
+		}
+	}
 
 	@Override
 	public List<Operation> getAllOperations() throws AuthorizationException, ClientRequestException, RemoteException {
@@ -749,53 +736,50 @@ public class LocalHttpClient implements Client, ClientSessionListener {
 	public void createOperation(Operation operation)
 			throws AuthorizationException, ClientRequestException, RemoteException {
 		try {
-            meta_agent.add(operation);
-            putConfig();
-        }
-        catch (IdAlreadyInUseException e) {
-        	throw new ClientRequestException(e.getMessage(), e.getCause());
-        }
+			meta_agent.add(operation);
+			putConfig();
+		} catch (IdAlreadyInUseException e) {
+			logger.error(e.getMessage());
+			throw new ClientRequestException("Client failed to create operation (see error log for details)", e);
+		}
 	}
 
 	@Override
 	public void deleteOperation(OperationId operationId)
 			throws AuthorizationException, ClientRequestException, RemoteException {
 		try {
-            meta_agent.remove(op_registry.get(operationId));
-            putConfig();
-        }
-        catch (UnknownMetaprojectObjectIdException e) {
-        	throw new ClientRequestException(e.getMessage(), e.getCause());
-        }
-		
+			meta_agent.remove(op_registry.get(operationId));
+			putConfig();
+		} catch (UnknownMetaprojectObjectIdException e) {
+			logger.error(e.getMessage());
+			throw new ClientRequestException("Client failed to delete operation (see error log for details)", e);
+		}
 	}
 
 	@Override
 	public void updateOperation(OperationId operationId, Operation updatedOperation)
 			throws AuthorizationException, ClientRequestException, RemoteException {
 		try {
-            op_registry.update(operationId, updatedOperation);
-            putConfig();
-        }
-        catch (UnknownMetaprojectObjectIdException e) {
-        	throw new ClientRequestException(e.getMessage(), e.getCause());
-        }
+			op_registry.update(operationId, updatedOperation);
+			putConfig();
+		} catch (UnknownMetaprojectObjectIdException e) {
+			logger.error(e.getMessage());
+			throw new ClientRequestException("Client failed to update operation (see error log for details)", e);
+		}
 	}
 
 	@Override
 	public void assignRole(UserId userId, ProjectId projectId, RoleId roleId)
 			throws AuthorizationException, ClientRequestException, RemoteException {
 		policy.add(roleId, projectId, userId);
-        putConfig();
-
+		putConfig();
 	}
 
 	@Override
 	public void retractRole(UserId userId, ProjectId projectId, RoleId roleId)
 			throws AuthorizationException, ClientRequestException, RemoteException {
 		policy.remove(userId, projectId, roleId);
-        putConfig();
-
+		putConfig();
 	}
 
 	@Override
@@ -825,8 +809,7 @@ public class LocalHttpClient implements Client, ClientSessionListener {
 	public void setRootDirectory(String rootDirectory)
 			throws AuthorizationException, ClientRequestException, RemoteException {
 		config.setServerRoot(new File(rootDirectory));
-        putConfig();
-
+		putConfig();
 	}
 
 	@Override
@@ -840,7 +823,6 @@ public class LocalHttpClient implements Client, ClientSessionListener {
 			throws AuthorizationException, ClientRequestException, RemoteException {
 		config.addProperty(property, value);
 		putConfig();
-
 	}
 
 	@Override
@@ -848,22 +830,16 @@ public class LocalHttpClient implements Client, ClientSessionListener {
 			throws AuthorizationException, ClientRequestException, RemoteException {
 		config.removeProperty(property);
 		putConfig();
-
 	}
-	
-	public Role getRole(RoleId id) {
+
+	public Role getRole(RoleId id) throws AuthorizationException, ClientRequestException, RemoteException {
 		try {
 			return role_registry.get(id);
 		} catch (UnknownMetaprojectObjectIdException e) {
-			// TODO Auto-generated catch block
-			e.printStackTrace();
+			logger.error(e.getMessage());
+			throw new ClientRequestException("Client failed to get role details (see error log for details)", e);
 		}
-		return null;
 	}
-	
-
-
-	
 
 	@Override
 	public UserInfo getUserInfo() {
@@ -872,56 +848,38 @@ public class LocalHttpClient implements Client, ClientSessionListener {
 
 	@Override
 	public List<Project> getProjects() throws ClientRequestException {
-		try {
-			return getProjects(userId);
-		}
-		catch (AuthorizationException | RemoteException e) {
-			throw new ClientRequestException(e.getMessage(), e);
-		}
+		return getProjects(userId);
 	}
 
 	@Override
 	public List<Role> getActiveRoles() throws ClientRequestException {
 		try {
-            List<Role> activeRoles = new ArrayList<>();
-            if (getRemoteProject().isPresent()) {
-                activeRoles = getRoles(userId, getRemoteProject().get(), GlobalPermissions.INCLUDED);
-            }
-            return activeRoles;
-        }
-        catch (AuthorizationException | RemoteException e) {
-            throw new ClientRequestException(e.getMessage(), e);
-        }
+			List<Role> activeRoles = new ArrayList<>();
+			if (getRemoteProject().isPresent()) {
+				activeRoles = getRoles(userId, getRemoteProject().get(), GlobalPermissions.INCLUDED);
+			}
+			return activeRoles;
+		} catch (AuthorizationException | RemoteException e) {
+			throw new ClientRequestException(e.getMessage(), e);
+		}
 	}
 
 	@Override
 	public List<Operation> getActiveOperations() throws ClientRequestException {
-		
-            List<Operation> activeOperations = new ArrayList<>();
-            if (getRemoteProject().isPresent()) {
-                
-					try {
-						activeOperations = getOperations(userId, getRemoteProject().get());
-					} catch (AuthorizationException | RemoteException e) {
-						throw new ClientRequestException(e.getCause());						
-					}
-				
-            }
-            return activeOperations;
-        
-		
+		List<Operation> activeOperations = new ArrayList<>();
+		if (getRemoteProject().isPresent()) {
+			try {
+				activeOperations = getOperations(userId, getRemoteProject().get());
+			} catch (AuthorizationException | RemoteException e) {
+				throw new ClientRequestException(e.getMessage(), e);
+			}
+		}
+		return activeOperations;
 	}
 
-
-
-
-
-
-	
-
-	private Response post(String url, RequestBody body, boolean cred) {
-		Request request;
-		
+	private Response post(String url, RequestBody body, boolean cred) throws LoginTimeoutException,
+			AuthorizationException, ClientRequestException {
+		Request request = null;
 		if (cred) {
 			request = new Request.Builder()
 					.url(serverAddress + url)
@@ -935,47 +893,47 @@ public class LocalHttpClient implements Client, ClientSessionListener {
 					.post(body)
 					.build();
 		}
-
-
 		try {
-			return req_client.newCall(request).execute();
-
-		} catch (Exception e) {
-			// TODO Auto-generated catch block
-			e.printStackTrace();
+			Response response = req_client.newCall(request).execute();
+			if (!response.isSuccessful()) {
+				throwRequestExceptions(response);
+			}
+			return response;
+		} catch (IOException e) {
+			logger.error(e.getMessage(), e);
+			throw new ClientRequestException("Unable to send request to server (see error log for details)", e);
 		}
-		return null;
 	}
-	
-	private Response delete(String url, boolean cred) {
+
+	private Response delete(String url, boolean cred) throws LoginTimeoutException,
+			AuthorizationException, ClientRequestException  {
 		Request request;
-		
 		if (cred) {
 			request = new Request.Builder()
 					.url(serverAddress + url)
 					.addHeader(AUTH_HEADER, auth_header_value)
 					.delete()
 					.build();
-
 		} else {
 			request = new Request.Builder()
 					.url(serverAddress + url)
 					.delete()
 					.build();
 		}
-
-
 		try {
-			return req_client.newCall(request).execute();
-
-		} catch (Exception e) {
-			// TODO Auto-generated catch block
-			e.printStackTrace();
+			Response response = req_client.newCall(request).execute();
+			if (!response.isSuccessful()) {
+				throwRequestExceptions(response);
+			}
+			return response;
+		} catch (IOException e) {
+			logger.error(e.getMessage(), e);
+			throw new ClientRequestException("Unable to send request to server (see error log for details)", e);
 		}
-		return null;
 	}
 
-	private Response get(String url) throws LoginTimeoutException, AuthorizationException, ClientRequestException {
+	private Response get(String url) throws LoginTimeoutException, AuthorizationException,
+			ClientRequestException {
 		Request request = new Request.Builder()
 				.url(serverAddress + url)
 				.addHeader(AUTH_HEADER, auth_header_value)
@@ -984,71 +942,57 @@ public class LocalHttpClient implements Client, ClientSessionListener {
 		try {
 			Response response = req_client.newCall(request).execute();
 			if (!response.isSuccessful()) {
-				String msg = response.header("Error-Message");
-				if (response.code() == StatusCodes.UNAUTHORIZED) {
-					throw new AuthorizationException(msg);
-				}
-				/*
-				 * 440 Login Timeout. Reference: https://support.microsoft.com/en-us/kb/941201
-				 */
-				else if (response.code() == 440) {
-					throw new LoginTimeoutException(msg);
-				}
-				else {
-					throw new ClientRequestException(msg);
-				}
+				throwRequestExceptions(response);
 			}
 			return response;
-		}
-		catch (IOException e) {
-			throw new ClientRequestException(e);
+		} catch (IOException e) {
+			logger.error(e.getMessage(), e);
+			throw new ClientRequestException("Unable to send request to server (see error log for details)", e);
 		}
 	}
-	
-	private ServerConfiguration getConfig() throws LoginTimeoutException, AuthorizationException, ClientRequestException {
+
+	private ServerConfiguration getConfig() throws LoginTimeoutException, AuthorizationException,
+			ClientRequestException {
 		String url = HTTPServer.METAPROJECT;
 		Response response = get(url);
 		try {
 			Serializer<Gson> serl = new DefaultJsonSerializer();
 			InputStream is = response.body().byteStream();
 			return (ServerConfiguration) serl.parse(new InputStreamReader(is), ServerConfiguration.class);
-		}
-		catch (ObjectConversionException e) {
-			throw new ClientRequestException("Unable to parse the incoming server configuration data", e);
-		}
-		catch (IOException e) {
-			throw new ClientRequestException("Data transmission error", e);
-		}
-		finally {
+		} catch (ObjectConversionException e) {
+			logger.error(e.getMessage(), e);
+			throw new ClientRequestException("Failed to parse the incoming server configuration data", e);
+		} catch (IOException e) {
+			logger.error(e.getMessage(), e);
+			throw new ClientRequestException("Failed to receive data", e);
+		} finally {
 			if (response != null) {
 				response.body().close();
 			}
 		}
 	}
-	
+
 	public String getCode() throws LoginTimeoutException, AuthorizationException, ClientRequestException {
 		String url = HTTPServer.GEN_CODE;
 		Response response = get(url);
 		try {
 			return response.body().string();
-		}
-		catch (IOException e) {
-			throw new ClientRequestException("Data transmission error", e);
-		}
-		finally {
+		} catch (IOException e) {
+			logger.error(e.getMessage(), e);
+			throw new ClientRequestException("Failed to receive data (see error log for details)", e);
+		} finally {
 			if (response != null) {
 				response.body().close();
 			}
 		}
 	}
-	
+
 	public void putConfig() throws LoginTimeoutException, AuthorizationException, ClientRequestException {
 		if (save_cancel_semantics) {
-			config_state_changed = true;		
-			
+			config_state_changed = true;
 		} else {
 			reallyPutConfig();
-		}		
+		}
 	}
 	
 	public boolean configStateChanged() {
@@ -1056,7 +1000,6 @@ public class LocalHttpClient implements Client, ClientSessionListener {
 	}
 	
 	public void reallyPutConfig() throws LoginTimeoutException, AuthorizationException, ClientRequestException {
-		
 		final MediaType JSON  = MediaType.parse("application/json; charset=utf-8");
 		String url = HTTPServer.METAPROJECT;
 
@@ -1068,50 +1011,46 @@ public class LocalHttpClient implements Client, ClientSessionListener {
 			// give the server some time to reboot
 			Thread.sleep(1000);
 		} catch (InterruptedException e) {
-			// TODO Auto-generated catch block
-			e.printStackTrace();
+			logger.error(e.getMessage(), e);
 		}
 		initConfig();
 	}
 	
-	public void putEVSHistory(String code, String name, String operation, String reference) throws ClientRequestException {
-
+	public void putEVSHistory(String code, String name, String operation, String reference)
+			 throws LoginTimeoutException, AuthorizationException, ClientRequestException {
 		String url = HTTPServer.EVS_REC;
-
 		ByteArrayOutputStream b = new ByteArrayOutputStream();
-		ObjectOutputStream os = null;
-		Response response = null;
-
-		EVSHistory hist = new EVSHistory(code, name, operation, reference);
-
 		try {
-			os = new ObjectOutputStream(b);
+			EVSHistory hist = new EVSHistory(code, name, operation, reference);
+			ObjectOutputStream os = new ObjectOutputStream(b);
 			os.writeObject(hist);
 			RequestBody req = RequestBody.create(MediaType.parse("application"), b.toByteArray());
-
-			response = post(url, req, true);
-
-			
-
-			if (response.code() == 200) {
-				// ok, do nothing
-			} else if (response.code() == 500) {
-				ObjectInputStream ois = new ObjectInputStream(response.body().byteStream());
-				ServerException ex = (ServerException) ois.readObject();
-				throw new ClientRequestException(ex.getMessage());
-			}
+			post(url, req, true);
 		} catch (IOException e) {
-			// TODO Auto-generated catch block
-			e.printStackTrace();
-		} catch (ClassNotFoundException e) {
-			// TODO Auto-generated catch block
-			e.printStackTrace();
+			logger.error(e.getMessage(), e);
+			throw new ClientRequestException("Failed to send data (see error log for details)", e);
 		}
-		
 	}
 
-	
-	/*
+	private void throwRequestExceptions(Response response) throws LoginTimeoutException,
+			AuthorizationException, ClientRequestException {
+		String remoteMessage = response.header("Error-Message");
+		String msg = String.format("%s (contact server admin for further assistance)", remoteMessage);
+		if (response.code() == StatusCodes.UNAUTHORIZED) {
+			throw new AuthorizationException(msg);
+		}
+		/*
+		 * 440 Login Timeout. Reference: https://support.microsoft.com/en-us/kb/941201
+		 */
+		else if (response.code() == 440) {
+			throw new LoginTimeoutException(msg);
+		}
+		else {
+			throw new ClientRequestException(msg);
+		}
+	}
+
+    /*
      * Utility methods for querying the client permissions. All these methods will initially check if the client
      * is linked to a remote project before sending the query. All the methods will return false as the default
      * answer.
@@ -1306,7 +1245,4 @@ public class LocalHttpClient implements Client, ClientSessionListener {
 		// TODO Auto-generated method stub
 		return null;
 	}
-
-	
-	
 }

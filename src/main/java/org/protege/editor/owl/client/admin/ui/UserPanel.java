@@ -27,7 +27,6 @@ import java.awt.event.KeyAdapter;
 import java.awt.event.KeyEvent;
 import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
-import java.rmi.RemoteException;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
@@ -160,7 +159,7 @@ public class UserPanel extends JPanel implements Disposable {
                 Collections.sort(users);
                 data.addAll(users.stream().map(UserListItem::new).collect(Collectors.toList()));
             }
-        } catch (AuthorizationException | ClientRequestException | RemoteException e) {
+        } catch (AuthorizationException | ClientRequestException e) {
             ErrorLogPanel.showErrorDialog(e);
         }
         userList.setListData(data.toArray());
@@ -203,7 +202,7 @@ public class UserPanel extends JPanel implements Disposable {
                 Client client = ClientSession.getInstance(editorKit).getActiveClient();
                 try {
                     client.deleteUser(user.getId());
-                } catch (AuthorizationException | ClientRequestException | RemoteException e) {
+                } catch (AuthorizationException | ClientRequestException e) {
                     ErrorLogPanel.showErrorDialog(e);
                 }
                 configManager.statusChanged(AdminTabEvent.CONFIGURATION_CHANGED);

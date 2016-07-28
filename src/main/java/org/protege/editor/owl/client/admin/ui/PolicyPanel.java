@@ -32,7 +32,6 @@ import java.awt.event.KeyAdapter;
 import java.awt.event.KeyEvent;
 import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
-import java.rmi.RemoteException;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
@@ -229,7 +228,7 @@ public class PolicyPanel extends JPanel implements Disposable {
                     Collections.sort(projects);
                     data.addAll(projects.stream().map(ProjectListItem::new).collect(Collectors.toList()));
                 }
-            } catch (AuthorizationException | ClientRequestException | RemoteException e) {
+            } catch (AuthorizationException | ClientRequestException e) {
                 handleException(e);
             }
             projectList.setListData(data.toArray());
@@ -247,7 +246,7 @@ public class PolicyPanel extends JPanel implements Disposable {
                     Collections.sort(roles);
                     data.addAll(roles.stream().map(RoleListItem::new).collect(Collectors.toList()));
                 }
-            } catch (AuthorizationException | ClientRequestException | RemoteException e) {
+            } catch (AuthorizationException | ClientRequestException e) {
                 handleException(e);
             }
             roleList.setListData(data.toArray());
@@ -293,7 +292,7 @@ public class PolicyPanel extends JPanel implements Disposable {
                         client.retractRole(user.getId(), project.getId(), role.getId());
                         configManager.statusChanged(AdminTabEvent.CONFIGURATION_CHANGED);
                     }
-                } catch (AuthorizationException | ClientRequestException | RemoteException e) {
+                } catch (AuthorizationException | ClientRequestException e) {
                     ErrorLogPanel.showErrorDialog(e);
                 }
                 clearList(projectList, roleList);
@@ -345,7 +344,7 @@ public class PolicyPanel extends JPanel implements Disposable {
                 try {
                     client.retractRole(user.getId(), selectedProject.getId(), role.getId());
                     configManager.statusChanged(AdminTabEvent.CONFIGURATION_CHANGED);
-                } catch (AuthorizationException | ClientRequestException | RemoteException e) {
+                } catch (AuthorizationException | ClientRequestException e) {
                     ErrorLogPanel.showErrorDialog(e);
                 }
                 listProjects();

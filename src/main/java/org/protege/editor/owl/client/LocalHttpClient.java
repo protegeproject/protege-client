@@ -43,7 +43,6 @@ import org.slf4j.LoggerFactory;
 
 import java.io.*;
 import java.net.URI;
-import java.rmi.RemoteException;
 import java.util.*;
 import java.util.concurrent.TimeUnit;
 
@@ -170,13 +169,13 @@ public class LocalHttpClient implements Client, ClientSessionListener {
 	}
 
 	@Override
-	public List<User> getAllUsers() throws AuthorizationException, ClientRequestException, RemoteException {
+	public List<User> getAllUsers() throws AuthorizationException, ClientRequestException {
 		return new ArrayList<User>(user_registry.getEntries());
 	}
 
 	@Override
 	public void createUser(User newUser, Optional<? extends Password> password)
-			throws AuthorizationException, ClientRequestException, RemoteException {
+			throws AuthorizationException, ClientRequestException {
 		try {
 			meta_agent.add(newUser);
 			if (password.isPresent()) {
@@ -193,8 +192,7 @@ public class LocalHttpClient implements Client, ClientSessionListener {
 	}
 
 	@Override
-	public void deleteUser(UserId userId) throws AuthorizationException, ClientRequestException,
-			RemoteException {
+	public void deleteUser(UserId userId) throws AuthorizationException, ClientRequestException {
 		try {
 			meta_agent.remove(user_registry.get(userId));
 			putConfig();
@@ -206,7 +204,7 @@ public class LocalHttpClient implements Client, ClientSessionListener {
 
 	@Override
 	public void updateUser(UserId userId, User updatedUser, Optional<? extends Password> updatedPassword)
-			throws AuthorizationException, ClientRequestException, RemoteException {
+			throws AuthorizationException, ClientRequestException {
 		try {
 			user_registry.update(userId, updatedUser);
 			if (updatedPassword.isPresent()) {
@@ -223,7 +221,7 @@ public class LocalHttpClient implements Client, ClientSessionListener {
 	}
 
 	public ServerDocument createProject(Project proj)
-			throws LoginTimeoutException, AuthorizationException, ClientRequestException, RemoteException {
+			throws LoginTimeoutException, AuthorizationException, ClientRequestException {
 		/*
 		 * Prepare the request body
 		 */
@@ -267,7 +265,7 @@ public class LocalHttpClient implements Client, ClientSessionListener {
 
 	@Override
 	public void deleteProject(ProjectId projectId, boolean includeFile)
-			throws AuthorizationException, ClientRequestException, RemoteException {
+			throws AuthorizationException, ClientRequestException {
 		/*
 		 * Prepare the request string
 		 */
@@ -282,7 +280,7 @@ public class LocalHttpClient implements Client, ClientSessionListener {
 
 	@Override
 	public ServerDocument openProject(ProjectId projectId)
-			throws AuthorizationException, ClientRequestException, RemoteException {
+			throws AuthorizationException, ClientRequestException {
 		/*
 		 * Prepare the request string
 		 */
@@ -308,7 +306,7 @@ public class LocalHttpClient implements Client, ClientSessionListener {
 
 	@Override
 	public ChangeHistory commit(ProjectId projectId, CommitBundle commitBundle)
-			throws AuthorizationException, OutOfSyncException, ClientRequestException, RemoteException {
+			throws AuthorizationException, OutOfSyncException, ClientRequestException {
 		/*
 		 * Prepare the request body
 		 */
@@ -619,13 +617,13 @@ public class LocalHttpClient implements Client, ClientSessionListener {
 	}
 
 	@Override
-	public List<Project> getAllProjects() throws AuthorizationException, ClientRequestException, RemoteException {
+	public List<Project> getAllProjects() throws AuthorizationException, ClientRequestException {
 		return new ArrayList<>(proj_registry.getEntries());
 	}
 
 	@Override
 	public void updateProject(ProjectId projectId, Project updatedProject)
-			throws AuthorizationException, ClientRequestException, RemoteException {
+			throws AuthorizationException, ClientRequestException {
 		try {
 			proj_registry.update(projectId, updatedProject);
 			putConfig();
@@ -637,7 +635,7 @@ public class LocalHttpClient implements Client, ClientSessionListener {
 
 	@Override
 	public Map<ProjectId, List<Role>> getRoles(UserId userId, GlobalPermissions globalPermissions)
-			throws AuthorizationException, ClientRequestException, RemoteException {
+			throws AuthorizationException, ClientRequestException {
 		Map<ProjectId, List<Role>> roleMap = new HashMap<>();
 		for (Project project : getAllProjects()) {
 			roleMap.put(project.getId(), getRoles(userId, project.getId(), globalPermissions));
@@ -647,7 +645,7 @@ public class LocalHttpClient implements Client, ClientSessionListener {
 
 	@Override
 	public List<Role> getRoles(UserId userId, ProjectId projectId, GlobalPermissions globalPermissions)
-			throws AuthorizationException, ClientRequestException, RemoteException {
+			throws AuthorizationException, ClientRequestException {
 		try {
 			return new ArrayList<>(meta_agent.getRoles(userId, projectId, globalPermissions));
 		} catch (UserNotInPolicyException | ProjectNotInPolicyException e) {
@@ -657,12 +655,12 @@ public class LocalHttpClient implements Client, ClientSessionListener {
 	}
 
 	@Override
-	public List<Role> getAllRoles() throws AuthorizationException, ClientRequestException, RemoteException {
+	public List<Role> getAllRoles() throws AuthorizationException, ClientRequestException {
 		return new ArrayList<Role>(this.role_registry.getEntries());
 	}
 
 	@Override
-	public void createRole(Role newRole) throws AuthorizationException, ClientRequestException, RemoteException {
+	public void createRole(Role newRole) throws AuthorizationException, ClientRequestException {
 		 try {
 			meta_agent.add(newRole);
 			putConfig();
@@ -673,7 +671,7 @@ public class LocalHttpClient implements Client, ClientSessionListener {
 	}
 
 	@Override
-	public void deleteRole(RoleId roleId) throws AuthorizationException, ClientRequestException, RemoteException {
+	public void deleteRole(RoleId roleId) throws AuthorizationException, ClientRequestException {
 		try {
 			meta_agent.remove(role_registry.get(roleId));
 			putConfig();
@@ -685,7 +683,7 @@ public class LocalHttpClient implements Client, ClientSessionListener {
 
 	@Override
 	public void updateRole(RoleId roleId, Role updatedRole)
-			throws AuthorizationException, ClientRequestException, RemoteException {
+			throws AuthorizationException, ClientRequestException {
 		try {
 			role_registry.update(roleId, updatedRole);
 			putConfig();
@@ -697,7 +695,7 @@ public class LocalHttpClient implements Client, ClientSessionListener {
 
 	@Override
 	public Map<ProjectId, List<Operation>> getOperations(UserId userId)
-			throws AuthorizationException, ClientRequestException, RemoteException {
+			throws AuthorizationException, ClientRequestException {
 		Map<ProjectId, List<Operation>> operationMap = new HashMap<>();
 		for (Project project : getAllProjects()) {
 			operationMap.put(project.getId(), getOperations(userId, project.getId()));
@@ -707,7 +705,7 @@ public class LocalHttpClient implements Client, ClientSessionListener {
 
 	@Override
 	public List<Operation> getOperations(UserId userId, ProjectId projectId)
-			throws AuthorizationException, ClientRequestException, RemoteException {
+			throws AuthorizationException, ClientRequestException {
 		try {
 			return new ArrayList<>(meta_agent.getOperations(userId, projectId, GlobalPermissions.INCLUDED));
 		} catch (UserNotInPolicyException | ProjectNotInPolicyException e) {
@@ -718,7 +716,7 @@ public class LocalHttpClient implements Client, ClientSessionListener {
 
 	@Override
 	public List<Operation> getOperations(RoleId roleId)
-			throws AuthorizationException, ClientRequestException, RemoteException {
+			throws AuthorizationException, ClientRequestException {
 		try {
 			return new ArrayList<>(meta_agent.getOperations(role_registry.get(roleId)));
 		} catch (UnknownMetaprojectObjectIdException e) {
@@ -728,13 +726,13 @@ public class LocalHttpClient implements Client, ClientSessionListener {
 	}
 
 	@Override
-	public List<Operation> getAllOperations() throws AuthorizationException, ClientRequestException, RemoteException {
+	public List<Operation> getAllOperations() throws AuthorizationException, ClientRequestException {
 		return new ArrayList<>(op_registry.getEntries());
 	}
 
 	@Override
 	public void createOperation(Operation operation)
-			throws AuthorizationException, ClientRequestException, RemoteException {
+			throws AuthorizationException, ClientRequestException {
 		try {
 			meta_agent.add(operation);
 			putConfig();
@@ -746,7 +744,7 @@ public class LocalHttpClient implements Client, ClientSessionListener {
 
 	@Override
 	public void deleteOperation(OperationId operationId)
-			throws AuthorizationException, ClientRequestException, RemoteException {
+			throws AuthorizationException, ClientRequestException {
 		try {
 			meta_agent.remove(op_registry.get(operationId));
 			putConfig();
@@ -758,7 +756,7 @@ public class LocalHttpClient implements Client, ClientSessionListener {
 
 	@Override
 	public void updateOperation(OperationId operationId, Operation updatedOperation)
-			throws AuthorizationException, ClientRequestException, RemoteException {
+			throws AuthorizationException, ClientRequestException {
 		try {
 			op_registry.update(operationId, updatedOperation);
 			putConfig();
@@ -770,69 +768,69 @@ public class LocalHttpClient implements Client, ClientSessionListener {
 
 	@Override
 	public void assignRole(UserId userId, ProjectId projectId, RoleId roleId)
-			throws AuthorizationException, ClientRequestException, RemoteException {
+			throws AuthorizationException, ClientRequestException {
 		policy.add(roleId, projectId, userId);
 		putConfig();
 	}
 
 	@Override
 	public void retractRole(UserId userId, ProjectId projectId, RoleId roleId)
-			throws AuthorizationException, ClientRequestException, RemoteException {
+			throws AuthorizationException, ClientRequestException {
 		policy.remove(userId, projectId, roleId);
 		putConfig();
 	}
 
 	@Override
-	public Host getHost() throws AuthorizationException, ClientRequestException, RemoteException {
+	public Host getHost() throws AuthorizationException, ClientRequestException {
 		return config.getHost();
 	}
 
 	@Override
-	public void setHostAddress(URI hostAddress) throws AuthorizationException, ClientRequestException, RemoteException {
+	public void setHostAddress(URI hostAddress) throws AuthorizationException, ClientRequestException {
 		// TODO Auto-generated method stub
 
 	}
 
 	@Override
 	public void setSecondaryPort(int portNumber)
-			throws AuthorizationException, ClientRequestException, RemoteException {
+			throws AuthorizationException, ClientRequestException {
 		// TODO Auto-generated method stub
 
 	}
 
 	@Override
-	public String getRootDirectory() throws AuthorizationException, ClientRequestException, RemoteException {
+	public String getRootDirectory() throws AuthorizationException, ClientRequestException {
 		return config.getServerRoot().toString();
 	}
 
 	@Override
 	public void setRootDirectory(String rootDirectory)
-			throws AuthorizationException, ClientRequestException, RemoteException {
+			throws AuthorizationException, ClientRequestException {
 		config.setServerRoot(new File(rootDirectory));
 		putConfig();
 	}
 
 	@Override
 	public Map<String, String> getServerProperties()
-			throws AuthorizationException, ClientRequestException, RemoteException {
+			throws AuthorizationException, ClientRequestException {
 		return config.getProperties();
 	}
 
 	@Override
 	public void setServerProperty(String property, String value)
-			throws AuthorizationException, ClientRequestException, RemoteException {
+			throws AuthorizationException, ClientRequestException {
 		config.addProperty(property, value);
 		putConfig();
 	}
 
 	@Override
 	public void unsetServerProperty(String property)
-			throws AuthorizationException, ClientRequestException, RemoteException {
+			throws AuthorizationException, ClientRequestException {
 		config.removeProperty(property);
 		putConfig();
 	}
 
-	public Role getRole(RoleId id) throws AuthorizationException, ClientRequestException, RemoteException {
+	public Role getRole(RoleId id) throws AuthorizationException, ClientRequestException {
 		try {
 			return role_registry.get(id);
 		} catch (UnknownMetaprojectObjectIdException e) {
@@ -859,7 +857,7 @@ public class LocalHttpClient implements Client, ClientSessionListener {
 				activeRoles = getRoles(userId, getRemoteProject().get(), GlobalPermissions.INCLUDED);
 			}
 			return activeRoles;
-		} catch (AuthorizationException | RemoteException e) {
+		} catch (AuthorizationException e) {
 			throw new ClientRequestException(e.getMessage(), e);
 		}
 	}
@@ -870,7 +868,7 @@ public class LocalHttpClient implements Client, ClientSessionListener {
 		if (getRemoteProject().isPresent()) {
 			try {
 				activeOperations = getOperations(userId, getRemoteProject().get());
-			} catch (AuthorizationException | RemoteException e) {
+			} catch (AuthorizationException e) {
 				throw new ClientRequestException(e.getMessage(), e);
 			}
 		}
@@ -1241,7 +1239,7 @@ public class LocalHttpClient implements Client, ClientSessionListener {
 	@Override
 	public ServerDocument createProject(ProjectId projectId, Name projectName, Description description, UserId owner,
 			Optional<ProjectOptions> options, Optional<CommitBundle> initialCommit)
-					throws AuthorizationException, ClientRequestException, RemoteException {
+					throws AuthorizationException, ClientRequestException {
 		// TODO Auto-generated method stub
 		return null;
 	}

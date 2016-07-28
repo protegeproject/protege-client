@@ -16,7 +16,6 @@ import javax.swing.*;
 import javax.swing.event.DocumentEvent;
 import javax.swing.event.DocumentListener;
 import java.awt.*;
-import java.rmi.RemoteException;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -141,7 +140,7 @@ public class PropertyDialogPanel extends JPanel implements VerifiedInputEditor {
         boolean exists = false;
         try {
             exists = client.getServerProperties().containsKey(propertyName);
-        } catch (AuthorizationException | ClientRequestException | RemoteException e) {
+        } catch (AuthorizationException | ClientRequestException e) {
             ErrorLogPanel.showErrorDialog(e);
         }
         return exists;
@@ -151,7 +150,7 @@ public class PropertyDialogPanel extends JPanel implements VerifiedInputEditor {
         Client client = ClientSession.getInstance(editorKit).getActiveClient();
         try {
             client.setServerProperty(name.getText(), value.getText());
-        } catch (AuthorizationException | ClientRequestException | RemoteException e) {
+        } catch (AuthorizationException | ClientRequestException e) {
             ErrorLogPanel.showErrorDialog(e);
         }
     }
@@ -164,7 +163,7 @@ public class PropertyDialogPanel extends JPanel implements VerifiedInputEditor {
             try {
                 client.unsetServerProperty(propertyName);
                 addProperty();
-            } catch (AuthorizationException | ClientRequestException | RemoteException e) {
+            } catch (AuthorizationException | ClientRequestException e) {
                 ErrorLogPanel.showErrorDialog(e);
             }
         }

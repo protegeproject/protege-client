@@ -24,7 +24,6 @@ import javax.swing.event.DocumentEvent;
 import javax.swing.event.DocumentListener;
 import java.awt.*;
 import java.awt.event.ActionListener;
-import java.rmi.RemoteException;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
@@ -256,7 +255,7 @@ public class UserDialogPanel extends JPanel implements VerifiedInputEditor {
         Client client = ClientSession.getInstance(editorKit).getActiveClient();
         try {
             client.createUser(user, Optional.empty());
-        } catch (AuthorizationException | ClientRequestException | RemoteException e) {
+        } catch (AuthorizationException | ClientRequestException e) {
             ErrorLogPanel.showErrorDialog(e);
         }
     }
@@ -265,7 +264,7 @@ public class UserDialogPanel extends JPanel implements VerifiedInputEditor {
         Client client = ClientSession.getInstance(editorKit).getActiveClient();
         try {
             client.createUser(user, Optional.of(passwordDigest));
-        } catch (AuthorizationException | ClientRequestException | RemoteException e) {
+        } catch (AuthorizationException | ClientRequestException e) {
             ErrorLogPanel.showErrorDialog(e);
         }
     }
@@ -278,7 +277,7 @@ public class UserDialogPanel extends JPanel implements VerifiedInputEditor {
             } else {
                 client.updateUser(selectedUser.getId(), user, Optional.of(hashPassword()));
             }
-        } catch (AuthorizationException | ClientRequestException | RemoteException e) {
+        } catch (AuthorizationException | ClientRequestException e) {
             ErrorLogPanel.showErrorDialog(e);
         }
     }

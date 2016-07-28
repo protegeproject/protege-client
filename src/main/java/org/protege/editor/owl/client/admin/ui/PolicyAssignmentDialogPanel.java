@@ -17,7 +17,6 @@ import javax.swing.*;
 import javax.swing.event.ListSelectionEvent;
 import javax.swing.event.ListSelectionListener;
 import java.awt.*;
-import java.rmi.RemoteException;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
@@ -135,7 +134,7 @@ public class PolicyAssignmentDialogPanel extends JPanel implements VerifiedInput
             List<Role> roleSet = client.getAllRoles();
             Collections.sort(roleSet);
             roles.addAll(roleSet.stream().map(AugmentedJCheckBox::new).collect(Collectors.toList()));
-        } catch (AuthorizationException | ClientRequestException | RemoteException e) {
+        } catch (AuthorizationException | ClientRequestException e) {
             ErrorLogPanel.showErrorDialog(e);
         }
         return roles.toArray(new AugmentedJCheckBox[roles.size()]);
@@ -147,7 +146,7 @@ public class PolicyAssignmentDialogPanel extends JPanel implements VerifiedInput
         try {
             projects = client.getAllProjects();
             projects.add(MetaprojectUtils.getUniversalProject());
-        } catch (AuthorizationException | ClientRequestException | RemoteException e) {
+        } catch (AuthorizationException | ClientRequestException e) {
             ErrorLogPanel.showErrorDialog(e);
         }
         Collections.sort(projects);
@@ -162,7 +161,7 @@ public class PolicyAssignmentDialogPanel extends JPanel implements VerifiedInput
                 List<Operation> ops = client.getOperations(r.getId());
                 ops.stream().filter(op -> !operations.contains(op)).forEach(operations::add);
             }
-        } catch (AuthorizationException | ClientRequestException | RemoteException e) {
+        } catch (AuthorizationException | ClientRequestException e) {
             ErrorLogPanel.showErrorDialog(e);
         }
         Collections.sort(operations);
@@ -217,7 +216,7 @@ public class PolicyAssignmentDialogPanel extends JPanel implements VerifiedInput
                         return true;
                     }
                 }
-            } catch (AuthorizationException | ClientRequestException | RemoteException e) {
+            } catch (AuthorizationException | ClientRequestException e) {
                 return false;
             }
         }
@@ -247,7 +246,7 @@ public class PolicyAssignmentDialogPanel extends JPanel implements VerifiedInput
             for(Role r : roles) {
                 client.assignRole(selectedUser.getId(), project.getId(), r.getId());
             }
-        } catch (AuthorizationException | ClientRequestException | RemoteException e) {
+        } catch (AuthorizationException | ClientRequestException e) {
             ErrorLogPanel.showErrorDialog(e);
         }
     }

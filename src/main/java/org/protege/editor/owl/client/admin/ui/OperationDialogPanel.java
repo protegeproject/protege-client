@@ -23,7 +23,6 @@ import javax.swing.event.DocumentEvent;
 import javax.swing.event.DocumentListener;
 import javax.swing.text.Document;
 import java.awt.*;
-import java.rmi.RemoteException;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
@@ -178,7 +177,7 @@ public class OperationDialogPanel extends JPanel implements VerifiedInputEditor 
         Client client = ClientSession.getInstance(editorKit).getActiveClient();
         try {
             client.createOperation(operation);
-        } catch (AuthorizationException | ClientRequestException | RemoteException e) {
+        } catch (AuthorizationException | ClientRequestException e) {
             ErrorLogPanel.showErrorDialog(e);
         }
     }
@@ -187,7 +186,7 @@ public class OperationDialogPanel extends JPanel implements VerifiedInputEditor 
         Client client = ClientSession.getInstance(editorKit).getActiveClient();
         try {
             client.updateOperation(selectedOperation.getId(), operation);
-        } catch (AuthorizationException | ClientRequestException | RemoteException e) {
+        } catch (AuthorizationException | ClientRequestException e) {
             ErrorLogPanel.showErrorDialog(e);
         }
     }

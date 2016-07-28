@@ -18,7 +18,6 @@ import javax.swing.event.DocumentListener;
 import java.awt.*;
 import java.net.URI;
 import java.net.URISyntaxException;
-import java.rmi.RemoteException;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -162,7 +161,7 @@ public class HostDialogPanel extends JPanel implements VerifiedInputEditor {
             if (portChanged && secondaryPort != -1) {
                 client.setSecondaryPort(secondaryPort);
             }
-        } catch (AuthorizationException | ClientRequestException | RemoteException | URISyntaxException e) {
+        } catch (AuthorizationException | ClientRequestException | URISyntaxException e) {
             ErrorLogPanel.showErrorDialog(e);
         }
     }

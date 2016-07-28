@@ -24,7 +24,6 @@ import javax.swing.border.EmptyBorder;
 import javax.swing.event.ListSelectionListener;
 import java.awt.*;
 import java.awt.event.*;
-import java.rmi.RemoteException;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
@@ -268,7 +267,7 @@ public class ServerSettingsPanel extends JPanel implements Disposable {
                 }
                 try {
                     client.unsetServerProperty(propertyName);
-                } catch (AuthorizationException | ClientRequestException | RemoteException e) {
+                } catch (AuthorizationException | ClientRequestException e) {
                     ErrorLogPanel.showErrorDialog(e);
                 }
                 configManager.statusChanged(AdminTabEvent.CONFIGURATION_CHANGED);
@@ -314,7 +313,7 @@ public class ServerSettingsPanel extends JPanel implements Disposable {
             if(client != null) {
                 data.add(new HostListItem(client.getHost()));
             }
-        } catch (AuthorizationException | ClientRequestException | RemoteException e) {
+        } catch (AuthorizationException | ClientRequestException e) {
             ErrorLogPanel.showErrorDialog(e);
         }
         hostList.setListData(data.toArray());
@@ -327,7 +326,7 @@ public class ServerSettingsPanel extends JPanel implements Disposable {
             if(client != null) {
                 data.add(new RootListItem(client.getRootDirectory()));
             }
-        } catch (AuthorizationException | ClientRequestException | RemoteException e) {
+        } catch (AuthorizationException | ClientRequestException e) {
             ErrorLogPanel.showErrorDialog(e);
         }
         rootList.setListData(data.toArray());
@@ -343,7 +342,7 @@ public class ServerSettingsPanel extends JPanel implements Disposable {
                 Collections.sort(keyset);
                 data.addAll(keyset.stream().map(key -> new PropertyListItem(key, propertiesMap.get(key))).collect(Collectors.toList()));
             }
-        } catch (AuthorizationException | ClientRequestException | RemoteException e) {
+        } catch (AuthorizationException | ClientRequestException e) {
             ErrorLogPanel.showErrorDialog(e);
         }
         settingsList.setListData(data.toArray());

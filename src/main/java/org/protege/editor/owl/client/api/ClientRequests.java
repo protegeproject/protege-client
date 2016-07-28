@@ -10,7 +10,6 @@ import org.protege.editor.owl.server.versioning.api.ChangeHistory;
 import org.protege.editor.owl.server.versioning.api.ServerDocument;
 
 import java.net.URI;
-import java.rmi.RemoteException;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
@@ -32,12 +31,8 @@ public interface ClientRequests {
      *             service.
      * @throws ClientRequestException
      *             If the server failed to fulfill the user request.
-     * @throws RemoteException
-     *             If the remote method invocation fails for some reason, e.g.,
-     *             communication problems, failure during parameter or return
-     *             value marshalling or unmarshalling, protocol errors.
      */
-    List<User> getAllUsers() throws AuthorizationException, ClientRequestException, RemoteException;
+    List<User> getAllUsers() throws AuthorizationException, ClientRequestException;
 
     /**
      * Creating a new user to the server.
@@ -51,13 +46,9 @@ public interface ClientRequests {
      *             service.
      * @throws ClientRequestException
      *             If the server failed to fulfill the user request.
-     * @throws RemoteException
-     *             If the remote method invocation fails for some reason, e.g.,
-     *             communication problems, failure during parameter or return
-     *             value marshalling or unmarshalling, protocol errors.
      */
     void createUser(User newUser, Optional<? extends Password> password)
-            throws AuthorizationException, ClientRequestException, RemoteException;
+            throws AuthorizationException, ClientRequestException;
 
     /**
      * Deleting an existing user from the server.
@@ -69,12 +60,8 @@ public interface ClientRequests {
      *             service.
      * @throws ClientRequestException
      *             If the server failed to fulfill the user request.
-     * @throws RemoteException
-     *             If the remote method invocation fails for some reason, e.g.,
-     *             communication problems, failure during parameter or return
-     *             value marshalling or unmarshalling, protocol errors.
      */
-    void deleteUser(UserId userId) throws AuthorizationException, ClientRequestException, RemoteException;
+    void deleteUser(UserId userId) throws AuthorizationException, ClientRequestException;
 
     /**
      * Updating information of an exiting user in the server.
@@ -90,13 +77,9 @@ public interface ClientRequests {
      *             service.
      * @throws ClientRequestException
      *             If the server failed to fulfill the user request.
-     * @throws RemoteException
-     *             If the remote method invocation fails for some reason, e.g.,
-     *             communication problems, failure during parameter or return
-     *             value marshalling or unmarshalling, protocol errors.
      */
     void updateUser(UserId userId, User updatedUser, Optional<? extends Password> updatedPassword)
-            throws AuthorizationException, ClientRequestException, RemoteException;
+            throws AuthorizationException, ClientRequestException;
 
     /**
      * Getting all projects the given the user id.
@@ -109,12 +92,8 @@ public interface ClientRequests {
      *             service.
      * @throws ClientRequestException
      *             If the server failed to fulfill the user request.
-     * @throws RemoteException
-     *             If the remote method invocation fails for some reason, e.g.,
-     *             communication problems, failure during parameter or return
-     *             value marshalling or unmarshalling, protocol errors.
      */
-    List<Project> getProjects(UserId userId) throws AuthorizationException, ClientRequestException, RemoteException;
+    List<Project> getProjects(UserId userId) throws AuthorizationException, ClientRequestException;
 
     /**
      * Getting all project known by the server.
@@ -125,12 +104,8 @@ public interface ClientRequests {
      *             service.
      * @throws ClientRequestException
      *             If the server failed to fulfill the user request.
-     * @throws RemoteException
-     *             If the remote method invocation fails for some reason, e.g.,
-     *             communication problems, failure during parameter or return
-     *             value marshalling or unmarshalling, protocol errors.
      */
-    List<Project> getAllProjects() throws AuthorizationException, ClientRequestException, RemoteException;
+    List<Project> getAllProjects() throws AuthorizationException, ClientRequestException;
 
     /**
      * Creating a new project to the server.
@@ -153,14 +128,10 @@ public interface ClientRequests {
      *             service.
      * @throws ClientRequestException
      *             If the server failed to fulfill the user request.
-     * @throws RemoteException
-     *             If the remote method invocation fails for some reason, e.g.,
-     *             communication problems, failure during parameter or return
-     *             value marshalling or unmarshalling, protocol errors.
      */
     ServerDocument createProject(ProjectId projectId, Name projectName, Description description, UserId owner,
             Optional<ProjectOptions> options, Optional<CommitBundle> initialCommit)
-                    throws AuthorizationException, ClientRequestException, RemoteException;
+                    throws AuthorizationException, ClientRequestException;
 
     /**
      * Deleting an existing project from the server.
@@ -174,13 +145,9 @@ public interface ClientRequests {
      *             service.
      * @throws ClientRequestException
      *             If the server failed to fulfill the user request.
-     * @throws RemoteException
-     *             If the remote method invocation fails for some reason, e.g.,
-     *             communication problems, failure during parameter or return
-     *             value marshalling or unmarshalling, protocol errors.
      */
     void deleteProject(ProjectId projectId, boolean includeFile)
-            throws AuthorizationException, ClientRequestException, RemoteException;
+            throws AuthorizationException, ClientRequestException;
 
     /**
      * Updating information of an existing project in the server.
@@ -194,13 +161,9 @@ public interface ClientRequests {
      *             service.
      * @throws ClientRequestException
      *             If the server failed to fulfill the user request.
-     * @throws RemoteException
-     *             If the remote method invocation fails for some reason, e.g.,
-     *             communication problems, failure during parameter or return
-     *             value marshalling or unmarshalling, protocol errors.
      */
     void updateProject(ProjectId projectId, Project updatedProject)
-            throws AuthorizationException, ClientRequestException, RemoteException;
+            throws AuthorizationException, ClientRequestException;
 
     /**
      * Opening a project from the server. The server will return the
@@ -214,13 +177,9 @@ public interface ClientRequests {
      *             service.
      * @throws ClientRequestException
      *             If the server failed to fulfill the user request.
-     * @throws RemoteException
-     *             If the remote method invocation fails for some reason, e.g.,
-     *             communication problems, failure during parameter or return
-     *             value marshalling or unmarshalling, protocol errors.
      */
     ServerDocument openProject(ProjectId projectId)
-            throws AuthorizationException, ClientRequestException, RemoteException;
+            throws AuthorizationException, ClientRequestException;
 
     /**
      * Getting all roles given the user id, categorized for each owned project.
@@ -234,13 +193,9 @@ public interface ClientRequests {
      *             service.
      * @throws ClientRequestException
      *             If the server failed to fulfill the user request.
-     * @throws RemoteException
-     *             If the remote method invocation fails for some reason, e.g.,
-     *             communication problems, failure during parameter or return
-     *             value marshalling or unmarshalling, protocol errors.
      */
     Map<ProjectId, List<Role>> getRoles(UserId userId, GlobalPermissions globalPermissions)
-            throws AuthorizationException, ClientRequestException, RemoteException;
+            throws AuthorizationException, ClientRequestException;
 
     /**
      * Getting all roles given the user id and the project id.
@@ -255,13 +210,9 @@ public interface ClientRequests {
      *             service.
      * @throws ClientRequestException
      *             If the server failed to fulfill the user request.
-     * @throws RemoteException
-     *             If the remote method invocation fails for some reason, e.g.,
-     *             communication problems, failure during parameter or return
-     *             value marshalling or unmarshalling, protocol errors.
      */
     List<Role> getRoles(UserId userId, ProjectId projectId, GlobalPermissions globalPermissions)
-            throws AuthorizationException, ClientRequestException, RemoteException;
+            throws AuthorizationException, ClientRequestException;
 
     /**
      * Getting all roles known by the server.
@@ -272,12 +223,8 @@ public interface ClientRequests {
      *             service.
      * @throws ClientRequestException
      *             If the server failed to fulfill the user request.
-     * @throws RemoteException
-     *             If the remote method invocation fails for some reason, e.g.,
-     *             communication problems, failure during parameter or return
-     *             value marshalling or unmarshalling, protocol errors.
      */
-    List<Role> getAllRoles() throws AuthorizationException, ClientRequestException, RemoteException;
+    List<Role> getAllRoles() throws AuthorizationException, ClientRequestException;
 
     /**
      * Creating a new role to the server.
@@ -289,12 +236,8 @@ public interface ClientRequests {
      *             service.
      * @throws ClientRequestException
      *             If the server failed to fulfill the user request.
-     * @throws RemoteException
-     *             If the remote method invocation fails for some reason, e.g.,
-     *             communication problems, failure during parameter or return
-     *             value marshalling or unmarshalling, protocol errors.
      */
-    void createRole(Role newRole) throws AuthorizationException, ClientRequestException, RemoteException;
+    void createRole(Role newRole) throws AuthorizationException, ClientRequestException;
 
     /**
      * Deleting an existing role from the server.
@@ -306,12 +249,8 @@ public interface ClientRequests {
      *             service.
      * @throws ClientRequestException
      *             If the server failed to fulfill the user request.
-     * @throws RemoteException
-     *             If the remote method invocation fails for some reason, e.g.,
-     *             communication problems, failure during parameter or return
-     *             value marshalling or unmarshalling, protocol errors.
      */
-    void deleteRole(RoleId roleId) throws AuthorizationException, ClientRequestException, RemoteException;
+    void deleteRole(RoleId roleId) throws AuthorizationException, ClientRequestException;
 
     /**
      * Updating information of an existing role at the server.
@@ -325,13 +264,9 @@ public interface ClientRequests {
      *             service.
      * @throws ClientRequestException
      *             If the server failed to fulfill the user request.
-     * @throws RemoteException
-     *             If the remote method invocation fails for some reason, e.g.,
-     *             communication problems, failure during parameter or return
-     *             value marshalling or unmarshalling, protocol errors.
      */
     void updateRole(RoleId roleId, Role updatedRole)
-            throws AuthorizationException, ClientRequestException, RemoteException;
+            throws AuthorizationException, ClientRequestException;
 
     /**
      * Getting all operations given the user id, categorized for each owned
@@ -346,13 +281,9 @@ public interface ClientRequests {
      *             service.
      * @throws ClientRequestException
      *             If the server failed to fulfill the user request.
-     * @throws RemoteException
-     *             If the remote method invocation fails for some reason, e.g.,
-     *             communication problems, failure during parameter or return
-     *             value marshalling or unmarshalling, protocol errors.
      */
     Map<ProjectId, List<Operation>> getOperations(UserId userId)
-            throws AuthorizationException, ClientRequestException, RemoteException;
+            throws AuthorizationException, ClientRequestException;
 
     /**
      * Getting all operations given the user id and the project id.
@@ -367,13 +298,9 @@ public interface ClientRequests {
      *             service.
      * @throws ClientRequestException
      *             If the server failed to fulfill the user request.
-     * @throws RemoteException
-     *             If the remote method invocation fails for some reason, e.g.,
-     *             communication problems, failure during parameter or return
-     *             value marshalling or unmarshalling, protocol errors.
      */
     List<Operation> getOperations(UserId userId, ProjectId projectId)
-            throws AuthorizationException, ClientRequestException, RemoteException;
+            throws AuthorizationException, ClientRequestException;
 
     /**
      * Getting all operations given the role id
@@ -386,13 +313,9 @@ public interface ClientRequests {
      *             service.
      * @throws ClientRequestException
      *             If the server failed to fulfill the user request.
-     * @throws RemoteException
-     *             If the remote method invocation fails for some reason, e.g.,
-     *             communication problems, failure during parameter or return
-     *             value marshalling or unmarshalling, protocol errors.
      */
     List<Operation> getOperations(RoleId roleId)
-            throws AuthorizationException, ClientRequestException, RemoteException;
+            throws AuthorizationException, ClientRequestException;
 
     /**
      * Getting all operations known by the server.
@@ -403,12 +326,8 @@ public interface ClientRequests {
      *             service.
      * @throws ClientRequestException
      *             If the server failed to fulfill the user request.
-     * @throws RemoteException
-     *             If the remote method invocation fails for some reason, e.g.,
-     *             communication problems, failure during parameter or return
-     *             value marshalling or unmarshalling, protocol errors.
      */
-    List<Operation> getAllOperations() throws AuthorizationException, ClientRequestException, RemoteException;
+    List<Operation> getAllOperations() throws AuthorizationException, ClientRequestException;
 
     /**
      * Creating a new operation to the server.
@@ -420,12 +339,8 @@ public interface ClientRequests {
      *             service.
      * @throws ClientRequestException
      *             If the server failed to fulfill the user request.
-     * @throws RemoteException
-     *             If the remote method invocation fails for some reason, e.g.,
-     *             communication problems, failure during parameter or return
-     *             value marshalling or unmarshalling, protocol errors.
      */
-    void createOperation(Operation operation) throws AuthorizationException, ClientRequestException, RemoteException;
+    void createOperation(Operation operation) throws AuthorizationException, ClientRequestException;
 
     /**
      * Deleting an existing operation from the server.
@@ -437,13 +352,9 @@ public interface ClientRequests {
      *             service.
      * @throws ClientRequestException
      *             If the server failed to fulfill the user request.
-     * @throws RemoteException
-     *             If the remote method invocation fails for some reason, e.g.,
-     *             communication problems, failure during parameter or return
-     *             value marshalling or unmarshalling, protocol errors.
      */
     void deleteOperation(OperationId operationId)
-            throws AuthorizationException, ClientRequestException, RemoteException;
+            throws AuthorizationException, ClientRequestException;
 
     /**
      * Updating an existing operation at the server.
@@ -457,13 +368,9 @@ public interface ClientRequests {
      *             service.
      * @throws ClientRequestException
      *             If the server failed to fulfill the user request.
-     * @throws RemoteException
-     *             If the remote method invocation fails for some reason, e.g.,
-     *             communication problems, failure during parameter or return
-     *             value marshalling or unmarshalling, protocol errors.
      */
     void updateOperation(OperationId operationId, Operation updatedOperation)
-            throws AuthorizationException, ClientRequestException, RemoteException;
+            throws AuthorizationException, ClientRequestException;
 
     /**
      * Assigning a role to a user for a particular project.
@@ -479,13 +386,9 @@ public interface ClientRequests {
      *             service.
      * @throws ClientRequestException
      *             If the server failed to fulfill the user request.
-     * @throws RemoteException
-     *             If the remote method invocation fails for some reason, e.g.,
-     *             communication problems, failure during parameter or return
-     *             value marshalling or unmarshalling, protocol errors.
      */
     void assignRole(UserId userId, ProjectId projectId, RoleId roleId)
-            throws AuthorizationException, ClientRequestException, RemoteException;
+            throws AuthorizationException, ClientRequestException;
 
     /**
      * Retracting a role from a user for a particular project.
@@ -501,13 +404,9 @@ public interface ClientRequests {
      *             service.
      * @throws ClientRequestException
      *             If the server failed to fulfill the user request.
-     * @throws RemoteException
-     *             If the remote method invocation fails for some reason, e.g.,
-     *             communication problems, failure during parameter or return
-     *             value marshalling or unmarshalling, protocol errors.
      */
     void retractRole(UserId userId, ProjectId projectId, RoleId roleId)
-            throws AuthorizationException, ClientRequestException, RemoteException;
+            throws AuthorizationException, ClientRequestException;
 
     /**
      * Gets the host information (including the host address and secondary port,
@@ -519,12 +418,8 @@ public interface ClientRequests {
      *             service.
      * @throws ClientRequestException
      *             If the server failed to fulfill the user request.
-     * @throws RemoteException
-     *             If the remote method invocation fails for some reason, e.g.,
-     *             communication problems, failure during parameter or return
-     *             value marshalling or unmarshalling, protocol errors.
      */
-    Host getHost() throws AuthorizationException, ClientRequestException, RemoteException;
+    Host getHost() throws AuthorizationException, ClientRequestException;
 
     /**
      * Sets the host server address.
@@ -536,12 +431,8 @@ public interface ClientRequests {
      *             service.
      * @throws ClientRequestException
      *             If the server failed to fulfill the user request.
-     * @throws RemoteException
-     *             If the remote method invocation fails for some reason, e.g.,
-     *             communication problems, failure during parameter or return
-     *             value marshalling or unmarshalling, protocol errors.
      */
-    void setHostAddress(URI hostAddress) throws AuthorizationException, ClientRequestException, RemoteException;
+    void setHostAddress(URI hostAddress) throws AuthorizationException, ClientRequestException;
 
     /**
      * Sets the secondary port number.
@@ -553,12 +444,8 @@ public interface ClientRequests {
      *             service.
      * @throws ClientRequestException
      *             If the server failed to fulfill the user request.
-     * @throws RemoteException
-     *             If the remote method invocation fails for some reason, e.g.,
-     *             communication problems, failure during parameter or return
-     *             value marshalling or unmarshalling, protocol errors.
      */
-    void setSecondaryPort(int portNumber) throws AuthorizationException, ClientRequestException, RemoteException;
+    void setSecondaryPort(int portNumber) throws AuthorizationException, ClientRequestException;
 
     /**
      * Gets the root directory location.
@@ -569,12 +456,8 @@ public interface ClientRequests {
      *             service.
      * @throws ClientRequestException
      *             If the server failed to fulfill the user request.
-     * @throws RemoteException
-     *             If the remote method invocation fails for some reason, e.g.,
-     *             communication problems, failure during parameter or return
-     *             value marshalling or unmarshalling, protocol errors.
      */
-    String getRootDirectory() throws AuthorizationException, ClientRequestException, RemoteException;
+    String getRootDirectory() throws AuthorizationException, ClientRequestException;
 
     /**
      * Sets the root directory location.
@@ -586,12 +469,8 @@ public interface ClientRequests {
      *             service.
      * @throws ClientRequestException
      *             If the server failed to fulfill the user request.
-     * @throws RemoteException
-     *             If the remote method invocation fails for some reason, e.g.,
-     *             communication problems, failure during parameter or return
-     *             value marshalling or unmarshalling, protocol errors.
      */
-    void setRootDirectory(String rootDirectory) throws AuthorizationException, ClientRequestException, RemoteException;
+    void setRootDirectory(String rootDirectory) throws AuthorizationException, ClientRequestException;
 
     /**
      * Gets the map of user's server properties.
@@ -602,12 +481,8 @@ public interface ClientRequests {
      *             service.
      * @throws ClientRequestException
      *             If the server failed to fulfill the user request.
-     * @throws RemoteException
-     *             If the remote method invocation fails for some reason, e.g.,
-     *             communication problems, failure during parameter or return
-     *             value marshalling or unmarshalling, protocol errors.
      */
-    Map<String, String> getServerProperties() throws AuthorizationException, ClientRequestException, RemoteException;
+    Map<String, String> getServerProperties() throws AuthorizationException, ClientRequestException;
 
     /**
      * Setting a server property by specifying the property name and the value.
@@ -621,13 +496,9 @@ public interface ClientRequests {
      *             service.
      * @throws ClientRequestException
      *             If the server failed to fulfill the user request.
-     * @throws RemoteException
-     *             If the remote method invocation fails for some reason, e.g.,
-     *             communication problems, failure during parameter or return
-     *             value marshalling or unmarshalling, protocol errors.
      */
-    void setServerProperty(String property, String value)
-            throws AuthorizationException, ClientRequestException, RemoteException;
+    void setServerProperty(String property, String value) 
+            throws AuthorizationException, ClientRequestException;
 
     /**
      * Unsets a server property by specifying the property name.
@@ -639,12 +510,8 @@ public interface ClientRequests {
      *             service.
      * @throws ClientRequestException
      *             If the server failed to fulfill the user request.
-     * @throws RemoteException
-     *             If the remote method invocation fails for some reason, e.g.,
-     *             communication problems, failure during parameter or return
-     *             value marshalling or unmarshalling, protocol errors.
      */
-    void unsetServerProperty(String property) throws AuthorizationException, ClientRequestException, RemoteException;
+    void unsetServerProperty(String property) throws AuthorizationException, ClientRequestException;
 
     /**
      * Committing the given ontology changes to be applied in the server.
@@ -662,11 +529,7 @@ public interface ClientRequests {
      *             If the incoming changes are out-of-date.
      * @throws ClientRequestException
      *             If the server failed to fulfill the user request.
-     * @throws RemoteException
-     *             If the remote method invocation fails for some reason, e.g.,
-     *             communication problems, failure during parameter or return
-     *             value marshalling or unmarshalling, protocol errors.
      */
     ChangeHistory commit(ProjectId projectId, CommitBundle commitBundle)
-            throws AuthorizationException, OutOfSyncException, ClientRequestException, RemoteException;
+            throws AuthorizationException, OutOfSyncException, ClientRequestException;
 }

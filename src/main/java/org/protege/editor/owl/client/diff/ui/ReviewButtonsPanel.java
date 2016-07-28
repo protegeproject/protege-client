@@ -22,7 +22,6 @@ import javax.swing.*;
 import java.awt.*;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
-import java.rmi.RemoteException;
 import java.util.List;
 
 import static com.google.common.base.Preconditions.checkNotNull;
@@ -176,7 +175,7 @@ public class ReviewButtonsPanel extends JPanel implements Disposable {
                             history.getHeadRevision(),
                             history.getMetadataForRevision(history.getHeadRevision()),
                             history.getChangesForRevision(history.getHeadRevision())));
-                } catch (OWLServerException | RemoteException | ClientRequestException ex) {
+                } catch (OWLServerException | ClientRequestException ex) {
                     ErrorLogPanel.showErrorDialog(ex);
                 }
             }

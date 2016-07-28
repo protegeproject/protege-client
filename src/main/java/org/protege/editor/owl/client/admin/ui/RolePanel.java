@@ -27,7 +27,6 @@ import java.awt.event.KeyAdapter;
 import java.awt.event.KeyEvent;
 import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
-import java.rmi.RemoteException;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
@@ -158,7 +157,7 @@ public class RolePanel extends JPanel implements Disposable {
                 Collections.sort(roles);
                 data.addAll(roles.stream().map(RoleListItem::new).collect(Collectors.toList()));
             }
-        } catch (AuthorizationException | ClientRequestException | RemoteException e) {
+        } catch (AuthorizationException | ClientRequestException e) {
             ErrorLogPanel.showErrorDialog(e);
         }
         roleList.setListData(data.toArray());
@@ -200,7 +199,7 @@ public class RolePanel extends JPanel implements Disposable {
                 }
                 try {
                     client.deleteRole(role.getId());
-                } catch (AuthorizationException | ClientRequestException | RemoteException e) {
+                } catch (AuthorizationException | ClientRequestException e) {
                     ErrorLogPanel.showErrorDialog(e);
                 }
                 configManager.statusChanged(AdminTabEvent.CONFIGURATION_CHANGED);

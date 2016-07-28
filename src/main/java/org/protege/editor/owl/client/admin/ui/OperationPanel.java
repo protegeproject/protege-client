@@ -27,7 +27,6 @@ import java.awt.event.KeyAdapter;
 import java.awt.event.KeyEvent;
 import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
-import java.rmi.RemoteException;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
@@ -158,7 +157,7 @@ public class OperationPanel extends JPanel implements Disposable {
                 Collections.sort(operations);
                 data.addAll(operations.stream().map(OperationListItem::new).collect(Collectors.toList()));
             }
-        } catch (ClientRequestException | RemoteException | AuthorizationException e) {
+        } catch (ClientRequestException | AuthorizationException e) {
             ErrorLogPanel.showErrorDialog(e);
         }
         operationList.setListData(data.toArray());
@@ -200,7 +199,7 @@ public class OperationPanel extends JPanel implements Disposable {
                 }
                 try {
                     client.deleteOperation(operation.getId());
-                } catch (AuthorizationException | ClientRequestException | RemoteException e) {
+                } catch (AuthorizationException | ClientRequestException e) {
                     ErrorLogPanel.showErrorDialog(e);
                 }
                 configManager.statusChanged(AdminTabEvent.CONFIGURATION_CHANGED);

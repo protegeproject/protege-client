@@ -25,7 +25,6 @@ import javax.swing.event.DocumentListener;
 import javax.swing.event.ListSelectionListener;
 import javax.swing.text.Document;
 import java.awt.*;
-import java.rmi.RemoteException;
 import java.util.*;
 import java.util.List;
 import java.util.stream.Collectors;
@@ -155,7 +154,7 @@ public class RoleDialogPanel extends JPanel implements VerifiedInputEditor {
         Client client = ClientSession.getInstance(editorKit).getActiveClient();
         try {
             return client.getAllOperations();
-        } catch (AuthorizationException | ClientRequestException | RemoteException e) {
+        } catch (AuthorizationException | ClientRequestException e) {
             ErrorLogPanel.showErrorDialog(e);
         }
         return null;
@@ -230,7 +229,7 @@ public class RoleDialogPanel extends JPanel implements VerifiedInputEditor {
         Client client = ClientSession.getInstance(editorKit).getActiveClient();
         try {
             client.createRole(role);
-        } catch (AuthorizationException | ClientRequestException | RemoteException e) {
+        } catch (AuthorizationException | ClientRequestException e) {
             ErrorLogPanel.showErrorDialog(e);
         }
     }
@@ -239,7 +238,7 @@ public class RoleDialogPanel extends JPanel implements VerifiedInputEditor {
         Client client = ClientSession.getInstance(editorKit).getActiveClient();
         try {
             client.updateRole(selectedRole.getId(), role);
-        } catch (AuthorizationException | ClientRequestException | RemoteException e) {
+        } catch (AuthorizationException | ClientRequestException e) {
             ErrorLogPanel.showErrorDialog(e);
         }
     }

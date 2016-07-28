@@ -30,7 +30,6 @@ import java.awt.event.ActionListener;
 import java.awt.event.ItemEvent;
 import java.awt.event.ItemListener;
 import java.io.File;
-import java.rmi.RemoteException;
 import java.util.*;
 import java.util.List;
 
@@ -329,7 +328,7 @@ public class ProjectDialogPanel extends JPanel implements VerifiedInputEditor {
         Client client = ClientSession.getInstance(editorKit).getActiveClient();
         try {
             client.updateProject(selectedProject.getId(), createProject());
-        } catch (AuthorizationException | ClientRequestException | RemoteException e) {
+        } catch (AuthorizationException | ClientRequestException e) {
             ErrorLogPanel.showErrorDialog(e);
         }
     }
@@ -356,7 +355,7 @@ public class ProjectDialogPanel extends JPanel implements VerifiedInputEditor {
             List<User> userList = client.getAllUsers();
             Collections.sort(userList);
             users = userList.toArray(new User[userList.size()]);
-        } catch (RemoteException | ClientRequestException | AuthorizationException e) {
+        } catch (ClientRequestException | AuthorizationException e) {
             ErrorLogPanel.showErrorDialog(e);
         }
         ownerComboBox = new JComboBox<>(users);
@@ -371,7 +370,7 @@ public class ProjectDialogPanel extends JPanel implements VerifiedInputEditor {
             Collections.sort(projectList);
             projectList.add(0, null);
             projects = projectList.toArray(new Project[projectList.size()]);
-        } catch (RemoteException | ClientRequestException | AuthorizationException e) {
+        } catch (ClientRequestException | AuthorizationException e) {
             ErrorLogPanel.showErrorDialog(e);
         }
         projectComboBox = new JComboBox<>(projects);
@@ -457,7 +456,7 @@ public class ProjectDialogPanel extends JPanel implements VerifiedInputEditor {
         Client client = ClientSession.getInstance(editorKit).getActiveClient();
         try {
             ((LocalHttpClient) client).createProject(project);
-        } catch (AuthorizationException | ClientRequestException | RemoteException e) {
+        } catch (AuthorizationException | ClientRequestException e) {
             ErrorLogPanel.showErrorDialog(e);
         }
     }
@@ -466,7 +465,7 @@ public class ProjectDialogPanel extends JPanel implements VerifiedInputEditor {
         Client client = ClientSession.getInstance(editorKit).getActiveClient();
         try {
             client.updateProject(selectedProject.getId(), project);
-        } catch (AuthorizationException | ClientRequestException | RemoteException e) {
+        } catch (AuthorizationException | ClientRequestException e) {
             ErrorLogPanel.showErrorDialog(e);
         }
     }

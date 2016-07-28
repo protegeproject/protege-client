@@ -8,7 +8,6 @@ import org.protege.editor.owl.client.api.exception.OWLClientException;
 import org.protege.editor.owl.server.api.exception.AuthorizationException;
 
 import javax.swing.table.AbstractTableModel;
-import java.rmi.RemoteException;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
@@ -32,7 +31,7 @@ public class ServerTableModel extends AbstractTableModel {
             try {
                 remoteProjects = new ArrayList<>(client.getAllProjects());
                 remoteProjects.remove(MetaprojectUtils.getUniversalProject());
-            } catch (AuthorizationException | RemoteException e) {
+            } catch (AuthorizationException e) {
                 throw new OWLClientException(e.getCause());
             }
         } else {

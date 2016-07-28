@@ -15,7 +15,6 @@ import javax.swing.*;
 import javax.swing.event.DocumentEvent;
 import javax.swing.event.DocumentListener;
 import java.awt.*;
-import java.rmi.RemoteException;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -90,7 +89,7 @@ public class RootDialogPanel extends JPanel implements VerifiedInputEditor {
         try {
             Client client = ClientSession.getInstance(editorKit).getActiveClient();
             client.setRootDirectory(root.getText());
-        } catch (AuthorizationException | ClientRequestException | RemoteException e) {
+        } catch (AuthorizationException | ClientRequestException e) {
             ErrorLogPanel.showErrorDialog(e);
         }
     }

@@ -78,6 +78,7 @@ public class UserPanel extends JPanel implements Disposable {
             client = session.getActiveClient();
             removeAll();
             initUi();
+            revalidate();
         }
     };
 

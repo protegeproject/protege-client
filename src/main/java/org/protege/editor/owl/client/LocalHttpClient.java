@@ -14,13 +14,13 @@ import org.protege.editor.owl.client.api.Client;
 import org.protege.editor.owl.client.api.UserInfo;
 import org.protege.editor.owl.client.api.exception.ClientRequestException;
 import org.protege.editor.owl.client.api.exception.LoginTimeoutException;
+import org.protege.editor.owl.client.api.exception.SynchronizationException;
 import org.protege.editor.owl.client.event.ClientSessionChangeEvent;
 import org.protege.editor.owl.client.event.ClientSessionChangeEvent.EventCategory;
 import org.protege.editor.owl.client.event.ClientSessionListener;
 import org.protege.editor.owl.client.util.ClientUtils;
 import org.protege.editor.owl.server.api.CommitBundle;
 import org.protege.editor.owl.server.api.exception.AuthorizationException;
-import org.protege.editor.owl.server.api.exception.OutOfSyncException;
 import org.protege.editor.owl.server.http.HTTPServer;
 import org.protege.editor.owl.server.http.messages.EVSHistory;
 import org.protege.editor.owl.server.http.messages.HttpAuthResponse;
@@ -306,7 +306,7 @@ public class LocalHttpClient implements Client, ClientSessionListener {
 
 	@Override
 	public ChangeHistory commit(ProjectId projectId, CommitBundle commitBundle)
-			throws AuthorizationException, OutOfSyncException, ClientRequestException {
+			throws AuthorizationException, SynchronizationException, ClientRequestException {
 		/*
 		 * Prepare the request body
 		 */

@@ -16,6 +16,7 @@ import javax.swing.JTextArea;
 
 import org.protege.editor.owl.client.api.Client;
 import org.protege.editor.owl.client.api.exception.ClientRequestException;
+import org.protege.editor.owl.client.api.exception.SynchronizationException;
 import org.protege.editor.owl.client.event.ClientSessionChangeEvent;
 import org.protege.editor.owl.client.event.ClientSessionChangeEvent.EventCategory;
 import org.protege.editor.owl.client.event.ClientSessionListener;
@@ -167,8 +168,7 @@ public class CommitAction extends AbstractClientAction implements ClientSessionL
         }
 
         @Override
-        public ChangeHistory call() throws AuthorizationException, OutOfSyncException,
-                ClientRequestException {
+        public ChangeHistory call() throws AuthorizationException, SynchronizationException, ClientRequestException {
             Commit commit = ClientUtils.createCommit(author, comment, changes);
             CommitBundle commitBundle = new CommitBundleImpl(commitBaseRevision, commit);
             return author.commit(getClientSession().getActiveProject(), commitBundle);

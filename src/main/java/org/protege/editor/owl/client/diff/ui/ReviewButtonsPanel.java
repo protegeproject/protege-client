@@ -6,11 +6,12 @@ import org.protege.editor.owl.OWLEditorKit;
 import org.protege.editor.owl.client.ClientSession;
 import org.protege.editor.owl.client.api.Client;
 import org.protege.editor.owl.client.api.exception.ClientRequestException;
+import org.protege.editor.owl.client.api.exception.SynchronizationException;
 import org.protege.editor.owl.client.diff.model.*;
 import org.protege.editor.owl.client.event.CommitOperationEvent;
 import org.protege.editor.owl.model.OWLModelManager;
 import org.protege.editor.owl.server.api.CommitBundle;
-import org.protege.editor.owl.server.api.exception.OWLServerException;
+import org.protege.editor.owl.server.api.exception.AuthorizationException;
 import org.protege.editor.owl.server.policy.CommitBundleImpl;
 import org.protege.editor.owl.server.versioning.Commit;
 import org.protege.editor.owl.server.versioning.api.ChangeHistory;
@@ -175,7 +176,7 @@ public class ReviewButtonsPanel extends JPanel implements Disposable {
                             history.getHeadRevision(),
                             history.getMetadataForRevision(history.getHeadRevision()),
                             history.getChangesForRevision(history.getHeadRevision())));
-                } catch (OWLServerException | ClientRequestException ex) {
+                } catch (AuthorizationException | ClientRequestException | SynchronizationException ex) {
                     ErrorLogPanel.showErrorDialog(ex);
                 }
             }

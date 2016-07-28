@@ -3,9 +3,9 @@ package org.protege.editor.owl.client.api;
 import edu.stanford.protege.metaproject.api.*;
 
 import org.protege.editor.owl.client.api.exception.ClientRequestException;
+import org.protege.editor.owl.client.api.exception.SynchronizationException;
 import org.protege.editor.owl.server.api.CommitBundle;
 import org.protege.editor.owl.server.api.exception.AuthorizationException;
-import org.protege.editor.owl.server.api.exception.OutOfSyncException;
 import org.protege.editor.owl.server.versioning.api.ChangeHistory;
 import org.protege.editor.owl.server.versioning.api.ServerDocument;
 
@@ -525,11 +525,11 @@ public interface ClientRequests {
      * @throws AuthorizationException
      *             If the user doesn't have the permission to request this
      *             service.
-     * @throws OutOfSyncException
+     * @throws SynchronizationException
      *             If the incoming changes are out-of-date.
      * @throws ClientRequestException
      *             If the server failed to fulfill the user request.
      */
     ChangeHistory commit(ProjectId projectId, CommitBundle commitBundle)
-            throws AuthorizationException, OutOfSyncException, ClientRequestException;
+            throws AuthorizationException, SynchronizationException, ClientRequestException;
 }

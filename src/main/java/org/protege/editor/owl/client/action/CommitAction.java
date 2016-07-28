@@ -2,7 +2,6 @@ package org.protege.editor.owl.client.action;
 
 import java.awt.BorderLayout;
 import java.awt.event.ActionEvent;
-import java.rmi.RemoteException;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
@@ -145,9 +144,6 @@ public class CommitAction extends AbstractClientAction implements ClientSessionL
             else if (t instanceof ClientRequestException) {
                 showErrorDialog("Commit error", t.getMessage(), t);
             }
-            else if (t instanceof RemoteException) {
-                showErrorDialog("Network error", t.getMessage(), t);
-            }
             else {
                 showErrorDialog("Commit error", t.getMessage(), t);
             }
@@ -172,7 +168,7 @@ public class CommitAction extends AbstractClientAction implements ClientSessionL
 
         @Override
         public ChangeHistory call() throws AuthorizationException, OutOfSyncException,
-                ClientRequestException, RemoteException {
+                ClientRequestException {
             Commit commit = ClientUtils.createCommit(author, comment, changes);
             CommitBundle commitBundle = new CommitBundleImpl(commitBaseRevision, commit);
             return author.commit(getClientSession().getActiveProject(), commitBundle);

@@ -8,8 +8,8 @@ import org.protege.editor.core.ui.util.VerifiedInputEditor;
 import org.protege.editor.owl.OWLEditorKit;
 import org.protege.editor.owl.client.ClientSession;
 import org.protege.editor.owl.client.api.Client;
+import org.protege.editor.owl.client.api.exception.AuthorizationException;
 import org.protege.editor.owl.client.api.exception.ClientRequestException;
-import org.protege.editor.owl.server.api.exception.AuthorizationException;
 
 import javax.swing.*;
 import javax.swing.event.DocumentEvent;

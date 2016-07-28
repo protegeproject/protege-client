@@ -16,12 +16,12 @@ import org.protege.editor.owl.client.admin.AdminTabManager;
 import org.protege.editor.owl.client.admin.model.AdminTabEvent;
 import org.protege.editor.owl.client.admin.model.AdminTabListener;
 import org.protege.editor.owl.client.api.Client;
+import org.protege.editor.owl.client.api.exception.AuthorizationException;
 import org.protege.editor.owl.client.api.exception.ClientRequestException;
 import org.protege.editor.owl.client.api.exception.LoginTimeoutException;
 import org.protege.editor.owl.client.diff.ui.GuiUtils;
 import org.protege.editor.owl.client.ui.UserLoginPanel;
 import org.protege.editor.owl.client.util.ClientUtils;
-import org.protege.editor.owl.server.api.exception.AuthorizationException;
 import org.protege.editor.owl.ui.view.AbstractOWLViewComponent;
 
 /**

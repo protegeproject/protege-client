@@ -2,10 +2,10 @@ package org.protege.editor.owl.client.api;
 
 import edu.stanford.protege.metaproject.api.*;
 
+import org.protege.editor.owl.client.api.exception.AuthorizationException;
 import org.protege.editor.owl.client.api.exception.ClientRequestException;
 import org.protege.editor.owl.client.api.exception.SynchronizationException;
 import org.protege.editor.owl.server.api.CommitBundle;
-import org.protege.editor.owl.server.api.exception.AuthorizationException;
 import org.protege.editor.owl.server.versioning.api.ChangeHistory;
 import org.protege.editor.owl.server.versioning.api.ServerDocument;
 

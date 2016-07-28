@@ -10,9 +10,9 @@ import org.protege.editor.owl.client.LocalHttpClient;
 import org.protege.editor.owl.client.admin.exception.InvalidInputFileException;
 import org.protege.editor.owl.client.admin.model.ProjectOption;
 import org.protege.editor.owl.client.api.Client;
+import org.protege.editor.owl.client.api.exception.AuthorizationException;
 import org.protege.editor.owl.client.api.exception.ClientRequestException;
 import org.protege.editor.owl.client.diff.ui.GuiUtils;
-import org.protege.editor.owl.server.api.exception.AuthorizationException;
 import org.protege.editor.owl.ui.UIHelper;
 
 import javax.swing.*;

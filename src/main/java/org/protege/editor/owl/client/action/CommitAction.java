@@ -15,6 +15,7 @@ import javax.swing.JPanel;
 import javax.swing.JTextArea;
 
 import org.protege.editor.owl.client.api.Client;
+import org.protege.editor.owl.client.api.exception.AuthorizationException;
 import org.protege.editor.owl.client.api.exception.ClientRequestException;
 import org.protege.editor.owl.client.api.exception.SynchronizationException;
 import org.protege.editor.owl.client.event.ClientSessionChangeEvent;
@@ -26,7 +27,6 @@ import org.protege.editor.owl.client.util.ClientUtils;
 import org.protege.editor.owl.model.history.HistoryManager;
 import org.protege.editor.owl.model.history.UndoManagerListener;
 import org.protege.editor.owl.server.api.CommitBundle;
-import org.protege.editor.owl.server.api.exception.AuthorizationException;
 import org.protege.editor.owl.server.api.exception.OutOfSyncException;
 import org.protege.editor.owl.server.policy.CommitBundleImpl;
 import org.protege.editor.owl.server.versioning.Commit;

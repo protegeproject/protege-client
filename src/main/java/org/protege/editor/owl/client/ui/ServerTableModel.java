@@ -4,8 +4,8 @@ import edu.stanford.protege.metaproject.api.Project;
 import edu.stanford.protege.metaproject.api.ProjectId;
 import edu.stanford.protege.metaproject.impl.MetaprojectUtils;
 import org.protege.editor.owl.client.api.Client;
+import org.protege.editor.owl.client.api.exception.AuthorizationException;
 import org.protege.editor.owl.client.api.exception.OWLClientException;
-import org.protege.editor.owl.server.api.exception.AuthorizationException;
 
 import javax.swing.table.AbstractTableModel;
 import java.util.ArrayList;

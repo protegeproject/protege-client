@@ -33,8 +33,8 @@ import javax.swing.table.TableRowSorter;
 
 import org.protege.editor.owl.OWLEditorKit;
 import org.protege.editor.owl.client.LocalHttpClient;
+import org.protege.editor.owl.client.api.exception.AuthorizationException;
 import org.protege.editor.owl.client.api.exception.ClientRequestException;
-import org.protege.editor.owl.server.api.exception.AuthorizationException;
 import org.protege.editor.owl.server.versioning.ChangeHistoryUtils;
 import org.protege.editor.owl.server.versioning.api.ChangeHistory;
 import org.protege.editor.owl.server.versioning.api.DocumentRevision;

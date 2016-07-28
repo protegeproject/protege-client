@@ -13,11 +13,11 @@ import org.protege.editor.owl.client.admin.AdminTabManager;
 import org.protege.editor.owl.client.admin.model.AdminTabEvent;
 import org.protege.editor.owl.client.admin.model.AdminTabListener;
 import org.protege.editor.owl.client.api.Client;
+import org.protege.editor.owl.client.api.exception.AuthorizationException;
 import org.protege.editor.owl.client.api.exception.ClientRequestException;
 import org.protege.editor.owl.client.diff.ui.GuiUtils;
 import org.protege.editor.owl.client.event.ClientSessionChangeEvent;
 import org.protege.editor.owl.client.event.ClientSessionListener;
-import org.protege.editor.owl.server.api.exception.AuthorizationException;
 
 import javax.swing.*;
 import javax.swing.border.EmptyBorder;

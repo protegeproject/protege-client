@@ -89,7 +89,7 @@ public class LocalHttpClient implements Client, ClientSessionListener {
 
 	public LocalHttpClient(String user, String pwd, String serverAddress) throws Exception {	
 		
-		req_client = new OkHttpClient.Builder().readTimeout(360, TimeUnit.SECONDS).build();
+		req_client = new OkHttpClient.Builder().writeTimeout(360,  TimeUnit.SECONDS).readTimeout(360, TimeUnit.SECONDS).build();
 				
 		this.serverAddress = serverAddress;
 		this.userInfo = login(user, pwd);

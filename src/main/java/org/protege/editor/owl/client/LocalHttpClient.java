@@ -831,7 +831,7 @@ public class LocalHttpClient implements Client, ClientSessionListener {
 		putConfig();
 	}
 
-	public Role getRole(RoleId id) throws AuthorizationException, ClientRequestException {
+	public Role getRole(RoleId id) throws ClientRequestException {
 		try {
 			return role_registry.get(id);
 		} catch (UnknownMetaprojectObjectIdException e) {

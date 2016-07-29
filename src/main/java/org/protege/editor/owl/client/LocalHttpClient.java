@@ -251,6 +251,7 @@ public class LocalHttpClient implements Client, ClientSessionListener {
 			ObjectInputStream ois = new ObjectInputStream(response.body().byteStream());
 			ServerDocument sdoc = (ServerDocument) ois.readObject();
 			// send snapshot to server
+			putSnapShot(proj.getFile(), sdoc);
 			initConfig();
 			return sdoc;
 		} catch (IOException | ClassNotFoundException e) {

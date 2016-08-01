@@ -216,17 +216,6 @@
        	<class value="org.protege.editor.owl.client.action.ShowHistoryAction"/>
 	</extension>
 	
-    <!--
-   <extension id="ShowStatus"
-               name="Show Client Status"
-               point="org.protege.editor.core.application.EditorKitMenuAction">
-		<name value="Show client status"/>
-       	<path value="org.protege.editor.owl.client.Server/SlotB-X"/>
-       	<editorKitId value="OWLEditorKit"/>
-       	<class value="org.protege.editor.owl.client.action.ShowStatusAction"/>
-	</extension>
-      -->
-      
 	<extension id="EnableAutoUpdate"
                name="Auto Update Menu"
                point="org.protege.editor.core.application.EditorKitMenuAction">

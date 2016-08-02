@@ -17,8 +17,13 @@ import org.protege.editor.owl.model.event.EventType;
 import org.protege.editor.owl.model.event.OWLModelManagerChangeEvent;
 import org.protege.editor.owl.model.event.OWLModelManagerListener;
 import org.protege.editor.owl.server.versioning.api.VersionedOWLOntology;
+import org.protege.editor.owl.ui.ontology.OntologyPreferences;
+import org.semanticweb.owlapi.model.IRI;
 import org.semanticweb.owlapi.model.OWLOntology;
 import org.semanticweb.owlapi.model.OWLOntologyID;
+import org.semanticweb.owlapi.model.OWLOntologyCreationException;
+
+import com.google.common.base.Optional;
 
 import edu.stanford.protege.metaproject.api.ProjectId;
 
@@ -125,34 +130,56 @@ public class ClientSession extends OWLEditorKitHook {
     }
 
 
-    public void clear() throws Exception {
+    public void clear() {
         activeClient = null;
-        closeOpenOntologies();
+        closeOpenVersionedOntologies();
         unregisterAllProjects();
         unregisterAllVersionOntologies();
         fireChangeEvent(EventCategory.CLEAR_SESSION);
     }
 
-    private void closeOpenOntologies() throws Exception {
-        OWLOntology lastOntology = null;
-        for (VersionedOWLOntology vont : ontologyMap.values()) {
-            OWLOntology openOntology = vont.getOntology();
-            if (!getEditorKit().getOWLModelManager().removeOntology(openOntology)) {
-                /*
-                 * If the open ontology couldn't be removed then it means the ontology
-                 * was the last ontology.
-                 */
-                lastOntology = openOntology;
+    private void closeOpenVersionedOntologies() {
+        try {
+            switchActiveOntologyToNonVersionedOntology();
+            for (VersionedOWLOntology vont : ontologyMap.values()) {
+                OWLOntology openOntology = vont.getOntology();
+                getEditorKit().getOWLModelManager().removeOntology(openOntology);
             }
         }
-        /*
-         * Remove the last ontology by first creating a dummy new ontology (it then
-         * becomes the last ontology) and then remove the recorded last ontology.
-         */
-        if (lastOntology != null) {
-            getEditorKit().handleNewRequest();
-            getEditorKit().getModelManager().removeOntology(lastOntology);
+        catch (OWLOntologyCreationException e) {
+            throw new RuntimeException("Could not create fresh active ontology to switch to", e);
         }
+    }
+
+    private void switchActiveOntologyToNonVersionedOntology() throws OWLOntologyCreationException {
+        if (!isActiveOntologyVersionedOntology()) {
+            return;
+        }
+        Optional<OWLOntology> candidateActiveOntology = getExistingNonVersionedOntology();
+        if (candidateActiveOntology.isPresent()) {
+            getEditorKit().getModelManager().setActiveOntology(candidateActiveOntology.get());
+        }
+        else {
+            Optional<IRI> freshOntologyIRI =
+                    Optional.of(IRI.create(OntologyPreferences.getInstance().generateNextURI()));
+            OWLOntologyID ontologyID = new OWLOntologyID(freshOntologyIRI, freshOntologyIRI);
+            getEditorKit().getModelManager().createNewOntology(ontologyID,
+                    ontologyID.getDefaultDocumentIRI().get().toURI());
+        }
+    }
+
+    private boolean isActiveOntologyVersionedOntology() {
+        OWLOntology activeOntology = getEditorKit().getOWLModelManager().getActiveOntology();
+        return ontologyMap.containsKey(activeOntology.getOntologyID());
+    }
+
+    private Optional<OWLOntology> getExistingNonVersionedOntology() {
+        for (OWLOntology ont : getEditorKit().getOWLModelManager().getOntologies()) {
+            if (!ontologyMap.containsKey(ont.getOntologyID())) {
+                return Optional.of(ont);
+            }
+        }
+        return Optional.absent();
     }
 
     @Override
@@ -176,5 +203,4 @@ public class ClientSession extends OWLEditorKitHook {
         ontologyMap.clear();
     }
 
-	
 }

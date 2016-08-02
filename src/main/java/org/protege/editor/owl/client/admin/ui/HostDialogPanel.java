@@ -4,13 +4,13 @@ import edu.stanford.protege.metaproject.api.Host;
 import org.protege.editor.core.ui.error.ErrorLogPanel;
 import org.protege.editor.core.ui.util.AugmentedJTextField;
 import org.protege.editor.core.ui.util.InputVerificationStatusChangedListener;
-import org.protege.editor.core.ui.util.JOptionPaneEx;
 import org.protege.editor.core.ui.util.VerifiedInputEditor;
 import org.protege.editor.owl.OWLEditorKit;
 import org.protege.editor.owl.client.ClientSession;
 import org.protege.editor.owl.client.api.Client;
 import org.protege.editor.owl.client.api.exception.AuthorizationException;
 import org.protege.editor.owl.client.api.exception.ClientRequestException;
+import org.protege.editor.owl.ui.UIHelper;
 
 import javax.swing.*;
 import javax.swing.event.DocumentEvent;
@@ -58,17 +58,18 @@ public class HostDialogPanel extends JPanel implements VerifiedInputEditor {
     }
 
     private void initUi() {
+        setLayout(new BorderLayout());
         JPanel holderPanel = new JPanel(new GridBagLayout());
-        add(holderPanel);
+        add(holderPanel, BorderLayout.CENTER);
 
         Insets insets = new Insets(0, 2, 2, 2);
         int rowIndex = 0;
 
         holderPanel.add(uriLbl, new GridBagConstraints(0, rowIndex, 1, 1, 0.0, 0.0, GridBagConstraints.BASELINE_TRAILING, GridBagConstraints.NONE, insets, 0, 0));
-        holderPanel.add(uri, new GridBagConstraints(1, rowIndex, 1, 1, 100.0, 0.0, GridBagConstraints.BASELINE_LEADING, GridBagConstraints.HORIZONTAL, insets, 0, 0));
+        holderPanel.add(uri, new GridBagConstraints(1, rowIndex, 1, 1, 1.0, 0.0, GridBagConstraints.BASELINE_LEADING, GridBagConstraints.HORIZONTAL, insets, 0, 0));
         rowIndex++;
         holderPanel.add(portLbl, new GridBagConstraints(0, rowIndex, 1, 1, 0.0, 0.0, GridBagConstraints.BASELINE_TRAILING, GridBagConstraints.NONE, insets, 0, 0));
-        holderPanel.add(port, new GridBagConstraints(1, rowIndex, 1, 1, 100.0, 0.0, GridBagConstraints.BASELINE_TRAILING, GridBagConstraints.HORIZONTAL, insets, 0, 0));
+        holderPanel.add(port, new GridBagConstraints(1, rowIndex, 1, 1, 1.0, 0.0, GridBagConstraints.BASELINE_TRAILING, GridBagConstraints.HORIZONTAL, insets, 0, 0));
         rowIndex++;
 
         errorArea.setBackground(null);
@@ -78,7 +79,7 @@ public class HostDialogPanel extends JPanel implements VerifiedInputEditor {
         errorArea.setLineWrap(true);
         errorArea.setFont(errorArea.getFont().deriveFont(12.0f));
         errorArea.setForeground(Color.RED);
-        holderPanel.add(errorArea, new GridBagConstraints(0, rowIndex, 2, 1, 0, 0, GridBagConstraints.SOUTHWEST, GridBagConstraints.NONE, new Insets(12, 2, 0, 2), 0, 0));
+        holderPanel.add(errorArea, new GridBagConstraints(0, rowIndex, 2, 1, 1.0, 0.0, GridBagConstraints.SOUTHWEST, GridBagConstraints.NONE, new Insets(12, 2, 0, 2), 0, 0));
     }
 
     private void setIsEditing(Host host) {
@@ -169,9 +170,7 @@ public class HostDialogPanel extends JPanel implements VerifiedInputEditor {
     public static boolean showDialog(OWLEditorKit editorKit, Host host) {
         HostDialogPanel panel = new HostDialogPanel(editorKit);
         panel.setIsEditing(host);
-        int response = JOptionPaneEx.showValidatingConfirmDialog(
-                editorKit.getOWLWorkspace(), "Edit Host '" + host.getUri().toString() + "'", panel,
-                JOptionPane.QUESTION_MESSAGE, JOptionPane.OK_CANCEL_OPTION, null);
+        int response = new UIHelper(editorKit).showValidatingDialog("Edit Host '" + host.getUri().toString() + "'", panel, null);
         if (response == JOptionPane.OK_OPTION) {
             panel.updateHost();
             return true;

@@ -5,9 +5,10 @@ import org.protege.editor.core.ui.util.InputVerificationStatusChangedListener;
 import org.protege.editor.core.ui.util.JOptionPaneEx;
 import org.protege.editor.core.ui.util.VerifiedInputEditor;
 import org.protege.editor.owl.OWLEditorKit;
-import org.protege.editor.owl.client.admin.model.ProjectOption;
 import org.protege.editor.owl.client.admin.exception.ProjectOptionAlreadyExistsException;
+import org.protege.editor.owl.client.admin.model.ProjectOption;
 import org.protege.editor.owl.client.diff.ui.GuiUtils;
+import org.protege.editor.owl.ui.UIHelper;
 
 import javax.swing.*;
 import javax.swing.event.DocumentEvent;
@@ -272,8 +273,7 @@ public class ProjectOptionDialogPanel extends JPanel implements VerifiedInputEdi
 
     public static Optional<ProjectOption> showDialog(OWLEditorKit editorKit, Set<String> projectOptionKeys) {
         ProjectOptionDialogPanel panel = new ProjectOptionDialogPanel(editorKit, projectOptionKeys);
-        int response = JOptionPaneEx.showValidatingConfirmDialog(
-                editorKit.getOWLWorkspace(), "Add New Project Option", panel, JOptionPane.QUESTION_MESSAGE, JOptionPane.OK_CANCEL_OPTION, null);
+        int response = new UIHelper(editorKit).showValidatingDialog("Add New Project Option", panel, null);
         if (response == JOptionPane.OK_OPTION) {
             return Optional.of(panel.createOption());
         }
@@ -283,8 +283,7 @@ public class ProjectOptionDialogPanel extends JPanel implements VerifiedInputEdi
     public static Optional<ProjectOption> showDialog(OWLEditorKit editorKit, Set<String> projectOptionKeys, String key, Set<String> values) {
         ProjectOptionDialogPanel panel = new ProjectOptionDialogPanel(editorKit, projectOptionKeys);
         panel.setIsEditing(key, values);
-        int response = JOptionPaneEx.showValidatingConfirmDialog(
-                editorKit.getOWLWorkspace(), "Edit Project Option", panel, JOptionPane.QUESTION_MESSAGE, JOptionPane.OK_CANCEL_OPTION, null);
+        int response = new UIHelper(editorKit).showValidatingDialog("Edit Project Option", panel, null);
         if (response == JOptionPane.OK_OPTION) {
             return Optional.of(panel.createOption());
         }

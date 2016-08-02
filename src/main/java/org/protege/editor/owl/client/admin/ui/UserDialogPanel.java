@@ -9,7 +9,6 @@ import edu.stanford.protege.metaproject.api.exception.IdAlreadyInUseException;
 import org.protege.editor.core.ui.error.ErrorLogPanel;
 import org.protege.editor.core.ui.util.AugmentedJTextField;
 import org.protege.editor.core.ui.util.InputVerificationStatusChangedListener;
-import org.protege.editor.core.ui.util.JOptionPaneEx;
 import org.protege.editor.core.ui.util.VerifiedInputEditor;
 import org.protege.editor.owl.OWLEditorKit;
 import org.protege.editor.owl.client.ClientSession;
@@ -18,6 +17,7 @@ import org.protege.editor.owl.client.api.Client;
 import org.protege.editor.owl.client.api.exception.AuthorizationException;
 import org.protege.editor.owl.client.api.exception.ClientRequestException;
 import org.protege.editor.owl.client.diff.ui.GuiUtils;
+import org.protege.editor.owl.ui.UIHelper;
 
 import javax.swing.*;
 import javax.swing.event.DocumentEvent;
@@ -36,13 +36,13 @@ import static com.google.common.base.Preconditions.checkNotNull;
  * Stanford Center for Biomedical Informatics Research
  */
 public class UserDialogPanel extends JPanel implements VerifiedInputEditor {
-    private static final long serialVersionUID = -1129935254217646302L;
+    private static final long serialVersionUID = -3315863208276044071L;
     private static final int FIELD_WIDTH = 20;
     private OWLEditorKit editorKit;
     private AugmentedJTextField id, name, email;
     private JRadioButton externalAuth, defaultAuth, sameAuth;
     private JPasswordField password, passwordConf;
-    private JLabel userIdLbl, userNameLbl, emailAddressLbl, passwordLbl, passwordConfLbl, authMethodLbl;
+    private JLabel idLbl, nameLbl, emailLbl, passwordLbl, passwordConfLbl, authMethodLbl;
     private final JTextArea errorArea = new JTextArea(1, FIELD_WIDTH*2);
     private JSeparator separator = new JSeparator();
     private int rowIndex = 0;
@@ -77,9 +77,9 @@ public class UserDialogPanel extends JPanel implements VerifiedInputEditor {
         password.setBorder(GuiUtils.MATTE_BORDER);
         passwordConf.setBorder(GuiUtils.MATTE_BORDER);
 
-        userIdLbl = new JLabel("User Id:");
-        userNameLbl = new JLabel("Name:");
-        emailAddressLbl = new JLabel("Email Address:");
+        idLbl = new JLabel("User Id:");
+        nameLbl = new JLabel("Name:");
+        emailLbl = new JLabel("Email Address:");
         authMethodLbl = new JLabel("Authentication Method:");
         passwordLbl = new JLabel("Password:");
         passwordConfLbl = new JLabel("Confirm Password:");
@@ -103,16 +103,17 @@ public class UserDialogPanel extends JPanel implements VerifiedInputEditor {
     }
 
     private void initUi() {
-        add(holderPanel);
+        setLayout(new BorderLayout());
+        add(holderPanel, BorderLayout.CENTER);
         Insets insets = new Insets(0, 2, 2, 2);
-        holderPanel.add(userIdLbl, new GridBagConstraints(0, rowIndex, 1, 1, 0.0, 0.0, GridBagConstraints.BASELINE_TRAILING, GridBagConstraints.NONE, insets, 0, 0));
-        holderPanel.add(id, new GridBagConstraints(1, rowIndex, 1, 1, 100.0, 0.0, GridBagConstraints.BASELINE_LEADING, GridBagConstraints.HORIZONTAL, insets, 0, 0));
+        holderPanel.add(idLbl, new GridBagConstraints(0, rowIndex, 1, 1, 0.0, 0.0, GridBagConstraints.BASELINE_TRAILING, GridBagConstraints.NONE, insets, 0, 0));
+        holderPanel.add(id, new GridBagConstraints(1, rowIndex, 1, 1, 1.0, 0.0, GridBagConstraints.BASELINE_LEADING, GridBagConstraints.HORIZONTAL, insets, 0, 0));
         rowIndex++;
-        holderPanel.add(userNameLbl, new GridBagConstraints(0, rowIndex, 1, 1, 0.0, 0.0, GridBagConstraints.BASELINE_TRAILING, GridBagConstraints.NONE, insets, 0, 0));
-        holderPanel.add(name, new GridBagConstraints(1, rowIndex, 1, 1, 100.0, 0.0, GridBagConstraints.BASELINE_TRAILING, GridBagConstraints.HORIZONTAL, insets, 0, 0));
+        holderPanel.add(nameLbl, new GridBagConstraints(0, rowIndex, 1, 1, 0.0, 0.0, GridBagConstraints.BASELINE_TRAILING, GridBagConstraints.NONE, insets, 0, 0));
+        holderPanel.add(name, new GridBagConstraints(1, rowIndex, 1, 1, 1.0, 0.0, GridBagConstraints.BASELINE_TRAILING, GridBagConstraints.HORIZONTAL, insets, 0, 0));
         rowIndex++;
-        holderPanel.add(emailAddressLbl, new GridBagConstraints(0, rowIndex, 1, 1, 0.0, 0.0, GridBagConstraints.BASELINE_TRAILING, GridBagConstraints.NONE, insets, 0, 0));
-        holderPanel.add(email, new GridBagConstraints(1, rowIndex, 1, 1, 100.0, 0.0, GridBagConstraints.BASELINE_LEADING, GridBagConstraints.HORIZONTAL, insets, 0, 0));
+        holderPanel.add(emailLbl, new GridBagConstraints(0, rowIndex, 1, 1, 0.0, 0.0, GridBagConstraints.BASELINE_TRAILING, GridBagConstraints.NONE, insets, 0, 0));
+        holderPanel.add(email, new GridBagConstraints(1, rowIndex, 1, 1, 1.0, 0.0, GridBagConstraints.BASELINE_LEADING, GridBagConstraints.HORIZONTAL, insets, 0, 0));
         rowIndex++;
 
         JPanel buttonPanel = new JPanel(new GridLayout(1, 0));
@@ -123,7 +124,7 @@ public class UserDialogPanel extends JPanel implements VerifiedInputEditor {
         buttonPanel.add(externalAuth);
 
         holderPanel.add(authMethodLbl, new GridBagConstraints(0, rowIndex, 1, 1, 0.0, 0.0, GridBagConstraints.BASELINE_TRAILING, GridBagConstraints.NONE, new Insets(4, 2, 2, 2), 0, 0));
-        holderPanel.add(buttonPanel, new GridBagConstraints(1, rowIndex, 1, 1, 100.0, 0.0, GridBagConstraints.BASELINE_LEADING, GridBagConstraints.HORIZONTAL, insets, 0, 0));
+        holderPanel.add(buttonPanel, new GridBagConstraints(1, rowIndex, 1, 1, 0.0, 0.0, GridBagConstraints.BASELINE_LEADING, GridBagConstraints.NONE, insets, 0, 0));
         rowIndex++;
         initPasswordUi(true);
         defaultAuth.setSelected(true);
@@ -133,13 +134,13 @@ public class UserDialogPanel extends JPanel implements VerifiedInputEditor {
         int lclRowIndex = rowIndex;
         if(defaultAuthMethod) {
             Insets insets = new Insets(0, 2, 2, 2);
-            holderPanel.add(separator, new GridBagConstraints(0, lclRowIndex, 2, 1, 100.0, 0, GridBagConstraints.CENTER, GridBagConstraints.HORIZONTAL, new Insets(5, 2, 5, 2), 0, 0));
+            holderPanel.add(separator, new GridBagConstraints(0, lclRowIndex, 2, 1, 1.0, 0.0, GridBagConstraints.BASELINE, GridBagConstraints.HORIZONTAL, new Insets(5, 2, 5, 2), 0, 0));
             lclRowIndex++;
             holderPanel.add(passwordLbl, new GridBagConstraints(0, lclRowIndex, 1, 1, 0.0, 0.0, GridBagConstraints.BASELINE_TRAILING, GridBagConstraints.NONE, insets, 0, 0));
-            holderPanel.add(password, new GridBagConstraints(1, lclRowIndex, 1, 1, 100.0, 0.0, GridBagConstraints.BASELINE_LEADING, GridBagConstraints.HORIZONTAL, insets, 0, 0));
+            holderPanel.add(password, new GridBagConstraints(1, lclRowIndex, 1, 1, 1.0, 0.0, GridBagConstraints.BASELINE_LEADING, GridBagConstraints.HORIZONTAL, insets, 0, 0));
             lclRowIndex++;
             holderPanel.add(passwordConfLbl, new GridBagConstraints(0, lclRowIndex, 1, 1, 0.0, 0.0, GridBagConstraints.BASELINE_TRAILING, GridBagConstraints.NONE, insets, 0, 0));
-            holderPanel.add(passwordConf, new GridBagConstraints(1, lclRowIndex, 1, 1, 100.0, 0.0, GridBagConstraints.BASELINE_LEADING, GridBagConstraints.HORIZONTAL, insets, 0, 0));
+            holderPanel.add(passwordConf, new GridBagConstraints(1, lclRowIndex, 1, 1, 1.0, 0.0, GridBagConstraints.BASELINE_LEADING, GridBagConstraints.HORIZONTAL, insets, 0, 0));
             lclRowIndex++;
         } else {
             holderPanel.remove(separator);
@@ -157,7 +158,7 @@ public class UserDialogPanel extends JPanel implements VerifiedInputEditor {
         errorArea.setLineWrap(true);
         errorArea.setFont(errorArea.getFont().deriveFont(12.0f));
         errorArea.setForeground(Color.RED);
-        holderPanel.add(errorArea, new GridBagConstraints(0, lclRowIndex, 2, 1, 0, 0, GridBagConstraints.SOUTHWEST, GridBagConstraints.NONE, new Insets(12, 2, 0, 2), 0, 0));
+        holderPanel.add(errorArea, new GridBagConstraints(0, lclRowIndex, 2, 1, 1.0, 0.0, GridBagConstraints.SOUTHWEST, GridBagConstraints.NONE, new Insets(12, 2, 0, 2), 0, 0));
     }
 
     private ActionListener radioListener = e -> {
@@ -284,8 +285,7 @@ public class UserDialogPanel extends JPanel implements VerifiedInputEditor {
 
     public static Optional<User> showDialog(OWLEditorKit editorKit) {
         UserDialogPanel panel = new UserDialogPanel(editorKit);
-        int response = JOptionPaneEx.showValidatingConfirmDialog(
-                editorKit.getOWLWorkspace(), "Add New User", panel, JOptionPane.QUESTION_MESSAGE, JOptionPane.OK_CANCEL_OPTION, null);
+        int response = new UIHelper(editorKit).showValidatingDialog("Add New User", panel, null);
         if(response == JOptionPane.OK_OPTION) {
             User user = panel.createUser();
             if(panel.isUsingDefaultAuthentication()) {
@@ -310,8 +310,7 @@ public class UserDialogPanel extends JPanel implements VerifiedInputEditor {
     }
 
     private static Optional<User> showDialog(OWLEditorKit editorKit, UserDialogPanel panel, String header) {
-        int response = JOptionPaneEx.showValidatingConfirmDialog(
-                editorKit.getOWLWorkspace(), header, panel, JOptionPane.QUESTION_MESSAGE, JOptionPane.OK_CANCEL_OPTION, null);
+        int response = new UIHelper(editorKit).showValidatingDialog(header, panel, null);
         if (response == JOptionPane.OK_OPTION) {
             return Optional.of(panel.createUser());
         }

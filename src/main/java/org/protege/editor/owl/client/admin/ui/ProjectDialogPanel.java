@@ -40,7 +40,7 @@ import static com.google.common.base.Preconditions.checkNotNull;
  * Stanford Center for Biomedical Informatics Research
  */
 public class ProjectDialogPanel extends JPanel implements VerifiedInputEditor {
-    private static final long serialVersionUID = 2010269799445634450L;
+    private static final long serialVersionUID = 1141093187145768163L;
     private OWLEditorKit editorKit;
     private static final int FIELD_WIDTH = 20;
     private AugmentedJTextField name;
@@ -210,7 +210,7 @@ public class ProjectDialogPanel extends JPanel implements VerifiedInputEditor {
         detailsPanel.add(name, new GridBagConstraints(1, rowIndex, 2, 1, 1.0, 0.0, GridBagConstraints.BASELINE_LEADING, GridBagConstraints.HORIZONTAL, insets, 0, 0));
         rowIndex++;
         detailsPanel.add(descriptionLbl, new GridBagConstraints(0, rowIndex, 1, 1, 0.0, 0.0, GridBagConstraints.BASELINE_TRAILING, GridBagConstraints.NONE, insets, 0, 0));
-        detailsPanel.add(descriptionScrollPane, new GridBagConstraints(1, rowIndex, 2, 1, 1.0, 0.0, GridBagConstraints.BASELINE_LEADING, GridBagConstraints.HORIZONTAL, insets, 0, 0));
+        detailsPanel.add(descriptionScrollPane, new GridBagConstraints(1, rowIndex, 2, 1, 1.0, 1.0, GridBagConstraints.BASELINE_LEADING, GridBagConstraints.BOTH, insets, 0, 0));
         rowIndex++;
         if (isEditing) {
             detailsPanel.add(ownerLbl, new GridBagConstraints(0, rowIndex, 1, 1, 0.0, 0.0, GridBagConstraints.BASELINE_TRAILING, GridBagConstraints.NONE, insets, 0, 0));
@@ -480,8 +480,7 @@ public class ProjectDialogPanel extends JPanel implements VerifiedInputEditor {
     }
 
     private static Optional<Project> showDialog(OWLEditorKit editorKit, ProjectDialogPanel panel, String header) {
-        int response = JOptionPaneEx.showValidatingConfirmDialog(
-                editorKit.getOWLWorkspace(), header, panel, JOptionPane.QUESTION_MESSAGE, JOptionPane.OK_CANCEL_OPTION, null);
+        int response = new UIHelper(editorKit).showValidatingDialog(header, panel, null);
         if (response == JOptionPane.OK_OPTION) {
             return Optional.of(panel.createProject());
         }

@@ -4,7 +4,6 @@ import edu.stanford.protege.metaproject.api.*;
 import edu.stanford.protege.metaproject.impl.MetaprojectUtils;
 import org.protege.editor.core.ui.error.ErrorLogPanel;
 import org.protege.editor.core.ui.util.InputVerificationStatusChangedListener;
-import org.protege.editor.core.ui.util.JOptionPaneEx;
 import org.protege.editor.core.ui.util.VerifiedInputEditor;
 import org.protege.editor.owl.OWLEditorKit;
 import org.protege.editor.owl.client.ClientSession;
@@ -12,6 +11,7 @@ import org.protege.editor.owl.client.admin.exception.PolicyEntryAlreadyExistsExc
 import org.protege.editor.owl.client.api.Client;
 import org.protege.editor.owl.client.api.exception.AuthorizationException;
 import org.protege.editor.owl.client.api.exception.ClientRequestException;
+import org.protege.editor.owl.ui.UIHelper;
 
 import javax.swing.*;
 import javax.swing.event.ListSelectionEvent;
@@ -30,7 +30,7 @@ import static com.google.common.base.Preconditions.checkNotNull;
  * Stanford Center for Biomedical Informatics Research
  */
 public class PolicyAssignmentDialogPanel extends JPanel implements VerifiedInputEditor {
-    private static final long serialVersionUID = 4493401748178536011L;
+    private static final long serialVersionUID = 2002168952736517083L;
     private static final int FIELD_WIDTH = 20;
     private OWLEditorKit editorKit;
     private JComboBox<Project> projectBox;
@@ -102,16 +102,16 @@ public class PolicyAssignmentDialogPanel extends JPanel implements VerifiedInput
         int rowIndex = 0;
         if(!roleOnly) {
             holderPanel.add(projectLbl, new GridBagConstraints(0, rowIndex, 1, 1, 0.0, 0.0, GridBagConstraints.BASELINE_TRAILING, GridBagConstraints.NONE, insets, 0, 0));
-            holderPanel.add(projectBox, new GridBagConstraints(1, rowIndex, 1, 1, 100.0, 0.0, GridBagConstraints.BASELINE_LEADING, GridBagConstraints.HORIZONTAL, insets, 0, 0));
+            holderPanel.add(projectBox, new GridBagConstraints(1, rowIndex, 1, 1, 1.0, 0.0, GridBagConstraints.BASELINE_LEADING, GridBagConstraints.HORIZONTAL, insets, 0, 0));
             rowIndex++;
         }
         holderPanel.add(roleLbl, new GridBagConstraints(0, rowIndex, 1, 1, 0.0, 0.0, GridBagConstraints.BASELINE_TRAILING, GridBagConstraints.NONE, insets, 0, 0));
-        holderPanel.add(new JScrollPane(roleCheckBoxList), new GridBagConstraints(1, rowIndex, 1, 1, 100.0, 0.0, GridBagConstraints.BASELINE_LEADING, GridBagConstraints.HORIZONTAL, insets, 0, 0));
+        holderPanel.add(new JScrollPane(roleCheckBoxList), new GridBagConstraints(1, rowIndex, 1, 1, 1.0, 0.5, GridBagConstraints.BASELINE_LEADING, GridBagConstraints.BOTH, insets, 0, 0));
         rowIndex++;
-        holderPanel.add(new JSeparator(), new GridBagConstraints(0, rowIndex, 2, 1, 100.0, 0.0, GridBagConstraints.CENTER, GridBagConstraints.HORIZONTAL, new Insets(5, 2, 5, 2), 0, 0));
+        holderPanel.add(new JSeparator(), new GridBagConstraints(0, rowIndex, 2, 1, 1.0, 0.0, GridBagConstraints.CENTER, GridBagConstraints.HORIZONTAL, new Insets(5, 2, 5, 2), 0, 0));
         rowIndex++;
         holderPanel.add(operationsLbl, new GridBagConstraints(0, rowIndex, 1, 1, 0.0, 0.0, GridBagConstraints.BASELINE_TRAILING, GridBagConstraints.NONE, insets, 0, 0));
-        holderPanel.add(new JScrollPane(operationsList), new GridBagConstraints(1, rowIndex, 1, 1, 100.0, 0.0, GridBagConstraints.BASELINE_LEADING, GridBagConstraints.HORIZONTAL, insets, 0, 0));
+        holderPanel.add(new JScrollPane(operationsList), new GridBagConstraints(1, rowIndex, 1, 1, 1.0, 0.5, GridBagConstraints.BASELINE_LEADING, GridBagConstraints.BOTH, insets, 0, 0));
         rowIndex++;
         errorArea.setBackground(null);
         errorArea.setBorder(null);
@@ -120,7 +120,7 @@ public class PolicyAssignmentDialogPanel extends JPanel implements VerifiedInput
         errorArea.setLineWrap(true);
         errorArea.setFont(errorArea.getFont().deriveFont(12.0f));
         errorArea.setForeground(Color.RED);
-        holderPanel.add(errorArea, new GridBagConstraints(0, rowIndex, 2, 1, 0, 0, GridBagConstraints.SOUTHWEST, GridBagConstraints.NONE, new Insets(12, 2, 0, 2), 0, 0));
+        holderPanel.add(errorArea, new GridBagConstraints(0, rowIndex, 2, 1, 1.0, 0.0, GridBagConstraints.SOUTHWEST, GridBagConstraints.NONE, new Insets(12, 2, 0, 2), 0, 0));
     }
 
     public void setProject(Project project) {
@@ -277,8 +277,7 @@ public class PolicyAssignmentDialogPanel extends JPanel implements VerifiedInput
     }
 
     private static boolean showDialog(OWLEditorKit editorKit, PolicyAssignmentDialogPanel panel, String header) {
-        int response = JOptionPaneEx.showValidatingConfirmDialog(
-                editorKit.getOWLWorkspace(), header, panel, JOptionPane.QUESTION_MESSAGE, JOptionPane.OK_CANCEL_OPTION, null);
+        int response = new UIHelper(editorKit).showValidatingDialog(header, panel, null);
         return response == JOptionPane.OK_OPTION;
     }
 

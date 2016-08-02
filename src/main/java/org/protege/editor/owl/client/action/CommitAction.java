@@ -1,19 +1,5 @@
 package org.protege.editor.owl.client.action;
 
-import java.awt.BorderLayout;
-import java.awt.event.ActionEvent;
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Optional;
-import java.util.concurrent.Callable;
-import java.util.concurrent.ExecutionException;
-import java.util.concurrent.Future;
-
-import javax.swing.JLabel;
-import javax.swing.JOptionPane;
-import javax.swing.JPanel;
-import javax.swing.JTextArea;
-
 import org.protege.editor.owl.client.api.Client;
 import org.protege.editor.owl.client.api.exception.AuthorizationException;
 import org.protege.editor.owl.client.api.exception.ClientRequestException;
@@ -22,7 +8,7 @@ import org.protege.editor.owl.client.event.ClientSessionChangeEvent;
 import org.protege.editor.owl.client.event.ClientSessionChangeEvent.EventCategory;
 import org.protege.editor.owl.client.event.ClientSessionListener;
 import org.protege.editor.owl.client.event.CommitOperationEvent;
-import org.protege.editor.owl.client.ui.RequestFocusListener;
+import org.protege.editor.owl.client.ui.CommitDialogPanel;
 import org.protege.editor.owl.client.util.ClientUtils;
 import org.protege.editor.owl.model.history.HistoryManager;
 import org.protege.editor.owl.model.history.UndoManagerListener;
@@ -33,8 +19,18 @@ import org.protege.editor.owl.server.versioning.Commit;
 import org.protege.editor.owl.server.versioning.api.ChangeHistory;
 import org.protege.editor.owl.server.versioning.api.DocumentRevision;
 import org.protege.editor.owl.server.versioning.api.VersionedOWLOntology;
+import org.protege.editor.owl.ui.UIHelper;
 import org.semanticweb.owlapi.model.OWLOntology;
 import org.semanticweb.owlapi.model.OWLOntologyChange;
+
+import javax.swing.*;
+import java.awt.event.ActionEvent;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Optional;
+import java.util.concurrent.Callable;
+import java.util.concurrent.ExecutionException;
+import java.util.concurrent.Future;
 
 /**
  * @author Josef Hardi <johardi@stanford.edu> <br>
@@ -92,14 +88,10 @@ public class CommitAction extends AbstractClientAction implements ClientSessionL
 
     @Override
     public void actionPerformed(ActionEvent arg0) {
-        JTextArea commentArea = new JTextArea(4, 45);
-        JPanel panel = new JPanel(new BorderLayout(0, 8));
-        panel.add(new JLabel("Commit message (do not leave blank):"), BorderLayout.NORTH);
-        panel.add(commentArea, BorderLayout.CENTER);
-        commentArea.addAncestorListener(new RequestFocusListener());
-        int option = JOptionPane.showConfirmDialog(null, panel, "Commit", JOptionPane.OK_CANCEL_OPTION, JOptionPane.PLAIN_MESSAGE);
+        CommitDialogPanel commitPanel = new CommitDialogPanel();
+        int option = new UIHelper(getOWLEditorKit()).showValidatingDialog("Commit changes", commitPanel, null);
         if (option == JOptionPane.OK_OPTION) {
-            String comment = commentArea.getText().trim();
+            String comment = commitPanel.getTextArea().getText().trim();
             if (!comment.isEmpty()) {
                 performCommit(activeVersionOntology.get(), comment);
             }

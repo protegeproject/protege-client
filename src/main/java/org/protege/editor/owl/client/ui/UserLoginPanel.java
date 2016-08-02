@@ -71,20 +71,21 @@ public class UserLoginPanel extends JPanel implements VerifiedInputEditor {
     }
 
     private void initUi() {
+        setLayout(new BorderLayout());
         JPanel holderPanel = new JPanel(new GridBagLayout());
-        add(holderPanel);
+        add(holderPanel, BorderLayout.CENTER);
         Insets insets = new Insets(0, 2, 2, 2);
         int rowIndex = 0;
         holderPanel.add(lblServerAddress, new GridBagConstraints(0, rowIndex, 1, 1, 0.0, 0.0, GridBagConstraints.BASELINE_TRAILING, GridBagConstraints.NONE, new Insets(15,2,2,2), 0, 0));
-        holderPanel.add(cmbServerList, new GridBagConstraints(1, rowIndex, 1, 1, 100.0, 0.0, GridBagConstraints.BASELINE_LEADING, GridBagConstraints.HORIZONTAL, insets, 0, 0));
+        holderPanel.add(cmbServerList, new GridBagConstraints(1, rowIndex, 1, 1, 1.0, 0.0, GridBagConstraints.BASELINE_LEADING, GridBagConstraints.HORIZONTAL, insets, 0, 0));
         rowIndex++;
-        holderPanel.add(new JSeparator(), new GridBagConstraints(0, rowIndex, 2, 1, 100.0, 0.0, GridBagConstraints.CENTER, GridBagConstraints.HORIZONTAL, new Insets(5, 2, 5, 2), 0, 0));
+        holderPanel.add(new JSeparator(), new GridBagConstraints(0, rowIndex, 2, 1, 1.0, 0.0, GridBagConstraints.CENTER, GridBagConstraints.HORIZONTAL, new Insets(5, 2, 5, 2), 0, 0));
         rowIndex++;
         holderPanel.add(lblUsername, new GridBagConstraints(0, rowIndex, 1, 1, 0.0, 0.0, GridBagConstraints.BASELINE_TRAILING, GridBagConstraints.NONE, insets, 0, 0));
-        holderPanel.add(txtUsername, new GridBagConstraints(1, rowIndex, 1, 1, 100.0, 0.0, GridBagConstraints.BASELINE_LEADING, GridBagConstraints.HORIZONTAL, insets, 0, 0));
+        holderPanel.add(txtUsername, new GridBagConstraints(1, rowIndex, 1, 1, 1.0, 0.0, GridBagConstraints.BASELINE_LEADING, GridBagConstraints.HORIZONTAL, insets, 0, 0));
         rowIndex++;
         holderPanel.add(lblPassword, new GridBagConstraints(0, rowIndex, 1, 1, 0.0, 0.0, GridBagConstraints.BASELINE_TRAILING, GridBagConstraints.NONE, insets, 0, 0));
-        holderPanel.add(txtPassword, new GridBagConstraints(1, rowIndex, 1, 1, 100.0, 0.0, GridBagConstraints.BASELINE_LEADING, GridBagConstraints.HORIZONTAL, insets, 0, 0));
+        holderPanel.add(txtPassword, new GridBagConstraints(1, rowIndex, 1, 1, 1.0, 0.0, GridBagConstraints.BASELINE_LEADING, GridBagConstraints.HORIZONTAL, insets, 0, 0));
         rowIndex++;
 
         errorArea.setBackground(null);
@@ -94,7 +95,7 @@ public class UserLoginPanel extends JPanel implements VerifiedInputEditor {
         errorArea.setLineWrap(true);
         errorArea.setFont(errorArea.getFont().deriveFont(12.0f));
         errorArea.setForeground(Color.RED);
-        holderPanel.add(errorArea, new GridBagConstraints(0, rowIndex, 2, 1, 0, 0, GridBagConstraints.SOUTHWEST, GridBagConstraints.NONE, new Insets(12, 2, 0, 2), 0, 0));
+        holderPanel.add(errorArea, new GridBagConstraints(0, rowIndex, 2, 1, 1.0, 0.0, GridBagConstraints.SOUTHWEST, GridBagConstraints.NONE, new Insets(12, 2, 0, 2), 0, 0));
     }
 
     private JComboBox<String> getServerLocationsList() {

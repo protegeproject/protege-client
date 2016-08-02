@@ -74,7 +74,7 @@ public class UserPanel extends JPanel implements Disposable {
     };
 
     private ClientSessionListener sessionListener = event -> {
-        if(event.hasCategory(ClientSessionChangeEvent.EventCategory.SWITCH_CLIENT) || event.hasCategory(ClientSessionChangeEvent.EventCategory.CLEAR_SESSION)) {
+        if(event.hasCategory(ClientSessionChangeEvent.EventCategory.USER_LOGIN) || event.hasCategory(ClientSessionChangeEvent.EventCategory.USER_LOGOUT)) {
             client = session.getActiveClient();
             removeAll();
             initUi();

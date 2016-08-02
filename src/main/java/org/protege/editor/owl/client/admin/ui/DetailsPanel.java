@@ -55,7 +55,7 @@ public class DetailsPanel extends JPanel implements Disposable {
     };
 
     private ClientSessionListener sessionListener = event -> {
-        if(event.hasCategory(ClientSessionChangeEvent.EventCategory.CLEAR_SESSION)) {
+        if(event.hasCategory(ClientSessionChangeEvent.EventCategory.USER_LOGOUT)) {
             removeAll();
             revalidate();
             repaint();

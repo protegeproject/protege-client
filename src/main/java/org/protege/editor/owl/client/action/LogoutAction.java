@@ -45,11 +45,11 @@ public class LogoutAction extends AbstractClientAction implements ClientSessionL
 
     @Override
     public void handleChange(ClientSessionChangeEvent event) {
-        if (event.hasCategory(EventCategory.SWITCH_CLIENT)) {
+        if (event.hasCategory(EventCategory.USER_LOGIN)) {
             activeClient = event.getSource().getActiveClient();
             setEnabled(true);
         }
-        else if (event.hasCategory(EventCategory.CLEAR_SESSION)) {
+        else if (event.hasCategory(EventCategory.USER_LOGOUT)) {
             setEnabled(false);
        }
     }

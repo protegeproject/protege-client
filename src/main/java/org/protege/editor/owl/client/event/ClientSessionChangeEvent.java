@@ -9,7 +9,7 @@ import org.protege.editor.owl.client.ClientSession;
 public class ClientSessionChangeEvent {
 
     public enum EventCategory {
-        SWITCH_CLIENT, SWITCH_ONTOLOGY, CLEAR_SESSION
+        USER_LOGIN, SWITCH_ONTOLOGY, USER_LOGOUT
     }
 
     private ClientSession source;

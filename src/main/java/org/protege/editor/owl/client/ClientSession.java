@@ -100,7 +100,7 @@ public class ClientSession extends OWLEditorKitHook {
             unregisterAllVersionOntologies();
         }
         activeClient = client;
-        fireChangeEvent(EventCategory.SWITCH_CLIENT);
+        fireChangeEvent(EventCategory.USER_LOGIN);
     }
 
     public Client getActiveClient() {
@@ -135,7 +135,7 @@ public class ClientSession extends OWLEditorKitHook {
         closeOpenVersionedOntologies();
         unregisterAllProjects();
         unregisterAllVersionOntologies();
-        fireChangeEvent(EventCategory.CLEAR_SESSION);
+        fireChangeEvent(EventCategory.USER_LOGOUT);
     }
 
     private void closeOpenVersionedOntologies() {

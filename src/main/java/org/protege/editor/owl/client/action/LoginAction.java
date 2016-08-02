@@ -47,13 +47,13 @@ public class LoginAction extends AbstractClientAction implements ClientSessionLi
     @Override
     public void handleChange(ClientSessionChangeEvent event) {
         detectLoginMenuItem();
-        if (event.hasCategory(EventCategory.SWITCH_CLIENT)) {
+        if (event.hasCategory(EventCategory.USER_LOGIN)) {
             setEnabled(false);
             changeLoginMenuText(String.format("Logged in as %s (%s)",
                     event.getSource().getActiveClient().getUserInfo().getId(),
                     event.getSource().getActiveClient().getUserInfo().getName()));
         }
-        else if (event.hasCategory(EventCategory.CLEAR_SESSION)) {
+        else if (event.hasCategory(EventCategory.USER_LOGOUT)) {
             setEnabled(true);
             changeLoginMenuText(LOGIN_MENU_ITEM_NAME);
         }

@@ -80,9 +80,9 @@ public class ProjectPanel extends JPanel implements Disposable {
     };
 
     private ClientSessionListener sessionListener = event -> {
-        if (event.hasCategory(EventCategory.SWITCH_CLIENT) || event.hasCategory(ClientSessionChangeEvent.EventCategory.CLEAR_SESSION)) {
+        if (event.hasCategory(EventCategory.USER_LOGIN) || event.hasCategory(ClientSessionChangeEvent.EventCategory.USER_LOGOUT)) {
             client = session.getActiveClient();
-            if(event.hasCategory(EventCategory.SWITCH_CLIENT)) {
+            if(event.hasCategory(EventCategory.USER_LOGIN)) {
                 userId = f.getUserId(client.getUserInfo().getId()); // TODO: should get a UserId directly!
             }
             removeAll();

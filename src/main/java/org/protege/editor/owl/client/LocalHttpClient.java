@@ -1033,18 +1033,18 @@ public class LocalHttpClient implements Client, ClientSessionListener {
 
 	private void throwRequestExceptions(Response response) throws LoginTimeoutException,
 			AuthorizationException, ClientRequestException {
-		String remoteMessage = response.header("Error-Message");
-		String msg = String.format("%s (contact server admin for further assistance)", remoteMessage);
+		String originalMessage = response.header("Error-Message");
 		if (response.code() == StatusCodes.UNAUTHORIZED) {
-			throw new AuthorizationException(msg);
+			throw new AuthorizationException(originalMessage);
 		}
 		/*
 		 * 440 Login Timeout. Reference: https://support.microsoft.com/en-us/kb/941201
 		 */
 		else if (response.code() == 440) {
-			throw new LoginTimeoutException(msg);
+			throw new LoginTimeoutException(originalMessage);
 		}
 		else {
+			String msg = String.format("%s (contact server admin for further assistance)", originalMessage);
 			throw new ClientRequestException(msg);
 		}
 	}

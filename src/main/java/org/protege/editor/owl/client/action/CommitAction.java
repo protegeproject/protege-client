@@ -1,5 +1,6 @@
 package org.protege.editor.owl.client.action;
 
+import org.protege.editor.owl.client.SessionRecorder;
 import org.protege.editor.owl.client.api.Client;
 import org.protege.editor.owl.client.api.exception.AuthorizationException;
 import org.protege.editor.owl.client.api.exception.ClientRequestException;
@@ -45,6 +46,8 @@ public class CommitAction extends AbstractClientAction implements ClientSessionL
 
     private List<OWLOntologyChange> localChanges = new ArrayList<>();
 
+    private SessionRecorder sessionRecorder;
+
     private UndoManagerListener checkUncommittedChanges = new UndoManagerListener() {
         
 		@Override
@@ -63,13 +66,14 @@ public class CommitAction extends AbstractClientAction implements ClientSessionL
         super.initialise();
         setEnabled(false); // initially the menu item is disabled
         getClientSession().addListener(this);
-        getSessionRecorder().addUndoManagerListener(checkUncommittedChanges);
+        sessionRecorder = getSessionRecorder();
+        sessionRecorder.addUndoManagerListener(checkUncommittedChanges);
     }
 
     @Override
     public void dispose() throws Exception {
         super.dispose();
-        getSessionRecorder().removeUndoManagerListener(checkUncommittedChanges);
+        sessionRecorder.removeUndoManagerListener(checkUncommittedChanges);
     }
 
     @Override
@@ -105,7 +109,7 @@ public class CommitAction extends AbstractClientAction implements ClientSessionL
                 ChangeHistory changes = acceptedChanges.get();
                 vont.update(changes); // update the local ontology
                 setEnabled(false); // disable the commit action after the changes got committed successfully
-                getSessionRecorder().reset();
+                sessionRecorder.reset();
                 getClientSession().fireCommitPerformedEvent(new CommitOperationEvent(
                         changes.getHeadRevision(),
                         changes.getMetadataForRevision(changes.getHeadRevision()),

@@ -187,7 +187,7 @@ public class LocalHttpClient implements Client, ClientSessionListener {
 			putConfig();
 		} catch (IdAlreadyInUseException e) {
 			logger.error(e.getMessage());
-			throw new ClientRequestException("Client failed to update user (see error log for details)", e);
+			throw new ClientRequestException("Client failed to create user (see error log for details)", e);
 		}
 	}
 
@@ -198,7 +198,7 @@ public class LocalHttpClient implements Client, ClientSessionListener {
 			putConfig();
 		} catch (UnknownMetaprojectObjectIdException e) {
 			logger.error(e.getMessage());
-			throw new ClientRequestException("Client failed to update user (see error log for details)", e);
+			throw new ClientRequestException("Client failed to delete user (see error log for details)", e);
 		}
 	}
 

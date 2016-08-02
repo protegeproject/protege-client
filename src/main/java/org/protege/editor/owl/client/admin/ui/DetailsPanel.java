@@ -50,6 +50,8 @@ public class DetailsPanel extends JPanel implements Disposable {
             initUi(configManager.getPolicySelection());
         } else if(event.equals(AdminTabEvent.CONFIGURATION_CHANGED)) {
             removeAll();
+            revalidate();
+            repaint();
             initUi();
         }
     };

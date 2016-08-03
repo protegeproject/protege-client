@@ -48,10 +48,10 @@ public class HostDialogPanel extends JPanel implements VerifiedInputEditor {
 
     private void initInputFields() {
         uri = new AugmentedJTextField(FIELD_WIDTH, "Host URI");
-        port = new AugmentedJTextField(FIELD_WIDTH, "Registry port (e.g., for RMI)");
+        port = new AugmentedJTextField(FIELD_WIDTH, "Admin Port");
 
         uriLbl = new JLabel("URI:");
-        portLbl = new JLabel("Registry Port:");
+        portLbl = new JLabel("Admin Port:");
 
         addListener(uri);
         addListener(port);

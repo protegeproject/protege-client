@@ -17,7 +17,7 @@ public class HostListCellRenderer extends DefaultListCellRenderer {
         if(value instanceof ServerSettingsPanel.HostListItem) {
             Host host = ((ServerSettingsPanel.HostListItem)value).getHost();
             label.setText("<html><b>" + host.getUri().toString() + "</b>" +
-                    (host.getSecondaryPort().isPresent() ? " (registry port: " + host.getSecondaryPort().get().get() + ")" : "") + "</html> b ");
+                    (host.getSecondaryPort().isPresent() ? " (admin port: " + host.getSecondaryPort().get().get() + ")" : "") + "</html> b ");
             label.setPreferredSize(new Dimension(0, 25));
         }
         return label;

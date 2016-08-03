@@ -1,6 +1,8 @@
 package org.protege.editor.owl.client;
 
 import com.google.gson.Gson;
+
+import edu.stanford.protege.metaproject.Manager;
 import edu.stanford.protege.metaproject.api.*;
 import edu.stanford.protege.metaproject.api.exception.*;
 import edu.stanford.protege.metaproject.impl.AuthorizedUserToken;
@@ -52,6 +54,7 @@ public class LocalHttpClient implements Client, ClientSessionListener {
 
 	//private AuthToken authToken;
 	private String serverAddress;
+	private boolean adminClient = false;
 
 	private ProjectId projectId;
 	private Project project = null;
@@ -98,9 +101,17 @@ public class LocalHttpClient implements Client, ClientSessionListener {
 		//check if user is allowed to edit config
 		initConfig();
 	}
+	
+	private boolean checkAdmin() {
+		int adminPort = config.getHost().getSecondaryPort().get().get();
+		int serverAddressPort = URI.create(serverAddress).getPort();
+		return adminPort == serverAddressPort;
+		
+	}
 
 	public void initConfig() throws LoginTimeoutException, AuthorizationException, ClientRequestException {
 		config = getConfig();
+		adminClient = checkAdmin();
 		proj_registry = config.getMetaproject().getProjectRegistry();
 		user_registry = config.getMetaproject().getUserRegistry();
 		auth_registry = config.getAuthenticationRegistry();
@@ -788,14 +799,18 @@ public class LocalHttpClient implements Client, ClientSessionListener {
 
 	@Override
 	public void setHostAddress(URI hostAddress) throws AuthorizationException, ClientRequestException {
-		// TODO Auto-generated method stub
+		Host h = Manager.getFactory().getHost(hostAddress, Optional.empty());
+		config.setHost(h);
 
 	}
 
 	@Override
 	public void setSecondaryPort(int portNumber)
 			throws AuthorizationException, ClientRequestException {
-		// TODO Auto-generated method stub
+		Host h = config.getHost();
+		Port p = Manager.getFactory().getPort(portNumber);
+		Host nh = Manager.getFactory().getHost(h.getUri(), Optional.of(p));
+		config.setHost(nh);
 
 	}
 
@@ -1229,7 +1244,7 @@ public class LocalHttpClient implements Client, ClientSessionListener {
     }
 
     private boolean queryAdminPolicy(UserId userId, OperationId operationId) {
-    	return meta_agent.isOperationAllowed(operationId, userId);
+    	return (adminClient && meta_agent.isOperationAllowed(operationId, userId));
         
     }
     

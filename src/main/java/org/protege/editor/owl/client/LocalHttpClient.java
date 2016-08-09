@@ -1240,7 +1240,7 @@ public class LocalHttpClient implements Client, ClientSessionListener {
      * Utility methods
      */
     public boolean queryProjectPolicy(UserId userId, ProjectId projectId, OperationId operationId) {
-    	return meta_agent.isOperationAllowed(operationId, projectId, userId);        
+    	return (adminClient && meta_agent.isOperationAllowed(operationId, projectId, userId));        
     }
 
     private boolean queryAdminPolicy(UserId userId, OperationId operationId) {

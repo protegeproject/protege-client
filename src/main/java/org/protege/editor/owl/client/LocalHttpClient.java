@@ -978,6 +978,11 @@ public class LocalHttpClient implements Client, ClientSessionListener {
 	}
 
 	public void putConfig() throws LoginTimeoutException, AuthorizationException, ClientRequestException {
+		try {
+			config = manager.getConfiguration(); // update the cached server configuration
+		} catch (ServerConfigurationNotLoadedException e) {
+			// ignore
+		}
 		if (save_cancel_semantics) {
 			config_state_changed = true;
 		} else {

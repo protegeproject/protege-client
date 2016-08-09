@@ -652,6 +652,15 @@ public class LocalHttpClient implements Client, ClientSessionListener {
 	public List<Role> getAllRoles() throws AuthorizationException, ClientRequestException {
 		return new ArrayList<>(config.getRoles());
 	}
+	
+	public Role getRole(RoleId id) throws ClientRequestException {
+		try {
+			return config.getRole(id);
+		} catch (UnknownRoleIdException e) {
+			logger.error(e.getMessage());
+			throw new ClientRequestException("Client failed to get role details (see error log for details)", e);
+		}
+	}
 
 	@Override
 	public void createRole(Role newRole) throws AuthorizationException, ClientRequestException {

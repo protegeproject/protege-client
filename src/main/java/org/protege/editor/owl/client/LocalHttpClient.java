@@ -68,7 +68,7 @@ public class LocalHttpClient implements Client, ClientSessionListener {
 
 	OkHttpClient req_client = null;
 
-	private ConfigurationManager manager;
+	private ConfigurationManager manager = Manager.getConfigurationManager();
 	private ServerConfiguration config;
 
 	private boolean save_cancel_semantics = true;
@@ -158,7 +158,7 @@ public class LocalHttpClient implements Client, ClientSessionListener {
 			User user = null;
 			try {
 				user = config.getUser(userId);
-			} catch (UnknownPolicyObjectIdException e) {
+			} catch (UnknownUserIdException e) {
 				logger.error(e.getMessage());
 				throw new RuntimeException("Client failed to create auth token (see error log for details)", e);
 			}
@@ -213,7 +213,7 @@ public class LocalHttpClient implements Client, ClientSessionListener {
 				}
 			}
 			putConfig();
-		} catch (UnknownPolicyObjectIdException | UserNotRegisteredException e) {
+		} catch (UnknownUserIdException | UserNotRegisteredException e) {
 			logger.error(e.getMessage());
 			throw new ClientRequestException("Client failed to update user (see error log for details)", e);
 		}
@@ -347,7 +347,7 @@ public class LocalHttpClient implements Client, ClientSessionListener {
 		projectId = pid;
 		try {
 			project = config.getProject(pid);
-		} catch (UnknownPolicyObjectIdException e) {
+		} catch (UnknownProjectIdException e) {
 			logger.error(e.getMessage());
 			throw new ClientRequestException("Client failed to get the project (see error log for details)", e);
 		}
@@ -752,7 +752,7 @@ public class LocalHttpClient implements Client, ClientSessionListener {
 		try {
 			manager.removeOperation(config.getOperation(operationId));
 			putConfig();
-		} catch (UnknownPolicyObjectIdException e) {
+		} catch (UnknownOperationIdException e) {
 			logger.error(e.getMessage());
 			throw new ClientRequestException("Client failed to delete operation (see error log for details)", e);
 		}
@@ -764,7 +764,7 @@ public class LocalHttpClient implements Client, ClientSessionListener {
 		try {
 			manager.setOperation(operationId, updatedOperation);
 			putConfig();
-		} catch (UnknownPolicyObjectIdException e) {
+		} catch (UnknownOperationIdException e) {
 			logger.error(e.getMessage());
 			throw new ClientRequestException("Client failed to update operation (see error log for details)", e);
 		}
@@ -951,9 +951,7 @@ public class LocalHttpClient implements Client, ClientSessionListener {
 		String url = HTTPServer.METAPROJECT;
 		Response response = get(url);
 		try {
-			Serializer<Gson> serl = new DefaultJsonSerializer();
-			InputStream is = response.body().byteStream();
-			return (ServerConfiguration) serl.parse(new InputStreamReader(is), ServerConfiguration.class);
+			return manager.loadConfiguration(new InputStreamReader(response.body().byteStream()));
 		} catch (ObjectConversionException e) {
 			logger.error(e.getMessage(), e);
 			throw new ClientRequestException("Failed to parse the incoming server configuration data", e);

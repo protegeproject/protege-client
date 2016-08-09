@@ -105,6 +105,7 @@ public class LocalHttpClient implements Client, ClientSessionListener {
 
 	public void initConfig() throws LoginTimeoutException, AuthorizationException, ClientRequestException {
 		config = getConfig();
+		manager = config.getConfigurationManager();
 		adminClient = checkAdmin();
 		config_state_changed = false;
 	}

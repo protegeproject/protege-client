@@ -1,7 +1,7 @@
 package org.protege.editor.owl.client.admin.ui;
 
 import edu.stanford.protege.metaproject.Manager;
-import edu.stanford.protege.metaproject.api.MetaprojectFactory;
+import edu.stanford.protege.metaproject.api.PolicyFactory;
 import edu.stanford.protege.metaproject.api.Operation;
 import edu.stanford.protege.metaproject.api.OperationType;
 import edu.stanford.protege.metaproject.api.exception.IdAlreadyInUseException;
@@ -50,6 +50,8 @@ public class OperationDialogPanel extends JPanel implements VerifiedInputEditor 
 
     /**
      * Constructor
+     *
+     * @param editorKit OWL Editor kit
      */
     public OperationDialogPanel(OWLEditorKit editorKit) {
         this.editorKit = checkNotNull(editorKit);
@@ -169,7 +171,7 @@ public class OperationDialogPanel extends JPanel implements VerifiedInputEditor 
     }
 
     private Operation createOperation() {
-        MetaprojectFactory f = Manager.getFactory();
+        PolicyFactory f = Manager.getFactory();
         return f.getCustomOperation(f.getOperationId(id.getText()), f.getName(name.getText()), f.getDescription(description.getText()),
                 (OperationType)typesBox.getSelectedItem(), Operation.Scope.ONTOLOGY);
     }

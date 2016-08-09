@@ -71,7 +71,7 @@ public class DetailsPanel extends JPanel implements Disposable {
         setBorder(GuiUtils.MATTE_BORDER);
     }
 
-    private void initUi(MetaprojectObject obj) {
+    private void initUi(PolicyObject obj) {
         initUi();
         if (obj != null) {
             JPanel detailsPanel = null;

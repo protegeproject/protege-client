@@ -2,7 +2,7 @@ package org.protege.editor.owl.client.ui;
 
 import edu.stanford.protege.metaproject.api.Project;
 import edu.stanford.protege.metaproject.api.ProjectId;
-import edu.stanford.protege.metaproject.impl.MetaprojectUtils;
+import edu.stanford.protege.metaproject.impl.ConfigurationUtils;
 import org.protege.editor.owl.client.api.Client;
 import org.protege.editor.owl.client.api.exception.AuthorizationException;
 import org.protege.editor.owl.client.api.exception.OWLClientException;
@@ -27,10 +27,10 @@ public class ServerTableModel extends AbstractTableModel {
     private List<Project> remoteProjects;
 
     public void initialize(Client client) throws OWLClientException {
-        if(client.getProjects().contains(MetaprojectUtils.getUniversalProject())) {
+        if(client.getProjects().contains(ConfigurationUtils.getUniversalProject())) {
             try {
                 remoteProjects = new ArrayList<>(client.getAllProjects());
-                remoteProjects.remove(MetaprojectUtils.getUniversalProject());
+                remoteProjects.remove(ConfigurationUtils.getUniversalProject());
             } catch (AuthorizationException e) {
                 throw new OWLClientException(e.getCause());
             }

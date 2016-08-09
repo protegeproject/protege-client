@@ -1,6 +1,6 @@
 package org.protege.editor.owl.client.admin.ui;
 
-import edu.stanford.protege.metaproject.api.MetaprojectObject;
+import edu.stanford.protege.metaproject.api.PolicyObject;
 import edu.stanford.protege.metaproject.api.Operation;
 
 import javax.swing.*;
@@ -61,7 +61,7 @@ public class CheckBoxList<E> extends JList<E> {
             checkbox.setFocusPainted(false);
             checkbox.setBorderPainted(true);
             checkbox.setBorder(isSelected ? UIManager.getBorder("List.focusCellHighlightBorder") : noFocusBorder);
-            MetaprojectObject obj = checkbox.getObject();
+            PolicyObject obj = checkbox.getObject();
             if(obj.isOperation()) {
                 checkbox.setText("<html>" + obj.getName().get() + " <i>&nbsp;(" + ((Operation)obj).getType().toString().toLowerCase() + ")</i></html>");
             } else {

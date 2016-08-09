@@ -347,7 +347,7 @@ public class ProjectDialogPanel extends JPanel implements VerifiedInputEditor {
             ErrorLogPanel.showErrorDialog(e);
         }
         ownerComboBox = new JComboBox<>(users);
-        ownerComboBox.setRenderer(new MetaprojectObjectComboBoxRenderer());
+        ownerComboBox.setRenderer(new PolicyObjectComboBoxRenderer());
     }
 
     private void initProjectComboBox() {
@@ -362,7 +362,7 @@ public class ProjectDialogPanel extends JPanel implements VerifiedInputEditor {
             ErrorLogPanel.showErrorDialog(e);
         }
         projectComboBox = new JComboBox<>(projects);
-        projectComboBox.setRenderer(new MetaprojectObjectComboBoxRenderer());
+        projectComboBox.setRenderer(new PolicyObjectComboBoxRenderer());
         projectComboBox.setSelectedIndex(0);
     }
 
@@ -435,7 +435,7 @@ public class ProjectDialogPanel extends JPanel implements VerifiedInputEditor {
     }
 
     private Project createProject() {
-        MetaprojectFactory f = Manager.getFactory();
+        PolicyFactory f = Manager.getFactory();
         return f.getProject(f.getProjectId(id.getText()), f.getName(name.getText()), f.getDescription(description.getText()),
                 file, ownerId, Optional.ofNullable(f.getProjectOptions(projectOptions)));
     }

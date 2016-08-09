@@ -4,7 +4,6 @@ import edu.stanford.protege.metaproject.api.GlobalPermissions;
 import edu.stanford.protege.metaproject.api.Project;
 import edu.stanford.protege.metaproject.api.Role;
 import edu.stanford.protege.metaproject.api.User;
-import edu.stanford.protege.metaproject.api.exception.UserNotInPolicyException;
 import org.protege.editor.core.Disposable;
 import org.protege.editor.core.ui.error.ErrorLogPanel;
 import org.protege.editor.core.ui.list.MList;
@@ -45,7 +44,7 @@ import static com.google.common.base.Preconditions.checkNotNull;
  * Stanford Center for Biomedical Informatics Research
  */
 public class PolicyPanel extends JPanel implements Disposable {
-    private static final long serialVersionUID = 6066487586948730875L;
+    private static final long serialVersionUID = -5616803874073649334L;
     private OWLEditorKit editorKit;
     private AdminTabManager configManager;
     private MList projectList, roleList;
@@ -255,7 +254,7 @@ public class PolicyPanel extends JPanel implements Disposable {
 
     private void handleException(Exception e) {
         Throwable t = e.getCause();
-        if(t != null && t.getCause() != null && !(t.getCause() instanceof UserNotInPolicyException)) { // TODO revise
+        if(t != null && t.getCause() != null) {
             ErrorLogPanel.showErrorDialog(e);
         }
     }

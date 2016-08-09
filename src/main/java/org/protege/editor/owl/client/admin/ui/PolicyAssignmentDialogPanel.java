@@ -1,7 +1,7 @@
 package org.protege.editor.owl.client.admin.ui;
 
 import edu.stanford.protege.metaproject.api.*;
-import edu.stanford.protege.metaproject.impl.MetaprojectUtils;
+import edu.stanford.protege.metaproject.impl.ConfigurationUtils;
 import org.protege.editor.core.ui.error.ErrorLogPanel;
 import org.protege.editor.core.ui.util.InputVerificationStatusChangedListener;
 import org.protege.editor.core.ui.util.VerifiedInputEditor;
@@ -74,7 +74,7 @@ public class PolicyAssignmentDialogPanel extends JPanel implements VerifiedInput
         roleCheckBoxList.addListSelectionListener(roleCheckboxListListener);
 
         operationsList.setCellRenderer(new OperationListCellRenderer());
-        projectBox.setRenderer(new MetaprojectObjectComboBoxRenderer());
+        projectBox.setRenderer(new PolicyObjectComboBoxRenderer());
         projectBox.addActionListener(e -> {
             if(e.getSource().equals(projectBox)) {
                 selectedProject = (Project) projectBox.getSelectedItem();
@@ -145,7 +145,7 @@ public class PolicyAssignmentDialogPanel extends JPanel implements VerifiedInput
         List<Project> projects = new ArrayList<>();
         try {
             projects = client.getAllProjects();
-            projects.add(MetaprojectUtils.getUniversalProject());
+            projects.add(ConfigurationUtils.getUniversalProject());
         } catch (AuthorizationException | ClientRequestException e) {
             ErrorLogPanel.showErrorDialog(e);
         }

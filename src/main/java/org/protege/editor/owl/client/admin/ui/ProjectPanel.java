@@ -2,7 +2,7 @@ package org.protege.editor.owl.client.admin.ui;
 
 import com.google.common.base.Objects;
 import edu.stanford.protege.metaproject.Manager;
-import edu.stanford.protege.metaproject.api.MetaprojectFactory;
+import edu.stanford.protege.metaproject.api.PolicyFactory;
 import edu.stanford.protege.metaproject.api.Project;
 import edu.stanford.protege.metaproject.api.UserId;
 import edu.stanford.protege.metaproject.impl.Operations;
@@ -46,7 +46,7 @@ import static com.google.common.base.Preconditions.checkNotNull;
  */
 public class ProjectPanel extends JPanel implements Disposable {
     private static final long serialVersionUID = -6832671439689809834L;
-    private static MetaprojectFactory f = Manager.getFactory();
+    private static PolicyFactory f = Manager.getFactory();
     private OWLEditorKit editorKit;
     private AdminTabManager configManager;
     private MList projectList;

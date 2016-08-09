@@ -66,16 +66,10 @@ public class LocalHttpClient implements Client, ClientSessionListener {
 	private String auth_header_value;
 	private final String AUTH_HEADER = "Authorization";
 
-	OkHttpClient req_client = null; 
+	OkHttpClient req_client = null;
 
+	private ConfigurationManager manager;
 	private ServerConfiguration config;
-	private AuthenticationRegistry auth_registry;
-	private ProjectRegistry proj_registry;
-	private UserRegistry user_registry;
-	private MetaprojectAgent meta_agent;
-	private RoleRegistry role_registry;
-	private Policy policy;
-	private OperationRegistry op_registry;
 
 	private boolean save_cancel_semantics = true;
 	private boolean config_state_changed = false;
@@ -101,24 +95,17 @@ public class LocalHttpClient implements Client, ClientSessionListener {
 		//check if user is allowed to edit config
 		initConfig();
 	}
-	
+
 	private boolean checkAdmin() {
 		int adminPort = config.getHost().getSecondaryPort().get().get();
 		int serverAddressPort = URI.create(serverAddress).getPort();
 		return adminPort == serverAddressPort;
-		
+
 	}
 
 	public void initConfig() throws LoginTimeoutException, AuthorizationException, ClientRequestException {
 		config = getConfig();
 		adminClient = checkAdmin();
-		proj_registry = config.getMetaproject().getProjectRegistry();
-		user_registry = config.getMetaproject().getUserRegistry();
-		auth_registry = config.getAuthenticationRegistry();
-		meta_agent = config.getMetaproject().getMetaprojectAgent();
-		role_registry = config.getMetaproject().getRoleRegistry();
-		op_registry = config.getMetaproject().getOperationRegistry();
-		policy = config.getMetaproject().getPolicy();
 		config_state_changed = false;
 	}
 
@@ -130,7 +117,7 @@ public class LocalHttpClient implements Client, ClientSessionListener {
 		Serializer<Gson> serl = new DefaultJsonSerializer();
 		LoginCreds creds = new LoginCreds(user, pwd);
 		RequestBody req = RequestBody.create(MediaType.parse("application/json; charset=utf-8"), serl.write(creds, LoginCreds.class));
-		
+
 		/*
 		 * Send the request and stream the response data
 		 */
@@ -138,7 +125,7 @@ public class LocalHttpClient implements Client, ClientSessionListener {
 		try {
 			HttpAuthResponse resp = (HttpAuthResponse) serl.parse(new InputStreamReader(response.body().byteStream()), HttpAuthResponse.class);
 			return new UserInfo(resp.getId(), resp.getName(), resp.getEmail(), resp.getToken());
-		} catch (IOException | ObjectConversionException e) {
+		} catch (ObjectConversionException e) {
 			logger.error(e.getMessage(), e);
 			throw new ClientRequestException("Failed to read data from server (see error log for details)", e);
 		} finally {
@@ -169,8 +156,8 @@ public class LocalHttpClient implements Client, ClientSessionListener {
 		if (auth_token == null) {
 			User user = null;
 			try {
-				user = user_registry.get(userId);
-			} catch (UnknownMetaprojectObjectIdException e) {
+				user = config.getUser(userId);
+			} catch (UnknownPolicyObjectIdException e) {
 				logger.error(e.getMessage());
 				throw new RuntimeException("Client failed to create auth token (see error log for details)", e);
 			}
@@ -181,18 +168,18 @@ public class LocalHttpClient implements Client, ClientSessionListener {
 
 	@Override
 	public List<User> getAllUsers() throws AuthorizationException, ClientRequestException {
-		return new ArrayList<User>(user_registry.getEntries());
+		return new ArrayList<>(config.getUsers());
 	}
 
 	@Override
 	public void createUser(User newUser, Optional<? extends Password> password)
 			throws AuthorizationException, ClientRequestException {
 		try {
-			meta_agent.add(newUser);
+			manager.addUser(newUser);
 			if (password.isPresent()) {
 				Password newpassword = password.get();
 				if (newpassword instanceof SaltedPasswordDigest) {
-					auth_registry.add(newUser.getId(), (SaltedPasswordDigest) newpassword);
+					manager.registerUser(newUser.getId(), (SaltedPasswordDigest) newpassword);
 				}
 			}
 			putConfig();
@@ -205,9 +192,9 @@ public class LocalHttpClient implements Client, ClientSessionListener {
 	@Override
 	public void deleteUser(UserId userId) throws AuthorizationException, ClientRequestException {
 		try {
-			meta_agent.remove(user_registry.get(userId));
+			manager.removeUser(config.getUser(userId));
 			putConfig();
-		} catch (UnknownMetaprojectObjectIdException e) {
+		} catch (UnknownUserIdException e) {
 			logger.error(e.getMessage());
 			throw new ClientRequestException("Client failed to delete user (see error log for details)", e);
 		}
@@ -217,15 +204,15 @@ public class LocalHttpClient implements Client, ClientSessionListener {
 	public void updateUser(UserId userId, User updatedUser, Optional<? extends Password> updatedPassword)
 			throws AuthorizationException, ClientRequestException {
 		try {
-			user_registry.update(userId, updatedUser);
+			manager.setUser(userId, updatedUser);
 			if (updatedPassword.isPresent()) {
 				Password password = updatedPassword.get();
 				if (password instanceof SaltedPasswordDigest) {
-					auth_registry.changePassword(userId, (SaltedPasswordDigest) password);
+					manager.changePassword(userId, (SaltedPasswordDigest) password);
 				}
 			}
 			putConfig();
-		} catch (UnknownMetaprojectObjectIdException | UserNotRegisteredException e) {
+		} catch (UnknownPolicyObjectIdException | UserNotRegisteredException e) {
 			logger.error(e.getMessage());
 			throw new ClientRequestException("Client failed to update user (see error log for details)", e);
 		}
@@ -253,7 +240,7 @@ public class LocalHttpClient implements Client, ClientSessionListener {
 			logger.error(e.getMessage(), e);
 			throw new ClientRequestException("Unable to send request to server (see error log for details)", e);
 		}
-		
+
 		/*
 		 * Send the request and stream the response data
 		 */
@@ -282,7 +269,7 @@ public class LocalHttpClient implements Client, ClientSessionListener {
 		 * Prepare the request string
 		 */
 		String url = HTTPServer.PROJECT + "?projectid=" + projectId.get();
-		
+
 		/*
 		 * Send the delete request
 		 */
@@ -297,7 +284,7 @@ public class LocalHttpClient implements Client, ClientSessionListener {
 		 * Prepare the request string
 		 */
 		String url = HTTPServer.PROJECT + "?projectid=" + projectId.get();
-		
+
 		/*
 		 * Send the request and stream the response data
 		 */
@@ -335,7 +322,7 @@ public class LocalHttpClient implements Client, ClientSessionListener {
 			logger.error(e.getMessage(), e);
 			throw new ClientRequestException("Unable to send request to server (see error log for details)", e);
 		}
-		
+
 		/*
 		 * Send the request and stream the response data
 		 */
@@ -355,15 +342,15 @@ public class LocalHttpClient implements Client, ClientSessionListener {
 	}
 
 	public VersionedOWLOntology buildVersionedOntology(ServerDocument sdoc, OWLOntologyManager owlManager,
-			ProjectId pid) throws LoginTimeoutException, AuthorizationException, ClientRequestException {
+													   ProjectId pid) throws LoginTimeoutException, AuthorizationException, ClientRequestException {
 		projectId = pid;
 		try {
-			project = proj_registry.get(pid);
-		} catch (UnknownMetaprojectObjectIdException e) {
+			project = config.getProject(pid);
+		} catch (UnknownPolicyObjectIdException e) {
 			logger.error(e.getMessage());
 			throw new ClientRequestException("Client failed to get the project (see error log for details)", e);
 		}
-		
+
 		if (!snapShotExists(sdoc)) {
 			getSnapShot(sdoc);
 		}
@@ -375,7 +362,7 @@ public class LocalHttpClient implements Client, ClientSessionListener {
 
 	public boolean snapShotExists(ServerDocument sdoc) {
 		String fileName = sdoc.getHistoryFile().getName() + "-snapshot";
-		return (new File(fileName)).exists();	
+		return (new File(fileName)).exists();
 	}
 
 	public OWLOntology loadSnapShot(OWLOntologyManager manIn, ServerDocument sdoc) throws ClientRequestException {
@@ -395,7 +382,7 @@ public class LocalHttpClient implements Client, ClientSessionListener {
 	}
 
 	public OWLOntology putSnapShot(File file, ServerDocument sdoc) throws LoginTimeoutException,
-	AuthorizationException, ClientRequestException {
+			AuthorizationException, ClientRequestException {
 		/*
 		 * Prepare the request body
 		 */
@@ -414,7 +401,7 @@ public class LocalHttpClient implements Client, ClientSessionListener {
 			logger.error(e.getMessage(), e);
 			throw new ClientRequestException("Unable to send request to server (see error log for details)", e);
 		}
-		
+
 		/*
 		 * Send the request and stream the response data
 		 */
@@ -460,7 +447,7 @@ public class LocalHttpClient implements Client, ClientSessionListener {
 			}
 		}
 	}
-	
+
 	public void getSnapShot(ServerDocument sdoc) throws LoginTimeoutException, AuthorizationException,
 			ClientRequestException {
 		/*
@@ -478,7 +465,7 @@ public class LocalHttpClient implements Client, ClientSessionListener {
 			logger.error(e.getMessage(), e);
 			throw new ClientRequestException("Unable to send request to server (see error log for details)", e);
 		}
-		
+
 		/*
 		 * Send the request and stream the response data
 		 */
@@ -516,7 +503,7 @@ public class LocalHttpClient implements Client, ClientSessionListener {
 			logger.error(e.getMessage(), e);
 			throw new ClientRequestException("Unable to send request to server (see error log for details)", e);
 		}
-		
+
 		/*
 		 * Send the request and stream the response data
 		 */
@@ -555,7 +542,7 @@ public class LocalHttpClient implements Client, ClientSessionListener {
 			logger.error(e.getMessage(), e);
 			throw new ClientRequestException("Unable to send request to server (see error log for details)", e);
 		}
-		
+
 		/*
 		 * Send the request and stream the response data
 		 */
@@ -600,7 +587,7 @@ public class LocalHttpClient implements Client, ClientSessionListener {
 			logger.error(e.getMessage(), e);
 			throw new ClientRequestException("Unable to send request to server (see error log for details)", e);
 		}
-		
+
 		/*
 		 * Send the request and stream the response data
 		 */
@@ -620,26 +607,21 @@ public class LocalHttpClient implements Client, ClientSessionListener {
 
 	@Override
 	public List<Project> getProjects(UserId userId) throws ClientRequestException {
-		try {
-			return new ArrayList<>(meta_agent.getProjects(userId));
-		} catch (UserNotInPolicyException e) {
-			logger.error(e.getMessage());
-			throw new ClientRequestException("Client failed to get project list (see error log for details)", e);
-		}
+		return new ArrayList<>(config.getProjects(userId));
 	}
 
 	@Override
 	public List<Project> getAllProjects() throws AuthorizationException, ClientRequestException {
-		return new ArrayList<>(proj_registry.getEntries());
+		return new ArrayList<>(config.getProjects());
 	}
 
 	@Override
 	public void updateProject(ProjectId projectId, Project updatedProject)
 			throws AuthorizationException, ClientRequestException {
 		try {
-			proj_registry.update(projectId, updatedProject);
+			manager.setProject(projectId, updatedProject);
 			putConfig();
-		} catch (UnknownMetaprojectObjectIdException e) {
+		} catch (UnknownProjectIdException e) {
 			logger.error(e.getMessage());
 			throw new ClientRequestException("Client failed to update project (see error log for details)", e);
 		}
@@ -659,8 +641,8 @@ public class LocalHttpClient implements Client, ClientSessionListener {
 	public List<Role> getRoles(UserId userId, ProjectId projectId, GlobalPermissions globalPermissions)
 			throws AuthorizationException, ClientRequestException {
 		try {
-			return new ArrayList<>(meta_agent.getRoles(userId, projectId, globalPermissions));
-		} catch (UserNotInPolicyException | ProjectNotInPolicyException e) {
+			return new ArrayList<>(config.getRoles(userId, projectId, globalPermissions));
+		} catch (ProjectNotInPolicyException e) {
 			logger.error(e.getMessage());
 			throw new ClientRequestException("Client failed to get role list (see error log for details)", e);
 		}
@@ -668,13 +650,13 @@ public class LocalHttpClient implements Client, ClientSessionListener {
 
 	@Override
 	public List<Role> getAllRoles() throws AuthorizationException, ClientRequestException {
-		return new ArrayList<Role>(this.role_registry.getEntries());
+		return new ArrayList<>(config.getRoles());
 	}
 
 	@Override
 	public void createRole(Role newRole) throws AuthorizationException, ClientRequestException {
-		 try {
-			meta_agent.add(newRole);
+		try {
+			manager.addRole(newRole);
 			putConfig();
 		} catch (IdAlreadyInUseException e) {
 			logger.error(e.getMessage());
@@ -685,9 +667,9 @@ public class LocalHttpClient implements Client, ClientSessionListener {
 	@Override
 	public void deleteRole(RoleId roleId) throws AuthorizationException, ClientRequestException {
 		try {
-			meta_agent.remove(role_registry.get(roleId));
+			manager.removeRole(config.getRole(roleId));
 			putConfig();
-		} catch (UnknownMetaprojectObjectIdException e) {
+		} catch (UnknownRoleIdException e) {
 			logger.error(e.getMessage());
 			throw new ClientRequestException("Client failed to delete role (see error log for details)", e);
 		}
@@ -697,9 +679,9 @@ public class LocalHttpClient implements Client, ClientSessionListener {
 	public void updateRole(RoleId roleId, Role updatedRole)
 			throws AuthorizationException, ClientRequestException {
 		try {
-			role_registry.update(roleId, updatedRole);
+			manager.setRole(roleId, updatedRole);
 			putConfig();
-		} catch (UnknownMetaprojectObjectIdException e) {
+		} catch (UnknownRoleIdException e) {
 			logger.error(e.getMessage());
 			throw new ClientRequestException("Client failed to update role (see error log for details)", e);
 		}
@@ -719,8 +701,8 @@ public class LocalHttpClient implements Client, ClientSessionListener {
 	public List<Operation> getOperations(UserId userId, ProjectId projectId)
 			throws AuthorizationException, ClientRequestException {
 		try {
-			return new ArrayList<>(meta_agent.getOperations(userId, projectId, GlobalPermissions.INCLUDED));
-		} catch (UserNotInPolicyException | ProjectNotInPolicyException e) {
+			return new ArrayList<>(config.getOperations(userId, projectId, GlobalPermissions.INCLUDED));
+		} catch (ProjectNotInPolicyException e) {
 			logger.error(e.getMessage());
 			throw new ClientRequestException("Client failed to get operation list (see error log for details)", e);
 		}
@@ -730,8 +712,8 @@ public class LocalHttpClient implements Client, ClientSessionListener {
 	public List<Operation> getOperations(RoleId roleId)
 			throws AuthorizationException, ClientRequestException {
 		try {
-			return new ArrayList<>(meta_agent.getOperations(role_registry.get(roleId)));
-		} catch (UnknownMetaprojectObjectIdException e) {
+			return new ArrayList<>(config.getOperations(config.getRole(roleId)));
+		} catch (UnknownRoleIdException e) {
 			logger.error(e.getMessage());
 			throw new ClientRequestException("Client failed to get operation list (see error log for details)", e);
 		}
@@ -739,14 +721,14 @@ public class LocalHttpClient implements Client, ClientSessionListener {
 
 	@Override
 	public List<Operation> getAllOperations() throws AuthorizationException, ClientRequestException {
-		return new ArrayList<>(op_registry.getEntries());
+		return new ArrayList<>(config.getOperations());
 	}
 
 	@Override
 	public void createOperation(Operation operation)
 			throws AuthorizationException, ClientRequestException {
 		try {
-			meta_agent.add(operation);
+			manager.addOperation(operation);
 			putConfig();
 		} catch (IdAlreadyInUseException e) {
 			logger.error(e.getMessage());
@@ -758,9 +740,9 @@ public class LocalHttpClient implements Client, ClientSessionListener {
 	public void deleteOperation(OperationId operationId)
 			throws AuthorizationException, ClientRequestException {
 		try {
-			meta_agent.remove(op_registry.get(operationId));
+			manager.removeOperation(config.getOperation(operationId));
 			putConfig();
-		} catch (UnknownMetaprojectObjectIdException e) {
+		} catch (UnknownPolicyObjectIdException e) {
 			logger.error(e.getMessage());
 			throw new ClientRequestException("Client failed to delete operation (see error log for details)", e);
 		}
@@ -770,9 +752,9 @@ public class LocalHttpClient implements Client, ClientSessionListener {
 	public void updateOperation(OperationId operationId, Operation updatedOperation)
 			throws AuthorizationException, ClientRequestException {
 		try {
-			op_registry.update(operationId, updatedOperation);
+			manager.setOperation(operationId, updatedOperation);
 			putConfig();
-		} catch (UnknownMetaprojectObjectIdException e) {
+		} catch (UnknownPolicyObjectIdException e) {
 			logger.error(e.getMessage());
 			throw new ClientRequestException("Client failed to update operation (see error log for details)", e);
 		}
@@ -781,14 +763,14 @@ public class LocalHttpClient implements Client, ClientSessionListener {
 	@Override
 	public void assignRole(UserId userId, ProjectId projectId, RoleId roleId)
 			throws AuthorizationException, ClientRequestException {
-		policy.add(roleId, projectId, userId);
+		manager.addPolicy(roleId, projectId, userId);
 		putConfig();
 	}
 
 	@Override
 	public void retractRole(UserId userId, ProjectId projectId, RoleId roleId)
 			throws AuthorizationException, ClientRequestException {
-		policy.remove(userId, projectId, roleId);
+		manager.removePolicy(userId, projectId, roleId);
 		putConfig();
 	}
 
@@ -800,8 +782,7 @@ public class LocalHttpClient implements Client, ClientSessionListener {
 	@Override
 	public void setHostAddress(URI hostAddress) throws AuthorizationException, ClientRequestException {
 		Host h = Manager.getFactory().getHost(hostAddress, Optional.empty());
-		config.setHost(h);
-
+		manager.setHost(h);
 	}
 
 	@Override
@@ -810,8 +791,7 @@ public class LocalHttpClient implements Client, ClientSessionListener {
 		Host h = config.getHost();
 		Port p = Manager.getFactory().getPort(portNumber);
 		Host nh = Manager.getFactory().getHost(h.getUri(), Optional.of(p));
-		config.setHost(nh);
-
+		manager.setHost(nh);
 	}
 
 	@Override
@@ -822,7 +802,7 @@ public class LocalHttpClient implements Client, ClientSessionListener {
 	@Override
 	public void setRootDirectory(String rootDirectory)
 			throws AuthorizationException, ClientRequestException {
-		config.setServerRoot(new File(rootDirectory));
+		manager.setServerRoot(new File(rootDirectory));
 		putConfig();
 	}
 
@@ -835,24 +815,15 @@ public class LocalHttpClient implements Client, ClientSessionListener {
 	@Override
 	public void setServerProperty(String property, String value)
 			throws AuthorizationException, ClientRequestException {
-		config.addProperty(property, value);
+		manager.addProperty(property, value);
 		putConfig();
 	}
 
 	@Override
 	public void unsetServerProperty(String property)
 			throws AuthorizationException, ClientRequestException {
-		config.removeProperty(property);
+		manager.removeProperty(property);
 		putConfig();
-	}
-
-	public Role getRole(RoleId id) throws ClientRequestException {
-		try {
-			return role_registry.get(id);
-		} catch (UnknownMetaprojectObjectIdException e) {
-			logger.error(e.getMessage());
-			throw new ClientRequestException("Client failed to get role details (see error log for details)", e);
-		}
 	}
 
 	@Override
@@ -976,9 +947,6 @@ public class LocalHttpClient implements Client, ClientSessionListener {
 		} catch (ObjectConversionException e) {
 			logger.error(e.getMessage(), e);
 			throw new ClientRequestException("Failed to parse the incoming server configuration data", e);
-		} catch (IOException e) {
-			logger.error(e.getMessage(), e);
-			throw new ClientRequestException("Failed to receive data", e);
 		} finally {
 			if (response != null) {
 				response.body().close();
@@ -1008,11 +976,11 @@ public class LocalHttpClient implements Client, ClientSessionListener {
 			reallyPutConfig();
 		}
 	}
-	
+
 	public boolean configStateChanged() {
 		return config_state_changed;
 	}
-	
+
 	public void reallyPutConfig() throws LoginTimeoutException, AuthorizationException, ClientRequestException {
 		final MediaType JSON  = MediaType.parse("application/json; charset=utf-8");
 		String url = HTTPServer.METAPROJECT;
@@ -1029,9 +997,9 @@ public class LocalHttpClient implements Client, ClientSessionListener {
 		}
 		initConfig();
 	}
-	
+
 	public void putEVSHistory(String code, String name, String operation, String reference)
-			 throws LoginTimeoutException, AuthorizationException, ClientRequestException {
+			throws LoginTimeoutException, AuthorizationException, ClientRequestException {
 		String url = HTTPServer.EVS_REC;
 		ByteArrayOutputStream b = new ByteArrayOutputStream();
 		try {
@@ -1070,192 +1038,192 @@ public class LocalHttpClient implements Client, ClientSessionListener {
      * answer.
      */
 
-    @Override
-    public boolean canAddAxiom() {
-        if (!getRemoteProject().isPresent()) {
-            return false;
-        }
-        return queryProjectPolicy(userId, getRemoteProject().get(), Operations.ADD_AXIOM.getId());
-    }
+	@Override
+	public boolean canAddAxiom() {
+		if (!getRemoteProject().isPresent()) {
+			return false;
+		}
+		return queryProjectPolicy(userId, getRemoteProject().get(), Operations.ADD_AXIOM.getId());
+	}
 
-    @Override
-    public boolean canRemoveAxiom() {
-        if (!getRemoteProject().isPresent()) {
-            return false;
-        }
-        return queryProjectPolicy(userId, getRemoteProject().get(), Operations.REMOVE_AXIOM.getId());
-    }
+	@Override
+	public boolean canRemoveAxiom() {
+		if (!getRemoteProject().isPresent()) {
+			return false;
+		}
+		return queryProjectPolicy(userId, getRemoteProject().get(), Operations.REMOVE_AXIOM.getId());
+	}
 
-    @Override
-    public boolean canAddAnnotation() {
-        if (!getRemoteProject().isPresent()) {
-            return false;
-        }
-        return queryProjectPolicy(userId, getRemoteProject().get(), Operations.ADD_ONTOLOGY_ANNOTATION.getId());
-    }
+	@Override
+	public boolean canAddAnnotation() {
+		if (!getRemoteProject().isPresent()) {
+			return false;
+		}
+		return queryProjectPolicy(userId, getRemoteProject().get(), Operations.ADD_ONTOLOGY_ANNOTATION.getId());
+	}
 
-    @Override
-    public boolean canRemoveAnnotation() {
-        if (!getRemoteProject().isPresent()) {
-            return false;
-        }
-        return queryProjectPolicy(userId, getRemoteProject().get(), Operations.REMOVE_ONTOLOGY_ANNOTATION.getId());
-    }
+	@Override
+	public boolean canRemoveAnnotation() {
+		if (!getRemoteProject().isPresent()) {
+			return false;
+		}
+		return queryProjectPolicy(userId, getRemoteProject().get(), Operations.REMOVE_ONTOLOGY_ANNOTATION.getId());
+	}
 
-    @Override
-    public boolean canAddImport() {
-        if (!getRemoteProject().isPresent()) {
-            return false;
-        }
-        return queryProjectPolicy(userId, getRemoteProject().get(), Operations.ADD_IMPORT.getId());
-    }
+	@Override
+	public boolean canAddImport() {
+		if (!getRemoteProject().isPresent()) {
+			return false;
+		}
+		return queryProjectPolicy(userId, getRemoteProject().get(), Operations.ADD_IMPORT.getId());
+	}
 
-    @Override
-    public boolean canRemoveImport() {
-        if (!getRemoteProject().isPresent()) {
-            return false;
-        }
-        return queryProjectPolicy(userId, getRemoteProject().get(), Operations.REMOVE_IMPORT.getId());
-    }
+	@Override
+	public boolean canRemoveImport() {
+		if (!getRemoteProject().isPresent()) {
+			return false;
+		}
+		return queryProjectPolicy(userId, getRemoteProject().get(), Operations.REMOVE_IMPORT.getId());
+	}
 
-    @Override
-    public boolean canModifyOntologyId() {
-        if (!getRemoteProject().isPresent()) {
-            return false;
-        }
-        return queryProjectPolicy(userId, getRemoteProject().get(), Operations.MODIFY_ONTOLOGY_IRI.getId());
-    }
+	@Override
+	public boolean canModifyOntologyId() {
+		if (!getRemoteProject().isPresent()) {
+			return false;
+		}
+		return queryProjectPolicy(userId, getRemoteProject().get(), Operations.MODIFY_ONTOLOGY_IRI.getId());
+	}
 
-    @Override
-    public boolean canCreateUser() {
-        return queryAdminPolicy(userId, Operations.ADD_USER.getId());
-    }
+	@Override
+	public boolean canCreateUser() {
+		return queryAdminPolicy(userId, Operations.ADD_USER.getId());
+	}
 
-    @Override
-    public boolean canDeleteUser() {
-        return queryAdminPolicy(userId, Operations.REMOVE_USER.getId());
-    }
+	@Override
+	public boolean canDeleteUser() {
+		return queryAdminPolicy(userId, Operations.REMOVE_USER.getId());
+	}
 
-    @Override
-    public boolean canUpdateUser() {
-        return queryAdminPolicy(userId, Operations.MODIFY_USER.getId());
-    }
+	@Override
+	public boolean canUpdateUser() {
+		return queryAdminPolicy(userId, Operations.MODIFY_USER.getId());
+	}
 
-    @Override
-    public boolean canCreateProject() {
-        return queryAdminPolicy(userId, Operations.ADD_PROJECT.getId());
-    }
+	@Override
+	public boolean canCreateProject() {
+		return queryAdminPolicy(userId, Operations.ADD_PROJECT.getId());
+	}
 
-    @Override
-    public boolean canDeleteProject() {
-        if (!getRemoteProject().isPresent()) {
-            return false;
-        }
-        return queryProjectPolicy(userId, getRemoteProject().get(), Operations.REMOVE_PROJECT.getId());
-    }
+	@Override
+	public boolean canDeleteProject() {
+		if (!getRemoteProject().isPresent()) {
+			return false;
+		}
+		return queryProjectPolicy(userId, getRemoteProject().get(), Operations.REMOVE_PROJECT.getId());
+	}
 
-    @Override
-    public boolean canUpdateProject() {
-        if (!getRemoteProject().isPresent()) {
-            return false;
-        }
-        return queryProjectPolicy(userId, getRemoteProject().get(), Operations.MODIFY_PROJECT.getId());
-    }
+	@Override
+	public boolean canUpdateProject() {
+		if (!getRemoteProject().isPresent()) {
+			return false;
+		}
+		return queryProjectPolicy(userId, getRemoteProject().get(), Operations.MODIFY_PROJECT.getId());
+	}
 
-    @Override
-    public boolean canOpenProject() {
-        if (!getRemoteProject().isPresent()) {
-            return false;
-        }
-        return queryProjectPolicy(userId, getRemoteProject().get(), Operations.OPEN_PROJECT.getId());
-    }
+	@Override
+	public boolean canOpenProject() {
+		if (!getRemoteProject().isPresent()) {
+			return false;
+		}
+		return queryProjectPolicy(userId, getRemoteProject().get(), Operations.OPEN_PROJECT.getId());
+	}
 
-    @Override
-    public boolean canCreateRole() {
-        return queryAdminPolicy(userId, Operations.ADD_ROLE.getId());
-    }
+	@Override
+	public boolean canCreateRole() {
+		return queryAdminPolicy(userId, Operations.ADD_ROLE.getId());
+	}
 
-    @Override
-    public boolean canDeleteRole() {
-        return queryAdminPolicy(userId, Operations.REMOVE_ROLE.getId());
-    }
+	@Override
+	public boolean canDeleteRole() {
+		return queryAdminPolicy(userId, Operations.REMOVE_ROLE.getId());
+	}
 
-    @Override
-    public boolean canUpdateRole() {
-        return queryAdminPolicy(userId, Operations.MODIFY_ROLE.getId());
-    }
+	@Override
+	public boolean canUpdateRole() {
+		return queryAdminPolicy(userId, Operations.MODIFY_ROLE.getId());
+	}
 
-    @Override
-    public boolean canCreateOperation() {
-        return queryAdminPolicy(userId, Operations.ADD_OPERATION.getId());
-    }
+	@Override
+	public boolean canCreateOperation() {
+		return queryAdminPolicy(userId, Operations.ADD_OPERATION.getId());
+	}
 
-    @Override
-    public boolean canDeleteOperation() {
-        return queryAdminPolicy(userId, Operations.REMOVE_OPERATION.getId());
-    }
+	@Override
+	public boolean canDeleteOperation() {
+		return queryAdminPolicy(userId, Operations.REMOVE_OPERATION.getId());
+	}
 
-    @Override
-    public boolean canUpdateOperation() {
-        return queryAdminPolicy(userId, Operations.MODIFY_OPERATION.getId());
-    }
+	@Override
+	public boolean canUpdateOperation() {
+		return queryAdminPolicy(userId, Operations.MODIFY_OPERATION.getId());
+	}
 
-    @Override
-    public boolean canAssignRole() {
-        return queryAdminPolicy(userId, Operations.ASSIGN_ROLE.getId());
-    }
+	@Override
+	public boolean canAssignRole() {
+		return queryAdminPolicy(userId, Operations.ASSIGN_ROLE.getId());
+	}
 
-    @Override
-    public boolean canRetractRole() {
-        return queryAdminPolicy(userId, Operations.RETRACT_ROLE.getId());
-    }
+	@Override
+	public boolean canRetractRole() {
+		return queryAdminPolicy(userId, Operations.RETRACT_ROLE.getId());
+	}
 
-    @Override
-    public boolean canStopServer() {
-        return queryAdminPolicy(userId, Operations.STOP_SERVER.getId());
-    }
+	@Override
+	public boolean canStopServer() {
+		return queryAdminPolicy(userId, Operations.STOP_SERVER.getId());
+	}
 
-    @Override
-    public boolean canUpdateServerConfig() {
-        return queryAdminPolicy(userId, Operations.MODIFY_SERVER_SETTINGS.getId());
-    }
+	@Override
+	public boolean canUpdateServerConfig() {
+		return queryAdminPolicy(userId, Operations.MODIFY_SERVER_SETTINGS.getId());
+	}
 
-    @Override
-    public boolean canPerformProjectOperation(OperationId operationId) {
-        if (!getRemoteProject().isPresent()) {
-            return false;
-        }
-        return queryProjectPolicy(userId, getRemoteProject().get(), operationId);
-    }
+	@Override
+	public boolean canPerformProjectOperation(OperationId operationId) {
+		if (!getRemoteProject().isPresent()) {
+			return false;
+		}
+		return queryProjectPolicy(userId, getRemoteProject().get(), operationId);
+	}
 
-    @Override
-    public boolean canPerformAdminOperation(OperationId operationId) {
-        if (!getRemoteProject().isPresent()) {
-            return false;
-        }
-        return queryAdminPolicy(userId, operationId);
-    }
+	@Override
+	public boolean canPerformAdminOperation(OperationId operationId) {
+		if (!getRemoteProject().isPresent()) {
+			return false;
+		}
+		return queryAdminPolicy(userId, operationId);
+	}
 
-    /*
+	/*
      * Utility methods
      */
-    public boolean queryProjectPolicy(UserId userId, ProjectId projectId, OperationId operationId) {
-    	return (adminClient && meta_agent.isOperationAllowed(operationId, projectId, userId));        
-    }
+	public boolean queryProjectPolicy(UserId userId, ProjectId projectId, OperationId operationId) {
+		return (adminClient && config.isOperationAllowed(operationId, projectId, userId));
+	}
 
-    private boolean queryAdminPolicy(UserId userId, OperationId operationId) {
-    	return (adminClient && meta_agent.isOperationAllowed(operationId, userId));
-        
-    }
-    
-    private Optional<ProjectId> getRemoteProject() {
-        return Optional.ofNullable(projectId);
-    }
+	private boolean queryAdminPolicy(UserId userId, OperationId operationId) {
+		return (adminClient && config.isOperationAllowed(operationId, userId));
+
+	}
+
+	private Optional<ProjectId> getRemoteProject() {
+		return Optional.ofNullable(projectId);
+	}
 
 	@Override
 	public ServerDocument createProject(ProjectId projectId, Name projectName, Description description, UserId owner,
-			Optional<ProjectOptions> options, Optional<CommitBundle> initialCommit)
-					throws AuthorizationException, ClientRequestException {
+										Optional<ProjectOptions> options, Optional<CommitBundle> initialCommit)
+			throws AuthorizationException, ClientRequestException {
 		// TODO Auto-generated method stub
 		return null;
 	}

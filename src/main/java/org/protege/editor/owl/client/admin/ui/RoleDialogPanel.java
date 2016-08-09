@@ -1,7 +1,7 @@
 package org.protege.editor.owl.client.admin.ui;
 
 import edu.stanford.protege.metaproject.Manager;
-import edu.stanford.protege.metaproject.api.MetaprojectFactory;
+import edu.stanford.protege.metaproject.api.PolicyFactory;
 import edu.stanford.protege.metaproject.api.Operation;
 import edu.stanford.protege.metaproject.api.OperationId;
 import edu.stanford.protege.metaproject.api.Role;
@@ -216,7 +216,7 @@ public class RoleDialogPanel extends JPanel implements VerifiedInputEditor {
     }
 
     private Role createRole() {
-        MetaprojectFactory f = Manager.getFactory();
+        PolicyFactory f = Manager.getFactory();
         for (int i = 0; i < operationCheckboxList.getModel().getSize(); i++) {
             AugmentedJCheckBox<Operation> cb = operationCheckboxList.getModel().getElementAt(i);
             if (cb.isSelected()) {

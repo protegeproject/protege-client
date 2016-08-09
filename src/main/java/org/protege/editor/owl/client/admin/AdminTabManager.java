@@ -1,6 +1,6 @@
 package org.protege.editor.owl.client.admin;
 
-import edu.stanford.protege.metaproject.api.MetaprojectObject;
+import edu.stanford.protege.metaproject.api.PolicyObject;
 import org.protege.editor.core.Disposable;
 import org.protege.editor.owl.OWLEditorKit;
 import org.protege.editor.owl.client.admin.model.AdminTabEvent;
@@ -17,7 +17,7 @@ import static com.google.common.base.Preconditions.checkNotNull;
  */
 public class AdminTabManager implements Disposable {
     private Set<AdminTabListener> listeners = new HashSet<>();
-    private MetaprojectObject selection, policySelection;
+    private PolicyObject selection, policySelection;
 
     /**
      * Get the server configuration manager
@@ -39,17 +39,17 @@ public class AdminTabManager implements Disposable {
      */
     public AdminTabManager() { }
 
-    public void setSelection(MetaprojectObject object) {
+    public void setSelection(PolicyObject object) {
         this.selection = checkNotNull(object);
         statusChanged(AdminTabEvent.SELECTION_CHANGED);
     }
 
-    public void setPolicySelection(MetaprojectObject object) {
+    public void setPolicySelection(PolicyObject object) {
         this.policySelection = checkNotNull(object);
         statusChanged(AdminTabEvent.POLICY_ITEM_SELECTION_CHANGED);
     }
 
-    public MetaprojectObject getSelection() {
+    public PolicyObject getSelection() {
         return selection;
     }
 
@@ -57,7 +57,7 @@ public class AdminTabManager implements Disposable {
         return selection != null;
     }
 
-    public MetaprojectObject getPolicySelection() {
+    public PolicyObject getPolicySelection() {
         return policySelection;
     }
 

@@ -220,7 +220,7 @@ public class LocalHttpClient implements Client, ClientSessionListener {
 	}
 
 	public ServerDocument createProject(Project proj)
-			throws LoginTimeoutException, AuthorizationException, ClientRequestException {
+			throws LoginTimeoutException, LoginTimeoutException, AuthorizationException, ClientRequestException {
 		/*
 		 * Prepare the request body
 		 */
@@ -265,7 +265,7 @@ public class LocalHttpClient implements Client, ClientSessionListener {
 
 	@Override
 	public void deleteProject(ProjectId projectId, boolean includeFile)
-			throws AuthorizationException, ClientRequestException {
+			throws AuthorizationException, LoginTimeoutException, ClientRequestException {
 		/*
 		 * Prepare the request string
 		 */
@@ -280,7 +280,7 @@ public class LocalHttpClient implements Client, ClientSessionListener {
 
 	@Override
 	public ServerDocument openProject(ProjectId projectId)
-			throws AuthorizationException, ClientRequestException {
+			throws AuthorizationException, LoginTimeoutException, ClientRequestException {
 		/*
 		 * Prepare the request string
 		 */
@@ -306,7 +306,7 @@ public class LocalHttpClient implements Client, ClientSessionListener {
 
 	@Override
 	public ChangeHistory commit(ProjectId projectId, CommitBundle commitBundle)
-			throws AuthorizationException, SynchronizationException, ClientRequestException {
+			throws AuthorizationException, LoginTimeoutException, SynchronizationException, ClientRequestException {
 		/*
 		 * Prepare the request body
 		 */

@@ -61,7 +61,7 @@ public class ShowHistoryAction extends AbstractClientAction implements ClientSes
             dialog.setLocationRelativeTo(editorWindow);
             dialog.setVisible(true);
         }
-        catch (AuthorizationException | ClientRequestException | SynchronizationException e) {
+        catch (AuthorizationException | ClientRequestException e) {
             showErrorDialog("Unable to show change history", e.getMessage(), e);
         }
     }

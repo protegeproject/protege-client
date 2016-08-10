@@ -176,7 +176,7 @@ public class ReviewButtonsPanel extends JPanel implements Disposable {
                             history.getHeadRevision(),
                             history.getMetadataForRevision(history.getHeadRevision()),
                             history.getChangesForRevision(history.getHeadRevision())));
-                } catch (AuthorizationException | ClientRequestException | SynchronizationException ex) {
+                } catch (AuthorizationException | ClientRequestException ex) {
                     ErrorLogPanel.showErrorDialog(ex);
                 }
             }

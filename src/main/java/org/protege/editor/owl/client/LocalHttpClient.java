@@ -641,12 +641,7 @@ public class LocalHttpClient implements Client, ClientSessionListener {
 	@Override
 	public List<Role> getRoles(UserId userId, ProjectId projectId, GlobalPermissions globalPermissions)
 			throws AuthorizationException, ClientRequestException {
-		try {
-			return new ArrayList<>(config.getRoles(userId, projectId, globalPermissions));
-		} catch (ProjectNotInPolicyException e) {
-			logger.error(e.getMessage());
-			throw new ClientRequestException("Client failed to get role list (see error log for details)", e);
-		}
+		return new ArrayList<>(config.getRoles(userId, projectId, globalPermissions));
 	}
 
 	@Override
@@ -710,12 +705,7 @@ public class LocalHttpClient implements Client, ClientSessionListener {
 	@Override
 	public List<Operation> getOperations(UserId userId, ProjectId projectId)
 			throws AuthorizationException, ClientRequestException {
-		try {
-			return new ArrayList<>(config.getOperations(userId, projectId, GlobalPermissions.INCLUDED));
-		} catch (ProjectNotInPolicyException e) {
-			logger.error(e.getMessage());
-			throw new ClientRequestException("Client failed to get operation list (see error log for details)", e);
-		}
+		return new ArrayList<>(config.getOperations(userId, projectId, GlobalPermissions.INCLUDED));
 	}
 
 	@Override
@@ -978,11 +968,7 @@ public class LocalHttpClient implements Client, ClientSessionListener {
 	}
 
 	public void putConfig() throws LoginTimeoutException, AuthorizationException, ClientRequestException {
-		try {
-			config = manager.getConfiguration(); // update the cached server configuration
-		} catch (ServerConfigurationNotLoadedException e) {
-			// ignore
-		}
+		config = manager.getConfiguration(); // update the cached server configuration
 		if (save_cancel_semantics) {
 			config_state_changed = true;
 		} else {

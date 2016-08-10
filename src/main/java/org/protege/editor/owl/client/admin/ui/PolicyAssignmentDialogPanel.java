@@ -177,8 +177,7 @@ public class PolicyAssignmentDialogPanel extends JPanel implements VerifiedInput
             Throwable cause = e.getCause();
             if(cause != null) {
                 errorArea.setText(cause.getMessage());
-            }
-            else {
+            } else {
                 errorArea.setText(e.getMessage());
             }
         }
@@ -261,7 +260,7 @@ public class PolicyAssignmentDialogPanel extends JPanel implements VerifiedInput
         PolicyAssignmentDialogPanel panel = new PolicyAssignmentDialogPanel(editorKit, selectedUser);
         boolean add = showDialog(editorKit, panel, "Add New Access Policy");
         if(add) {
-            return Optional.of(panel.addAssignment());
+            return Optional.ofNullable(panel.addAssignment());
         }
         return Optional.empty();
     }

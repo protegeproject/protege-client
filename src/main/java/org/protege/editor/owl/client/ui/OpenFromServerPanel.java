@@ -1,40 +1,20 @@
 package org.protege.editor.owl.client.ui;
 
-import java.awt.BorderLayout;
-import java.awt.FlowLayout;
-import java.awt.Window;
-import java.awt.event.ActionEvent;
-import java.awt.event.ActionListener;
-import java.awt.event.FocusEvent;
-import java.awt.event.FocusListener;
-import java.awt.event.MouseAdapter;
-import java.awt.event.MouseEvent;
-import java.util.Optional;
-
-import javax.swing.BorderFactory;
-import javax.swing.JButton;
-import javax.swing.JLabel;
-import javax.swing.JOptionPane;
-import javax.swing.JPanel;
-import javax.swing.JScrollPane;
-import javax.swing.JTable;
-import javax.swing.SwingUtilities;
-
 import org.protege.editor.core.ui.util.JOptionPaneEx;
 import org.protege.editor.owl.OWLEditorKit;
-import org.protege.editor.owl.client.ClientSession;
-import org.protege.editor.owl.client.LocalHttpClient;
-import org.protege.editor.owl.client.SessionRecorder;
+import org.protege.editor.owl.client.*;
 import org.protege.editor.owl.client.api.Client;
 import org.protege.editor.owl.client.api.exception.OWLClientException;
-import org.protege.editor.owl.model.OWLModelManagerImpl;
-import org.protege.editor.owl.server.versioning.api.ServerDocument;
-import org.protege.editor.owl.server.versioning.api.VersionedOWLOntology;
+import org.protege.editor.owl.server.versioning.api.*;
 import org.semanticweb.owlapi.model.OWLOntologyManager;
 
-import edu.stanford.protege.metaproject.api.AuthToken;
-import edu.stanford.protege.metaproject.api.ProjectId;
+import javax.swing.*;
 
+import java.awt.*;
+import java.awt.event.*;
+import java.util.Optional;
+
+import edu.stanford.protege.metaproject.api.*;
 
 /**
  * @author Josef Hardi <johardi@stanford.edu> <br>
@@ -99,8 +79,7 @@ public class OpenFromServerPanel extends JPanel {
 
     private JPanel getRemoteProjectsPanel() {
         JPanel pnlRemoteProjects = new JPanel(new BorderLayout());
-
-
+        
         remoteProjectModel = new ServerTableModel();
         tblRemoteProjects = new JTable(remoteProjectModel);
         tblRemoteProjects.addMouseListener(new MouseAdapter() {
@@ -154,17 +133,13 @@ public class OpenFromServerPanel extends JPanel {
     protected void openOntologyDocument(int row) {
         ProjectId pid = remoteProjectModel.getValueAt(row);
         try {
-        	Client client = clientSession.getActiveClient();
+            Client client = clientSession.getActiveClient();
             ServerDocument serverDocument = client.openProject(pid);
             
             SessionRecorder.getInstance(this.editorKit).stopRecording();
-            
             VersionedOWLOntology vont = ((LocalHttpClient) client).buildVersionedOntology(serverDocument, owlManager, pid);
-            
             SessionRecorder.getInstance(this.editorKit).startRecording();
             
-            
-			
             clientSession.setActiveProject(pid, vont);
             closeDialog();
         }

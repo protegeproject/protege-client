@@ -1,20 +1,42 @@
 package org.protege.editor.owl.client.ui;
 
-import org.protege.editor.core.ui.util.JOptionPaneEx;
-import org.protege.editor.owl.OWLEditorKit;
-import org.protege.editor.owl.client.*;
-import org.protege.editor.owl.client.api.Client;
-import org.protege.editor.owl.client.api.exception.OWLClientException;
-import org.protege.editor.owl.server.versioning.api.*;
-import org.semanticweb.owlapi.model.OWLOntologyManager;
-
-import javax.swing.*;
-
-import java.awt.*;
-import java.awt.event.*;
+import java.awt.BorderLayout;
+import java.awt.FlowLayout;
+import java.awt.Window;
+import java.awt.event.ActionEvent;
+import java.awt.event.ActionListener;
+import java.awt.event.FocusEvent;
+import java.awt.event.FocusListener;
+import java.awt.event.MouseAdapter;
+import java.awt.event.MouseEvent;
 import java.util.Optional;
 
-import edu.stanford.protege.metaproject.api.*;
+import javax.swing.BorderFactory;
+import javax.swing.JButton;
+import javax.swing.JLabel;
+import javax.swing.JOptionPane;
+import javax.swing.JPanel;
+import javax.swing.JScrollPane;
+import javax.swing.JTable;
+import javax.swing.SwingUtilities;
+
+import org.protege.editor.core.ui.error.ErrorLogPanel;
+import org.protege.editor.core.ui.util.JOptionPaneEx;
+import org.protege.editor.owl.OWLEditorKit;
+import org.protege.editor.owl.client.ClientSession;
+import org.protege.editor.owl.client.LocalHttpClient;
+import org.protege.editor.owl.client.SessionRecorder;
+import org.protege.editor.owl.client.api.Client;
+import org.protege.editor.owl.client.api.exception.LoginTimeoutException;
+import org.protege.editor.owl.client.api.exception.OWLClientException;
+import org.protege.editor.owl.client.util.ClientUtils;
+import org.protege.editor.owl.server.versioning.api.ServerDocument;
+import org.protege.editor.owl.server.versioning.api.VersionedOWLOntology;
+import org.semanticweb.owlapi.model.OWLOntologyManager;
+
+import edu.stanford.protege.metaproject.api.AuthToken;
+import edu.stanford.protege.metaproject.api.ProjectId;
+
 
 /**
  * @author Josef Hardi <johardi@stanford.edu> <br>
@@ -143,10 +165,27 @@ public class OpenFromServerPanel extends JPanel {
             clientSession.setActiveProject(pid, vont);
             closeDialog();
         }
-        catch (Exception e) {
-            JOptionPaneEx.showConfirmDialog(editorKit.getWorkspace(), "Error opening project",
-                    new JLabel("Open project failed: " + e.getMessage()), JOptionPane.ERROR_MESSAGE,
+        catch (LoginTimeoutException e) {
+            JOptionPaneEx.showConfirmDialog(editorKit.getWorkspace(), "Open project error",
+                    new JLabel(e.getMessage()), JOptionPane.ERROR_MESSAGE,
                     JOptionPane.DEFAULT_OPTION, null);
+            localClientLogout();
+            UserLoginPanel.showDialog(editorKit, this);
+        }
+        catch (Exception e) {
+            JOptionPaneEx.showConfirmDialog(editorKit.getWorkspace(), "Open project error",
+                    new JLabel(e.getMessage()), JOptionPane.ERROR_MESSAGE,
+                    JOptionPane.DEFAULT_OPTION, null);
+        }
+    }
+
+    private void localClientLogout() {
+        try {
+            Client activeClient = clientSession.getActiveClient();
+            ClientUtils.performLogout(clientSession, activeClient);
+        }
+        catch (Exception e) {
+            ErrorLogPanel.showErrorDialog(e);
         }
     }
 

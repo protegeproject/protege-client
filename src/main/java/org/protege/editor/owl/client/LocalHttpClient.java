@@ -1029,6 +1029,9 @@ public class LocalHttpClient implements Client, ClientSessionListener {
 
 	private void throwRequestExceptions(Response response) throws AuthorizationException, ClientRequestException {
 		String originalMessage = response.header("Error-Message");
+		if (originalMessage == null) {
+			originalMessage = "Unknown server error";
+		}
 		if (response.code() == StatusCodes.UNAUTHORIZED) {
 			throw new AuthorizationException(originalMessage);
 		}

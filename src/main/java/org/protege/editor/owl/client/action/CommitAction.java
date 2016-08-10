@@ -1,5 +1,6 @@
 package org.protege.editor.owl.client.action;
 
+import org.protege.editor.core.ui.error.ErrorLogPanel;
 import org.protege.editor.owl.client.SessionRecorder;
 import org.protege.editor.owl.client.api.Client;
 import org.protege.editor.owl.client.api.exception.AuthorizationException;
@@ -10,7 +11,7 @@ import org.protege.editor.owl.client.event.ClientSessionChangeEvent;
 import org.protege.editor.owl.client.event.ClientSessionChangeEvent.EventCategory;
 import org.protege.editor.owl.client.event.ClientSessionListener;
 import org.protege.editor.owl.client.event.CommitOperationEvent;
-import org.protege.editor.owl.client.ui.CommitDialogPanel;
+import org.protege.editor.owl.client.ui.*;
 import org.protege.editor.owl.client.util.ClientUtils;
 import org.protege.editor.owl.model.history.HistoryManager;
 import org.protege.editor.owl.model.history.UndoManagerListener;
@@ -49,16 +50,15 @@ public class CommitAction extends AbstractClientAction implements ClientSessionL
     private SessionRecorder sessionRecorder;
 
     private UndoManagerListener checkUncommittedChanges = new UndoManagerListener() {
-        
-		@Override
-		public void stateChanged(HistoryManager source) {
-			OWLOntology activeOntology = getOWLEditorKit().getOWLModelManager().getActiveOntology();
+        @Override
+        public void stateChanged(HistoryManager source) {
+            OWLOntology activeOntology = getOWLEditorKit().getOWLModelManager().getActiveOntology();
             if (activeVersionOntology.isPresent()) {
                 ChangeHistory baseline = activeVersionOntology.get().getChangeHistory();
                 localChanges = ClientUtils.getUncommittedChanges(source, activeOntology, baseline);
                 setEnabled(!localChanges.isEmpty());
-            }			
-		}
+            }
+        }
     };
 
     @Override
@@ -132,20 +132,27 @@ public class CommitAction extends AbstractClientAction implements ClientSessionL
         }
         catch (ExecutionException e) {
             Throwable t = e.getCause();
-            if (t instanceof AuthorizationException) {
-                showErrorDialog("Authorization error", t.getMessage(), t);
-            }
-            else if (t instanceof SynchronizationException) {
-                showErrorDialog("Synchronization error", t.getMessage(), t);
-            }
-            else if (t instanceof ClientRequestException) {
-                showErrorDialog("Commit error", t.getMessage(), t);
+            String originalMessage = t.getMessage();
+            if (t instanceof LoginTimeoutException) {
+                showErrorDialog("Commit error", originalMessage, t);
+                localClientLogout();
+                UserLoginPanel.showDialog(getOWLEditorKit(), getEditorKit().getWorkspace());
             }
             else {
-                showErrorDialog("Commit error", t.getMessage(), t);
+                showErrorDialog("Commit error", originalMessage, t);
             }
         }
         return acceptedChanges;
+    }
+
+    private void localClientLogout() {
+        try {
+            Client activeClient = getClientSession().getActiveClient();
+            ClientUtils.performLogout(getClientSession(), activeClient);
+        }
+        catch (Exception e) {
+            ErrorLogPanel.showErrorDialog(e);
+        }
     }
 
     private class DoCommit implements Callable<ChangeHistory> {

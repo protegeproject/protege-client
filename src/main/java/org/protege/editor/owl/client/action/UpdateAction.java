@@ -12,10 +12,14 @@ import java.util.concurrent.Callable;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.Future;
 
+import org.protege.editor.core.ui.error.ErrorLogPanel;
 import org.protege.editor.owl.client.LocalHttpClient;
+import org.protege.editor.owl.client.api.Client;
+import org.protege.editor.owl.client.api.exception.LoginTimeoutException;
 import org.protege.editor.owl.client.api.exception.SynchronizationException;
 import org.protege.editor.owl.client.event.ClientSessionChangeEvent;
 import org.protege.editor.owl.client.event.ClientSessionListener;
+import org.protege.editor.owl.client.ui.UserLoginPanel;
 import org.protege.editor.owl.client.event.ClientSessionChangeEvent.EventCategory;
 import org.protege.editor.owl.client.util.ClientUtils;
 import org.protege.editor.owl.model.OWLModelManager;
@@ -155,8 +159,13 @@ public class UpdateAction extends AbstractClientAction implements ClientSessionL
                 remoteChangeHistory = LocalHttpClient.current_user().getLatestChanges(vont);
                 //changes = ChangeHistoryUtils.getOntologyChanges(remoteChangeHistory, ontology);
             }
+            catch (LoginTimeoutException e) {
+                showErrorDialog("Update error", e.getMessage(), e);
+                localClientLogout();
+                UserLoginPanel.showDialog(getOWLEditorKit(), getEditorKit().getWorkspace());
+            }
             catch (Exception e) {
-                showErrorDialog("Update error", "Error while fetching the latest changes from server", e);
+                showErrorDialog("Update error", e.getMessage(), e);
             }
             return remoteChangeHistory;
         }
@@ -226,6 +235,16 @@ public class UpdateAction extends AbstractClientAction implements ClientSessionL
             }
             for (OWLImportsDeclaration missingImport : missingImports) {
                 ontology.getOWLOntologyManager().makeLoadImportRequest(missingImport, configuration);
+            }
+        }
+
+        private void localClientLogout() {
+            try {
+                Client activeClient = getClientSession().getActiveClient();
+                ClientUtils.performLogout(getClientSession(), activeClient);
+            }
+            catch (Exception e) {
+                ErrorLogPanel.showErrorDialog(e);
             }
         }
     }

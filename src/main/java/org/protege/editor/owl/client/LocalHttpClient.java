@@ -1027,11 +1027,13 @@ public class LocalHttpClient implements Client, ClientSessionListener {
 		}
 	}
 
-	private void throwRequestExceptions(Response response) throws LoginTimeoutException,
-			AuthorizationException, ClientRequestException {
+	private void throwRequestExceptions(Response response) throws AuthorizationException, ClientRequestException {
 		String originalMessage = response.header("Error-Message");
 		if (response.code() == StatusCodes.UNAUTHORIZED) {
 			throw new AuthorizationException(originalMessage);
+		}
+		else if (response.code() == StatusCodes.CONFLICT) {
+			throw new SynchronizationException(originalMessage);
 		}
 		/*
 		 * 440 Login Timeout. Reference: https://support.microsoft.com/en-us/kb/941201

@@ -4,6 +4,7 @@ import org.protege.editor.owl.client.SessionRecorder;
 import org.protege.editor.owl.client.api.Client;
 import org.protege.editor.owl.client.api.exception.AuthorizationException;
 import org.protege.editor.owl.client.api.exception.ClientRequestException;
+import org.protege.editor.owl.client.api.exception.LoginTimeoutException;
 import org.protege.editor.owl.client.api.exception.SynchronizationException;
 import org.protege.editor.owl.client.event.ClientSessionChangeEvent;
 import org.protege.editor.owl.client.event.ClientSessionChangeEvent.EventCategory;
@@ -14,7 +15,6 @@ import org.protege.editor.owl.client.util.ClientUtils;
 import org.protege.editor.owl.model.history.HistoryManager;
 import org.protege.editor.owl.model.history.UndoManagerListener;
 import org.protege.editor.owl.server.api.CommitBundle;
-import org.protege.editor.owl.server.api.exception.OutOfSyncException;
 import org.protege.editor.owl.server.policy.CommitBundleImpl;
 import org.protege.editor.owl.server.versioning.Commit;
 import org.protege.editor.owl.server.versioning.api.ChangeHistory;
@@ -135,7 +135,7 @@ public class CommitAction extends AbstractClientAction implements ClientSessionL
             if (t instanceof AuthorizationException) {
                 showErrorDialog("Authorization error", t.getMessage(), t);
             }
-            else if (t instanceof OutOfSyncException) {
+            else if (t instanceof SynchronizationException) {
                 showErrorDialog("Synchronization error", t.getMessage(), t);
             }
             else if (t instanceof ClientRequestException) {
@@ -164,7 +164,8 @@ public class CommitAction extends AbstractClientAction implements ClientSessionL
         }
 
         @Override
-        public ChangeHistory call() throws AuthorizationException, SynchronizationException, ClientRequestException {
+        public ChangeHistory call() throws AuthorizationException, LoginTimeoutException,
+                SynchronizationException, ClientRequestException {
             Commit commit = ClientUtils.createCommit(author, comment, changes);
             CommitBundle commitBundle = new CommitBundleImpl(commitBaseRevision, commit);
             return author.commit(getClientSession().getActiveProject(), commitBundle);

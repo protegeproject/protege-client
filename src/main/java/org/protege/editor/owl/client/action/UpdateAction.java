@@ -12,9 +12,7 @@ import java.util.concurrent.Callable;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.Future;
 
-import org.protege.editor.core.ui.error.ErrorLogPanel;
 import org.protege.editor.owl.client.LocalHttpClient;
-import org.protege.editor.owl.client.api.Client;
 import org.protege.editor.owl.client.api.exception.LoginTimeoutException;
 import org.protege.editor.owl.client.api.exception.SynchronizationException;
 import org.protege.editor.owl.client.event.ClientSessionChangeEvent;
@@ -23,7 +21,6 @@ import org.protege.editor.owl.client.ui.UserLoginPanel;
 import org.protege.editor.owl.client.event.ClientSessionChangeEvent.EventCategory;
 import org.protege.editor.owl.client.util.ClientUtils;
 import org.protege.editor.owl.model.OWLModelManager;
-import org.protege.editor.owl.model.OWLModelManagerImpl;
 import org.protege.editor.owl.server.versioning.ChangeHistoryUtils;
 import org.protege.editor.owl.server.versioning.CollectingChangeVisitor;
 import org.protege.editor.owl.server.versioning.api.ChangeHistory;
@@ -98,12 +95,12 @@ public class UpdateAction extends AbstractClientAction implements ClientSessionL
         private VersionedOWLOntology vont;
         private OWLOntology ontology;
         
-        private OWLModelManagerImpl modMan;
+//        private OWLModelManagerImpl modMan;
 
         public DoUpdate(OWLModelManager modMan, VersionedOWLOntology vont) {
             this.vont = vont;
             ontology = vont.getOntology();
-            this.modMan = (OWLModelManagerImpl) modMan;
+//            this.modMan = (OWLModelManagerImpl) modMan;
         }
 
         @Override
@@ -161,7 +158,6 @@ public class UpdateAction extends AbstractClientAction implements ClientSessionL
             }
             catch (LoginTimeoutException e) {
                 showErrorDialog("Update error", e.getMessage(), e);
-                localClientLogout();
                 UserLoginPanel.showDialog(getOWLEditorKit(), getEditorKit().getWorkspace());
             }
             catch (Exception e) {
@@ -235,16 +231,6 @@ public class UpdateAction extends AbstractClientAction implements ClientSessionL
             }
             for (OWLImportsDeclaration missingImport : missingImports) {
                 ontology.getOWLOntologyManager().makeLoadImportRequest(missingImport, configuration);
-            }
-        }
-
-        private void localClientLogout() {
-            try {
-                Client activeClient = getClientSession().getActiveClient();
-                ClientUtils.performLogout(getClientSession(), activeClient);
-            }
-            catch (Exception e) {
-                ErrorLogPanel.showErrorDialog(e);
             }
         }
     }

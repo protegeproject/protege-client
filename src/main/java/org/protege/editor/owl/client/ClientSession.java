@@ -7,6 +7,7 @@ import java.util.TreeMap;
 
 import org.protege.editor.owl.OWLEditorKit;
 import org.protege.editor.owl.client.api.Client;
+import org.protege.editor.owl.client.api.UserInfo;
 import org.protege.editor.owl.client.event.ClientSessionChangeEvent;
 import org.protege.editor.owl.client.event.ClientSessionChangeEvent.EventCategory;
 import org.protege.editor.owl.client.event.ClientSessionListener;
@@ -94,13 +95,28 @@ public class ClientSession extends OWLEditorKitHook {
     }
 
     public void setActiveClient(Client client) {
-        if (hasActiveClient()) {
-            activeClient = null;
-            unregisterAllProjects();
-            unregisterAllVersionOntologies();
-        }
         activeClient = client;
-        fireChangeEvent(EventCategory.USER_LOGIN);
+        boolean newLogin = true;
+        if (hasActiveClient()) {
+            if (isPreviouslyLoggedIn(client)) {
+                newLogin = false;
+            }
+            else {
+                unregisterAllProjects();
+                unregisterAllVersionOntologies();
+            }
+        }
+        if (newLogin) {
+            fireChangeEvent(EventCategory.USER_LOGIN);
+        }
+    }
+
+    private boolean isPreviouslyLoggedIn(Client client) {
+        UserInfo userInfo = client.getUserInfo();
+        return getActiveClient().getUserInfo().getId().equals(userInfo.getId())
+                && getActiveClient().getUserInfo().getName().equals(userInfo.getName())
+                && getActiveClient().getUserInfo().getEmailAddress().equals(userInfo.getEmailAddress())
+                && client.getAuthToken().isAuthorized();
     }
 
     public Client getActiveClient() {

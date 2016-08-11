@@ -1,6 +1,5 @@
 package org.protege.editor.owl.client.action;
 
-import org.protege.editor.core.ui.error.ErrorLogPanel;
 import org.protege.editor.owl.client.SessionRecorder;
 import org.protege.editor.owl.client.api.Client;
 import org.protege.editor.owl.client.api.exception.AuthorizationException;
@@ -135,7 +134,6 @@ public class CommitAction extends AbstractClientAction implements ClientSessionL
             String originalMessage = t.getMessage();
             if (t instanceof LoginTimeoutException) {
                 showErrorDialog("Commit error", originalMessage, t);
-                localClientLogout();
                 UserLoginPanel.showDialog(getOWLEditorKit(), getEditorKit().getWorkspace());
             }
             else {
@@ -143,16 +141,6 @@ public class CommitAction extends AbstractClientAction implements ClientSessionL
             }
         }
         return acceptedChanges;
-    }
-
-    private void localClientLogout() {
-        try {
-            Client activeClient = getClientSession().getActiveClient();
-            ClientUtils.performLogout(getClientSession(), activeClient);
-        }
-        catch (Exception e) {
-            ErrorLogPanel.showErrorDialog(e);
-        }
     }
 
     private class DoCommit implements Callable<ChangeHistory> {

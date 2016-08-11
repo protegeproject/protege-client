@@ -20,7 +20,6 @@ import javax.swing.JScrollPane;
 import javax.swing.JTable;
 import javax.swing.SwingUtilities;
 
-import org.protege.editor.core.ui.error.ErrorLogPanel;
 import org.protege.editor.core.ui.util.JOptionPaneEx;
 import org.protege.editor.owl.OWLEditorKit;
 import org.protege.editor.owl.client.ClientSession;
@@ -29,7 +28,6 @@ import org.protege.editor.owl.client.SessionRecorder;
 import org.protege.editor.owl.client.api.Client;
 import org.protege.editor.owl.client.api.exception.LoginTimeoutException;
 import org.protege.editor.owl.client.api.exception.OWLClientException;
-import org.protege.editor.owl.client.util.ClientUtils;
 import org.protege.editor.owl.server.versioning.api.ServerDocument;
 import org.protege.editor.owl.server.versioning.api.VersionedOWLOntology;
 import org.semanticweb.owlapi.model.OWLOntologyManager;
@@ -169,23 +167,12 @@ public class OpenFromServerPanel extends JPanel {
             JOptionPaneEx.showConfirmDialog(editorKit.getWorkspace(), "Open project error",
                     new JLabel(e.getMessage()), JOptionPane.ERROR_MESSAGE,
                     JOptionPane.DEFAULT_OPTION, null);
-            localClientLogout();
             UserLoginPanel.showDialog(editorKit, this);
         }
         catch (Exception e) {
             JOptionPaneEx.showConfirmDialog(editorKit.getWorkspace(), "Open project error",
                     new JLabel(e.getMessage()), JOptionPane.ERROR_MESSAGE,
                     JOptionPane.DEFAULT_OPTION, null);
-        }
-    }
-
-    private void localClientLogout() {
-        try {
-            Client activeClient = clientSession.getActiveClient();
-            ClientUtils.performLogout(clientSession, activeClient);
-        }
-        catch (Exception e) {
-            ErrorLogPanel.showErrorDialog(e);
         }
     }
 

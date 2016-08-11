@@ -14,11 +14,13 @@ import javax.swing.KeyStroke;
 
 import org.protege.editor.owl.client.api.exception.AuthorizationException;
 import org.protege.editor.owl.client.api.exception.ClientRequestException;
+import org.protege.editor.owl.client.api.exception.LoginTimeoutException;
 import org.protege.editor.owl.client.api.exception.SynchronizationException;
 import org.protege.editor.owl.client.event.ClientSessionChangeEvent;
 import org.protege.editor.owl.client.event.ClientSessionChangeEvent.EventCategory;
 import org.protege.editor.owl.client.event.ClientSessionListener;
 import org.protege.editor.owl.client.ui.ChangeHistoryPanel;
+import org.protege.editor.owl.client.ui.UserLoginPanel;
 import org.protege.editor.owl.model.OWLWorkspace;
 import org.protege.editor.owl.server.versioning.api.VersionedOWLOntology;
 
@@ -61,8 +63,12 @@ public class ShowHistoryAction extends AbstractClientAction implements ClientSes
             dialog.setLocationRelativeTo(editorWindow);
             dialog.setVisible(true);
         }
-        catch (AuthorizationException | ClientRequestException e) {
-            showErrorDialog("Unable to show change history", e.getMessage(), e);
+        catch (LoginTimeoutException e) {
+            showErrorDialog("Show history error", e.getMessage(), e);
+            UserLoginPanel.showDialog(getOWLEditorKit(), getEditorKit().getWorkspace());
+        }
+        catch (Exception e) {
+            showErrorDialog("Show history error", e.getMessage(), e);
         }
     }
 

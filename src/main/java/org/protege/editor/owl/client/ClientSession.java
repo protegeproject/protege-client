@@ -94,18 +94,18 @@ public class ClientSession extends OWLEditorKitHook {
         commitListeners.remove(listener);
     }
 
-    public void setActiveClient(Client client) {
-        activeClient = client;
+    public void setActiveClient(Client client) {        
         boolean newLogin = true;
         if (hasActiveClient()) {
             if (isPreviouslyLoggedIn(client)) {
-                newLogin = false;
+                newLogin = false;                
             }
             else {
                 unregisterAllProjects();
                 unregisterAllVersionOntologies();
-            }
+            }            
         }
+        activeClient = client;
         if (newLogin) {
             fireChangeEvent(EventCategory.USER_LOGIN);
         }

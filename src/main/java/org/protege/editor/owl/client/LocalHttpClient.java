@@ -343,7 +343,7 @@ public class LocalHttpClient implements Client, ClientSessionListener {
 	}
 
 	public VersionedOWLOntology buildVersionedOntology(ServerDocument sdoc, OWLOntologyManager owlManager,
-													   ProjectId pid) throws LoginTimeoutException, AuthorizationException, ClientRequestException {
+			ProjectId pid) throws LoginTimeoutException, AuthorizationException, ClientRequestException {
 		projectId = pid;
 		try {
 			project = config.getProject(pid);

@@ -124,14 +124,14 @@ public class OpenFromServerPanel extends JPanel {
             }
         }
         else {
-            Client client = clientSession.getActiveClient();
-            loadProjectList(client);
+            loadProjectList();
         }
     }
 
     
-    private void loadProjectList(Client client) {
+    private void loadProjectList() {
         try {
+            Client client = clientSession.getActiveClient();
             remoteProjectModel.initialize(client);
             tblRemoteProjects.changeSelection(0, 0, false, false); // select the first item as default
         }
@@ -167,7 +167,10 @@ public class OpenFromServerPanel extends JPanel {
             JOptionPaneEx.showConfirmDialog(editorKit.getWorkspace(), "Open project error",
                     new JLabel(e.getMessage()), JOptionPane.ERROR_MESSAGE,
                     JOptionPane.DEFAULT_OPTION, null);
-            UserLoginPanel.showDialog(editorKit, this);
+            Optional<AuthToken> authToken = UserLoginPanel.showDialog(editorKit, this);
+            if (authToken.isPresent() && authToken.get().isAuthorized()) {
+                loadProjectList();
+            }
         }
         catch (Exception e) {
             JOptionPaneEx.showConfirmDialog(editorKit.getWorkspace(), "Open project error",

@@ -12,6 +12,8 @@ import java.util.concurrent.Callable;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.Future;
 
+import edu.stanford.protege.metaproject.api.AuthToken;
+
 import org.protege.editor.owl.client.LocalHttpClient;
 import org.protege.editor.owl.client.api.exception.LoginTimeoutException;
 import org.protege.editor.owl.client.api.exception.SynchronizationException;
@@ -73,21 +75,53 @@ public class UpdateAction extends AbstractClientAction implements ClientSessionL
 
     @Override
     public void actionPerformed(ActionEvent event) {
+        performUpdate();
+    }
+
+    private void performUpdate() {
         try {
-            Future<?> task = submit(new DoUpdate(getOWLModelManager(), activeVersionOntology.get()));
-            @SuppressWarnings("unchecked")
-            List<OWLOntologyChange> incomingChanges = (List<OWLOntologyChange>) task.get();
-            if (incomingChanges.isEmpty()) {
-                showInfoDialog("Update", "Local copy is already up-to-date");
-            }
-            else {
-                String template = "Local copy is succesfully updated by %d changes";
-                showInfoDialog("Update", String.format(template, incomingChanges.size()));
+            Optional<List<OWLOntologyChange>> incomingChanges = update();
+            if (incomingChanges.isPresent()) {
+                if (incomingChanges.get().isEmpty()) {
+                    showInfoDialog("Update", "Local copy is already up-to-date");
+                }
+                else {
+                    String template = "Local copy is succesfully updated by %d changes";
+                    showInfoDialog("Update", String.format(template, incomingChanges.get().size()));
+                }
             }
         }
-        catch (InterruptedException | ExecutionException e) {
+        catch (InterruptedException e) {
             showErrorDialog("Update error", "Internal error: " + e.getMessage(), e);
         }
+    }
+
+    private Optional<List<OWLOntologyChange>> update() throws InterruptedException {
+        Optional<List<OWLOntologyChange>> incomingChanges = Optional.empty();
+        try {
+            Future<?> task = submit(new DoUpdate(getOWLModelManager(), activeVersionOntology.get()));
+            incomingChanges = Optional.ofNullable((List<OWLOntologyChange>) task.get());
+        }
+        catch (ExecutionException e) {
+            Throwable t = e.getCause();
+            String originalMessage = t.getMessage();
+            if (t instanceof LoginTimeoutException) {
+                showErrorDialog("Update error", originalMessage, t);
+                Optional<AuthToken> authToken = UserLoginPanel.showDialog(getOWLEditorKit(), getEditorKit().getWorkspace());
+                if (authToken.isPresent() && authToken.get().isAuthorized()) {
+                    incomingChanges = reupdate();
+                }
+            }
+            else {
+                showErrorDialog("Update error", originalMessage, t);
+            }
+        }
+        return incomingChanges;
+    }
+
+
+    private Optional<List<OWLOntologyChange>> reupdate() throws InterruptedException {
+       return update();
     }
 
     private class DoUpdate implements Callable<List<OWLOntologyChange>> {

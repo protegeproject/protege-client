@@ -98,22 +98,20 @@ public class ClientSession extends OWLEditorKitHook {
         commitListeners.remove(listener);
     }
 
-    public void setActiveClient(Client client) {        
-        boolean newLogin = true;
-        if (hasActiveClient()) {
+    public void setActiveClient(Client client) {
+        if (!hasActiveClient()) {
+            activeClient = client;
+            fireChangeEvent(EventCategory.USER_LOGIN);
+        }
+        else {
             if (isPreviouslyLoggedIn(client)) {
-                newLogin = false;                
+                activeClient = client; // change the client ref without broadcasting login event
             }
             else {
                 JOptionPaneEx.showConfirmDialog(getEditorKit().getWorkspace(), "Login warning",
                         new JLabel("Cannot re-login as a different user. Please logout first."),
                         JOptionPane.WARNING_MESSAGE, JOptionPane.DEFAULT_OPTION, null);
-                return;
-            }            
-        }
-        activeClient = client;
-        if (newLogin) {
-            fireChangeEvent(EventCategory.USER_LOGIN);
+            }
         }
     }
 

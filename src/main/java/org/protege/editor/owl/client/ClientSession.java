@@ -5,6 +5,7 @@ import java.util.Map;
 import java.util.Set;
 import java.util.TreeMap;
 
+import org.protege.editor.core.ui.util.JOptionPaneEx;
 import org.protege.editor.owl.OWLEditorKit;
 import org.protege.editor.owl.client.api.Client;
 import org.protege.editor.owl.client.api.UserInfo;
@@ -22,6 +23,9 @@ import org.protege.editor.owl.ui.ontology.OntologyPreferences;
 import org.semanticweb.owlapi.model.IRI;
 import org.semanticweb.owlapi.model.OWLOntology;
 import org.semanticweb.owlapi.model.OWLOntologyID;
+
+import javax.swing.*;
+
 import org.semanticweb.owlapi.model.OWLOntologyCreationException;
 
 import com.google.common.base.Optional;
@@ -101,8 +105,10 @@ public class ClientSession extends OWLEditorKitHook {
                 newLogin = false;                
             }
             else {
-                unregisterAllProjects();
-                unregisterAllVersionOntologies();
+                JOptionPaneEx.showConfirmDialog(getEditorKit().getWorkspace(), "Login warning",
+                        new JLabel("Cannot re-login as a different user. Please logout first."),
+                        JOptionPane.WARNING_MESSAGE, JOptionPane.DEFAULT_OPTION, null);
+                return;
             }            
         }
         activeClient = client;

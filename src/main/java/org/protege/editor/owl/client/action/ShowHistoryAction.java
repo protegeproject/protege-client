@@ -7,6 +7,8 @@ import java.awt.event.WindowAdapter;
 import java.awt.event.WindowEvent;
 import java.util.Optional;
 
+import edu.stanford.protege.metaproject.api.AuthToken;
+
 import javax.swing.AbstractAction;
 import javax.swing.JComponent;
 import javax.swing.JDialog;
@@ -57,19 +59,30 @@ public class ShowHistoryAction extends AbstractClientAction implements ClientSes
 
     @Override
     public void actionPerformed(ActionEvent event) {
-        final OWLWorkspace editorWindow = getOWLEditorKit().getOWLWorkspace();
+        openShowHistoryDialog();
+    }
+
+    private void openShowHistoryDialog() {
         try {
+            OWLWorkspace editorWindow = getOWLEditorKit().getOWLWorkspace();
             JDialog dialog = createDialog();
             dialog.setLocationRelativeTo(editorWindow);
             dialog.setVisible(true);
         }
-        catch (LoginTimeoutException e) {
+       catch (LoginTimeoutException e) {
             showErrorDialog("Show history error", e.getMessage(), e);
-            UserLoginPanel.showDialog(getOWLEditorKit(), getEditorKit().getWorkspace());
-        }
-        catch (Exception e) {
-            showErrorDialog("Show history error", e.getMessage(), e);
-        }
+            Optional<AuthToken> authToken = UserLoginPanel.showDialog(getOWLEditorKit(), getEditorKit().getWorkspace());
+            if (authToken.isPresent() && authToken.get().isAuthorized()) {
+                reopenShowHistoryDialog();
+            }
+       }
+       catch (Exception e) {
+           showErrorDialog("Show history error", e.getMessage(), e);
+       }
+    }
+
+    private void reopenShowHistoryDialog() {
+        openShowHistoryDialog();
     }
 
     private JDialog createDialog() throws AuthorizationException, ClientRequestException, SynchronizationException {

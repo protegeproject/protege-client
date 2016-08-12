@@ -33,6 +33,8 @@ import java.util.concurrent.Callable;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.Future;
 
+import edu.stanford.protege.metaproject.api.AuthToken;
+
 /**
  * @author Josef Hardi <johardi@stanford.edu> <br>
  * @author Timothy Redmond <tredmond@stanford.edu> <br>
@@ -134,13 +136,20 @@ public class CommitAction extends AbstractClientAction implements ClientSessionL
             String originalMessage = t.getMessage();
             if (t instanceof LoginTimeoutException) {
                 showErrorDialog("Commit error", originalMessage, t);
-                UserLoginPanel.showDialog(getOWLEditorKit(), getEditorKit().getWorkspace());
+                Optional<AuthToken> authToken = UserLoginPanel.showDialog(getOWLEditorKit(), getEditorKit().getWorkspace());
+                if (authToken.isPresent() && authToken.get().isAuthorized()) {
+                    recommit(comment);
+                }
             }
             else {
                 showErrorDialog("Commit error", originalMessage, t);
             }
         }
         return acceptedChanges;
+    }
+
+    private void recommit(String comment) {
+        performCommit(activeVersionOntology.get(), comment);
     }
 
     private class DoCommit implements Callable<ChangeHistory> {

@@ -281,6 +281,10 @@ public class LocalHttpClient implements Client, ClientSessionListener {
 	@Override
 	public ServerDocument openProject(ProjectId projectId)
 			throws AuthorizationException, LoginTimeoutException, ClientRequestException {
+		// admin clients cannot edit/browse ontologies
+		if (adminClient) {
+			throw new ClientRequestException("Admin clients cannot open projects");
+		}
 		/*
 		 * Prepare the request string
 		 */

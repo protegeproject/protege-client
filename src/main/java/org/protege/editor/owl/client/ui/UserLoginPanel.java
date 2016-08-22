@@ -59,6 +59,7 @@ public class UserLoginPanel extends JPanel implements VerifiedInputEditor {
         txtUsername = new AugmentedJTextField(FIELD_WIDTH, "User name");
         txtPassword = new JPasswordField(FIELD_WIDTH);
         txtPassword.setBorder(GuiUtils.MATTE_BORDER);
+        txtPassword.setPreferredSize(new Dimension(txtUsername.getPreferredSize().width, txtUsername.getPreferredSize().height));
 
         ClientPreferences prefs = ClientPreferences.getInstance();
         String currentUsername = prefs.getCurrentUsername();
@@ -84,8 +85,8 @@ public class UserLoginPanel extends JPanel implements VerifiedInputEditor {
         holderPanel.add(lblUsername, new GridBagConstraints(0, rowIndex, 1, 1, 0.0, 0.0, GridBagConstraints.BASELINE_TRAILING, GridBagConstraints.NONE, insets, 0, 0));
         holderPanel.add(txtUsername, new GridBagConstraints(1, rowIndex, 1, 1, 1.0, 0.0, GridBagConstraints.BASELINE_LEADING, GridBagConstraints.HORIZONTAL, insets, 0, 0));
         rowIndex++;
-        holderPanel.add(lblPassword, new GridBagConstraints(0, rowIndex, 1, 1, 0.0, 0.0, GridBagConstraints.BASELINE_TRAILING, GridBagConstraints.NONE, insets, 0, 0));
-        holderPanel.add(txtPassword, new GridBagConstraints(1, rowIndex, 1, 1, 1.0, 0.0, GridBagConstraints.BASELINE_LEADING, GridBagConstraints.HORIZONTAL, insets, 0, 0));
+        holderPanel.add(lblPassword, new GridBagConstraints(0, rowIndex, 1, 1, 0.0, 0.0, GridBagConstraints.BASELINE_TRAILING, GridBagConstraints.NONE, new Insets(3, 2, 2, 2), 0, 0));
+        holderPanel.add(txtPassword, new GridBagConstraints(1, rowIndex, 1, 1, 1.0, 0.0, GridBagConstraints.BASELINE_LEADING, GridBagConstraints.HORIZONTAL, new Insets(3, 2, 2, 2), 0, 0));
         rowIndex++;
 
         errorArea.setBackground(null);

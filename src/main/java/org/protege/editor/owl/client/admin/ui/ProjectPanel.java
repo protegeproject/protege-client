@@ -1,7 +1,7 @@
 package org.protege.editor.owl.client.admin.ui;
 
 import com.google.common.base.Objects;
-import edu.stanford.protege.metaproject.Manager;
+import edu.stanford.protege.metaproject.ConfigurationManager;
 import edu.stanford.protege.metaproject.api.PolicyFactory;
 import edu.stanford.protege.metaproject.api.Project;
 import edu.stanford.protege.metaproject.api.UserId;
@@ -12,7 +12,6 @@ import org.protege.editor.core.ui.list.MList;
 import org.protege.editor.core.ui.list.MListSectionHeader;
 import org.protege.editor.core.ui.util.JOptionPaneEx;
 import org.protege.editor.owl.OWLEditorKit;
-import org.protege.editor.owl.client.event.*;
 import org.protege.editor.owl.client.ClientSession;
 import org.protege.editor.owl.client.admin.AdminTabManager;
 import org.protege.editor.owl.client.admin.model.AdminTabEvent;
@@ -21,8 +20,9 @@ import org.protege.editor.owl.client.admin.model.ProjectMListItem;
 import org.protege.editor.owl.client.api.Client;
 import org.protege.editor.owl.client.api.exception.AuthorizationException;
 import org.protege.editor.owl.client.api.exception.ClientRequestException;
-import org.protege.editor.owl.client.event.ClientSessionListener;
+import org.protege.editor.owl.client.event.ClientSessionChangeEvent;
 import org.protege.editor.owl.client.event.ClientSessionChangeEvent.EventCategory;
+import org.protege.editor.owl.client.event.ClientSessionListener;
 
 import javax.swing.*;
 import javax.swing.border.EmptyBorder;
@@ -45,8 +45,8 @@ import static com.google.common.base.Preconditions.checkNotNull;
  * Stanford Center for Biomedical Informatics Research
  */
 public class ProjectPanel extends JPanel implements Disposable {
-    private static final long serialVersionUID = -6832671439689809834L;
-    private static PolicyFactory f = Manager.getFactory();
+    private static final long serialVersionUID = 6986375016016225447L;
+    private static PolicyFactory f = ConfigurationManager.getFactory();
     private OWLEditorKit editorKit;
     private AdminTabManager configManager;
     private MList projectList;

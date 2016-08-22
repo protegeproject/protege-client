@@ -1,9 +1,12 @@
 package org.protege.editor.owl.client.admin.ui;
 
-import edu.stanford.protege.metaproject.Manager;
+import edu.stanford.protege.metaproject.ConfigurationManager;
 import edu.stanford.protege.metaproject.api.*;
 import org.protege.editor.core.ui.error.ErrorLogPanel;
-import org.protege.editor.core.ui.util.*;
+import org.protege.editor.core.ui.util.AugmentedJTextField;
+import org.protege.editor.core.ui.util.InputVerificationStatusChangedListener;
+import org.protege.editor.core.ui.util.UIUtil;
+import org.protege.editor.core.ui.util.VerifiedInputEditor;
 import org.protege.editor.owl.OWLEditorKit;
 import org.protege.editor.owl.client.ClientSession;
 import org.protege.editor.owl.client.LocalHttpClient;
@@ -333,7 +336,7 @@ public class ProjectDialogPanel extends JPanel implements VerifiedInputEditor {
     }
 
     private ProjectOptions createProjectOptions(Map<String, Set<String>> map) {
-        return Manager.getFactory().getProjectOptions(map);
+        return ConfigurationManager.getFactory().getProjectOptions(map);
     }
 
     private void initOwnerComboBox() {
@@ -435,7 +438,7 @@ public class ProjectDialogPanel extends JPanel implements VerifiedInputEditor {
     }
 
     private Project createProject() {
-        PolicyFactory f = Manager.getFactory();
+        PolicyFactory f = ConfigurationManager.getFactory();
         return f.getProject(f.getProjectId(id.getText()), f.getName(name.getText()), f.getDescription(description.getText()),
                 file, ownerId, Optional.ofNullable(f.getProjectOptions(projectOptions)));
     }

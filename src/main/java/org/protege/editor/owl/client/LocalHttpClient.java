@@ -1,11 +1,10 @@
 package org.protege.editor.owl.client;
 
-import com.google.gson.Gson;
-
-import edu.stanford.protege.metaproject.Manager;
+import edu.stanford.protege.metaproject.ConfigurationManager;
 import edu.stanford.protege.metaproject.api.*;
 import edu.stanford.protege.metaproject.api.exception.*;
 import edu.stanford.protege.metaproject.impl.AuthorizedUserToken;
+import edu.stanford.protege.metaproject.impl.ConfigurationBuilder;
 import edu.stanford.protege.metaproject.impl.Operations;
 import edu.stanford.protege.metaproject.impl.UserIdImpl;
 import edu.stanford.protege.metaproject.serialization.DefaultJsonSerializer;
@@ -68,8 +67,9 @@ public class LocalHttpClient implements Client, ClientSessionListener {
 
 	OkHttpClient req_client = null;
 
-	private ConfigurationManager manager = Manager.getConfigurationManager();
 	private ServerConfiguration config;
+
+	private final PolicyFactory factory = ConfigurationManager.getFactory();
 
 	private boolean save_cancel_semantics = true;
 	private boolean config_state_changed = false;
@@ -105,7 +105,6 @@ public class LocalHttpClient implements Client, ClientSessionListener {
 
 	public void initConfig() throws LoginTimeoutException, AuthorizationException, ClientRequestException {
 		config = getConfig();
-		manager = config.getConfigurationManager();
 		adminClient = checkAdmin();
 		config_state_changed = false;
 	}
@@ -115,7 +114,7 @@ public class LocalHttpClient implements Client, ClientSessionListener {
 		 * Prepare the request body
 		 */
 		String url = HTTPServer.LOGIN;
-		Serializer<Gson> serl = new DefaultJsonSerializer();
+		Serializer serl = new DefaultJsonSerializer();
 		LoginCreds creds = new LoginCreds(user, pwd);
 		RequestBody req = RequestBody.create(MediaType.parse("application/json; charset=utf-8"), serl.write(creds, LoginCreds.class));
 
@@ -176,11 +175,11 @@ public class LocalHttpClient implements Client, ClientSessionListener {
 	public void createUser(User newUser, Optional<? extends Password> password)
 			throws AuthorizationException, ClientRequestException {
 		try {
-			manager.addUser(newUser);
+			config = new ConfigurationBuilder(config).addUser(newUser).createServerConfiguration();
 			if (password.isPresent()) {
 				Password newpassword = password.get();
 				if (newpassword instanceof SaltedPasswordDigest) {
-					manager.registerUser(newUser.getId(), (SaltedPasswordDigest) newpassword);
+					config = new ConfigurationBuilder(config).registerUser(newUser.getId(), (SaltedPasswordDigest) newpassword).createServerConfiguration();
 				}
 			}
 			putConfig();
@@ -193,7 +192,7 @@ public class LocalHttpClient implements Client, ClientSessionListener {
 	@Override
 	public void deleteUser(UserId userId) throws AuthorizationException, ClientRequestException {
 		try {
-			manager.removeUser(config.getUser(userId));
+			config = new ConfigurationBuilder(config).removeUser(config.getUser(userId)).createServerConfiguration();
 			putConfig();
 		} catch (UnknownUserIdException e) {
 			logger.error(e.getMessage());
@@ -204,19 +203,14 @@ public class LocalHttpClient implements Client, ClientSessionListener {
 	@Override
 	public void updateUser(UserId userId, User updatedUser, Optional<? extends Password> updatedPassword)
 			throws AuthorizationException, ClientRequestException {
-		try {
-			manager.setUser(userId, updatedUser);
-			if (updatedPassword.isPresent()) {
-				Password password = updatedPassword.get();
-				if (password instanceof SaltedPasswordDigest) {
-					manager.changePassword(userId, (SaltedPasswordDigest) password);
-				}
+		config = new ConfigurationBuilder(config).setUser(userId, updatedUser).createServerConfiguration();
+		if (updatedPassword.isPresent()) {
+			Password password = updatedPassword.get();
+			if (password instanceof SaltedPasswordDigest) {
+				config = new ConfigurationBuilder(config).changePassword(userId, (SaltedPasswordDigest) password).createServerConfiguration();
 			}
-			putConfig();
-		} catch (UnknownUserIdException | UserNotRegisteredException e) {
-			logger.error(e.getMessage());
-			throw new ClientRequestException("Client failed to update user (see error log for details)", e);
 		}
+		putConfig();
 	}
 
 	public ServerDocument createProject(Project proj)
@@ -623,13 +617,8 @@ public class LocalHttpClient implements Client, ClientSessionListener {
 	@Override
 	public void updateProject(ProjectId projectId, Project updatedProject)
 			throws AuthorizationException, ClientRequestException {
-		try {
-			manager.setProject(projectId, updatedProject);
-			putConfig();
-		} catch (UnknownProjectIdException e) {
-			logger.error(e.getMessage());
-			throw new ClientRequestException("Client failed to update project (see error log for details)", e);
-		}
+		config = new ConfigurationBuilder(config).setProject(projectId, updatedProject).createServerConfiguration();
+		putConfig();
 	}
 
 	@Override
@@ -665,7 +654,7 @@ public class LocalHttpClient implements Client, ClientSessionListener {
 	@Override
 	public void createRole(Role newRole) throws AuthorizationException, ClientRequestException {
 		try {
-			manager.addRole(newRole);
+			config = new ConfigurationBuilder(config).addRole(newRole).createServerConfiguration();
 			putConfig();
 		} catch (IdAlreadyInUseException e) {
 			logger.error(e.getMessage());
@@ -676,7 +665,7 @@ public class LocalHttpClient implements Client, ClientSessionListener {
 	@Override
 	public void deleteRole(RoleId roleId) throws AuthorizationException, ClientRequestException {
 		try {
-			manager.removeRole(config.getRole(roleId));
+			config = new ConfigurationBuilder(config).removeRole(config.getRole(roleId)).createServerConfiguration();
 			putConfig();
 		} catch (UnknownRoleIdException e) {
 			logger.error(e.getMessage());
@@ -687,13 +676,8 @@ public class LocalHttpClient implements Client, ClientSessionListener {
 	@Override
 	public void updateRole(RoleId roleId, Role updatedRole)
 			throws AuthorizationException, ClientRequestException {
-		try {
-			manager.setRole(roleId, updatedRole);
-			putConfig();
-		} catch (UnknownRoleIdException e) {
-			logger.error(e.getMessage());
-			throw new ClientRequestException("Client failed to update role (see error log for details)", e);
-		}
+		config = new ConfigurationBuilder(config).setRole(roleId, updatedRole).createServerConfiguration();
+		putConfig();
 	}
 
 	@Override
@@ -732,7 +716,7 @@ public class LocalHttpClient implements Client, ClientSessionListener {
 	public void createOperation(Operation operation)
 			throws AuthorizationException, ClientRequestException {
 		try {
-			manager.addOperation(operation);
+			config = new ConfigurationBuilder(config).addOperation(operation).createServerConfiguration();
 			putConfig();
 		} catch (IdAlreadyInUseException e) {
 			logger.error(e.getMessage());
@@ -744,7 +728,7 @@ public class LocalHttpClient implements Client, ClientSessionListener {
 	public void deleteOperation(OperationId operationId)
 			throws AuthorizationException, ClientRequestException {
 		try {
-			manager.removeOperation(config.getOperation(operationId));
+			config = new ConfigurationBuilder(config).removeOperation(config.getOperation(operationId)).createServerConfiguration();
 			putConfig();
 		} catch (UnknownOperationIdException e) {
 			logger.error(e.getMessage());
@@ -755,26 +739,21 @@ public class LocalHttpClient implements Client, ClientSessionListener {
 	@Override
 	public void updateOperation(OperationId operationId, Operation updatedOperation)
 			throws AuthorizationException, ClientRequestException {
-		try {
-			manager.setOperation(operationId, updatedOperation);
-			putConfig();
-		} catch (UnknownOperationIdException e) {
-			logger.error(e.getMessage());
-			throw new ClientRequestException("Client failed to update operation (see error log for details)", e);
-		}
+		config = new ConfigurationBuilder(config).setOperation(operationId, updatedOperation).createServerConfiguration();
+		putConfig();
 	}
 
 	@Override
 	public void assignRole(UserId userId, ProjectId projectId, RoleId roleId)
 			throws AuthorizationException, ClientRequestException {
-		manager.addPolicy(roleId, projectId, userId);
+		config = new ConfigurationBuilder(config).addPolicy(userId, projectId, roleId).createServerConfiguration();
 		putConfig();
 	}
 
 	@Override
 	public void retractRole(UserId userId, ProjectId projectId, RoleId roleId)
 			throws AuthorizationException, ClientRequestException {
-		manager.removePolicy(userId, projectId, roleId);
+		config = new ConfigurationBuilder(config).removePolicy(userId, projectId, roleId).createServerConfiguration();
 		putConfig();
 	}
 
@@ -785,17 +764,17 @@ public class LocalHttpClient implements Client, ClientSessionListener {
 
 	@Override
 	public void setHostAddress(URI hostAddress) throws AuthorizationException, ClientRequestException {
-		Host h = Manager.getFactory().getHost(hostAddress, Optional.empty());
-		manager.setHost(h);
+		Host h = factory.getHost(hostAddress, Optional.empty());
+		config = new ConfigurationBuilder(config).setHost(h).createServerConfiguration();
 	}
 
 	@Override
 	public void setSecondaryPort(int portNumber)
 			throws AuthorizationException, ClientRequestException {
 		Host h = config.getHost();
-		Port p = Manager.getFactory().getPort(portNumber);
-		Host nh = Manager.getFactory().getHost(h.getUri(), Optional.of(p));
-		manager.setHost(nh);
+		Port p = factory.getPort(portNumber);
+		Host nh = factory.getHost(h.getUri(), Optional.of(p));
+		config = new ConfigurationBuilder(config).setHost(nh).createServerConfiguration();
 	}
 
 	@Override
@@ -806,7 +785,7 @@ public class LocalHttpClient implements Client, ClientSessionListener {
 	@Override
 	public void setRootDirectory(String rootDirectory)
 			throws AuthorizationException, ClientRequestException {
-		manager.setServerRoot(new File(rootDirectory));
+		config = new ConfigurationBuilder(config).setServerRoot(new File(rootDirectory)).createServerConfiguration();
 		putConfig();
 	}
 
@@ -819,14 +798,14 @@ public class LocalHttpClient implements Client, ClientSessionListener {
 	@Override
 	public void setServerProperty(String property, String value)
 			throws AuthorizationException, ClientRequestException {
-		manager.addProperty(property, value);
+		config = new ConfigurationBuilder(config).addProperty(property, value).createServerConfiguration();
 		putConfig();
 	}
 
 	@Override
 	public void unsetServerProperty(String property)
 			throws AuthorizationException, ClientRequestException {
-		manager.removeProperty(property);
+		config = new ConfigurationBuilder(config).removeProperty(property).createServerConfiguration();
 		putConfig();
 	}
 
@@ -945,7 +924,7 @@ public class LocalHttpClient implements Client, ClientSessionListener {
 		String url = HTTPServer.METAPROJECT;
 		Response response = get(url);
 		try {
-			return manager.loadConfiguration(new InputStreamReader(response.body().byteStream()));
+			return ConfigurationManager.getConfigurationLoader().loadConfiguration(new InputStreamReader(response.body().byteStream()));
 		} catch (ObjectConversionException e) {
 			logger.error(e.getMessage(), e);
 			throw new ClientRequestException("Failed to parse the incoming server configuration data", e);
@@ -972,7 +951,6 @@ public class LocalHttpClient implements Client, ClientSessionListener {
 	}
 
 	public void putConfig() throws LoginTimeoutException, AuthorizationException, ClientRequestException {
-		config = manager.getConfiguration(); // update the cached server configuration
 		if (save_cancel_semantics) {
 			config_state_changed = true;
 		} else {
@@ -988,7 +966,7 @@ public class LocalHttpClient implements Client, ClientSessionListener {
 		final MediaType JSON  = MediaType.parse("application/json; charset=utf-8");
 		String url = HTTPServer.METAPROJECT;
 
-		Serializer<Gson> serl = new DefaultJsonSerializer();
+		Serializer serl = new DefaultJsonSerializer();
 		RequestBody body = RequestBody.create(JSON, serl.write(this.config, ServerConfiguration.class));
 
 		post(url, body, true);

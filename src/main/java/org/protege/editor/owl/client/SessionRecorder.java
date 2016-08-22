@@ -273,6 +273,10 @@ public class SessionRecorder extends OWLEditorKitHook implements OWLOntologyChan
 		return new ChangeListMinimizer().getMinimisedChanges(toReturn);
 	}
 
+	@Override
+	public void clear() {
+		reset();
+	}
 
 }
 

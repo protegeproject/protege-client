@@ -1,9 +1,9 @@
 package org.protege.editor.owl.client.admin.ui;
 
-import edu.stanford.protege.metaproject.Manager;
-import edu.stanford.protege.metaproject.api.PolicyFactory;
+import edu.stanford.protege.metaproject.ConfigurationManager;
 import edu.stanford.protege.metaproject.api.Operation;
 import edu.stanford.protege.metaproject.api.OperationId;
+import edu.stanford.protege.metaproject.api.PolicyFactory;
 import edu.stanford.protege.metaproject.api.Role;
 import edu.stanford.protege.metaproject.api.exception.IdAlreadyInUseException;
 import org.protege.editor.core.ui.error.ErrorLogPanel;
@@ -44,7 +44,7 @@ public class RoleDialogPanel extends JPanel implements VerifiedInputEditor {
     private JTextField id;
     private JLabel idLbl, nameLbl, descriptionLbl, operationsLbl;
     private Set<OperationId> operations = new HashSet<>();
-    private final JTextArea errorArea = new JTextArea(1, FIELD_WIDTH*2);
+    private final JTextArea errorArea = new JTextArea(1, FIELD_WIDTH * 2);
     private CheckBoxList<AugmentedJCheckBox<Operation>> operationCheckboxList = new CheckBoxList<>();
     private List<InputVerificationStatusChangedListener> listeners = new ArrayList<>();
     private boolean currentlyValid = false;
@@ -141,10 +141,10 @@ public class RoleDialogPanel extends JPanel implements VerifiedInputEditor {
         id.setText(role.getId().get());
         name.setText(role.getName().get());
         description.setText(role.getDescription().get());
-        for(OperationId op : role.getOperations()) {
+        for (OperationId op : role.getOperations()) {
             for (int i = 0; i < operationCheckboxList.getModel().getSize(); i++) {
                 AugmentedJCheckBox<Operation> cb = operationCheckboxList.getModel().getElementAt(i);
-                if(cb.getObject().getId().equals(op)) {
+                if (cb.getObject().getId().equals(op)) {
                     cb.setSelected(true);
                 }
             }
@@ -184,10 +184,9 @@ public class RoleDialogPanel extends JPanel implements VerifiedInputEditor {
         } catch (IdAlreadyInUseException e) {
             setValid(false);
             Throwable cause = e.getCause();
-            if(cause != null) {
+            if (cause != null) {
                 errorArea.setText(cause.getMessage());
-            }
-            else {
+            } else {
                 errorArea.setText(e.getMessage());
             }
         }
@@ -216,7 +215,7 @@ public class RoleDialogPanel extends JPanel implements VerifiedInputEditor {
     }
 
     private Role createRole() {
-        PolicyFactory f = Manager.getFactory();
+        PolicyFactory f = ConfigurationManager.getFactory();
         for (int i = 0; i < operationCheckboxList.getModel().getSize(); i++) {
             AugmentedJCheckBox<Operation> cb = operationCheckboxList.getModel().getElementAt(i);
             if (cb.isSelected()) {
@@ -247,7 +246,7 @@ public class RoleDialogPanel extends JPanel implements VerifiedInputEditor {
     public static Optional<Role> showDialog(OWLEditorKit editorKit) {
         RoleDialogPanel panel = new RoleDialogPanel(editorKit);
         Optional<Role> role = showDialog(editorKit, panel, "Add New Role");
-        if(role.isPresent()) {
+        if (role.isPresent()) {
             panel.addRole(role.get());
             return Optional.of(role.get());
         }
@@ -258,7 +257,7 @@ public class RoleDialogPanel extends JPanel implements VerifiedInputEditor {
         RoleDialogPanel panel = new RoleDialogPanel(editorKit);
         panel.setIsEditing(selectedRole);
         Optional<Role> role = showDialog(editorKit, panel, "Edit Role '" + selectedRole.getName().get() + "'");
-        if(role.isPresent()) {
+        if (role.isPresent()) {
             panel.updateRole(role.get());
             return Optional.of(role.get());
         }

@@ -1,8 +1,8 @@
 package org.protege.editor.owl.client.admin.ui;
 
-import edu.stanford.protege.metaproject.Manager;
-import edu.stanford.protege.metaproject.api.PolicyFactory;
+import edu.stanford.protege.metaproject.ConfigurationManager;
 import edu.stanford.protege.metaproject.api.PasswordHasher;
+import edu.stanford.protege.metaproject.api.PolicyFactory;
 import edu.stanford.protege.metaproject.api.SaltedPasswordDigest;
 import edu.stanford.protege.metaproject.api.User;
 import edu.stanford.protege.metaproject.api.exception.IdAlreadyInUseException;
@@ -242,12 +242,12 @@ public class UserDialogPanel extends JPanel implements VerifiedInputEditor {
     }
 
     private User createUser() {
-        PolicyFactory f = Manager.getFactory();
+        PolicyFactory f = ConfigurationManager.getFactory();
         return f.getUser(f.getUserId(id.getText()), f.getName(name.getText()), f.getEmailAddress(email.getText()));
     }
 
     private SaltedPasswordDigest hashPassword() {
-        PolicyFactory f = Manager.getFactory();
+        PolicyFactory f = ConfigurationManager.getFactory();
         PasswordHasher hasher = f.getPasswordHasher();
         return hasher.hash(f.getPlainPassword(new String(password.getPassword())), f.getSaltGenerator().generate());
     }

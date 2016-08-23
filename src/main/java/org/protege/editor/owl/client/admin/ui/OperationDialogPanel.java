@@ -1,9 +1,9 @@
 package org.protege.editor.owl.client.admin.ui;
 
-import edu.stanford.protege.metaproject.Manager;
-import edu.stanford.protege.metaproject.api.PolicyFactory;
+import edu.stanford.protege.metaproject.ConfigurationManager;
 import edu.stanford.protege.metaproject.api.Operation;
 import edu.stanford.protege.metaproject.api.OperationType;
+import edu.stanford.protege.metaproject.api.PolicyFactory;
 import edu.stanford.protege.metaproject.api.exception.IdAlreadyInUseException;
 import org.protege.editor.core.ui.error.ErrorLogPanel;
 import org.protege.editor.core.ui.util.AugmentedJTextField;
@@ -171,7 +171,7 @@ public class OperationDialogPanel extends JPanel implements VerifiedInputEditor 
     }
 
     private Operation createOperation() {
-        PolicyFactory f = Manager.getFactory();
+        PolicyFactory f = ConfigurationManager.getFactory();
         return f.getCustomOperation(f.getOperationId(id.getText()), f.getName(name.getText()), f.getDescription(description.getText()),
                 (OperationType)typesBox.getSelectedItem(), Operation.Scope.ONTOLOGY);
     }

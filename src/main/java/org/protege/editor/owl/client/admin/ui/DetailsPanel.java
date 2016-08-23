@@ -160,8 +160,8 @@ public class DetailsPanel extends JPanel implements Disposable {
         details.add(description);
         details.add(new Detail("Type", operation.getType().getName()));
         String scope = "";
-        if (operation.getScope().equals(Operation.Scope.METAPROJECT)) {
-            scope = "Metaproject";
+        if (operation.getScope().equals(Operation.Scope.POLICY)) {
+            scope = "Policy";
         } else if (operation.getScope().equals(Operation.Scope.ONTOLOGY)) {
             scope = "Ontology";
         } else if (operation.getScope().equals(Operation.Scope.SERVER)) {

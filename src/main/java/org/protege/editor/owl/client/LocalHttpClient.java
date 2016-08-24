@@ -84,7 +84,8 @@ public class LocalHttpClient implements Client, ClientSessionListener {
 		return config;
 	}
 
-	public LocalHttpClient(String user, String pwd, String serverAddress) throws Exception {
+	public LocalHttpClient(String user, String pwd, String serverAddress)
+			throws LoginTimeoutException, AuthorizationException, ClientRequestException{
 		req_client = new OkHttpClient.Builder().writeTimeout(360,  TimeUnit.SECONDS).readTimeout(360, TimeUnit.SECONDS).build();
 		this.serverAddress = serverAddress;
 		this.userInfo = login(user, pwd);
@@ -167,7 +168,7 @@ public class LocalHttpClient implements Client, ClientSessionListener {
 	}
 
 	@Override
-	public List<User> getAllUsers() throws AuthorizationException, ClientRequestException {
+	public List<User> getAllUsers() {
 		return new ArrayList<>(config.getUsers());
 	}
 
@@ -179,7 +180,9 @@ public class LocalHttpClient implements Client, ClientSessionListener {
 			if (password.isPresent()) {
 				Password newpassword = password.get();
 				if (newpassword instanceof SaltedPasswordDigest) {
-					config = new ConfigurationBuilder(config).registerUser(newUser.getId(), (SaltedPasswordDigest) newpassword).createServerConfiguration();
+					config = new ConfigurationBuilder(config).registerUser(
+							newUser.getId(),
+							(SaltedPasswordDigest) newpassword).createServerConfiguration();
 				}
 			}
 			putConfig();
@@ -214,7 +217,7 @@ public class LocalHttpClient implements Client, ClientSessionListener {
 	}
 
 	public ServerDocument createProject(Project proj)
-			throws LoginTimeoutException, LoginTimeoutException, AuthorizationException, ClientRequestException {
+			throws LoginTimeoutException, AuthorizationException, ClientRequestException {
 		/*
 		 * Prepare the request body
 		 */
@@ -605,25 +608,24 @@ public class LocalHttpClient implements Client, ClientSessionListener {
 	}
 
 	@Override
-	public List<Project> getProjects(UserId userId) throws ClientRequestException {
+	public List<Project> getProjects(UserId userId) {
 		return new ArrayList<>(config.getProjects(userId));
 	}
 
 	@Override
-	public List<Project> getAllProjects() throws AuthorizationException, ClientRequestException {
+	public List<Project> getAllProjects() {
 		return new ArrayList<>(config.getProjects());
 	}
 
 	@Override
 	public void updateProject(ProjectId projectId, Project updatedProject)
-			throws AuthorizationException, ClientRequestException {
+			throws LoginTimeoutException, AuthorizationException, ClientRequestException {
 		config = new ConfigurationBuilder(config).setProject(projectId, updatedProject).createServerConfiguration();
 		putConfig();
 	}
 
 	@Override
-	public Map<ProjectId, List<Role>> getRoles(UserId userId, GlobalPermissions globalPermissions)
-			throws AuthorizationException, ClientRequestException {
+	public Map<ProjectId, List<Role>> getRoles(UserId userId, GlobalPermissions globalPermissions) {
 		Map<ProjectId, List<Role>> roleMap = new HashMap<>();
 		for (Project project : getAllProjects()) {
 			roleMap.put(project.getId(), getRoles(userId, project.getId(), globalPermissions));
@@ -632,13 +634,12 @@ public class LocalHttpClient implements Client, ClientSessionListener {
 	}
 
 	@Override
-	public List<Role> getRoles(UserId userId, ProjectId projectId, GlobalPermissions globalPermissions)
-			throws AuthorizationException, ClientRequestException {
+	public List<Role> getRoles(UserId userId, ProjectId projectId, GlobalPermissions globalPermissions) {
 		return new ArrayList<>(config.getRoles(userId, projectId, globalPermissions));
 	}
 
 	@Override
-	public List<Role> getAllRoles() throws AuthorizationException, ClientRequestException {
+	public List<Role> getAllRoles() {
 		return new ArrayList<>(config.getRoles());
 	}
 	
@@ -652,7 +653,7 @@ public class LocalHttpClient implements Client, ClientSessionListener {
 	}
 
 	@Override
-	public void createRole(Role newRole) throws AuthorizationException, ClientRequestException {
+	public void createRole(Role newRole) throws LoginTimeoutException, AuthorizationException, ClientRequestException {
 		try {
 			config = new ConfigurationBuilder(config).addRole(newRole).createServerConfiguration();
 			putConfig();
@@ -663,7 +664,7 @@ public class LocalHttpClient implements Client, ClientSessionListener {
 	}
 
 	@Override
-	public void deleteRole(RoleId roleId) throws AuthorizationException, ClientRequestException {
+	public void deleteRole(RoleId roleId) throws LoginTimeoutException, AuthorizationException, ClientRequestException {
 		try {
 			config = new ConfigurationBuilder(config).removeRole(config.getRole(roleId)).createServerConfiguration();
 			putConfig();
@@ -675,14 +676,13 @@ public class LocalHttpClient implements Client, ClientSessionListener {
 
 	@Override
 	public void updateRole(RoleId roleId, Role updatedRole)
-			throws AuthorizationException, ClientRequestException {
+			throws LoginTimeoutException, AuthorizationException, ClientRequestException {
 		config = new ConfigurationBuilder(config).setRole(roleId, updatedRole).createServerConfiguration();
 		putConfig();
 	}
 
 	@Override
-	public Map<ProjectId, List<Operation>> getOperations(UserId userId)
-			throws AuthorizationException, ClientRequestException {
+	public Map<ProjectId, List<Operation>> getOperations(UserId userId) {
 		Map<ProjectId, List<Operation>> operationMap = new HashMap<>();
 		for (Project project : getAllProjects()) {
 			operationMap.put(project.getId(), getOperations(userId, project.getId()));
@@ -691,14 +691,12 @@ public class LocalHttpClient implements Client, ClientSessionListener {
 	}
 
 	@Override
-	public List<Operation> getOperations(UserId userId, ProjectId projectId)
-			throws AuthorizationException, ClientRequestException {
+	public List<Operation> getOperations(UserId userId, ProjectId projectId) {
 		return new ArrayList<>(config.getOperations(userId, projectId, GlobalPermissions.INCLUDED));
 	}
 
 	@Override
-	public List<Operation> getOperations(RoleId roleId)
-			throws AuthorizationException, ClientRequestException {
+	public List<Operation> getOperations(RoleId roleId) throws ClientRequestException {
 		try {
 			return new ArrayList<>(config.getOperations(config.getRole(roleId)));
 		} catch (UnknownRoleIdException e) {
@@ -708,13 +706,13 @@ public class LocalHttpClient implements Client, ClientSessionListener {
 	}
 
 	@Override
-	public List<Operation> getAllOperations() throws AuthorizationException, ClientRequestException {
+	public List<Operation> getAllOperations() {
 		return new ArrayList<>(config.getOperations());
 	}
 
 	@Override
 	public void createOperation(Operation operation)
-			throws AuthorizationException, ClientRequestException {
+			throws LoginTimeoutException, AuthorizationException, ClientRequestException {
 		try {
 			config = new ConfigurationBuilder(config).addOperation(operation).createServerConfiguration();
 			putConfig();
@@ -726,7 +724,7 @@ public class LocalHttpClient implements Client, ClientSessionListener {
 
 	@Override
 	public void deleteOperation(OperationId operationId)
-			throws AuthorizationException, ClientRequestException {
+			throws LoginTimeoutException, AuthorizationException, ClientRequestException {
 		try {
 			config = new ConfigurationBuilder(config).removeOperation(config.getOperation(operationId)).createServerConfiguration();
 			putConfig();
@@ -738,39 +736,38 @@ public class LocalHttpClient implements Client, ClientSessionListener {
 
 	@Override
 	public void updateOperation(OperationId operationId, Operation updatedOperation)
-			throws AuthorizationException, ClientRequestException {
+			throws LoginTimeoutException, AuthorizationException, ClientRequestException {
 		config = new ConfigurationBuilder(config).setOperation(operationId, updatedOperation).createServerConfiguration();
 		putConfig();
 	}
 
 	@Override
 	public void assignRole(UserId userId, ProjectId projectId, RoleId roleId)
-			throws AuthorizationException, ClientRequestException {
+			throws LoginTimeoutException, AuthorizationException, ClientRequestException {
 		config = new ConfigurationBuilder(config).addPolicy(userId, projectId, roleId).createServerConfiguration();
 		putConfig();
 	}
 
 	@Override
 	public void retractRole(UserId userId, ProjectId projectId, RoleId roleId)
-			throws AuthorizationException, ClientRequestException {
+			throws LoginTimeoutException, AuthorizationException, ClientRequestException {
 		config = new ConfigurationBuilder(config).removePolicy(userId, projectId, roleId).createServerConfiguration();
 		putConfig();
 	}
 
 	@Override
-	public Host getHost() throws AuthorizationException, ClientRequestException {
+	public Host getHost() {
 		return config.getHost();
 	}
 
 	@Override
-	public void setHostAddress(URI hostAddress) throws AuthorizationException, ClientRequestException {
+	public void setHostAddress(URI hostAddress) {
 		Host h = factory.getHost(hostAddress, Optional.empty());
 		config = new ConfigurationBuilder(config).setHost(h).createServerConfiguration();
 	}
 
 	@Override
-	public void setSecondaryPort(int portNumber)
-			throws AuthorizationException, ClientRequestException {
+	public void setSecondaryPort(int portNumber) {
 		Host h = config.getHost();
 		Port p = factory.getPort(portNumber);
 		Host nh = factory.getHost(h.getUri(), Optional.of(p));
@@ -778,33 +775,32 @@ public class LocalHttpClient implements Client, ClientSessionListener {
 	}
 
 	@Override
-	public String getRootDirectory() throws AuthorizationException, ClientRequestException {
+	public String getRootDirectory() {
 		return config.getServerRoot().toString();
 	}
 
 	@Override
 	public void setRootDirectory(String rootDirectory)
-			throws AuthorizationException, ClientRequestException {
+			throws LoginTimeoutException, AuthorizationException, ClientRequestException {
 		config = new ConfigurationBuilder(config).setServerRoot(new File(rootDirectory)).createServerConfiguration();
 		putConfig();
 	}
 
 	@Override
-	public Map<String, String> getServerProperties()
-			throws AuthorizationException, ClientRequestException {
+	public Map<String, String> getServerProperties() {
 		return config.getProperties();
 	}
 
 	@Override
 	public void setServerProperty(String property, String value)
-			throws AuthorizationException, ClientRequestException {
+			throws LoginTimeoutException, AuthorizationException, ClientRequestException {
 		config = new ConfigurationBuilder(config).addProperty(property, value).createServerConfiguration();
 		putConfig();
 	}
 
 	@Override
 	public void unsetServerProperty(String property)
-			throws AuthorizationException, ClientRequestException {
+			throws LoginTimeoutException, AuthorizationException, ClientRequestException {
 		config = new ConfigurationBuilder(config).removeProperty(property).createServerConfiguration();
 		putConfig();
 	}
@@ -815,38 +811,30 @@ public class LocalHttpClient implements Client, ClientSessionListener {
 	}
 
 	@Override
-	public List<Project> getProjects() throws ClientRequestException {
+	public List<Project> getProjects() {
 		return getProjects(userId);
 	}
 
 	@Override
-	public List<Role> getActiveRoles() throws ClientRequestException {
-		try {
-			List<Role> activeRoles = new ArrayList<>();
-			if (getRemoteProject().isPresent()) {
-				activeRoles = getRoles(userId, getRemoteProject().get(), GlobalPermissions.INCLUDED);
-			}
-			return activeRoles;
-		} catch (AuthorizationException e) {
-			throw new ClientRequestException(e.getMessage(), e);
+	public List<Role> getActiveRoles() {
+		List<Role> activeRoles = new ArrayList<>();
+		if (getRemoteProject().isPresent()) {
+			activeRoles = getRoles(userId, getRemoteProject().get(), GlobalPermissions.INCLUDED);
 		}
+		return activeRoles;
 	}
 
 	@Override
-	public List<Operation> getActiveOperations() throws ClientRequestException {
+	public List<Operation> getActiveOperations() {
 		List<Operation> activeOperations = new ArrayList<>();
 		if (getRemoteProject().isPresent()) {
-			try {
-				activeOperations = getOperations(userId, getRemoteProject().get());
-			} catch (AuthorizationException e) {
-				throw new ClientRequestException(e.getMessage(), e);
-			}
+			activeOperations = getOperations(userId, getRemoteProject().get());
 		}
 		return activeOperations;
 	}
 
-	private Response post(String url, RequestBody body, boolean cred) throws LoginTimeoutException,
-			AuthorizationException, ClientRequestException {
+	private Response post(String url, RequestBody body, boolean cred)
+			throws LoginTimeoutException, AuthorizationException, ClientRequestException {
 		Request request = null;
 		if (cred) {
 			request = new Request.Builder()
@@ -995,7 +983,8 @@ public class LocalHttpClient implements Client, ClientSessionListener {
 		}
 	}
 
-	private void throwRequestExceptions(Response response) throws AuthorizationException, ClientRequestException {
+	private void throwRequestExceptions(Response response)
+			throws LoginTimeoutException, AuthorizationException, ClientRequestException {
 		String originalMessage = response.header("Error-Message");
 		if (originalMessage == null) {
 			originalMessage = "Unknown server error";
@@ -1199,7 +1188,6 @@ public class LocalHttpClient implements Client, ClientSessionListener {
 
 	private boolean queryAdminPolicy(UserId userId, OperationId operationId) {
 		return (adminClient && config.isOperationAllowed(operationId, userId));
-
 	}
 
 	private Optional<ProjectId> getRemoteProject() {
@@ -1208,9 +1196,9 @@ public class LocalHttpClient implements Client, ClientSessionListener {
 
 	@Override
 	public ServerDocument createProject(ProjectId projectId, Name projectName, Description description, UserId owner,
-										Optional<ProjectOptions> options, Optional<CommitBundle> initialCommit)
+			Optional<ProjectOptions> options, Optional<CommitBundle> initialCommit)
 			throws AuthorizationException, ClientRequestException {
-		// TODO Auto-generated method stub
+		// See createProject(Project)
 		return null;
 	}
 }

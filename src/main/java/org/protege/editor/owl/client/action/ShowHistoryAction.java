@@ -17,7 +17,6 @@ import javax.swing.KeyStroke;
 import org.protege.editor.owl.client.api.exception.AuthorizationException;
 import org.protege.editor.owl.client.api.exception.ClientRequestException;
 import org.protege.editor.owl.client.api.exception.LoginTimeoutException;
-import org.protege.editor.owl.client.api.exception.SynchronizationException;
 import org.protege.editor.owl.client.event.ClientSessionChangeEvent;
 import org.protege.editor.owl.client.event.ClientSessionChangeEvent.EventCategory;
 import org.protege.editor.owl.client.event.ClientSessionListener;
@@ -85,7 +84,7 @@ public class ShowHistoryAction extends AbstractClientAction implements ClientSes
         openShowHistoryDialog();
     }
 
-    private JDialog createDialog() throws AuthorizationException, ClientRequestException, SynchronizationException {
+    private JDialog createDialog() throws LoginTimeoutException, AuthorizationException, ClientRequestException {
         final JDialog dialog = new JDialog(null, "Browse Change History", Dialog.ModalityType.MODELESS);
         ChangeHistoryPanel changeHistoryPanel = new ChangeHistoryPanel(activeVersionOntology.get(), getOWLEditorKit());
         changeHistoryPanel.getInputMap(JComponent.WHEN_ANCESTOR_OF_FOCUSED_COMPONENT).put(KeyStroke.getKeyStroke(KeyEvent.VK_ESCAPE, 0), "CLOSE_DIALOG");

@@ -69,7 +69,9 @@ public class UserPanel extends JPanel implements Disposable {
                 userList.clearSelection();
             }
         } else if (event.equals(AdminTabEvent.CONFIGURATION_RESET)) {
-        	listUsers();
+            if(session.getActiveClient() != null) {
+                listUsers();
+            }
         }
     };
 
@@ -77,8 +79,10 @@ public class UserPanel extends JPanel implements Disposable {
         if(event.hasCategory(ClientSessionChangeEvent.EventCategory.USER_LOGIN) || event.hasCategory(ClientSessionChangeEvent.EventCategory.USER_LOGOUT)) {
             client = session.getActiveClient();
             removeAll();
-            initUi();
-            revalidate();
+            if(client != null) {
+                initUi();
+                revalidate();
+            }
         }
     };
 
@@ -293,6 +297,7 @@ public class UserPanel extends JPanel implements Disposable {
 
     @Override
     public void dispose() {
+        userList.setCellRenderer(new DefaultListCellRenderer());
         userList.removeListSelectionListener(listSelectionListener);
         configManager.removeListener(tabListener);
         session.removeListener(sessionListener);

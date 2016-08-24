@@ -153,11 +153,11 @@ public class OpenFromServerPanel extends JPanel {
     protected void openOntologyDocument(int row) {
         ProjectId pid = remoteProjectModel.getValueAt(row);
         try {
-            Client client = clientSession.getActiveClient();
-            ServerDocument serverDocument = client.openProject(pid);
+            LocalHttpClient httpClient = (LocalHttpClient) clientSession.getActiveClient();
+            ServerDocument serverDocument = httpClient.openProject(pid);
             
             SessionRecorder.getInstance(this.editorKit).stopRecording();
-            VersionedOWLOntology vont = ((LocalHttpClient) client).buildVersionedOntology(serverDocument, owlManager, pid);
+            VersionedOWLOntology vont = httpClient.buildVersionedOntology(serverDocument, owlManager, pid);
             SessionRecorder.getInstance(this.editorKit).startRecording();
             
             clientSession.setActiveProject(pid, vont);

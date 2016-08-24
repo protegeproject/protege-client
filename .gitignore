@@ -16,6 +16,5 @@ plugin.xml
 *.iml
 build/
 
-src/main/java/test/*
-
 *.uml
+classes/*

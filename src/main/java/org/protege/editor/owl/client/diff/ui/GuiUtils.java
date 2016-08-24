@@ -2,6 +2,8 @@ package org.protege.editor.owl.client.diff.ui;
 
 import org.protege.editor.core.ui.error.ErrorLogPanel;
 import org.protege.editor.owl.client.diff.model.ChangeMode;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import javax.imageio.ImageIO;
 import javax.swing.*;
@@ -11,6 +13,7 @@ import javax.swing.border.MatteBorder;
 import java.awt.*;
 import java.awt.image.BufferedImage;
 import java.io.IOException;
+import java.net.URL;
 import java.text.SimpleDateFormat;
 import java.util.Date;
 
@@ -21,6 +24,7 @@ import static com.google.common.base.Preconditions.checkNotNull;
  * Stanford Center for Biomedical Informatics Research
  */
 public class GuiUtils {
+    private static final Logger logger = LoggerFactory.getLogger(GuiUtils.class.getName());
 
     /* constants */
 
@@ -61,12 +65,19 @@ public class GuiUtils {
         BufferedImage icon = null;
         ClassLoader classLoader = GuiUtils.class.getClassLoader();
         try {
-            icon = ImageIO.read(checkNotNull(classLoader.getResource(filename)));
-        } catch (IOException e) {
+            URL url = classLoader.getResource(checkNotNull(filename));
+            if(url != null) {
+                icon = ImageIO.read(url);
+            }
+        } catch (IOException | NullPointerException e) {
+            logger.info("Image icon for filename " + filename + " could not be loaded.");
             ErrorLogPanel.showErrorDialog(e);
         }
-        Image img = icon.getScaledInstance(width, height, Image.SCALE_SMOOTH);
-        return new ImageIcon(img);
+        if(icon != null) {
+            return new ImageIcon(icon.getScaledInstance(width, height, Image.SCALE_SMOOTH));
+        } else {
+            return new ImageIcon();
+        }
     }
 
     public static void setComponentBackground(Component c, ChangeMode mode) {

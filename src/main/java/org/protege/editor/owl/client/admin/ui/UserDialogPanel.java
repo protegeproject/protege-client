@@ -215,6 +215,9 @@ public class UserDialogPanel extends JPanel implements VerifiedInputEditor {
 
     private boolean checkInputs() throws NonMatchingPasswordException, IdAlreadyInUseException {
         boolean allValid = true;
+        if(isUserIdInUse(id.getText())) {
+            throw new IdAlreadyInUseException("User identifier '" + id.getText() + "' is already in use by another user");
+        }
         if(name.getText().trim().isEmpty()) {
             allValid = false;
         }
@@ -235,6 +238,20 @@ public class UserDialogPanel extends JPanel implements VerifiedInputEditor {
             }
         }
         return allValid;
+    }
+
+    private boolean isUserIdInUse(String id) {
+        Client client = ClientSession.getInstance(editorKit).getActiveClient();
+        try {
+            for(User user : client.getAllUsers()) {
+                if(user.getId().get().equals(id)) {
+                    return true;
+                }
+            }
+        } catch (AuthorizationException | ClientRequestException e) {
+            /* do nothing */
+        }
+        return false;
     }
 
     private boolean isUsingDefaultAuthentication() {

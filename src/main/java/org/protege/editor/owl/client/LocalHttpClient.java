@@ -339,6 +339,27 @@ public class LocalHttpClient implements Client, ClientSessionListener {
 				response.body().close();
 			}
 		}
+	}	
+
+	private List<String> retrieveCodesFromServerResponse(Response response) throws ClientRequestException {
+		try {
+			ObjectInputStream ois = new ObjectInputStream(response.body().byteStream());
+			@SuppressWarnings("unchecked")
+			List<String> codes = (List<String>) ois.readObject();
+			return codes;
+		} catch (IOException e) {
+			logger.error(e.getMessage(), e);
+			throw new ClientRequestException("Failed to receive data (see error log for details)", e);
+		} catch (ClassNotFoundException e) {
+			logger.error(e.getMessage(), e);
+			throw new ClientRequestException("Internal error, server sent wrong object back", e);
+			
+		} finally {
+			if (response != null) {
+				response.body().close();
+			}
+		}
+		
 	}
 
 	public VersionedOWLOntology buildVersionedOntology(ServerDocument sdoc, OWLOntologyManager owlManager,
@@ -924,20 +945,10 @@ public class LocalHttpClient implements Client, ClientSessionListener {
 		}
 	}
 
-	public String getCode() throws LoginTimeoutException, AuthorizationException, ClientRequestException {
-		Response response = get(HTTPServer.GEN_CODE);
-		try {
-			return response.body().string();
-		} catch (IOException e) {
-			logger.error(e.getMessage(), e);
-			throw new ClientRequestException("Failed to receive data (see error log for details)", e);
-		} finally {
-			if (response != null) {
-				response.body().close();
-			}
-		}
-	}
-
+	public List<String> getCodes(int no) throws LoginTimeoutException, AuthorizationException, ClientRequestException {
+		return retrieveCodesFromServerResponse(get(HTTPServer.GEN_CODE + "?count=" + no));		
+	}	
+ 
 	public void putConfig() throws LoginTimeoutException, AuthorizationException, ClientRequestException {
 		if (saveCancelSemantics) {
 			configStateChanged = true;

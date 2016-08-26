@@ -242,6 +242,7 @@ public class ProjectDialogPanel extends JPanel implements VerifiedInputEditor {
         optionsTable = new ProjectOptionsTable(optionsTableModel);
         optionsTable.setPreferredScrollableViewportSize(optionsTable.getPreferredSize());
         optionsTable.getSelectionModel().addListSelectionListener(rowSelectionListener);
+        optionsTable.setAutoResizeMode(JTable.AUTO_RESIZE_ALL_COLUMNS);
         setColumnsWidth(optionsTable, 125, 300);
 
         JScrollPane scrollPane = new JScrollPane(optionsTable, ScrollPaneConstants.VERTICAL_SCROLLBAR_AS_NEEDED, ScrollPaneConstants.HORIZONTAL_SCROLLBAR_AS_NEEDED);

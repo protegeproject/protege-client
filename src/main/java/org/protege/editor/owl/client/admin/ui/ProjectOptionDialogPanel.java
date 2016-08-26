@@ -62,17 +62,15 @@ public class ProjectOptionDialogPanel extends JPanel implements VerifiedInputEdi
     }
 
     private void initUi() {
-        JPanel holderPanel = new JPanel(new GridBagLayout());
-        add(holderPanel, BorderLayout.CENTER);
-
+        setLayout(new GridBagLayout());
         Insets insets = new Insets(0, 2, 2, 2);
         int rowIndex = 0;
 
-        holderPanel.add(keyLbl, new GridBagConstraints(0, rowIndex, 1, 1, 0.0, 0.0, GridBagConstraints.BASELINE_TRAILING, GridBagConstraints.NONE, insets, 0, 0));
-        holderPanel.add(key, new GridBagConstraints(1, rowIndex, 1, 1, 100.0, 0.0, GridBagConstraints.BASELINE_LEADING, GridBagConstraints.HORIZONTAL, insets, 0, 0));
+        add(keyLbl, new GridBagConstraints(0, rowIndex, 1, 1, 0.0, 0.0, GridBagConstraints.BASELINE_TRAILING, GridBagConstraints.NONE, insets, 0, 0));
+        add(key, new GridBagConstraints(1, rowIndex, 1, 1, 1.0, 0.0, GridBagConstraints.BASELINE_LEADING, GridBagConstraints.HORIZONTAL, insets, 0, 0));
         rowIndex++;
-        holderPanel.add(valueLbl, new GridBagConstraints(0, rowIndex, 1, 1, 0.0, 0.0, GridBagConstraints.BASELINE_TRAILING, GridBagConstraints.NONE, insets, 0, 0));
-        holderPanel.add(new JScrollPane(values), new GridBagConstraints(1, rowIndex, 1, 1, 100.0, 0.0, GridBagConstraints.BASELINE_TRAILING, GridBagConstraints.HORIZONTAL, new Insets(0, 2, 0, 2), 0, 0));
+        add(valueLbl, new GridBagConstraints(0, rowIndex, 1, 1, 0.0, 0.0, GridBagConstraints.BASELINE_TRAILING, GridBagConstraints.NONE, insets, 0, 0));
+        add(new JScrollPane(values), new GridBagConstraints(1, rowIndex, 1, 1, 1.0, 1.0, GridBagConstraints.BASELINE_TRAILING, GridBagConstraints.BOTH, new Insets(0, 2, 0, 2), 0, 0));
         rowIndex++;
 
         JPanel buttonsPanel = new JPanel(new FlowLayout(FlowLayout.LEFT, 0, 0));
@@ -97,7 +95,7 @@ public class ProjectOptionDialogPanel extends JPanel implements VerifiedInputEdi
         buttonsPanel.add(removeValueBtn);
         buttonsPanel.add(editValueBtn);
 
-        holderPanel.add(buttonsPanel, new GridBagConstraints(1, rowIndex, 1, 1, 100.0, 0.0, GridBagConstraints.BASELINE_TRAILING, GridBagConstraints.HORIZONTAL, insets, 0, 0));
+        add(buttonsPanel, new GridBagConstraints(1, rowIndex, 1, 1, 1.0, 0.0, GridBagConstraints.BASELINE_TRAILING, GridBagConstraints.HORIZONTAL, insets, 0, 0));
         rowIndex++;
 
         errorArea.setBackground(null);
@@ -107,7 +105,7 @@ public class ProjectOptionDialogPanel extends JPanel implements VerifiedInputEdi
         errorArea.setLineWrap(true);
         errorArea.setFont(errorArea.getFont().deriveFont(12.0f));
         errorArea.setForeground(Color.RED);
-        holderPanel.add(errorArea, new GridBagConstraints(0, rowIndex, 2, 1, 0, 0, GridBagConstraints.SOUTHWEST, GridBagConstraints.NONE, new Insets(12, 2, 0, 2), 0, 0));
+        add(errorArea, new GridBagConstraints(0, rowIndex, 2, 1, 0, 0, GridBagConstraints.SOUTHWEST, GridBagConstraints.NONE, new Insets(12, 2, 0, 2), 0, 0));
     }
 
     private ListSelectionListener listSelectionListener = e -> {
@@ -190,7 +188,7 @@ public class ProjectOptionDialogPanel extends JPanel implements VerifiedInputEdi
         Insets insets = new Insets(0, 2, 2, 2);
         valuePanel.add(new JLabel("Value:"), new GridBagConstraints(0, 0, 1, 1, 0.0, 0.0,
                 GridBagConstraints.BASELINE_TRAILING, GridBagConstraints.NONE, insets, 0, 0));
-        valuePanel.add(valueField, new GridBagConstraints(1, 0, 1, 1, 100.0, 0.0,
+        valuePanel.add(valueField, new GridBagConstraints(1, 0, 1, 1, 1.0, 0.0,
                 GridBagConstraints.BASELINE_LEADING, GridBagConstraints.HORIZONTAL, insets, 0, 0));
 
         int response = JOptionPaneEx.showConfirmDialog(

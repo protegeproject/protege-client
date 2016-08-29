@@ -21,7 +21,7 @@ import org.protege.editor.owl.client.event.ClientSessionChangeEvent.EventCategor
 import org.protege.editor.owl.client.event.ClientSessionListener;
 import org.protege.editor.owl.client.util.ClientUtils;
 import org.protege.editor.owl.server.api.CommitBundle;
-import org.protege.editor.owl.server.http.HTTPServer;
+import org.protege.editor.owl.server.http.ServerEndpoints;
 import org.protege.editor.owl.server.http.messages.EVSHistory;
 import org.protege.editor.owl.server.http.messages.HttpAuthResponse;
 import org.protege.editor.owl.server.http.messages.LoginCreds;
@@ -116,7 +116,7 @@ public class LocalHttpClient implements Client, ClientSessionListener {
 	private void login(String username, String password)
 			throws LoginTimeoutException, AuthorizationException, ClientRequestException {
 		LoginCreds creds = new LoginCreds(username, password);
-		Response response = post(HTTPServer.LOGIN,
+		Response response = post(ServerEndpoints.LOGIN,
 				RequestBody.create(JsonContentType, serl.write(creds, LoginCreds.class)),
 				false); // send the request to server
 		userInfo = retrieveUserInfoFromServerResponse(response);
@@ -238,7 +238,7 @@ public class LocalHttpClient implements Client, ClientSessionListener {
 			throws LoginTimeoutException, AuthorizationException, ClientRequestException {
 		try {
 			ByteArrayOutputStream b = writeRequestArgumentsIntoByteStream(project);
-			Response response = post(HTTPServer.PROJECT,
+			Response response = post(ServerEndpoints.PROJECT,
 					RequestBody.create(ApplicationContentType, b.toByteArray()),
 					true); // send the request to server
 			ServerDocument sdoc = retrieveServerDocumentFromServerResponse(response);
@@ -284,7 +284,7 @@ public class LocalHttpClient implements Client, ClientSessionListener {
 	@Override
 	public void deleteProject(ProjectId projectId, boolean includeFile)
 			throws AuthorizationException, LoginTimeoutException, ClientRequestException {
-		String requestUrl = HTTPServer.PROJECT + "?projectid=" + projectId.get();
+		String requestUrl = ServerEndpoints.PROJECT + "?projectid=" + projectId.get();
 		delete(requestUrl, true); // send request to server
 		initConfig();
 	}
@@ -295,7 +295,7 @@ public class LocalHttpClient implements Client, ClientSessionListener {
 		if (getClientType() == UserType.ADMIN) { // admin clients cannot edit/browse ontologies
 			throw new ClientRequestException("Admin clients cannot open projects");
 		}
-		String requestUrl = HTTPServer.PROJECT + "?projectid=" + projectId.get();
+		String requestUrl = ServerEndpoints.PROJECT + "?projectid=" + projectId.get();
 		Response response = get(requestUrl); // send request to server
 		return retrieveServerDocumentFromServerResponse(response);
 	}
@@ -305,7 +305,7 @@ public class LocalHttpClient implements Client, ClientSessionListener {
 			throws AuthorizationException, LoginTimeoutException, SynchronizationException, ClientRequestException {
 		try {
 			ByteArrayOutputStream b = writeRequestArgumentsIntoByteStream(projectId, commitBundle);
-			Response response = post(HTTPServer.COMMIT,
+			Response response = post(ServerEndpoints.COMMIT,
 					RequestBody.create(ApplicationContentType, b.toByteArray()),
 					true); // send request to server
 			return retrieveChangeHistoryFromServerResponse(response);
@@ -408,7 +408,7 @@ public class LocalHttpClient implements Client, ClientSessionListener {
 		try {
 			OWLOntology ont = OWLManager.createOWLOntologyManager().loadOntologyFromOntologyDocument(file);
 			ByteArrayOutputStream b = writeRequestArgumentsIntoByteStream(sdoc, new SnapShot(ont));
-			Response response = post(HTTPServer.PROJECT_SNAPSHOT,
+			Response response = post(ServerEndpoints.PROJECT_SNAPSHOT,
 					RequestBody.create(ApplicationContentType, b.toByteArray()),
 					true); // send request to server
 			return retrieveOntologyFromServerResponse(ont, response);
@@ -474,7 +474,7 @@ public class LocalHttpClient implements Client, ClientSessionListener {
 			ClientRequestException {
 		try {
 			ByteArrayOutputStream b = writeRequestArgumentsIntoByteStream(sdoc);
-			Response response = post(HTTPServer.PROJECT_SNAPSHOT_GET,
+			Response response = post(ServerEndpoints.PROJECT_SNAPSHOT_GET,
 					RequestBody.create(ApplicationContentType, b.toByteArray()),
 					true); // send request to server
 			SnapShot snapshot = retrieveDocumentSnapshotFromServerResponse(response);
@@ -515,7 +515,7 @@ public class LocalHttpClient implements Client, ClientSessionListener {
 		try {
 			HistoryFile historyFile = sdoc.getHistoryFile();
 			ByteArrayOutputStream b = writeRequestArgumentsIntoByteStream(historyFile);
-			Response response = post(HTTPServer.ALL_CHANGES,
+			Response response = post(ServerEndpoints.ALL_CHANGES,
 					RequestBody.create(ApplicationContentType, b.toByteArray()),
 					true); // send request to server
 			return retrieveChangeHistoryFromServerResponse(response);
@@ -539,7 +539,7 @@ public class LocalHttpClient implements Client, ClientSessionListener {
 		try {
 			HistoryFile historyFile = vont.getServerDocument().getHistoryFile();
 			ByteArrayOutputStream b = writeRequestArgumentsIntoByteStream(historyFile);
-			Response response = post(HTTPServer.HEAD,
+			Response response = post(ServerEndpoints.HEAD,
 					RequestBody.create(ApplicationContentType, b.toByteArray()),
 					true); // send request to server
 			return retrieveDocumentRevisionFromServerResponse(response);
@@ -577,7 +577,7 @@ public class LocalHttpClient implements Client, ClientSessionListener {
 		try {
 			HistoryFile historyFile = sdoc.getHistoryFile();
 			ByteArrayOutputStream b = writeRequestArgumentsIntoByteStream(start, historyFile);
-			Response response = post(HTTPServer.LATEST_CHANGES,
+			Response response = post(ServerEndpoints.LATEST_CHANGES,
 					RequestBody.create(ApplicationContentType, b.toByteArray()),
 					true); // send request to server
 			return retrieveChangeHistoryFromServerResponse(response);
@@ -932,7 +932,7 @@ public class LocalHttpClient implements Client, ClientSessionListener {
 
 	private ServerConfiguration getConfig() throws LoginTimeoutException, AuthorizationException,
 			ClientRequestException {
-		Response response = get(HTTPServer.METAPROJECT);
+		Response response = get(ServerEndpoints.METAPROJECT);
 		try {
 			return ConfigurationManager.getConfigurationLoader().loadConfiguration(new InputStreamReader(response.body().byteStream()));
 		} catch (ObjectConversionException e) {
@@ -946,7 +946,7 @@ public class LocalHttpClient implements Client, ClientSessionListener {
 	}
 
 	public List<String> getCodes(int no) throws LoginTimeoutException, AuthorizationException, ClientRequestException {
-		return retrieveCodesFromServerResponse(get(HTTPServer.GEN_CODE + "?count=" + no));		
+		return retrieveCodesFromServerResponse(get(ServerEndpoints.GEN_CODE + "?count=" + no));		
 	}	
  
 	public void putConfig() throws LoginTimeoutException, AuthorizationException, ClientRequestException {
@@ -962,7 +962,7 @@ public class LocalHttpClient implements Client, ClientSessionListener {
 	}
 
 	public void reallyPutConfig() throws LoginTimeoutException, AuthorizationException, ClientRequestException {
-		post(HTTPServer.METAPROJECT,
+		post(ServerEndpoints.METAPROJECT,
 				RequestBody.create(JsonContentType, serl.write(this.serverConfiguration, ServerConfiguration.class)),
 				true); // send request to server
 		sleep(1000); // give the server some time to reboot
@@ -982,7 +982,7 @@ public class LocalHttpClient implements Client, ClientSessionListener {
 		try {
 			EVSHistory evsHistory = new EVSHistory(code, name, operation, reference);
 			ByteArrayOutputStream b = writeRequestArgumentsIntoByteStream(evsHistory);
-			post(HTTPServer.EVS_REC,
+			post(ServerEndpoints.EVS_REC,
 					RequestBody.create(ApplicationContentType, b.toByteArray()),
 					true); // send request to server
 		} catch (IOException e) {

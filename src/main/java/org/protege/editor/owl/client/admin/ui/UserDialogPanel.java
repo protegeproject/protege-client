@@ -215,7 +215,7 @@ public class UserDialogPanel extends JPanel implements VerifiedInputEditor {
 
     private boolean checkInputs() throws NonMatchingPasswordException, IdAlreadyInUseException {
         boolean allValid = true;
-        if(isUserIdInUse(id.getText())) {
+        if(!isEditing && isUserIdInUse(id.getText())) {
             throw new IdAlreadyInUseException("User identifier '" + id.getText() + "' is already in use by another user");
         }
         if(name.getText().trim().isEmpty()) {

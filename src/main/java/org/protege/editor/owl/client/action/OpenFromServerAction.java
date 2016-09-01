@@ -1,18 +1,18 @@
 package org.protege.editor.owl.client.action;
 
+import org.protege.editor.owl.client.ClientSession;
+import org.protege.editor.owl.client.LocalHttpClient;
+import org.protege.editor.owl.client.event.ClientSessionChangeEvent;
+import org.protege.editor.owl.client.event.ClientSessionListener;
 import org.protege.editor.owl.client.ui.OpenFromServerPanel;
 import org.protege.editor.owl.model.OWLWorkspace;
 
-import java.awt.Dialog;
+import javax.swing.*;
+import java.awt.*;
 import java.awt.event.ActionEvent;
 import java.awt.event.KeyEvent;
 import java.awt.event.WindowAdapter;
 import java.awt.event.WindowEvent;
-
-import javax.swing.AbstractAction;
-import javax.swing.JComponent;
-import javax.swing.JDialog;
-import javax.swing.KeyStroke;
 
 /**
  * @author Josef Hardi <johardi@stanford.edu> <br>
@@ -27,7 +27,17 @@ public class OpenFromServerAction extends AbstractClientAction {
     public void initialise() throws Exception {
         super.initialise();
         setEnabled(true);
+        getClientSession().addListener(sessionListener);
     }
+
+    private ClientSessionListener sessionListener = event -> {
+        ClientSessionChangeEvent.EventCategory category = event.getCategory();
+        if(category.equals(ClientSessionChangeEvent.EventCategory.USER_LOGIN)) {
+            setEnabled(event.getSource());
+        } else if(category.equals(ClientSessionChangeEvent.EventCategory.USER_LOGOUT)) {
+            setEnabled(event.getSource());
+        }
+    };
 
     @Override
     public void dispose() throws Exception {
@@ -42,8 +52,19 @@ public class OpenFromServerAction extends AbstractClientAction {
         dialog.setVisible(true);
     }
 
-    private JDialog createDialog() {
+    private void setEnabled(ClientSession session) {
+        if(session.hasActiveClient()) {
+            if(((LocalHttpClient)session.getActiveClient()).getClientType().equals(LocalHttpClient.UserType.ADMIN)) {
+                setEnabled(false);
+            } else {
+                setEnabled(true);
+            }
+        } else {
+            setEnabled(true);
+        }
+    }
 
+    private JDialog createDialog() {
         final JDialog dialog = new JDialog(null, "Open from Protege OWL Server", Dialog.ModalityType.MODELESS);
         OpenFromServerPanel openDialogPanel = new OpenFromServerPanel(getClientSession(), getOWLEditorKit());
         openDialogPanel.getInputMap(JComponent.WHEN_ANCESTOR_OF_FOCUSED_COMPONENT).put(KeyStroke.getKeyStroke(KeyEvent.VK_ESCAPE, 0), "CLOSE_DIALOG");

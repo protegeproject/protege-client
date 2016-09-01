@@ -1,25 +1,7 @@
 package org.protege.editor.owl.client.ui;
 
-import java.awt.BorderLayout;
-import java.awt.FlowLayout;
-import java.awt.Window;
-import java.awt.event.ActionEvent;
-import java.awt.event.ActionListener;
-import java.awt.event.FocusEvent;
-import java.awt.event.FocusListener;
-import java.awt.event.MouseAdapter;
-import java.awt.event.MouseEvent;
-import java.util.Optional;
-
-import javax.swing.BorderFactory;
-import javax.swing.JButton;
-import javax.swing.JLabel;
-import javax.swing.JOptionPane;
-import javax.swing.JPanel;
-import javax.swing.JScrollPane;
-import javax.swing.JTable;
-import javax.swing.SwingUtilities;
-
+import edu.stanford.protege.metaproject.api.AuthToken;
+import edu.stanford.protege.metaproject.api.ProjectId;
 import org.protege.editor.core.ui.util.JOptionPaneEx;
 import org.protege.editor.owl.OWLEditorKit;
 import org.protege.editor.owl.client.ClientSession;
@@ -32,16 +14,16 @@ import org.protege.editor.owl.server.versioning.api.ServerDocument;
 import org.protege.editor.owl.server.versioning.api.VersionedOWLOntology;
 import org.semanticweb.owlapi.model.OWLOntologyManager;
 
-import edu.stanford.protege.metaproject.api.AuthToken;
-import edu.stanford.protege.metaproject.api.ProjectId;
-
+import javax.swing.*;
+import java.awt.*;
+import java.awt.event.*;
+import java.util.Optional;
 
 /**
  * @author Josef Hardi <johardi@stanford.edu> <br>
  * @author Timothy Redmond <tredmond@stanford.edu> <br>
  * Stanford Center for Biomedical Informatics Research
  */
-
 public class OpenFromServerPanel extends JPanel {
 
     private static final long serialVersionUID = -6710802337675443598L;
@@ -121,10 +103,16 @@ public class OpenFromServerPanel extends JPanel {
             Optional<AuthToken> authToken = UserLoginPanel.showDialog(editorKit, OpenFromServerPanel.this);
             if (!authToken.isPresent()) {
                 closeDialog();
+            } else if(authToken.isPresent() && clientSession.hasActiveClient()) {
+                if(((LocalHttpClient) clientSession.getActiveClient()).getClientType() == LocalHttpClient.UserType.ADMIN) {
+                    closeDialog();
+                }
             }
         }
         else {
-            loadProjectList();
+            if(((LocalHttpClient) clientSession.getActiveClient()).getClientType() == LocalHttpClient.UserType.NON_ADMIN) {
+                loadProjectList();
+            }
         }
     }
 

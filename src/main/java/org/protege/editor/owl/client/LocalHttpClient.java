@@ -21,17 +21,12 @@ import org.protege.editor.owl.client.event.ClientSessionChangeEvent.EventCategor
 import org.protege.editor.owl.client.event.ClientSessionListener;
 import org.protege.editor.owl.client.util.ClientUtils;
 import org.protege.editor.owl.server.api.CommitBundle;
-import static org.protege.editor.owl.server.http.ServerEndpoints.*;
 import org.protege.editor.owl.server.http.messages.EVSHistory;
 import org.protege.editor.owl.server.http.messages.HttpAuthResponse;
 import org.protege.editor.owl.server.http.messages.LoginCreds;
 import org.protege.editor.owl.server.util.SnapShot;
 import org.protege.editor.owl.server.versioning.VersionedOWLOntologyImpl;
-import org.protege.editor.owl.server.versioning.api.ChangeHistory;
-import org.protege.editor.owl.server.versioning.api.DocumentRevision;
-import org.protege.editor.owl.server.versioning.api.ServerDocument;
-import org.protege.editor.owl.server.versioning.api.VersionedOWLOntology;
-import org.protege.editor.owl.server.versioning.api.HistoryFile;
+import org.protege.editor.owl.server.versioning.api.*;
 import org.semanticweb.binaryowl.BinaryOWLOntologyDocumentSerializer;
 import org.semanticweb.binaryowl.owlapi.BinaryOWLOntologyBuildingHandler;
 import org.semanticweb.binaryowl.owlapi.OWLOntologyWrapper;
@@ -47,9 +42,11 @@ import java.net.URI;
 import java.util.*;
 import java.util.concurrent.TimeUnit;
 
+import static org.protege.editor.owl.server.http.ServerEndpoints.*;
+
 public class LocalHttpClient implements Client, ClientSessionListener {
 
-	private enum UserType { NON_ADMIN, ADMIN };
+	public enum UserType { NON_ADMIN, ADMIN }
 
 	private static final Logger logger = LoggerFactory.getLogger(LocalHttpClient.class);
 
@@ -102,7 +99,7 @@ public class LocalHttpClient implements Client, ClientSessionListener {
 		return serverConfiguration;
 	}
 
-	private UserType getClientType() {
+	public UserType getClientType() {
 		int adminPort = serverConfiguration.getHost().getSecondaryPort().get().get();
 		int serverAddressPort = URI.create(serverAddress).getPort();
 		return (adminPort == serverAddressPort) ? UserType.ADMIN : UserType.NON_ADMIN;

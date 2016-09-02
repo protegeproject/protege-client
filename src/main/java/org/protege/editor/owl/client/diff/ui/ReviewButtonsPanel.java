@@ -1,5 +1,6 @@
 package org.protege.editor.owl.client.diff.ui;
 
+import edu.stanford.protege.metaproject.api.AuthToken;
 import org.protege.editor.core.Disposable;
 import org.protege.editor.core.ui.error.ErrorLogPanel;
 import org.protege.editor.owl.OWLEditorKit;
@@ -7,9 +8,10 @@ import org.protege.editor.owl.client.ClientSession;
 import org.protege.editor.owl.client.api.Client;
 import org.protege.editor.owl.client.api.exception.AuthorizationException;
 import org.protege.editor.owl.client.api.exception.ClientRequestException;
-import org.protege.editor.owl.client.api.exception.SynchronizationException;
+import org.protege.editor.owl.client.api.exception.LoginTimeoutException;
 import org.protege.editor.owl.client.diff.model.*;
 import org.protege.editor.owl.client.event.CommitOperationEvent;
+import org.protege.editor.owl.client.ui.UserLoginPanel;
 import org.protege.editor.owl.model.OWLModelManager;
 import org.protege.editor.owl.server.api.CommitBundle;
 import org.protege.editor.owl.server.policy.CommitBundleImpl;
@@ -24,6 +26,7 @@ import java.awt.*;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.util.List;
+import java.util.Optional;
 
 import static com.google.common.base.Preconditions.checkNotNull;
 
@@ -160,29 +163,42 @@ public class ReviewButtonsPanel extends JPanel implements Disposable {
                 if (commitComment == null) {
                     return; // user pressed cancel
                 }
-                ClientSession clientSession = ClientSession.getInstance(editorKit);
-                Client client = clientSession.getActiveClient();
-                RevisionMetadata metaData = new RevisionMetadata(
-                        client.getUserInfo().getId(),
-                        client.getUserInfo().getName(),
-                        client.getUserInfo().getEmailAddress(), "[Review] " + commitComment);
-                try {
-                    diffManager.applyOntologyChanges(changes); // apply changes to active ontology
-                    Commit commit = new Commit(metaData, changes);
-                    CommitBundle bundle = new CommitBundleImpl(vont.getHeadRevision(), commit);
-                    ChangeHistory history = client.commit(clientSession.getActiveProject(), bundle);
-                    vont.update(history);
-                    ClientSession.getInstance(editorKit).fireCommitPerformedEvent(new CommitOperationEvent(
-                            history.getHeadRevision(),
-                            history.getMetadataForRevision(history.getHeadRevision()),
-                            history.getChangesForRevision(history.getHeadRevision())));
-                } catch (AuthorizationException | ClientRequestException ex) {
-                    ErrorLogPanel.showErrorDialog(ex);
+                boolean success = commit(vont, changes, commitComment);
+                if(success) {
+                    JOptionPane.showMessageDialog(owner, "The reviews have been successfully committed", "Reviews committed", JOptionPane.INFORMATION_MESSAGE);
                 }
             }
-            JOptionPane.showMessageDialog(owner, "The reviews have been successfully committed", "Reviews committed", JOptionPane.INFORMATION_MESSAGE);
         }
     };
+
+    private boolean commit(VersionedOWLOntology vont, List<OWLOntologyChange> changes, String commitComment) {
+        try {
+            ClientSession clientSession = ClientSession.getInstance(editorKit);
+            Client client = clientSession.getActiveClient();
+            RevisionMetadata metaData = new RevisionMetadata(
+                    client.getUserInfo().getId(),
+                    client.getUserInfo().getName(),
+                    client.getUserInfo().getEmailAddress(), "[Review] " + commitComment);
+
+            diffManager.applyOntologyChanges(changes); // apply changes to active ontology
+            Commit commit = new Commit(metaData, changes);
+            CommitBundle bundle = new CommitBundleImpl(vont.getHeadRevision(), commit);
+            ChangeHistory history = client.commit(clientSession.getActiveProject(), bundle);
+            vont.update(history);
+            clientSession.fireCommitPerformedEvent(new CommitOperationEvent(
+                    history.getHeadRevision(),
+                    history.getMetadataForRevision(history.getHeadRevision()),
+                    history.getChangesForRevision(history.getHeadRevision())));
+            return true;
+        } catch (LoginTimeoutException ex1) {
+            // TODO timeouts would ideally be dealt with in a central client handler, rather than forcing all client code to deal with them
+            Optional<AuthToken> authToken = UserLoginPanel.showDialog(editorKit, this);
+            return authToken.isPresent() && authToken.get().isAuthorized() && commit(vont, changes, commitComment);
+        } catch (AuthorizationException | ClientRequestException ex2) {
+            ErrorLogPanel.showErrorDialog(ex2);
+            return false;
+        }
+    }
 
     private JButton getButton(String text, ActionListener listener) {
         JButton button = new JButton();

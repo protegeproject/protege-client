@@ -362,7 +362,7 @@ public class LocalHttpClient implements Client, ClientSessionListener {
 	public VersionedOWLOntology buildVersionedOntology(ServerDocument sdoc, OWLOntologyManager owlManager,
 			ProjectId pid) throws LoginTimeoutException, AuthorizationException, ClientRequestException {
 		setCurrentProject(pid);
-		if (!snapShotExists(sdoc)) {
+		if (!getSnapShotFile(sdoc).exists()) {
 			getSnapShot(sdoc);
 		}
 		OWLOntology targetOntology = loadSnapShot(owlManager, sdoc);
@@ -381,17 +381,16 @@ public class LocalHttpClient implements Client, ClientSessionListener {
 		}
 	}
 
-	public boolean snapShotExists(ServerDocument sdoc) {
-		String fileName = sdoc.getHistoryFile().getName() + "-snapshot";
-		return (new File(fileName)).exists();
+	private static File getSnapShotFile(ServerDocument sdoc) {
+		String fname = sdoc.getHistoryFile().getName() + "-snapshot";
+		return new File(fname);
 	}
 
 	public OWLOntology loadSnapShot(OWLOntologyManager manIn, ServerDocument sdoc) throws ClientRequestException {
 		try {
 			BinaryOWLOntologyDocumentSerializer serializer = new BinaryOWLOntologyDocumentSerializer();
 			OWLOntology ontIn = manIn.createOntology();
-			String fileName = sdoc.getHistoryFile().getName() + "-snapshot";
-			BufferedInputStream inputStream = new BufferedInputStream(new FileInputStream(new File(fileName)));
+			BufferedInputStream inputStream = new BufferedInputStream(new FileInputStream(getSnapShotFile(sdoc)));
 			serializer.read(inputStream, new BinaryOWLOntologyBuildingHandler(ontIn), manIn.getOWLDataFactory());
 			return ontIn;
 		} catch (IOException | OWLOntologyCreationException e) {
@@ -449,9 +448,8 @@ public class LocalHttpClient implements Client, ClientSessionListener {
 	public void createLocalSnapShot(OWLOntology ont, ServerDocument sdoc) throws ClientRequestException {
 		BufferedOutputStream outputStream = null;
 		try {
-			String fileName = sdoc.getHistoryFile().getName() + "-snapshot";
 			BinaryOWLOntologyDocumentSerializer serializer = new BinaryOWLOntologyDocumentSerializer();
-			outputStream = new BufferedOutputStream(new FileOutputStream(new File(fileName)));
+			outputStream = new BufferedOutputStream(new FileOutputStream(getSnapShotFile(sdoc)));
 			serializer.write(new OWLOntologyWrapper(ont), new DataOutputStream(outputStream));
 		} catch (IOException e) {
 			logger.error(e.getMessage(), e);
@@ -471,7 +469,7 @@ public class LocalHttpClient implements Client, ClientSessionListener {
 			ClientRequestException {
 		try {
 			ByteArrayOutputStream b = writeRequestArgumentsIntoByteStream(sdoc);
-			Response response = post(PROJECT_SNAPSHOT_GET,
+			Response response = post(PROJECT_SNAPSHOT,
 					RequestBody.create(ApplicationContentType, b.toByteArray()),
 					true); // send request to server
 			SnapShot snapshot = retrieveDocumentSnapshotFromServerResponse(response);

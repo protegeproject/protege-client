@@ -363,7 +363,8 @@ public class LocalHttpClient implements Client, ClientSessionListener {
 			ProjectId pid) throws LoginTimeoutException, AuthorizationException, ClientRequestException {
 		setCurrentProject(pid);
 		if (!getSnapShotFile(sdoc).exists()) {
-			getSnapShot(sdoc);
+			SnapShot snapshot = getSnapShot(pid);
+			createLocalSnapShot(snapshot.getOntology(), sdoc);
 		}
 		OWLOntology targetOntology = loadSnapShot(owlManager, sdoc);
 		ChangeHistory remoteChangeHistory = getLatestChanges(sdoc, DocumentRevision.START_REVISION);
@@ -465,28 +466,11 @@ public class LocalHttpClient implements Client, ClientSessionListener {
 		}
 	}
 
-	public void getSnapShot(ServerDocument sdoc) throws LoginTimeoutException, AuthorizationException,
+	public SnapShot getSnapShot(ProjectId projectId) throws LoginTimeoutException, AuthorizationException,
 			ClientRequestException {
-		try {
-			ByteArrayOutputStream b = writeRequestArgumentsIntoByteStream(sdoc);
-			Response response = post(PROJECT_SNAPSHOT,
-					RequestBody.create(ApplicationContentType, b.toByteArray()),
-					true); // send request to server
-			SnapShot snapshot = retrieveDocumentSnapshotFromServerResponse(response);
-			createLocalSnapShot(snapshot.getOntology(), sdoc);
-		}
-		catch (IOException e) {
-			logger.error(e.getMessage(), e);
-			throw new ClientRequestException("Unable to send request to server (see error log for details)", e);
-		}
-	}
-
-	private ByteArrayOutputStream writeRequestArgumentsIntoByteStream(ServerDocument sdoc)
-			throws IOException {
-		ByteArrayOutputStream b = new ByteArrayOutputStream();
-		ObjectOutputStream os = new ObjectOutputStream(b);
-		os.writeObject(sdoc);
-		return b;
+		String requestUrl = PROJECT_SNAPSHOT + "?projectid=" + projectId.get();
+		Response response = get(requestUrl); // send request to server
+		return retrieveDocumentSnapshotFromServerResponse(response);
 	}
 
 	private SnapShot retrieveDocumentSnapshotFromServerResponse(Response response)

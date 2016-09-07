@@ -1161,7 +1161,7 @@ public class LocalHttpClient implements Client, ClientSessionListener {
 	 * Utility methods
 	 */
 	public boolean queryProjectPolicy(UserId userId, ProjectId projectId, OperationId operationId) {
-		if (getClientType() == UserType.NON_ADMIN) {
+		if (getClientType() == UserType.ADMIN) {
 			return false;
 		}
 		return serverConfiguration.isOperationAllowed(operationId, projectId, userId);

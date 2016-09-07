@@ -234,19 +234,23 @@ public class LocalHttpClient implements Client, ClientSessionListener {
 	public ServerDocument createProject(Project project)
 			throws LoginTimeoutException, AuthorizationException, ClientRequestException {
 		try {
-			ByteArrayOutputStream b = writeRequestArgumentsIntoByteStream(project);
-			Response response = post(PROJECT,
-					RequestBody.create(ApplicationContentType, b.toByteArray()),
-					true); // send the request to server
-			ServerDocument sdoc = retrieveServerDocumentFromServerResponse(response);
-			File ontologyFile = project.getFile();
-			putSnapShot(ontologyFile, sdoc); // send snapshot to server
+			ServerDocument sdoc = postProjectToServer(project);
+			postProjectSnapShotToServer(project); // send snapshot to server
 			initConfig();
 			return sdoc;
 		} catch (IOException e) {
 			logger.error(e.getMessage(), e);
 			throw new ClientRequestException("Unable to send request to server (see error log for details)", e);
 		}
+	}
+
+	private ServerDocument postProjectToServer(Project project) throws IOException,
+			LoginTimeoutException, AuthorizationException, ClientRequestException {
+		ByteArrayOutputStream b = writeRequestArgumentsIntoByteStream(project);
+		Response response = post(PROJECT,
+				RequestBody.create(ApplicationContentType, b.toByteArray()),
+				true); // send the request to server
+		return retrieveServerDocumentFromServerResponse(response);
 	}
 
 	private ByteArrayOutputStream writeRequestArgumentsIntoByteStream(Project proj) throws IOException {
@@ -400,15 +404,15 @@ public class LocalHttpClient implements Client, ClientSessionListener {
 		}
 	}
 
-	public OWLOntology putSnapShot(File file, ServerDocument sdoc) throws LoginTimeoutException,
+	private void postProjectSnapShotToServer(Project project) throws LoginTimeoutException,
 			AuthorizationException, ClientRequestException {
 		try {
-			OWLOntology ont = OWLManager.createOWLOntologyManager().loadOntologyFromOntologyDocument(file);
-			ByteArrayOutputStream b = writeRequestArgumentsIntoByteStream(sdoc, new SnapShot(ont));
-			Response response = post(PROJECT_SNAPSHOT,
+			File font = project.getFile(); // TODO: The getFile() should return project file (.history) not .owl
+			OWLOntology ont = OWLManager.createOWLOntologyManager().loadOntologyFromOntologyDocument(font);
+			ByteArrayOutputStream b = writeRequestArgumentsIntoByteStream(project.getId(), new SnapShot(ont));
+			post(PROJECT_SNAPSHOT,
 					RequestBody.create(ApplicationContentType, b.toByteArray()),
 					true); // send request to server
-			return retrieveOntologyFromServerResponse(ont, response);
 		}
 		catch (IOException | OWLOntologyCreationException e) {
 			logger.error(e.getMessage(), e);
@@ -416,34 +420,13 @@ public class LocalHttpClient implements Client, ClientSessionListener {
 		}
 	}
 
-	private ByteArrayOutputStream writeRequestArgumentsIntoByteStream(ServerDocument sdoc,
+	private ByteArrayOutputStream writeRequestArgumentsIntoByteStream(ProjectId projectId,
 			SnapShot ontologySnapshot) throws IOException {
 		ByteArrayOutputStream b = new ByteArrayOutputStream();
 		ObjectOutputStream os = new ObjectOutputStream(b);
-		os.writeObject(sdoc);
+		os.writeObject(projectId);
 		os.writeObject(ontologySnapshot);
 		return b;
-	}
-
-	private OWLOntology retrieveOntologyFromServerResponse(OWLOntology ont, Response response)
-			throws ClientRequestException {
-		try {
-			ObjectInputStream ois = new ObjectInputStream(response.body().byteStream());
-			ServerDocument new_sdoc = (ServerDocument) ois.readObject();
-			if (new_sdoc != null) {
-				return ont;
-			} else {
-				throw new ClientRequestException("Unexpected error when uploading snapshot to server "
-						+ "(contact server admin for further assistance)");
-			}
-		} catch (IOException | ClassNotFoundException e) {
-			logger.error(e.getMessage(), e);
-			throw new ClientRequestException("Failed to read data from server (see error log for details)", e);
-		} finally {
-			if (response != null) {
-				response.body().close();
-			}
-		}
 	}
 
 	public void createLocalSnapShot(OWLOntology ont, ServerDocument sdoc) throws ClientRequestException {

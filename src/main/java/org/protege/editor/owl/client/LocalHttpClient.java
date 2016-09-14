@@ -1069,26 +1069,17 @@ public class LocalHttpClient implements Client, ClientSessionListener {
 
 	@Override
 	public boolean canDeleteProject() {
-		if (!getRemoteProject().isPresent()) {
-			return false;
-		}
-		return queryProjectPolicy(userId, getRemoteProject().get(), Operations.REMOVE_PROJECT.getId());
+		return queryAdminPolicy(userId, Operations.REMOVE_PROJECT.getId());
 	}
 
 	@Override
 	public boolean canUpdateProject() {
-		if (!getRemoteProject().isPresent()) {
-			return false;
-		}
-		return queryProjectPolicy(userId, getRemoteProject().get(), Operations.MODIFY_PROJECT.getId());
+		return queryAdminPolicy(userId, Operations.MODIFY_PROJECT.getId());
 	}
 
 	@Override
 	public boolean canOpenProject() {
-		if (!getRemoteProject().isPresent()) {
-			return false;
-		}
-		return queryProjectPolicy(userId, getRemoteProject().get(), Operations.OPEN_PROJECT.getId());
+		return queryAdminPolicy(userId, Operations.OPEN_PROJECT.getId());
 	}
 
 	@Override

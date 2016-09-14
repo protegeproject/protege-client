@@ -1151,9 +1151,6 @@ public class LocalHttpClient implements Client, ClientSessionListener {
 
 	@Override
 	public boolean canPerformAdminOperation(OperationId operationId) {
-		if (!getRemoteProject().isPresent()) {
-			return false;
-		}
 		return queryAdminPolicy(userId, operationId);
 	}
 

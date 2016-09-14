@@ -1,6 +1,9 @@
 package org.protege.editor.owl.client;
 
+import java.util.ArrayList;
+import java.util.Collections;
 import java.util.HashSet;
+import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import java.util.TreeMap;
@@ -65,12 +68,14 @@ public class ClientSession extends OWLEditorKitHook {
 
     @Override
     public void initialise() throws Exception {
-        getEditorKit().getOWLModelManager().addListener(changeActiveProject);
-             
+        getEditorKit().getOWLModelManager().addListener(changeActiveProject);        
     }
 
     private void fireChangeEvent(EventCategory category) {
         ClientSessionChangeEvent event = new ClientSessionChangeEvent(this, category);
+        //Set<ClientSessionListener> copy = new HashSet<ClientSessionListener>();
+        //copy.addAll(this.clientSessionListeners);
+        
         for (ClientSessionListener listener : clientSessionListeners) {
             listener.handleChange(event);
         }
@@ -100,7 +105,9 @@ public class ClientSession extends OWLEditorKitHook {
 
     public void setActiveClient(Client client) {
         if (!hasActiveClient()) {
-            activeClient = client;
+            activeClient = client;            
+            getEditorKit().getWorkspace().setCheckLevel(new TabViewableChecker(client));
+            getEditorKit().getWorkspace().recheckPlugins();
             fireChangeEvent(EventCategory.USER_LOGIN);
         }
         else {
@@ -135,7 +142,7 @@ public class ClientSession extends OWLEditorKitHook {
         registerProject(versionOntology.getOntology().getOntologyID(), projectId);
         registerVersionOntology(versionOntology.getOntology().getOntologyID(), versionOntology);
         getEditorKit().getOWLModelManager().setActiveOntology(versionOntology.getOntology());
-        //fireChangeEvent(EventCategory.SWITCH_ONTOLOGY);
+        fireChangeEvent(EventCategory.OPEN_PROJECT);
 
     }
 
@@ -156,6 +163,8 @@ public class ClientSession extends OWLEditorKitHook {
         unregisterAllProjects();
         unregisterAllVersionOntologies();
         fireChangeEvent(EventCategory.USER_LOGOUT);
+        //getEditorKit().getWorkspace().setCheckLevel(null);
+        getEditorKit().getWorkspace().recheckPlugins();
     }
 
     private void closeOpenVersionedOntologies() {

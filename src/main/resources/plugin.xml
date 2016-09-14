@@ -11,6 +11,7 @@
 		<index value="X"/>
 		<editorKitId value="OWLEditorKit"/>
 		<defaultViewConfigFileName value="viewconfig-diff.xml"/>
+		<permissionLevel value="workflow_manager"/>
 	</extension>
 
 	<extension id="AdminTab"
@@ -20,6 +21,7 @@
 		<index value="Y"/>
 		<editorKitId value="OWLEditorKit"/>
 		<defaultViewConfigFileName value="viewconfig-admin.xml"/>
+		<permissionLevel value="sysadmin"/>
 	</extension>
 
 	<!-- Diff Views -->

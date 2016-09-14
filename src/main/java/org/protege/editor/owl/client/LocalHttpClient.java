@@ -1153,6 +1153,7 @@ public class LocalHttpClient implements Client, ClientSessionListener {
 	}
 
 	private boolean queryAdminPolicy(UserId userId, OperationId operationId) {
+
 		return serverConfiguration.isOperationAllowed(operationId, userId);
 	}
 

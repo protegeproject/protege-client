@@ -1,5 +1,9 @@
 package org.protege.editor.owl.client;
 
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Set;
+
 import org.protege.editor.core.ui.view.ViewComponentPlugin;
 import org.protege.editor.core.ui.workspace.TabViewable;
 import org.protege.editor.core.ui.workspace.WorkspaceTabPlugin;
@@ -14,40 +18,87 @@ public class TabViewableChecker implements TabViewable {
 	
 	private Client client;
 	
+	private List<String> wf_man_tabs = new ArrayList<String>();
+	private List<String> wf_mod_tabs = new ArrayList<String>();
+	private List<String> admin_tabs = new ArrayList<String>();
+	
+	private void initTabs() {
+		// these should be populated using the config file and metaproject api
+		
+		wf_man_tabs.add("Revision History");
+		wf_man_tabs.add("NCI Edit Tab");
+		wf_man_tabs.add("Lucene Search Tab");
+		
+		wf_mod_tabs.add("NCI Edit Tab");
+		wf_mod_tabs.add("Lucene Search Tab");
+		
+		admin_tabs.add("Server Administration");
+	}
+	
 	public TabViewableChecker(Client c) {
 		client = c;
+		initTabs();
 	}
 	
 	@Override
 	public boolean checkViewable(ViewComponentPlugin plugin) {
+		Set<String> categories = plugin.getCategorisations();
+		for (String category : categories) {
+			if (checkStringAgainstClient(category)) {
+				return true;
+			}
+			
+		}
 		return false;
 	}
-
-	@Override
-	public boolean checkViewable(WorkspaceTabPlugin plugin) {
-		String level = plugin.getPermissionLevel();
-		if (level.equalsIgnoreCase("sysadmin")) {
-			return (((LocalHttpClient) client).getClientType() == UserType.ADMIN);
+	
+	private boolean checkStringAgainstClient(String cat) {
+		if (isSysAdmin()) {
+			return admin_tabs.contains(cat);
+		} else if (isWorkFlowModeler()) {
+			return wf_mod_tabs.contains(cat);
+		} else if (isWorkFlowManager()) {
+			return wf_man_tabs.contains(cat);			
+		} else {
+			return false;
 		}
 		
-		if (level.equals("workflow_manager")) {
+	}
+	
+	private boolean isWorkFlowManager() {
+		// check if project loaded first
+		if (((LocalHttpClient) client).getRemoteProject().isPresent()) {
 			try {
-	    		Role wfm = ((LocalHttpClient) client).getRole(new RoleIdImpl("mp-project-manager"));
+				Role wfm = ((LocalHttpClient) client).getRole(new RoleIdImpl("mp-project-manager"));
 				return client.getActiveRoles().contains(wfm);
 			} catch (ClientRequestException e) {
 				e.printStackTrace();
 			}
-			//return (((LocalHttpClient) client).getClientType() == UserType.NON_ADMIN);
-			
 		}
-		
-		if (level.equals("workflow_modeler")) {
-			return (((LocalHttpClient) client).getClientType() == UserType.NON_ADMIN);
-			
+		return false;		
+	}
+	
+	private boolean isWorkFlowModeler() {
+		if (((LocalHttpClient) client).getRemoteProject().isPresent()) {
+			try {
+				Role wfm = ((LocalHttpClient) client).getRole(new RoleIdImpl("mp-workflow-modeler"));
+				return client.getActiveRoles().contains(wfm);
+			} catch (ClientRequestException e) {
+				e.printStackTrace();
+				return false;
+			}
+		} else {
+			return !isSysAdmin();
 		}
-		
-		// TODO: currently the default, need to dicsuss with Gilberto
-		return false;
+	}
+
+	private boolean isSysAdmin() {
+		return (((LocalHttpClient) client).getClientType() == UserType.ADMIN);
+	}
+
+	@Override
+	public boolean checkViewable(WorkspaceTabPlugin plugin) {
+		return checkStringAgainstClient(plugin.getLabel());
 	}
 
 }

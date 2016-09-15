@@ -1157,7 +1157,7 @@ public class LocalHttpClient implements Client, ClientSessionListener {
 		return serverConfiguration.isOperationAllowed(operationId, userId);
 	}
 
-	private Optional<ProjectId> getRemoteProject() {
+	public Optional<ProjectId> getRemoteProject() {
 		return Optional.ofNullable(projectId);
 	}
 }

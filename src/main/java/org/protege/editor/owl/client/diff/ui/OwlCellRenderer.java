@@ -1,6 +1,7 @@
 package org.protege.editor.owl.client.diff.ui;
 
 import org.protege.editor.owl.OWLEditorKit;
+import org.protege.editor.owl.client.ui.GuiUtils;
 import org.protege.editor.owl.ui.OWLIcons;
 import org.protege.editor.owl.ui.renderer.OWLAnnotationPropertyIcon;
 import org.protege.editor.owl.ui.renderer.OWLCellRenderer;

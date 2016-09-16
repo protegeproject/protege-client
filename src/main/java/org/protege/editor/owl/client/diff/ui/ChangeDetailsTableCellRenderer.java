@@ -3,6 +3,7 @@ package org.protege.editor.owl.client.diff.ui;
 import org.protege.editor.owl.OWLEditorKit;
 import org.protege.editor.owl.client.diff.model.ChangeMode;
 import org.protege.editor.owl.client.diff.model.LogDiff;
+import org.protege.editor.owl.client.ui.GuiUtils;
 import org.protege.editor.owl.model.OWLModelManager;
 import org.semanticweb.owlapi.model.*;
 

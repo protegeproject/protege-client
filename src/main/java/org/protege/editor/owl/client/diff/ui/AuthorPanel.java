@@ -5,6 +5,7 @@ import org.protege.editor.owl.OWLEditorKit;
 import org.protege.editor.owl.client.diff.model.LogDiffEvent;
 import org.protege.editor.owl.client.diff.model.LogDiffListener;
 import org.protege.editor.owl.client.diff.model.LogDiffManager;
+import org.protege.editor.owl.client.ui.GuiUtils;
 import org.protege.editor.owl.model.OWLModelManager;
 import org.protege.editor.owl.server.versioning.api.ChangeHistory;
 import org.protege.editor.owl.server.versioning.api.DocumentRevision;

@@ -9,7 +9,6 @@ import org.protege.editor.owl.OWLEditorKit;
 import org.protege.editor.owl.client.ClientPreferences;
 import org.protege.editor.owl.client.ClientSession;
 import org.protege.editor.owl.client.LocalHttpClient;
-import org.protege.editor.owl.client.diff.ui.GuiUtils;
 
 import javax.swing.*;
 import javax.swing.event.DocumentEvent;

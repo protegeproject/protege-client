@@ -6,6 +6,7 @@ import org.protege.editor.owl.client.diff.model.CommitMetadata;
 import org.protege.editor.owl.client.diff.model.LogDiffEvent;
 import org.protege.editor.owl.client.diff.model.LogDiffListener;
 import org.protege.editor.owl.client.diff.model.LogDiffManager;
+import org.protege.editor.owl.client.ui.GuiUtils;
 import org.protege.editor.owl.model.OWLModelManager;
 
 import javax.swing.*;

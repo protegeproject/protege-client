@@ -1,4 +1,4 @@
-package org.protege.editor.owl.client.diff.ui;
+package org.protege.editor.owl.client.ui;
 
 import org.protege.editor.core.ui.error.ErrorLogPanel;
 import org.protege.editor.owl.client.diff.model.ChangeMode;
@@ -51,12 +51,8 @@ public class GuiUtils {
             REVIEW_ACCEPTED_ICON_FILENAME = "review-accepted.png",
             REVIEW_REJECTED_ICON_FILENAME = "review-rejected.png",
             REVIEW_CLEAR_ICON_FILENAME = "review-clear.png",
-            REVIEW_COMMIT_ICON_FILENAME = "review-commit.png",
             REVIEW_PENDING_ICON_FILENAME = "review-pending.png",
-            NEW_REVIEW_ICON_FILENAME = "review-new.png",
-            PERMISSION_READ = "permission-read.png",
-            PERMISSION_WRITE = "permission-write.png",
-            PERMISSION_EXECUTE = "permission-execute.png";
+            NEW_REVIEW_ICON_FILENAME = "review-new.png";
 
 
     /* methods */

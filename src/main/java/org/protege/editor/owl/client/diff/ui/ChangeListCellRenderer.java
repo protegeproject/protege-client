@@ -2,6 +2,7 @@ package org.protege.editor.owl.client.diff.ui;
 
 import org.protege.editor.owl.OWLEditorKit;
 import org.protege.editor.owl.client.diff.model.LogDiff;
+import org.protege.editor.owl.client.ui.GuiUtils;
 import org.semanticweb.owlapi.model.*;
 
 import javax.swing.*;

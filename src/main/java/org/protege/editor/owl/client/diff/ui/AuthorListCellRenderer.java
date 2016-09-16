@@ -1,6 +1,7 @@
 package org.protege.editor.owl.client.diff.ui;
 
 import org.protege.editor.owl.client.diff.model.LogDiffManager;
+import org.protege.editor.owl.client.ui.GuiUtils;
 
 import java.awt.Component;
 import java.awt.Font;

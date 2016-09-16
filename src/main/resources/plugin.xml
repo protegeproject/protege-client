@@ -13,15 +13,6 @@
 		<defaultViewConfigFileName value="viewconfig-diff.xml"/>
 	</extension>
 
-	<extension id="AdminTab"
-			   point="org.protege.editor.core.application.WorkspaceTab">
-		<label value="Server Administration"/>
-		<class value="org.protege.editor.owl.ui.OWLWorkspaceViewsTab"/>
-		<index value="Y"/>
-		<editorKitId value="OWLEditorKit"/>
-		<defaultViewConfigFileName value="viewconfig-admin.xml"/>
-	</extension>
-
 	<!-- Diff Views -->
 
 	<extension id="ChangesView"
@@ -68,72 +59,6 @@
 			   point="org.protege.editor.core.application.ViewComponent">
 		<label value="Commits"/>
 		<class value="org.protege.editor.owl.client.diff.ui.CommitView"/>
-		<headerColor value="@org.protege.ontologycolor"/>
-		<category value="Client-Server"/>
-	</extension>
-
-	<!-- Admin Tab Views -->
-
-	<extension id="UserView"
-			   point="org.protege.editor.core.application.ViewComponent">
-		<label value="Users"/>
-		<class value="org.protege.editor.owl.client.admin.ui.UserView"/>
-		<headerColor value="@org.protege.ontologycolor"/>
-		<category value="Client-Server"/>
-	</extension>
-
-	<extension id="RoleView"
-			   point="org.protege.editor.core.application.ViewComponent">
-		<label value="Roles"/>
-		<class value="org.protege.editor.owl.client.admin.ui.RoleView"/>
-		<headerColor value="@org.protege.ontologycolor"/>
-		<category value="Client-Server"/>
-	</extension>
-
-	<extension id="OperationView"
-			   point="org.protege.editor.core.application.ViewComponent">
-		<label value="Operations"/>
-		<class value="org.protege.editor.owl.client.admin.ui.OperationView"/>
-		<headerColor value="@org.protege.ontologycolor"/>
-		<category value="Client-Server"/>
-	</extension>
-
-	<extension id="ProjectView"
-			   point="org.protege.editor.core.application.ViewComponent">
-		<label value="Projects"/>
-		<class value="org.protege.editor.owl.client.admin.ui.ProjectView"/>
-		<headerColor value="@org.protege.ontologycolor"/>
-		<category value="Client-Server"/>
-	</extension>
-
-	<extension id="DetailsView"
-			   point="org.protege.editor.core.application.ViewComponent">
-		<label value="Policy Object Details"/>
-		<class value="org.protege.editor.owl.client.admin.ui.DetailsView"/>
-		<headerColor value="@org.protege.ontologycolor"/>
-		<category value="Client-Server"/>
-	</extension>
-
-	<extension id="JsonSerializationView"
-			   point="org.protege.editor.core.application.ViewComponent">
-		<label value="JSON Serialization"/>
-		<class value="org.protege.editor.owl.client.admin.ui.JsonSerializationView"/>
-		<headerColor value="@org.protege.ontologycolor"/>
-		<category value="Client-Server"/>
-	</extension>
-
-	<extension id="PolicyView"
-			   point="org.protege.editor.core.application.ViewComponent">
-		<label value="Access Control Policy"/>
-		<class value="org.protege.editor.owl.client.admin.ui.PolicyView"/>
-		<headerColor value="@org.protege.ontologycolor"/>
-		<category value="Client-Server"/>
-	</extension>
-
-	<extension id="ServerSettingsView"
-			   point="org.protege.editor.core.application.ViewComponent">
-		<label value="Server settings"/>
-		<class value="org.protege.editor.owl.client.admin.ui.ServerSettingsView"/>
 		<headerColor value="@org.protege.ontologycolor"/>
 		<category value="Client-Server"/>
 	</extension>

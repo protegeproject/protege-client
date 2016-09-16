@@ -4,6 +4,7 @@ import org.protege.editor.owl.OWLEditorKit;
 import org.protege.editor.owl.client.diff.model.ChangeMode;
 import org.protege.editor.owl.client.diff.model.ChangeType;
 import org.protege.editor.owl.client.diff.model.Review;
+import org.protege.editor.owl.client.ui.GuiUtils;
 import org.semanticweb.owlapi.model.OWLObject;
 
 import javax.swing.*;

@@ -4,6 +4,7 @@ import static com.google.common.base.Preconditions.checkNotNull;
 
 import org.protege.editor.owl.OWLEditorKit;
 
+import org.protege.editor.owl.client.ui.GuiUtils;
 import org.semanticweb.owlapi.model.OWLOntologyChange;
 
 import java.awt.BorderLayout;

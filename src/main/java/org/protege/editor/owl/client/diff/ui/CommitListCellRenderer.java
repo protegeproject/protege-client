@@ -1,6 +1,7 @@
 package org.protege.editor.owl.client.diff.ui;
 
 import org.protege.editor.owl.client.diff.model.CommitMetadata;
+import org.protege.editor.owl.client.ui.GuiUtils;
 
 import javax.swing.*;
 import javax.swing.border.EmptyBorder;

@@ -26,6 +26,8 @@ public class TabViewableChecker implements TabViewable {
 		// these should be populated using the config file and metaproject api
 		
 		wf_man_tabs.add("Revision History");
+		wf_man_tabs.add("Annotation Properties");
+		wf_man_tabs.add("Object Properties");
 		wf_man_tabs.add("NCI Edit Tab");
 		wf_man_tabs.add("Lucene Search Tab");
 		

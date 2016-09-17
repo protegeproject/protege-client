@@ -987,67 +987,6 @@ public class LocalHttpClient implements Client, ClientSessionListener {
 		}
 	}
 
-	/*
-	 * Utility methods for querying the client permissions. All these methods will initially check if the client
-	 * is linked to a remote project before sending the query. All the methods will return false as the default
-	 * answer.
-	 */
-
-	@Override
-	public boolean canAddAxiom() {
-		if (!getRemoteProject().isPresent()) {
-			return false;
-		}
-		return queryProjectPolicy(userId, getRemoteProject().get(), Operations.ADD_AXIOM.getId());
-	}
-
-	@Override
-	public boolean canRemoveAxiom() {
-		if (!getRemoteProject().isPresent()) {
-			return false;
-		}
-		return queryProjectPolicy(userId, getRemoteProject().get(), Operations.REMOVE_AXIOM.getId());
-	}
-
-	@Override
-	public boolean canAddAnnotation() {
-		if (!getRemoteProject().isPresent()) {
-			return false;
-		}
-		return queryProjectPolicy(userId, getRemoteProject().get(), Operations.ADD_ONTOLOGY_ANNOTATION.getId());
-	}
-
-	@Override
-	public boolean canRemoveAnnotation() {
-		if (!getRemoteProject().isPresent()) {
-			return false;
-		}
-		return queryProjectPolicy(userId, getRemoteProject().get(), Operations.REMOVE_ONTOLOGY_ANNOTATION.getId());
-	}
-
-	@Override
-	public boolean canAddImport() {
-		if (!getRemoteProject().isPresent()) {
-			return false;
-		}
-		return queryProjectPolicy(userId, getRemoteProject().get(), Operations.ADD_IMPORT.getId());
-	}
-
-	@Override
-	public boolean canRemoveImport() {
-		if (!getRemoteProject().isPresent()) {
-			return false;
-		}
-		return queryProjectPolicy(userId, getRemoteProject().get(), Operations.REMOVE_IMPORT.getId());
-	}
-
-	@Override
-	public boolean canModifyOntologyId() {
-		if (!getRemoteProject().isPresent()) {
-			return false;
-		}
-		return queryProjectPolicy(userId, getRemoteProject().get(), Operations.MODIFY_ONTOLOGY_IRI.getId());
-	}
 
 	@Override
 	public boolean canCreateUser() {

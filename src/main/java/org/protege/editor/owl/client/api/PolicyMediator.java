@@ -11,71 +11,7 @@ import edu.stanford.protege.metaproject.api.OperationId;
  */
 public interface PolicyMediator {
 
-    // ------------------------------------------------
-    // All methods related to ontology operations
-    // ------------------------------------------------
-
-    /**
-     * Checks if the user has the permission to add a new axiom to the
-     * ontology.
-     *
-     * @return Returns <code>true</code> if the user has the permission, or
-     *         <code>false</code> otherwise.
-     */
-    boolean canAddAxiom();
-
-    /**
-     * Checks if the user has the permission to remove an existing axiom from an
-     * ontology.
-     *
-     * @return Returns <code>true</code> if the user has the permission, or
-     *         <code>false</code> otherwise.
-     */
-    boolean canRemoveAxiom();
-
-    /**
-     * Checks if the user has the permission to add a new annotation to the
-     * ontology.
-     *
-     * @return Returns <code>true</code> if the user has the permission, or
-     *         <code>false</code> otherwise.
-     */
-    boolean canAddAnnotation();
-
-    /**
-     * Checks if the user has the permission to remove an existing annotation
-     * from an ontology.
-     *
-     * @return Returns <code>true</code> if the user has the permission, or
-     *         <code>false</code> otherwise.
-     */
-    boolean canRemoveAnnotation();
-
-    /**
-     * Checks if the user has the permission to add a new import declaration
-     * to an ontology.
-     *
-     * @return Returns <code>true</code> if the user has the permission, or
-     *         <code>false</code> otherwise.
-     */
-    boolean canAddImport();
-
-    /**
-     * Checks if the user has the permission to remove an existin import
-     * declaration from an ontology.
-     *
-     * @return Returns <code>true</code> if the user has the permission, or
-     *         <code>false</code> otherwise.
-     */
-    boolean canRemoveImport();
-
-    /**
-     * Checks if the user has the permission to modify the ontology ID.
-     *
-     * @return Returns <code>true</code> if the user has the permission, or
-     *         <code>false</code> otherwise.
-     */
-    boolean canModifyOntologyId();
+    
 
     // ------------------------------------------------
     // All methods related to metaproject operations

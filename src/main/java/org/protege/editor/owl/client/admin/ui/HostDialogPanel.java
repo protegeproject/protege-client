@@ -10,6 +10,7 @@ import org.protege.editor.owl.client.ClientSession;
 import org.protege.editor.owl.client.api.Client;
 import org.protege.editor.owl.client.api.exception.AuthorizationException;
 import org.protege.editor.owl.client.api.exception.ClientRequestException;
+import org.protege.editor.owl.client.util.Config;
 import org.protege.editor.owl.ui.UIHelper;
 
 import javax.swing.*;
@@ -155,14 +156,14 @@ public class HostDialogPanel extends JPanel implements VerifiedInputEditor {
             if (!port.getText().trim().isEmpty()) {
                 secondaryPort = Integer.parseInt(port.getText());
             }
-            Client client = ClientSession.getInstance(editorKit).getActiveClient();
+            Config config = ClientSession.getInstance(editorKit).getActiveClient().getConfig();
             if (uriChanged) {
-                client.setHostAddress(newUri);
+                config.setHostAddress(newUri);
             }
             if (portChanged && secondaryPort != -1) {
-                client.setSecondaryPort(secondaryPort);
+                config.setSecondaryPort(secondaryPort);
             }
-        } catch (AuthorizationException | ClientRequestException | URISyntaxException e) {
+        } catch (URISyntaxException e) {
             ErrorLogPanel.showErrorDialog(e);
         }
     }

@@ -18,6 +18,7 @@ import org.protege.editor.owl.client.api.exception.ClientRequestException;
 import org.protege.editor.owl.client.diff.ui.GuiUtils;
 import org.protege.editor.owl.client.event.ClientSessionChangeEvent;
 import org.protege.editor.owl.client.event.ClientSessionListener;
+import org.protege.editor.owl.client.util.Config;
 
 import javax.swing.*;
 import javax.swing.border.EmptyBorder;
@@ -43,7 +44,7 @@ public class ServerSettingsPanel extends JPanel implements Disposable {
     private MList hostList, rootList, settingsList;
     private PropertyListItem selectedProperty;
     private ClientSession session;
-    private Client client;
+    private Config config = null;
 
     /**
      * Constructor
@@ -51,13 +52,15 @@ public class ServerSettingsPanel extends JPanel implements Disposable {
      * @param editorKit OWL editor kit
      */
     public ServerSettingsPanel(OWLEditorKit editorKit) {
-        this.editorKit = checkNotNull(editorKit);
-        configManager = AdminTabManager.get(editorKit);
-        configManager.addListener(tabListener);
-        session = ClientSession.getInstance(editorKit);
-        session.addListener(sessionListener);
-        client = session.getActiveClient();
-        initUi();
+    	this.editorKit = checkNotNull(editorKit);
+    	configManager = AdminTabManager.get(editorKit);
+    	configManager.addListener(tabListener);
+    	session = ClientSession.getInstance(editorKit);
+    	session.addListener(sessionListener);
+    	if (session.getActiveClient() != null) {
+    		config = session.getActiveClient().getConfig();
+    	}
+    	initUi();
     }
 
     private AdminTabListener tabListener = event -> {
@@ -69,7 +72,11 @@ public class ServerSettingsPanel extends JPanel implements Disposable {
 
     private ClientSessionListener sessionListener = event -> {
         if(event.hasCategory(ClientSessionChangeEvent.EventCategory.USER_LOGIN) || event.hasCategory(ClientSessionChangeEvent.EventCategory.USER_LOGOUT)) {
-            client = session.getActiveClient();
+            if (session.getActiveClient() != null) {
+            	config = session.getActiveClient().getConfig();
+            } else {
+            	config = null;
+            }
             removeAll();
             initUi();
         }
@@ -245,7 +252,7 @@ public class ServerSettingsPanel extends JPanel implements Disposable {
     };
 
     private void addProperty() {
-        if(client != null && client.canUpdateServerConfig()) {
+        if(config != null && config.canUpdateServerConfig()) {
             boolean added = PropertyDialogPanel.showDialog(editorKit);
             if (added) {
                 configManager.statusChanged(AdminTabEvent.CONFIGURATION_CHANGED);
@@ -255,7 +262,7 @@ public class ServerSettingsPanel extends JPanel implements Disposable {
     }
 
     private void deleteProperty() {
-        if(client != null && client.canUpdateServerConfig()) {
+        if(config != null && config.canUpdateServerConfig()) {
             Object selectedObj = settingsList.getSelectedValue();
             if (selectedObj instanceof PropertyListItem) {
                 String propertyName = ((PropertyListItem) selectedObj).getPropertyName();
@@ -266,7 +273,7 @@ public class ServerSettingsPanel extends JPanel implements Disposable {
                     return;
                 }
                 try {
-                    client.unsetServerProperty(propertyName);
+                    config.unsetServerProperty(propertyName);
                 } catch (AuthorizationException | ClientRequestException e) {
                     ErrorLogPanel.showErrorDialog(e);
                 }
@@ -277,7 +284,7 @@ public class ServerSettingsPanel extends JPanel implements Disposable {
     }
 
     private void editProperty() {
-        if(client != null && client.canUpdateServerConfig()) {
+        if(config != null && config.canUpdateServerConfig()) {
             boolean edited = PropertyDialogPanel.showDialog(editorKit, selectedProperty);
             if (edited) {
                 configManager.statusChanged(AdminTabEvent.CONFIGURATION_CHANGED);
@@ -287,7 +294,7 @@ public class ServerSettingsPanel extends JPanel implements Disposable {
     }
 
     private void editRoot() {
-        if(client != null && client.canUpdateServerConfig()) {
+        if(config != null && config.canUpdateServerConfig()) {
             boolean edited = RootDialogPanel.showDialog(editorKit, ((RootListItem) rootList.getSelectedValue()).getRoot());
             if (edited) {
                 configManager.statusChanged(AdminTabEvent.CONFIGURATION_CHANGED);
@@ -297,7 +304,7 @@ public class ServerSettingsPanel extends JPanel implements Disposable {
     }
 
     private void editHost() {
-        if(client != null && client.canUpdateServerConfig()) {
+        if(config != null && config.canUpdateServerConfig()) {
             boolean edited = HostDialogPanel.showDialog(editorKit, ((HostListItem) hostList.getSelectedValue()).getHost());
             if (edited) {
                 configManager.statusChanged(AdminTabEvent.CONFIGURATION_CHANGED);
@@ -309,42 +316,30 @@ public class ServerSettingsPanel extends JPanel implements Disposable {
     private void listHost() {
         ArrayList<Object> data = new ArrayList<>();
         data.add(new HostListHeaderItem());
-        try {
-            if(client != null) {
-                data.add(new HostListItem(client.getHost()));
-            }
-        } catch (AuthorizationException | ClientRequestException e) {
-            ErrorLogPanel.showErrorDialog(e);
-        }
+        if(config != null) {
+		    data.add(new HostListItem(config.getHost()));
+		}
         hostList.setListData(data.toArray());
     }
 
     private void listRoot() {
         ArrayList<Object> data = new ArrayList<>();
         data.add(new RootListHeaderItem());
-        try {
-            if(client != null) {
-                data.add(new RootListItem(client.getRootDirectory()));
-            }
-        } catch (AuthorizationException | ClientRequestException e) {
-            ErrorLogPanel.showErrorDialog(e);
-        }
+        if(config != null) {
+		    data.add(new RootListItem(config.getRootDirectory()));
+		}
         rootList.setListData(data.toArray());
     }
 
     private void listProperties() {
         ArrayList<Object> data = new ArrayList<>();
         data.add(new PropertyListHeaderItem());
-        try {
-            if(client != null) {
-                Map<String, String> propertiesMap = client.getServerProperties();
-                List<String> keyset = new ArrayList<>(propertiesMap.keySet());
-                Collections.sort(keyset);
-                data.addAll(keyset.stream().map(key -> new PropertyListItem(key, propertiesMap.get(key))).collect(Collectors.toList()));
-            }
-        } catch (AuthorizationException | ClientRequestException e) {
-            ErrorLogPanel.showErrorDialog(e);
-        }
+        if(config != null) {
+		    Map<String, String> propertiesMap = config.getServerProperties();
+		    List<String> keyset = new ArrayList<>(propertiesMap.keySet());
+		    Collections.sort(keyset);
+		    data.addAll(keyset.stream().map(key -> new PropertyListItem(key, propertiesMap.get(key))).collect(Collectors.toList()));
+		}
         settingsList.setListData(data.toArray());
     }
 
@@ -390,7 +385,7 @@ public class ServerSettingsPanel extends JPanel implements Disposable {
 
         @Override
         public boolean isEditable() {
-            return (client != null && client.canUpdateServerConfig());
+            return (config != null && config.canUpdateServerConfig());
         }
 
         @Override
@@ -451,7 +446,7 @@ public class ServerSettingsPanel extends JPanel implements Disposable {
 
         @Override
         public boolean isEditable() {
-            return (client != null && client.canUpdateServerConfig());
+            return (config != null && config.canUpdateServerConfig());
         }
 
         @Override
@@ -487,7 +482,7 @@ public class ServerSettingsPanel extends JPanel implements Disposable {
 
         @Override
         public boolean canAdd() {
-            return (client != null && client.canUpdateServerConfig());
+            return (config != null && config.canUpdateServerConfig());
         }
     }
 
@@ -518,7 +513,7 @@ public class ServerSettingsPanel extends JPanel implements Disposable {
 
         @Override
         public boolean isEditable() {
-            return (client != null && client.canUpdateServerConfig());
+            return (config != null && config.canUpdateServerConfig());
         }
 
         @Override
@@ -528,7 +523,7 @@ public class ServerSettingsPanel extends JPanel implements Disposable {
 
         @Override
         public boolean isDeleteable() {
-            return (client != null && client.canUpdateServerConfig());
+            return (config != null && config.canUpdateServerConfig());
         }
 
         @Override

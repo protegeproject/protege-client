@@ -18,6 +18,7 @@ import org.protege.editor.owl.client.api.exception.AuthorizationException;
 import org.protege.editor.owl.client.api.exception.ClientRequestException;
 import org.protege.editor.owl.client.event.ClientSessionChangeEvent;
 import org.protege.editor.owl.client.event.ClientSessionListener;
+import org.protege.editor.owl.client.util.Config;
 
 import javax.swing.*;
 import javax.swing.border.EmptyBorder;
@@ -46,7 +47,8 @@ public class RolePanel extends JPanel implements Disposable {
     private MList roleList;
     private Role selectedRole;
     private ClientSession session;
-    private Client client;
+    private Config config = null;
+    //private Client client;
 
     /**
      * Constructor
@@ -54,13 +56,15 @@ public class RolePanel extends JPanel implements Disposable {
      * @param editorKit    OWL editor kit
      */
     public RolePanel(OWLEditorKit editorKit) {
-        this.editorKit = checkNotNull(editorKit);
-        configManager = AdminTabManager.get(editorKit);
-        configManager.addListener(tabListener);
-        session = ClientSession.getInstance(editorKit);
-        session.addListener(sessionListener);
-        client = session.getActiveClient();
-        initUi();
+    	this.editorKit = checkNotNull(editorKit);
+    	configManager = AdminTabManager.get(editorKit);
+    	configManager.addListener(tabListener);
+    	session = ClientSession.getInstance(editorKit);
+    	session.addListener(sessionListener);
+    	if (session.getActiveClient() != null) {
+    		config = session.getActiveClient().getConfig();
+    	}
+    	initUi();
     }
 
     private AdminTabListener tabListener = event -> {
@@ -73,7 +77,11 @@ public class RolePanel extends JPanel implements Disposable {
 
     private ClientSessionListener sessionListener = event -> {
         if(event.hasCategory(ClientSessionChangeEvent.EventCategory.USER_LOGIN) || event.hasCategory(ClientSessionChangeEvent.EventCategory.USER_LOGOUT)) {
-            client = session.getActiveClient();
+            if (session.getActiveClient() != null) {
+            	config = session.getActiveClient().getConfig();
+            } else {
+            	config = null;
+            }
             removeAll();
             initUi();
         }
@@ -151,20 +159,16 @@ public class RolePanel extends JPanel implements Disposable {
     private void listRoles() {
         ArrayList<Object> data = new ArrayList<>();
         data.add(new RoleListHeaderItem());
-        try {
-            if(client != null) {
-                List<Role> roles = client.getAllRoles();
-                Collections.sort(roles);
-                data.addAll(roles.stream().map(RoleListItem::new).collect(Collectors.toList()));
-            }
-        } catch (AuthorizationException | ClientRequestException e) {
-            ErrorLogPanel.showErrorDialog(e);
-        }
+        if(config != null) {
+		    List<Role> roles = config.getAllRoles();
+		    Collections.sort(roles);
+		    data.addAll(roles.stream().map(RoleListItem::new).collect(Collectors.toList()));
+		}
         roleList.setListData(data.toArray());
     }
 
     private void addRole() {
-        if(client != null && client.canCreateRole()) {
+        if(config != null && config.canCreateRole()) {
             Optional<Role> role = RoleDialogPanel.showDialog(editorKit);
             if (role.isPresent()) {
                 configManager.statusChanged(AdminTabEvent.CONFIGURATION_CHANGED);
@@ -175,7 +179,7 @@ public class RolePanel extends JPanel implements Disposable {
     }
 
     private void editRole() {
-        if(client != null && client.canUpdateRole()) {
+        if(config != null && config.canUpdateRole()) {
             Optional<Role> role = RoleDialogPanel.showDialog(editorKit, selectedRole);
             if (role.isPresent()) {
                 configManager.statusChanged(AdminTabEvent.CONFIGURATION_CHANGED);
@@ -186,7 +190,7 @@ public class RolePanel extends JPanel implements Disposable {
     }
 
     private void deleteRole() {
-        if(client != null && client.canDeleteRole()) {
+        if(config != null && config.canDeleteRole()) {
             Object selectedObj = roleList.getSelectedValue();
             if (selectedObj instanceof RoleListItem) {
                 Role role = ((RoleListItem) selectedObj).getRole();
@@ -198,7 +202,7 @@ public class RolePanel extends JPanel implements Disposable {
                     return;
                 }
                 try {
-                    client.deleteRole(role.getId());
+                    config.deleteRole(role.getId());
                 } catch (AuthorizationException | ClientRequestException e) {
                     ErrorLogPanel.showErrorDialog(e);
                 }
@@ -221,7 +225,7 @@ public class RolePanel extends JPanel implements Disposable {
 
         @Override
         public boolean canAdd() {
-            return (client != null && client.canCreateRole());
+            return (config != null && config.canCreateRole());
         }
     }
 
@@ -247,7 +251,7 @@ public class RolePanel extends JPanel implements Disposable {
 
         @Override
         public boolean isEditable() {
-            return (client != null && client.canUpdateRole());
+            return (config != null && config.canUpdateRole());
         }
 
         @Override
@@ -257,7 +261,7 @@ public class RolePanel extends JPanel implements Disposable {
 
         @Override
         public boolean isDeleteable() {
-            return (client != null && client.canDeleteRole());
+            return (config != null && config.canDeleteRole());
         }
 
         @Override

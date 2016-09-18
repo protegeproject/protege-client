@@ -18,6 +18,7 @@ import org.protege.editor.owl.client.api.exception.AuthorizationException;
 import org.protege.editor.owl.client.api.exception.ClientRequestException;
 import org.protege.editor.owl.client.event.ClientSessionChangeEvent;
 import org.protege.editor.owl.client.event.ClientSessionListener;
+import org.protege.editor.owl.client.util.Config;
 
 import javax.swing.*;
 import javax.swing.border.EmptyBorder;
@@ -46,7 +47,7 @@ public class UserPanel extends JPanel implements Disposable {
     private MList userList;
     private User selectedUser;
     private ClientSession session;
-    private Client client;
+    private Config config = null;
 
     /**
      * Constructor
@@ -59,7 +60,7 @@ public class UserPanel extends JPanel implements Disposable {
         configManager.addListener(tabListener);
         session = ClientSession.getInstance(editorKit);
         session.addListener(sessionListener);
-        client = session.getActiveClient();
+        config = session.getActiveClient().getConfig();
         initUi();
     }
 
@@ -75,7 +76,12 @@ public class UserPanel extends JPanel implements Disposable {
 
     private ClientSessionListener sessionListener = event -> {
         if(event.hasCategory(ClientSessionChangeEvent.EventCategory.USER_LOGIN) || event.hasCategory(ClientSessionChangeEvent.EventCategory.USER_LOGOUT)) {
-            client = session.getActiveClient();
+            if (session.getActiveClient() != null) {
+            	config = session.getActiveClient().getConfig();
+            } else {
+            	// user logged out
+            	config = null;
+            }
             removeAll();
             initUi();
             revalidate();
@@ -154,20 +160,16 @@ public class UserPanel extends JPanel implements Disposable {
     private void listUsers() {
         ArrayList<Object> data = new ArrayList<>();
         data.add(new UserListHeaderItem());
-        try {
-            if(client != null) {
-                List<User> users = client.getAllUsers();
-                Collections.sort(users);
-                data.addAll(users.stream().map(UserListItem::new).collect(Collectors.toList()));
-            }
-        } catch (AuthorizationException | ClientRequestException e) {
-            ErrorLogPanel.showErrorDialog(e);
-        }
+        if(config != null) {
+		    List<User> users = config.getAllUsers();
+		    Collections.sort(users);
+		    data.addAll(users.stream().map(UserListItem::new).collect(Collectors.toList()));
+		}
         userList.setListData(data.toArray());
     }
 
     private void addUser() {
-        if(client != null && client.canCreateUser()) {
+        if(config != null && config.canCreateUser()) {
             Optional<User> user = UserDialogPanel.showDialog(editorKit);
             if (user.isPresent()) {
                 configManager.statusChanged(AdminTabEvent.CONFIGURATION_CHANGED);
@@ -178,7 +180,7 @@ public class UserPanel extends JPanel implements Disposable {
     }
 
     private void editUser() {
-        if(client != null && client.canUpdateUser()) {
+        if(config != null && config.canUpdateUser()) {
             Optional<User> user = UserDialogPanel.showDialog(editorKit, selectedUser);
             if (user.isPresent()) {
                 configManager.statusChanged(AdminTabEvent.CONFIGURATION_CHANGED);
@@ -189,7 +191,7 @@ public class UserPanel extends JPanel implements Disposable {
     }
 
     private void deleteUser() {
-        if(client != null && client.canDeleteUser()) {
+        if(config != null && config.canDeleteUser()) {
             Object selectedObj = userList.getSelectedValue();
             if (selectedObj instanceof UserListItem) {
                 User user = ((UserListItem) selectedObj).getUser();
@@ -200,9 +202,9 @@ public class UserPanel extends JPanel implements Disposable {
                 if (res != JOptionPane.OK_OPTION) {
                     return;
                 }
-                Client client = ClientSession.getInstance(editorKit).getActiveClient();
+                //Client client = ClientSession.getInstance(editorKit).getActiveClient();
                 try {
-                    client.deleteUser(user.getId());
+                    config.deleteUser(user.getId());
                 } catch (AuthorizationException | ClientRequestException e) {
                     ErrorLogPanel.showErrorDialog(e);
                 }
@@ -225,7 +227,7 @@ public class UserPanel extends JPanel implements Disposable {
 
         @Override
         public boolean canAdd() {
-            return (client != null && client.canCreateUser());
+            return (config != null && config.canCreateUser());
         }
     }
 
@@ -250,7 +252,7 @@ public class UserPanel extends JPanel implements Disposable {
 
         @Override
         public boolean isEditable() {
-            return (client != null && client.canUpdateUser());
+            return (config != null && config.canUpdateUser());
         }
 
         @Override
@@ -260,7 +262,7 @@ public class UserPanel extends JPanel implements Disposable {
 
         @Override
         public boolean isDeleteable() {
-            return (client != null && client.canDeleteUser());
+            return (config != null && config.canDeleteUser());
         }
 
         @Override

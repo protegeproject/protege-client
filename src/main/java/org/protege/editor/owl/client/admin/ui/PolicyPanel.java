@@ -22,6 +22,7 @@ import org.protege.editor.owl.client.api.exception.ClientRequestException;
 import org.protege.editor.owl.client.diff.ui.GuiUtils;
 import org.protege.editor.owl.client.event.ClientSessionChangeEvent;
 import org.protege.editor.owl.client.event.ClientSessionListener;
+import org.protege.editor.owl.client.util.Config;
 
 import javax.swing.*;
 import javax.swing.border.EmptyBorder;
@@ -50,7 +51,7 @@ public class PolicyPanel extends JPanel implements Disposable {
     private MList projectList, roleList;
     private Project selectedProject;
     private ClientSession session;
-    private Client client;
+    private Config config;
 
     /**
      * Constructor
@@ -63,7 +64,7 @@ public class PolicyPanel extends JPanel implements Disposable {
         configManager.addListener(tabListener);
         session = ClientSession.getInstance(editorKit);
         session.addListener(sessionListener);
-        client = session.getActiveClient();
+        config = session.getActiveClient().getConfig();
         initUi();
     }
 
@@ -84,7 +85,11 @@ public class PolicyPanel extends JPanel implements Disposable {
 
     private ClientSessionListener sessionListener = event -> {
         if(event.hasCategory(ClientSessionChangeEvent.EventCategory.USER_LOGIN) || event.hasCategory(ClientSessionChangeEvent.EventCategory.USER_LOGOUT)) {
-            client = session.getActiveClient();
+            if (session.getActiveClient() != null) {
+            	config = session.getActiveClient().getConfig();
+            } else {
+            	config = null;
+            }
             removeAll();
             initUi();
         }
@@ -221,15 +226,11 @@ public class PolicyPanel extends JPanel implements Disposable {
             User user = (User) configManager.getSelection();
             ArrayList<Object> data = new ArrayList<>();
             data.add(new ProjectListHeaderItem());
-            try {
-                if (client != null) {
-                    List<Project> projects = client.getProjects(user.getId());
-                    Collections.sort(projects);
-                    data.addAll(projects.stream().map(ProjectListItem::new).collect(Collectors.toList()));
-                }
-            } catch (AuthorizationException | ClientRequestException e) {
-                handleException(e);
-            }
+            if (config != null) {
+			    List<Project> projects = config.getProjects(user.getId());
+			    Collections.sort(projects);
+			    data.addAll(projects.stream().map(ProjectListItem::new).collect(Collectors.toList()));
+			}
             projectList.setListData(data.toArray());
         }
     }
@@ -239,15 +240,11 @@ public class PolicyPanel extends JPanel implements Disposable {
             User user = (User)configManager.getSelection();
             ArrayList<Object> data = new ArrayList<>();
             data.add(new RoleListHeaderItem());
-            try {
-                if (client != null) {
-                    List<Role> roles = client.getRoles(user.getId(), selectedProject.getId(), GlobalPermissions.EXCLUDED);
-                    Collections.sort(roles);
-                    data.addAll(roles.stream().map(RoleListItem::new).collect(Collectors.toList()));
-                }
-            } catch (AuthorizationException | ClientRequestException e) {
-                handleException(e);
-            }
+            if (config != null) {
+			    List<Role> roles = config.getRoles(user.getId(), selectedProject.getId(), GlobalPermissions.EXCLUDED);
+			    Collections.sort(roles);
+			    data.addAll(roles.stream().map(RoleListItem::new).collect(Collectors.toList()));
+			}
             roleList.setListData(data.toArray());
         }
     }
@@ -260,7 +257,7 @@ public class PolicyPanel extends JPanel implements Disposable {
     }
 
     private void addProjectAssignment() {
-        if(client != null && client.canAssignRole()) {
+        if(config != null && config.canAssignRole()) {
             Optional<Project> project = PolicyAssignmentDialogPanel.showDialog(editorKit, (User) configManager.getSelection());
             if (project.isPresent()) {
                 configManager.statusChanged(AdminTabEvent.CONFIGURATION_CHANGED);
@@ -272,7 +269,7 @@ public class PolicyPanel extends JPanel implements Disposable {
     }
 
     private void deleteProjectAssignment() {
-        if(client != null && client.canRetractRole()) {
+        if(config != null && config.canRetractRole()) {
             Object selectedObj = projectList.getSelectedValue();
             if (selectedObj instanceof ProjectListItem) {
                 Project project = ((ProjectListItem) selectedObj).getProject();
@@ -286,9 +283,9 @@ public class PolicyPanel extends JPanel implements Disposable {
                     return;
                 }
                 try {
-                    List<Role> roles = client.getRoles(user.getId(), project.getId(), GlobalPermissions.EXCLUDED);
+                    List<Role> roles = config.getRoles(user.getId(), project.getId(), GlobalPermissions.EXCLUDED);
                     for (Role role : roles) {
-                        client.retractRole(user.getId(), project.getId(), role.getId());
+                        config.retractRole(user.getId(), project.getId(), role.getId());
                         configManager.statusChanged(AdminTabEvent.CONFIGURATION_CHANGED);
                     }
                 } catch (AuthorizationException | ClientRequestException e) {
@@ -313,7 +310,7 @@ public class PolicyPanel extends JPanel implements Disposable {
     }
 
     private void addRoleAssignment() {
-        if(client != null && client.canAssignRole()) {
+        if(config != null && config.canAssignRole()) {
             if (projectList.getSelectedValue() != null && projectList.getSelectedValue() instanceof ProjectListItem) {
                 Project project = ((ProjectListItem) projectList.getSelectedValue()).getProject();
                 boolean added = PolicyAssignmentDialogPanel.showDialog(editorKit, (User) configManager.getSelection(), project);
@@ -327,7 +324,7 @@ public class PolicyPanel extends JPanel implements Disposable {
     }
 
     private void deleteRoleAssignment() {
-        if(client != null && client.canRetractRole()) {
+        if(config != null && config.canRetractRole()) {
             Object selectedObj = roleList.getSelectedValue();
             if (selectedObj instanceof RoleListItem) {
                 Role role = ((RoleListItem) selectedObj).getRole();
@@ -341,7 +338,7 @@ public class PolicyPanel extends JPanel implements Disposable {
                     return;
                 }
                 try {
-                    client.retractRole(user.getId(), selectedProject.getId(), role.getId());
+                    config.retractRole(user.getId(), selectedProject.getId(), role.getId());
                     configManager.statusChanged(AdminTabEvent.CONFIGURATION_CHANGED);
                 } catch (AuthorizationException | ClientRequestException e) {
                     ErrorLogPanel.showErrorDialog(e);
@@ -372,7 +369,7 @@ public class PolicyPanel extends JPanel implements Disposable {
 
         @Override
         public boolean canAdd() {
-            return (client != null && client.canAssignRole());
+            return (config != null && config.canAssignRole());
         }
     }
 
@@ -408,7 +405,7 @@ public class PolicyPanel extends JPanel implements Disposable {
 
         @Override
         public boolean isDeleteable() {
-            return (client != null && client.canRetractRole());
+            return (config != null && config.canRetractRole());
         }
 
         @Override
@@ -434,7 +431,7 @@ public class PolicyPanel extends JPanel implements Disposable {
 
         @Override
         public boolean canAdd() {
-            return (client != null && client.canAssignRole());
+            return (config != null && config.canAssignRole());
         }
     }
 
@@ -470,7 +467,7 @@ public class PolicyPanel extends JPanel implements Disposable {
 
         @Override
         public boolean isDeleteable() {
-            return (client != null && client.canRetractRole());
+            return (config != null && config.canRetractRole());
         }
 
         @Override

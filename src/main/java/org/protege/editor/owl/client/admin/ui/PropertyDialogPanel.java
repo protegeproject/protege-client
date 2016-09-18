@@ -10,6 +10,7 @@ import org.protege.editor.owl.client.admin.exception.PropertyAlreadyExistsExcept
 import org.protege.editor.owl.client.api.Client;
 import org.protege.editor.owl.client.api.exception.AuthorizationException;
 import org.protege.editor.owl.client.api.exception.ClientRequestException;
+import org.protege.editor.owl.client.util.Config;
 import org.protege.editor.owl.ui.UIHelper;
 
 import javax.swing.*;
@@ -137,20 +138,16 @@ public class PropertyDialogPanel extends JPanel implements VerifiedInputEditor {
     }
 
     private boolean exists(String propertyName) {
-        Client client = ClientSession.getInstance(editorKit).getActiveClient();
+        Config config = ClientSession.getInstance(editorKit).getActiveClient().getConfig();
         boolean exists = false;
-        try {
-            exists = client.getServerProperties().containsKey(propertyName);
-        } catch (AuthorizationException | ClientRequestException e) {
-            ErrorLogPanel.showErrorDialog(e);
-        }
+        exists = config.getServerProperties().containsKey(propertyName);
         return exists;
     }
 
     private void addProperty() {
-        Client client = ClientSession.getInstance(editorKit).getActiveClient();
+        Config config = ClientSession.getInstance(editorKit).getActiveClient().getConfig();
         try {
-            client.setServerProperty(name.getText(), value.getText());
+            config.setServerProperty(name.getText(), value.getText());
         } catch (AuthorizationException | ClientRequestException e) {
             ErrorLogPanel.showErrorDialog(e);
         }
@@ -160,9 +157,9 @@ public class PropertyDialogPanel extends JPanel implements VerifiedInputEditor {
         if (propertyName.equals(name.getText())) {
             addProperty();
         } else { // property key changed
-            Client client = ClientSession.getInstance(editorKit).getActiveClient();
+            Config config = ClientSession.getInstance(editorKit).getActiveClient().getConfig();
             try {
-                client.unsetServerProperty(propertyName);
+                config.unsetServerProperty(propertyName);
                 addProperty();
             } catch (AuthorizationException | ClientRequestException e) {
                 ErrorLogPanel.showErrorDialog(e);

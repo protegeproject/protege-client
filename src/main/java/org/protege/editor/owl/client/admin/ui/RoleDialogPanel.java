@@ -16,6 +16,7 @@ import org.protege.editor.owl.client.api.Client;
 import org.protege.editor.owl.client.api.exception.AuthorizationException;
 import org.protege.editor.owl.client.api.exception.ClientRequestException;
 import org.protege.editor.owl.client.diff.ui.GuiUtils;
+import org.protege.editor.owl.client.util.Config;
 import org.protege.editor.owl.ui.UIHelper;
 
 import javax.swing.*;
@@ -152,13 +153,8 @@ public class RoleDialogPanel extends JPanel implements VerifiedInputEditor {
     }
 
     private List<Operation> getOperations() {
-        Client client = ClientSession.getInstance(editorKit).getActiveClient();
-        try {
-            return client.getAllOperations();
-        } catch (AuthorizationException | ClientRequestException e) {
-            ErrorLogPanel.showErrorDialog(e);
-        }
-        return null;
+        Config config = ClientSession.getInstance(editorKit).getActiveClient().getConfig();
+        return config.getAllOperations();
     }
 
     private void addListener(Document doc) {
@@ -226,18 +222,18 @@ public class RoleDialogPanel extends JPanel implements VerifiedInputEditor {
     }
 
     private void addRole(Role role) {
-        Client client = ClientSession.getInstance(editorKit).getActiveClient();
+        Config config = ClientSession.getInstance(editorKit).getActiveClient().getConfig();
         try {
-            client.createRole(role);
+            config.createRole(role);
         } catch (AuthorizationException | ClientRequestException e) {
             ErrorLogPanel.showErrorDialog(e);
         }
     }
 
     private void updateRole(Role role) {
-        Client client = ClientSession.getInstance(editorKit).getActiveClient();
+        Config config = ClientSession.getInstance(editorKit).getActiveClient().getConfig();
         try {
-            client.updateRole(selectedRole.getId(), role);
+            config.updateRole(selectedRole.getId(), role);
         } catch (AuthorizationException | ClientRequestException e) {
             ErrorLogPanel.showErrorDialog(e);
         }

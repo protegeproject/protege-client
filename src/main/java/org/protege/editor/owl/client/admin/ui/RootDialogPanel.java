@@ -9,6 +9,7 @@ import org.protege.editor.owl.client.ClientSession;
 import org.protege.editor.owl.client.api.Client;
 import org.protege.editor.owl.client.api.exception.AuthorizationException;
 import org.protege.editor.owl.client.api.exception.ClientRequestException;
+import org.protege.editor.owl.client.util.Config;
 import org.protege.editor.owl.ui.UIHelper;
 
 import javax.swing.*;
@@ -86,8 +87,8 @@ public class RootDialogPanel extends JPanel implements VerifiedInputEditor {
 
     private void updateRoot() {
         try {
-            Client client = ClientSession.getInstance(editorKit).getActiveClient();
-            client.setRootDirectory(root.getText());
+            Config config = ClientSession.getInstance(editorKit).getActiveClient().getConfig();
+            config.setRootDirectory(root.getText());
         } catch (AuthorizationException | ClientRequestException e) {
             ErrorLogPanel.showErrorDialog(e);
         }

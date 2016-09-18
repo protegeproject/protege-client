@@ -17,6 +17,7 @@ import org.protege.editor.owl.client.api.Client;
 import org.protege.editor.owl.client.api.exception.AuthorizationException;
 import org.protege.editor.owl.client.api.exception.ClientRequestException;
 import org.protege.editor.owl.client.diff.ui.GuiUtils;
+import org.protege.editor.owl.client.util.Config;
 import org.protege.editor.owl.ui.UIHelper;
 
 import javax.swing.*;
@@ -241,16 +242,12 @@ public class UserDialogPanel extends JPanel implements VerifiedInputEditor {
     }
 
     private boolean isUserIdInUse(String id) {
-        Client client = ClientSession.getInstance(editorKit).getActiveClient();
-        try {
-            for(User user : client.getAllUsers()) {
-                if(user.getId().get().equals(id)) {
-                    return true;
-                }
-            }
-        } catch (AuthorizationException | ClientRequestException e) {
-            /* do nothing */
-        }
+        Config config = ClientSession.getInstance(editorKit).getActiveClient().getConfig();
+        for(User user : config.getAllUsers()) {
+		    if(user.getId().get().equals(id)) {
+		        return true;
+		    }
+		}
         return false;
     }
 
@@ -270,30 +267,30 @@ public class UserDialogPanel extends JPanel implements VerifiedInputEditor {
     }
 
     private void addUser(User user) {
-        Client client = ClientSession.getInstance(editorKit).getActiveClient();
+        Config config = ClientSession.getInstance(editorKit).getActiveClient().getConfig();
         try {
-            client.createUser(user, Optional.empty());
+            config.createUser(user, Optional.empty());
         } catch (AuthorizationException | ClientRequestException e) {
             ErrorLogPanel.showErrorDialog(e);
         }
     }
 
     private void addUser(User user, SaltedPasswordDigest passwordDigest) {
-        Client client = ClientSession.getInstance(editorKit).getActiveClient();
+        Config config = ClientSession.getInstance(editorKit).getActiveClient().getConfig();
         try {
-            client.createUser(user, Optional.of(passwordDigest));
+            config.createUser(user, Optional.of(passwordDigest));
         } catch (AuthorizationException | ClientRequestException e) {
             ErrorLogPanel.showErrorDialog(e);
         }
     }
 
     private void updateUser(User user) {
-        Client client = ClientSession.getInstance(editorKit).getActiveClient();
+        Config config = ClientSession.getInstance(editorKit).getActiveClient().getConfig();
         try {
             if(externalAuth.isSelected() || sameAuth.isSelected()) {
-                client.updateUser(selectedUser.getId(), user, Optional.empty());
+                config.updateUser(selectedUser.getId(), user, Optional.empty());
             } else {
-                client.updateUser(selectedUser.getId(), user, Optional.of(hashPassword()));
+                config.updateUser(selectedUser.getId(), user, Optional.of(hashPassword()));
             }
         } catch (AuthorizationException | ClientRequestException e) {
             ErrorLogPanel.showErrorDialog(e);

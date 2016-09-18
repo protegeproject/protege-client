@@ -158,11 +158,11 @@ public class ClientSession extends OWLEditorKitHook {
 
 
     public void clear() {
-        activeClient = null;
+    	activeClient = null;
         closeOpenVersionedOntologies();
         unregisterAllProjects();
         unregisterAllVersionOntologies();
-        fireChangeEvent(EventCategory.USER_LOGOUT);
+        fireChangeEvent(EventCategory.USER_LOGOUT);        
         //getEditorKit().getWorkspace().setCheckLevel(null);
         getEditorKit().getWorkspace().recheckPlugins();
     }

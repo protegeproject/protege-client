@@ -106,49 +106,7 @@ public interface ClientRequests {
      *             If the server failed to fulfill the user request.
      */
     List<Project> getAllProjects() throws AuthorizationException, ClientRequestException;
-
-    /**
-     * Creating a new project to the server.
-     * 
-     * @param projectId
-     *            The project identifier object
-     * @param projectName
-     *            The name of the project
-     * @param description
-     *            The description of the project
-     * @param owner
-     *            The owner of the project
-     * @param options
-     *            An optional of project options
-     * @param initialCommit
-     *            An optional initial commit bundle when creating this project
-     * @return A server document that provide the link information to remote resources
-     * @throws AuthorizationException
-     *             If the user doesn't have the permission to request this
-     *             service.
-     * @throws ClientRequestException
-     *             If the server failed to fulfill the user request.
-     */
-    ServerDocument createProject(ProjectId projectId, Name projectName, Description description, UserId owner,
-            Optional<ProjectOptions> options, Optional<CommitBundle> initialCommit)
-                    throws AuthorizationException, ClientRequestException;
-
-    /**
-     * Deleting an existing project from the server.
-     *
-     * @param projectId
-     *            The project to remove identified by its ID.
-     * @param includeFile
-     *            Remove the associated files
-     * @throws AuthorizationException
-     *             If the user doesn't have the permission to request this
-     *             service.
-     * @throws ClientRequestException
-     *             If the server failed to fulfill the user request.
-     */
-    void deleteProject(ProjectId projectId, boolean includeFile)
-            throws AuthorizationException, ClientRequestException;
-
+    
     /**
      * Updating information of an existing project in the server.
      *
@@ -165,21 +123,6 @@ public interface ClientRequests {
     void updateProject(ProjectId projectId, Project updatedProject)
             throws AuthorizationException, ClientRequestException;
 
-    /**
-     * Opening a project from the server. The server will return the
-     * {@code ProjectResource} that can be used to construct the project
-     * ontology.
-     *
-     * @param projectId
-     *            The project to open identified by its ID
-     * @throws AuthorizationException
-     *             If the user doesn't have the permission to request this
-     *             service.
-     * @throws ClientRequestException
-     *             If the server failed to fulfill the user request.
-     */
-    ServerDocument openProject(ProjectId projectId)
-            throws AuthorizationException, ClientRequestException;
 
     /**
      * Getting all roles given the user id, categorized for each owned project.
@@ -513,23 +456,5 @@ public interface ClientRequests {
      */
     void unsetServerProperty(String property) throws AuthorizationException, ClientRequestException;
 
-    /**
-     * Committing the given ontology changes to be applied in the server.
-     *
-     * @param projectId
-     *            The target project for such changes
-     * @param commitBundle
-     *            A list of changes coming from the client
-     * @return Returns the change history that contains the changes that are
-     *         accepted by the server.
-     * @throws AuthorizationException
-     *             If the user doesn't have the permission to request this
-     *             service.
-     * @throws SynchronizationException
-     *             If the incoming changes are out-of-date.
-     * @throws ClientRequestException
-     *             If the server failed to fulfill the user request.
-     */
-    ChangeHistory commit(ProjectId projectId, CommitBundle commitBundle)
-            throws AuthorizationException, SynchronizationException, ClientRequestException;
+    
 }

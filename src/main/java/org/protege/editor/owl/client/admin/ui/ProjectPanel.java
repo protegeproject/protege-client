@@ -23,6 +23,7 @@ import org.protege.editor.owl.client.api.exception.ClientRequestException;
 import org.protege.editor.owl.client.event.ClientSessionChangeEvent;
 import org.protege.editor.owl.client.event.ClientSessionChangeEvent.EventCategory;
 import org.protege.editor.owl.client.event.ClientSessionListener;
+import org.protege.editor.owl.client.util.Config;
 
 import javax.swing.*;
 import javax.swing.border.EmptyBorder;
@@ -53,6 +54,7 @@ public class ProjectPanel extends JPanel implements Disposable {
     private Project selectedProject;
     private ClientSession session;
     private Client client;
+    private Config config;
     private UserId userId;
 
     /**
@@ -67,6 +69,7 @@ public class ProjectPanel extends JPanel implements Disposable {
         session = ClientSession.getInstance(editorKit);
         session.addListener(sessionListener);
         client = session.getActiveClient();
+        config = client.getConfig();
         userId = (client != null ? f.getUserId(client.getUserInfo().getId()) : null);
         initUi();
     }
@@ -84,7 +87,11 @@ public class ProjectPanel extends JPanel implements Disposable {
             client = session.getActiveClient();
             if(event.hasCategory(EventCategory.USER_LOGIN)) {
                 userId = f.getUserId(client.getUserInfo().getId()); // TODO: should get a UserId directly!
+                config = client.getConfig();
+            } else {
+            	config = null;
             }
+            
             removeAll();
             initUi();
         }
@@ -162,23 +169,20 @@ public class ProjectPanel extends JPanel implements Disposable {
     private void listProjects() {
         ArrayList<Object> data = new ArrayList<>();
         data.add(new ProjectListHeaderItem());
-        try {
-            if(client != null) {
-                List<Project> projects = client.getAllProjects();
-                Collections.sort(projects);
-                data.addAll(projects.stream().map(ProjectListItem::new).collect(Collectors.toList()));
-            }
-        } catch (AuthorizationException | ClientRequestException e) {
-            ErrorLogPanel.showErrorDialog(e);
-        }
+        if(config != null) {
+		    List<Project> projects = config.getAllProjects();
+		    Collections.sort(projects);
+		    data.addAll(projects.stream().map(ProjectListItem::new).collect(Collectors.toList()));
+		}
         projectList.setListData(data.toArray());
     }
 
     private void addProject() {
-        if(client != null && client.canCreateProject()) {
+        if(config != null && config.canCreateProject()) {
             Optional<Project> project = ProjectDialogPanel.showDialog(editorKit);
             if (project.isPresent()) {
                 configManager.statusChanged(AdminTabEvent.CONFIGURATION_CHANGED);
+                config = client.getConfig();
                 listProjects();
                 selectProject(project.get());
             }
@@ -186,7 +190,7 @@ public class ProjectPanel extends JPanel implements Disposable {
     }
 
     private void editProject() {
-        if(client != null && canModifyProject(selectedProject)) {
+        if(config != null && canModifyProject(selectedProject)) {
             Optional<Project> project = ProjectDialogPanel.showDialog(editorKit, selectedProject);
             if (project.isPresent()) {
                 configManager.statusChanged(AdminTabEvent.CONFIGURATION_CHANGED);
@@ -197,7 +201,7 @@ public class ProjectPanel extends JPanel implements Disposable {
     }
 
     private void deleteProject() {
-        if(client != null && canDeleteProject(selectedProject)) {
+        if(config != null && canDeleteProject(selectedProject)) {
             Object selectedObj = projectList.getSelectedValue();
             if (selectedObj instanceof ProjectListItem) {
                 Project project = ((ProjectListItem) selectedObj).getProject();
@@ -219,6 +223,7 @@ public class ProjectPanel extends JPanel implements Disposable {
                     ErrorLogPanel.showErrorDialog(e);
                 }
                 configManager.statusChanged(AdminTabEvent.CONFIGURATION_CHANGED);
+                config = client.getConfig();
                 listProjects();
             }
         }
@@ -237,11 +242,11 @@ public class ProjectPanel extends JPanel implements Disposable {
     }
 
     private boolean canDeleteProject(Project project) {
-        return client.queryProjectPolicy(userId, project.getId(), Operations.REMOVE_PROJECT.getId());
+        return config.queryProjectPolicy(userId, project.getId(), Operations.REMOVE_PROJECT.getId());
     }
 
     private boolean canModifyProject(Project project) {
-        return client.queryProjectPolicy(userId, project.getId(), Operations.MODIFY_PROJECT.getId());
+        return config.queryProjectPolicy(userId, project.getId(), Operations.MODIFY_PROJECT.getId());
     }
 
 
@@ -257,7 +262,7 @@ public class ProjectPanel extends JPanel implements Disposable {
 
         @Override
         public boolean canAdd() {
-            return (client != null && client.canCreateProject());
+            return (config != null && config.canCreateProject());
         }
     }
 
@@ -283,7 +288,7 @@ public class ProjectPanel extends JPanel implements Disposable {
 
         @Override
         public boolean isEditable() {
-            return (client != null && canModifyProject(project));
+            return (config != null && canModifyProject(project));
         }
 
         @Override
@@ -293,7 +298,7 @@ public class ProjectPanel extends JPanel implements Disposable {
 
         @Override
         public boolean isDeleteable() {
-            return (client != null && canDeleteProject(project));
+            return (config != null && canDeleteProject(project));
         }
 
         @Override

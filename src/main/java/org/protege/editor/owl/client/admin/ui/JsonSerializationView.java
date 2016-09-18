@@ -74,7 +74,7 @@ public class JsonSerializationView extends AbstractOWLViewComponent implements A
 			public void actionPerformed(ActionEvent event)
 			{
 				try {
-					LocalHttpClient.current_user().reallyPutConfig();
+					LocalHttpClient.current_user().saveConfig();
 					setButtons(false);
 				}
 				catch (LoginTimeoutException e) {

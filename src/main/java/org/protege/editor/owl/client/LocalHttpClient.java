@@ -20,6 +20,7 @@ import org.protege.editor.owl.client.event.ClientSessionChangeEvent;
 import org.protege.editor.owl.client.event.ClientSessionChangeEvent.EventCategory;
 import org.protege.editor.owl.client.event.ClientSessionListener;
 import org.protege.editor.owl.client.util.ClientUtils;
+import org.protege.editor.owl.client.util.Config;
 import org.protege.editor.owl.server.api.CommitBundle;
 import org.protege.editor.owl.server.http.messages.EVSHistory;
 import org.protege.editor.owl.server.http.messages.HttpAuthResponse;
@@ -67,7 +68,11 @@ public class LocalHttpClient implements Client, ClientSessionListener {
 
 	private AuthToken authToken;
 
-	private ServerConfiguration serverConfiguration;
+	//private ServerConfiguration serverConfiguration;
+	private Config config = null;
+	
+	public Config getConfig() { return config; }
+	
 	private Serializer serl = new DefaultJsonSerializer();
 
 	private boolean saveCancelSemantics = true;
@@ -87,7 +92,7 @@ public class LocalHttpClient implements Client, ClientSessionListener {
 		this.serverAddress = serverAddress;
 		login(username, password);
 		initConfig();
-		initAuthToken();
+		initAuthToken();		
 		LocalHttpClient.currentHttpClient = this;
 	}
 
@@ -96,18 +101,19 @@ public class LocalHttpClient implements Client, ClientSessionListener {
 	}
 
 	public ServerConfiguration getCurrentConfig() {
-		return serverConfiguration;
+		return config.getCurrentConfig();
 	}
 
 	public UserType getClientType() {
-		int adminPort = serverConfiguration.getHost().getSecondaryPort().get().get();
+		int adminPort = config.getHost().getSecondaryPort().get().get();
 		int serverAddressPort = URI.create(serverAddress).getPort();
 		return (adminPort == serverAddressPort) ? UserType.ADMIN : UserType.NON_ADMIN;
 	}
 
 	public void initConfig() throws LoginTimeoutException, AuthorizationException, ClientRequestException {
-		serverConfiguration = getConfig();
+		ServerConfiguration serverConfiguration = getServerConfig();
 		configStateChanged = false;
+		config = new Config(serverConfiguration, userId);
 	}
 
 	private void login(String username, String password)
@@ -122,7 +128,7 @@ public class LocalHttpClient implements Client, ClientSessionListener {
 
 	private void initAuthToken() {
 		try {
-			User user = serverConfiguration.getUser(userId);
+			User user = config.getCurrentConfig().getUser(userId);
 			authToken = new AuthorizedUserToken(user);
 		} catch (UnknownUserIdException e) {
 			logger.error(e.getMessage(), e);
@@ -153,10 +159,7 @@ public class LocalHttpClient implements Client, ClientSessionListener {
 		}
 	}
 
-	@Override
-	public void setActiveProject(ProjectId projectId) {
-		this.projectId = projectId;
-	}
+	
 
 	public Project getCurrentProject() {
 		return project;
@@ -167,65 +170,7 @@ public class LocalHttpClient implements Client, ClientSessionListener {
 		return authToken;
 	}
 
-	@Override
-	public List<User> getAllUsers() {
-		return new ArrayList<>(serverConfiguration.getUsers());
-	}
-
-	@Override
-	public void createUser(User newUser, Optional<? extends Password> password)
-			throws AuthorizationException, ClientRequestException {
-		try {
-			serverConfiguration = new ConfigurationBuilder(serverConfiguration)
-					.addUser(newUser)
-					.createServerConfiguration();
-			if (password.isPresent()) {
-				Password newpassword = password.get();
-				if (newpassword instanceof SaltedPasswordDigest) {
-					serverConfiguration = new ConfigurationBuilder(serverConfiguration)
-							.registerUser(newUser.getId(), (SaltedPasswordDigest) newpassword)
-							.createServerConfiguration();
-				}
-			}
-			putConfig();
-		} catch (IdAlreadyInUseException e) {
-			logger.error(e.getMessage());
-			throw new ClientRequestException("Client failed to create user (see error log for details)", e);
-		}
-	}
-
-	@Override
-	public void deleteUser(UserId userId) throws AuthorizationException, ClientRequestException {
-		try {
-			serverConfiguration = new ConfigurationBuilder(serverConfiguration)
-					.removeUser(serverConfiguration.getUser(userId))
-					.removePolicy(userId)
-                    .unregisterUser(userId)
-					.createServerConfiguration();
-			putConfig();
-		} catch (UnknownUserIdException e) {
-			logger.error(e.getMessage());
-			throw new ClientRequestException("Client failed to delete user (see error log for details)", e);
-		}
-	}
-
-	@Override
-	public void updateUser(UserId userId, User updatedUser, Optional<? extends Password> updatedPassword)
-			throws AuthorizationException, ClientRequestException {
-		serverConfiguration = new ConfigurationBuilder(serverConfiguration)
-				.setUser(userId, updatedUser)
-				.createServerConfiguration();
-		if (updatedPassword.isPresent()) {
-			Password password = updatedPassword.get();
-			if (password instanceof SaltedPasswordDigest) {
-				serverConfiguration = new ConfigurationBuilder(serverConfiguration)
-						.changePassword(userId, (SaltedPasswordDigest) password)
-						.createServerConfiguration();
-			}
-		}
-		putConfig();
-	}
-
+	
 	@Override
 	public ServerDocument createProject(ProjectId projectId, Name projectName, Description description,
 			UserId owner, Optional<ProjectOptions> options, Optional<CommitBundle> initialCommit)
@@ -381,7 +326,7 @@ public class LocalHttpClient implements Client, ClientSessionListener {
 	private void setCurrentProject(ProjectId pid) throws ClientRequestException {
 		try {
 			projectId = pid;
-			project = serverConfiguration.getProject(pid);
+			project = config.getCurrentConfig().getProject(pid);
 		} catch (UnknownProjectIdException e) {
 			logger.error(e.getMessage());
 			throw new ClientRequestException("Client failed to get the project (see error log for details)", e);
@@ -561,231 +506,13 @@ public class LocalHttpClient implements Client, ClientSessionListener {
 		return b;
 	}
 
-	@Override
-	public List<Project> getProjects(UserId userId) {
-		return new ArrayList<>(serverConfiguration.getProjects(userId));
-	}
-
-	@Override
-	public List<Project> getAllProjects() {
-		return new ArrayList<>(serverConfiguration.getProjects());
-	}
-
-	@Override
-	public void updateProject(ProjectId projectId, Project updatedProject)
-			throws LoginTimeoutException, AuthorizationException, ClientRequestException {
-		serverConfiguration = new ConfigurationBuilder(serverConfiguration)
-				.setProject(projectId, updatedProject)
-				.createServerConfiguration();
-		putConfig();
-	}
-
-	@Override
-	public Map<ProjectId, List<Role>> getRoles(UserId userId, GlobalPermissions globalPermissions) {
-		Map<ProjectId, List<Role>> roleMap = new HashMap<>();
-		for (Project project : getAllProjects()) {
-			roleMap.put(project.getId(), getRoles(userId, project.getId(), globalPermissions));
-		}
-		return roleMap;
-	}
-
-	@Override
-	public List<Role> getRoles(UserId userId, ProjectId projectId, GlobalPermissions globalPermissions) {
-		return new ArrayList<>(serverConfiguration.getRoles(userId, projectId, globalPermissions));
-	}
-
-	@Override
-	public List<Role> getAllRoles() {
-		return new ArrayList<>(serverConfiguration.getRoles());
-	}
 	
+
 	public Role getRole(RoleId id) throws ClientRequestException {
-		try {
-			return serverConfiguration.getRole(id);
-		} catch (UnknownRoleIdException e) {
-			logger.error(e.getMessage());
-			throw new ClientRequestException("Client failed to get role details (see error log for details)", e);
-		}
+		return config.getRole(id);
 	}
 
-	@Override
-	public void createRole(Role newRole) throws LoginTimeoutException, AuthorizationException, ClientRequestException {
-		try {
-			serverConfiguration = new ConfigurationBuilder(serverConfiguration)
-					.addRole(newRole)
-					.createServerConfiguration();
-			putConfig();
-		} catch (IdAlreadyInUseException e) {
-			logger.error(e.getMessage());
-			throw new ClientRequestException("Client failed to create role (see error log for details)", e);
-		}
-	}
-
-	@Override
-	public void deleteRole(RoleId roleId) throws LoginTimeoutException, AuthorizationException, ClientRequestException {
-		try {
-			serverConfiguration = new ConfigurationBuilder(serverConfiguration)
-					.removeRole(serverConfiguration.getRole(roleId))
-					.createServerConfiguration();
-			putConfig();
-		} catch (UnknownRoleIdException e) {
-			logger.error(e.getMessage());
-			throw new ClientRequestException("Client failed to delete role (see error log for details)", e);
-		}
-	}
-
-	@Override
-	public void updateRole(RoleId roleId, Role updatedRole)
-			throws LoginTimeoutException, AuthorizationException, ClientRequestException {
-		serverConfiguration = new ConfigurationBuilder(serverConfiguration)
-				.setRole(roleId, updatedRole)
-				.createServerConfiguration();
-		putConfig();
-	}
-
-	@Override
-	public Map<ProjectId, List<Operation>> getOperations(UserId userId) {
-		Map<ProjectId, List<Operation>> operationMap = new HashMap<>();
-		for (Project project : getAllProjects()) {
-			operationMap.put(project.getId(), getOperations(userId, project.getId()));
-		}
-		return operationMap;
-	}
-
-	@Override
-	public List<Operation> getOperations(UserId userId, ProjectId projectId) {
-		return new ArrayList<>(serverConfiguration.getOperations(userId, projectId, GlobalPermissions.INCLUDED));
-	}
-
-	@Override
-	public List<Operation> getOperations(RoleId roleId) throws ClientRequestException {
-		try {
-			return new ArrayList<>(serverConfiguration.getOperations(serverConfiguration.getRole(roleId)));
-		} catch (UnknownRoleIdException e) {
-			logger.error(e.getMessage());
-			throw new ClientRequestException("Client failed to get operation list (see error log for details)", e);
-		}
-	}
-
-	@Override
-	public List<Operation> getAllOperations() {
-		return new ArrayList<>(serverConfiguration.getOperations());
-	}
-
-	@Override
-	public void createOperation(Operation operation)
-			throws LoginTimeoutException, AuthorizationException, ClientRequestException {
-		try {
-			serverConfiguration = new ConfigurationBuilder(serverConfiguration)
-					.addOperation(operation)
-					.createServerConfiguration();
-			putConfig();
-		} catch (IdAlreadyInUseException e) {
-			logger.error(e.getMessage());
-			throw new ClientRequestException("Client failed to create operation (see error log for details)", e);
-		}
-	}
-
-	@Override
-	public void deleteOperation(OperationId operationId)
-			throws LoginTimeoutException, AuthorizationException, ClientRequestException {
-		try {
-			serverConfiguration = new ConfigurationBuilder(serverConfiguration)
-					.removeOperation(serverConfiguration.getOperation(operationId))
-					.createServerConfiguration();
-			putConfig();
-		} catch (UnknownOperationIdException e) {
-			logger.error(e.getMessage());
-			throw new ClientRequestException("Client failed to delete operation (see error log for details)", e);
-		}
-	}
-
-	@Override
-	public void updateOperation(OperationId operationId, Operation updatedOperation)
-			throws LoginTimeoutException, AuthorizationException, ClientRequestException {
-		serverConfiguration = new ConfigurationBuilder(serverConfiguration)
-				.setOperation(operationId, updatedOperation)
-				.createServerConfiguration();
-		putConfig();
-	}
-
-	@Override
-	public void assignRole(UserId userId, ProjectId projectId, RoleId roleId)
-			throws LoginTimeoutException, AuthorizationException, ClientRequestException {
-		serverConfiguration = new ConfigurationBuilder(serverConfiguration)
-				.addPolicy(userId, projectId, roleId)
-				.createServerConfiguration();
-		putConfig();
-	}
-
-	@Override
-	public void retractRole(UserId userId, ProjectId projectId, RoleId roleId)
-			throws LoginTimeoutException, AuthorizationException, ClientRequestException {
-		serverConfiguration = new ConfigurationBuilder(serverConfiguration)
-				.removePolicy(userId, projectId, roleId)
-				.createServerConfiguration();
-		putConfig();
-	}
-
-	@Override
-	public Host getHost() {
-		return serverConfiguration.getHost();
-	}
-
-	@Override
-	public void setHostAddress(URI hostAddress) {
-		Host host = ConfigurationManager.getFactory().getHost(hostAddress, Optional.empty());
-		serverConfiguration = new ConfigurationBuilder(serverConfiguration)
-				.setHost(host)
-				.createServerConfiguration();
-	}
-
-	@Override
-	public void setSecondaryPort(int portNumber) {
-		Host h = serverConfiguration.getHost();
-		Port p = ConfigurationManager.getFactory().getPort(portNumber);
-		Host nh = ConfigurationManager.getFactory().getHost(h.getUri(), Optional.of(p));
-		serverConfiguration = new ConfigurationBuilder(serverConfiguration)
-				.setHost(nh)
-				.createServerConfiguration();
-	}
-
-	@Override
-	public String getRootDirectory() {
-		return serverConfiguration.getServerRoot().toString();
-	}
-
-	@Override
-	public void setRootDirectory(String rootDirectory)
-			throws LoginTimeoutException, AuthorizationException, ClientRequestException {
-		serverConfiguration = new ConfigurationBuilder(serverConfiguration)
-				.setServerRoot(new File(rootDirectory))
-				.createServerConfiguration();
-		putConfig();
-	}
-
-	@Override
-	public Map<String, String> getServerProperties() {
-		return serverConfiguration.getProperties();
-	}
-
-	@Override
-	public void setServerProperty(String property, String value)
-			throws LoginTimeoutException, AuthorizationException, ClientRequestException {
-		serverConfiguration = new ConfigurationBuilder(serverConfiguration)
-				.addProperty(property, value)
-				.createServerConfiguration();
-		putConfig();
-	}
-
-	@Override
-	public void unsetServerProperty(String property)
-			throws LoginTimeoutException, AuthorizationException, ClientRequestException {
-		serverConfiguration = new ConfigurationBuilder(serverConfiguration)
-				.removeProperty(property)
-				.createServerConfiguration();
-		putConfig();
-	}
+	
 
 	@Override
 	public UserInfo getUserInfo() {
@@ -794,14 +521,14 @@ public class LocalHttpClient implements Client, ClientSessionListener {
 
 	@Override
 	public List<Project> getProjects() {
-		return getProjects(userId);
+		return config.getProjects(userId);
 	}
 
 	@Override
 	public List<Role> getActiveRoles() {
 		List<Role> activeRoles = new ArrayList<>();
 		if (getRemoteProject().isPresent()) {
-			activeRoles = getRoles(userId, getRemoteProject().get(), GlobalPermissions.INCLUDED);
+			activeRoles = config.getRoles(userId, getRemoteProject().get(), GlobalPermissions.INCLUDED);
 		}
 		return activeRoles;
 	}
@@ -810,7 +537,7 @@ public class LocalHttpClient implements Client, ClientSessionListener {
 	public List<Operation> getActiveOperations() {
 		List<Operation> activeOperations = new ArrayList<>();
 		if (getRemoteProject().isPresent()) {
-			activeOperations = getOperations(userId, getRemoteProject().get());
+			activeOperations = config.getOperations(userId, getRemoteProject().get());
 		}
 		return activeOperations;
 	}
@@ -894,7 +621,7 @@ public class LocalHttpClient implements Client, ClientSessionListener {
 		return "Basic " + new String(Base64.encodeBase64(toenc.getBytes()));
 	}
 
-	private ServerConfiguration getConfig() throws LoginTimeoutException, AuthorizationException,
+	private ServerConfiguration getServerConfig() throws LoginTimeoutException, AuthorizationException,
 			ClientRequestException {
 		Response response = get(METAPROJECT);
 		try {
@@ -913,21 +640,13 @@ public class LocalHttpClient implements Client, ClientSessionListener {
 		return retrieveCodesFromServerResponse(get(GEN_CODE + "?count=" + no));		
 	}	
  
-	public void putConfig() throws LoginTimeoutException, AuthorizationException, ClientRequestException {
-		if (saveCancelSemantics) {
-			configStateChanged = true;
-		} else {
-			reallyPutConfig();
-		}
-	}
-
 	public boolean configStateChanged() {
 		return configStateChanged;
 	}
 
-	public void reallyPutConfig() throws LoginTimeoutException, AuthorizationException, ClientRequestException {
+	public void saveConfig() throws LoginTimeoutException, AuthorizationException, ClientRequestException {
 		post(METAPROJECT,
-				RequestBody.create(JsonContentType, serl.write(this.serverConfiguration, ServerConfiguration.class)),
+				RequestBody.create(JsonContentType, serl.write(config.getCurrentConfig(), ServerConfiguration.class)),
 				true); // send request to server
 		sleep(1000); // give the server some time to reboot
 		initConfig();
@@ -988,115 +707,9 @@ public class LocalHttpClient implements Client, ClientSessionListener {
 	}
 
 
-	@Override
-	public boolean canCreateUser() {
-		return queryAdminPolicy(userId, Operations.ADD_USER.getId());
-	}
+	
 
-	@Override
-	public boolean canDeleteUser() {
-		return queryAdminPolicy(userId, Operations.REMOVE_USER.getId());
-	}
-
-	@Override
-	public boolean canUpdateUser() {
-		return queryAdminPolicy(userId, Operations.MODIFY_USER.getId());
-	}
-
-	@Override
-	public boolean canCreateProject() {
-		return queryAdminPolicy(userId, Operations.ADD_PROJECT.getId());
-	}
-
-	@Override
-	public boolean canDeleteProject() {
-		return queryAdminPolicy(userId, Operations.REMOVE_PROJECT.getId());
-	}
-
-	@Override
-	public boolean canUpdateProject() {
-		return queryAdminPolicy(userId, Operations.MODIFY_PROJECT.getId());
-	}
-
-	@Override
-	public boolean canOpenProject() {
-		return queryAdminPolicy(userId, Operations.OPEN_PROJECT.getId());
-	}
-
-	@Override
-	public boolean canCreateRole() {
-		return queryAdminPolicy(userId, Operations.ADD_ROLE.getId());
-	}
-
-	@Override
-	public boolean canDeleteRole() {
-		return queryAdminPolicy(userId, Operations.REMOVE_ROLE.getId());
-	}
-
-	@Override
-	public boolean canUpdateRole() {
-		return queryAdminPolicy(userId, Operations.MODIFY_ROLE.getId());
-	}
-
-	@Override
-	public boolean canCreateOperation() {
-		return queryAdminPolicy(userId, Operations.ADD_OPERATION.getId());
-	}
-
-	@Override
-	public boolean canDeleteOperation() {
-		return queryAdminPolicy(userId, Operations.REMOVE_OPERATION.getId());
-	}
-
-	@Override
-	public boolean canUpdateOperation() {
-		return queryAdminPolicy(userId, Operations.MODIFY_OPERATION.getId());
-	}
-
-	@Override
-	public boolean canAssignRole() {
-		return queryAdminPolicy(userId, Operations.ASSIGN_ROLE.getId());
-	}
-
-	@Override
-	public boolean canRetractRole() {
-		return queryAdminPolicy(userId, Operations.RETRACT_ROLE.getId());
-	}
-
-	@Override
-	public boolean canStopServer() {
-		return queryAdminPolicy(userId, Operations.STOP_SERVER.getId());
-	}
-
-	@Override
-	public boolean canUpdateServerConfig() {
-		return queryAdminPolicy(userId, Operations.MODIFY_SERVER_SETTINGS.getId());
-	}
-
-	@Override
-	public boolean canPerformProjectOperation(OperationId operationId) {
-		if (!getRemoteProject().isPresent()) {
-			return false;
-		}
-		return queryProjectPolicy(userId, getRemoteProject().get(), operationId);
-	}
-
-	@Override
-	public boolean canPerformAdminOperation(OperationId operationId) {
-		return queryAdminPolicy(userId, operationId);
-	}
-
-	/*
-	 * Utility methods
-	 */
-	public boolean queryProjectPolicy(UserId userId, ProjectId projectId, OperationId operationId) {
-		return serverConfiguration.isOperationAllowed(operationId, projectId, userId);
-	}
-
-	private boolean queryAdminPolicy(UserId userId, OperationId operationId) {
-
-		return serverConfiguration.isOperationAllowed(operationId, userId);
-	}
+	
 
 	public Optional<ProjectId> getRemoteProject() {
 		return Optional.ofNullable(projectId);

@@ -28,12 +28,8 @@ public class ServerTableModel extends AbstractTableModel {
 
     public void initialize(Client client) throws OWLClientException {
         if(client.getProjects().contains(ConfigurationUtils.getUniversalProject())) {
-            try {
-                remoteProjects = new ArrayList<>(client.getAllProjects());
-                remoteProjects.remove(ConfigurationUtils.getUniversalProject());
-            } catch (AuthorizationException e) {
-                throw new OWLClientException(e.getCause());
-            }
+            remoteProjects = new ArrayList<>(client.getConfig().getAllProjects());
+			remoteProjects.remove(ConfigurationUtils.getUniversalProject());
         } else {
             remoteProjects = new ArrayList<>(client.getProjects());
         }

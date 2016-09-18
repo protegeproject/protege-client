@@ -16,6 +16,7 @@ import org.protege.editor.owl.client.api.Client;
 import org.protege.editor.owl.client.api.exception.AuthorizationException;
 import org.protege.editor.owl.client.api.exception.ClientRequestException;
 import org.protege.editor.owl.client.diff.ui.GuiUtils;
+import org.protege.editor.owl.client.util.Config;
 import org.protege.editor.owl.ui.UIHelper;
 
 import javax.swing.*;
@@ -342,29 +343,21 @@ public class ProjectDialogPanel extends JPanel implements VerifiedInputEditor {
 
     private void initOwnerComboBox() {
         User[] users = new User[0];
-        try {
-            Client client = ClientSession.getInstance(editorKit).getActiveClient();
-            List<User> userList = client.getAllUsers();
-            Collections.sort(userList);
-            users = userList.toArray(new User[userList.size()]);
-        } catch (ClientRequestException | AuthorizationException e) {
-            ErrorLogPanel.showErrorDialog(e);
-        }
+        Config config = ClientSession.getInstance(editorKit).getActiveClient().getConfig();
+		List<User> userList = config.getAllUsers();
+		Collections.sort(userList);
+		users = userList.toArray(new User[userList.size()]);
         ownerComboBox = new JComboBox<>(users);
         ownerComboBox.setRenderer(new PolicyObjectComboBoxRenderer());
     }
 
     private void initProjectComboBox() {
         Project[] projects = new Project[0];
-        try {
-            Client client = ClientSession.getInstance(editorKit).getActiveClient();
-            List<Project> projectList = client.getAllProjects();
-            Collections.sort(projectList);
-            projectList.add(0, null);
-            projects = projectList.toArray(new Project[projectList.size()]);
-        } catch (ClientRequestException | AuthorizationException e) {
-            ErrorLogPanel.showErrorDialog(e);
-        }
+        Config config = ClientSession.getInstance(editorKit).getActiveClient().getConfig();
+		List<Project> projectList = config.getAllProjects();
+		Collections.sort(projectList);
+		projectList.add(0, null);
+		projects = projectList.toArray(new Project[projectList.size()]);
         projectComboBox = new JComboBox<>(projects);
         projectComboBox.setRenderer(new PolicyObjectComboBoxRenderer());
         projectComboBox.setSelectedIndex(0);
@@ -454,9 +447,9 @@ public class ProjectDialogPanel extends JPanel implements VerifiedInputEditor {
     }
 
     private void update(Project project) {
-        Client client = ClientSession.getInstance(editorKit).getActiveClient();
+        Config config = ClientSession.getInstance(editorKit).getActiveClient().getConfig();
         try {
-            client.updateProject(selectedProject.getId(), project);
+            config.updateProject(selectedProject.getId(), project);
         } catch (AuthorizationException | ClientRequestException e) {
             ErrorLogPanel.showErrorDialog(e);
         }

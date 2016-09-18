@@ -130,25 +130,17 @@ public class PolicyAssignmentDialogPanel extends JPanel implements VerifiedInput
     private AugmentedJCheckBox<Role>[] getRoles() {
         Client client = ClientSession.getInstance(editorKit).getActiveClient();
         List<AugmentedJCheckBox<Role>> roles = new ArrayList<>();
-        try {
-            List<Role> roleSet = client.getAllRoles();
-            Collections.sort(roleSet);
-            roles.addAll(roleSet.stream().map(AugmentedJCheckBox::new).collect(Collectors.toList()));
-        } catch (AuthorizationException | ClientRequestException e) {
-            ErrorLogPanel.showErrorDialog(e);
-        }
+        List<Role> roleSet = client.getConfig().getAllRoles();
+		Collections.sort(roleSet);
+		roles.addAll(roleSet.stream().map(AugmentedJCheckBox::new).collect(Collectors.toList()));
         return roles.toArray(new AugmentedJCheckBox[roles.size()]);
     }
 
     private Project[] getProjects() {
         Client client = ClientSession.getInstance(editorKit).getActiveClient();
         List<Project> projects = new ArrayList<>();
-        try {
-            projects = client.getAllProjects();
-            projects.add(ConfigurationUtils.getUniversalProject());
-        } catch (AuthorizationException | ClientRequestException e) {
-            ErrorLogPanel.showErrorDialog(e);
-        }
+        projects = client.getConfig().getAllProjects();
+		projects.add(ConfigurationUtils.getUniversalProject());
         Collections.sort(projects);
         return projects.toArray(new Project[projects.size()]);
     }
@@ -158,10 +150,10 @@ public class PolicyAssignmentDialogPanel extends JPanel implements VerifiedInput
         List<Operation> operations = new ArrayList<>();
         try {
             for(Role r : roles) {
-                List<Operation> ops = client.getOperations(r.getId());
+                List<Operation> ops = client.getConfig().getOperations(r.getId());
                 ops.stream().filter(op -> !operations.contains(op)).forEach(operations::add);
             }
-        } catch (AuthorizationException | ClientRequestException e) {
+        } catch (ClientRequestException e) {
             ErrorLogPanel.showErrorDialog(e);
         }
         Collections.sort(operations);
@@ -208,16 +200,12 @@ public class PolicyAssignmentDialogPanel extends JPanel implements VerifiedInput
     private boolean policyEntryExists() {
         if(selectedProject != null && selectedUser != null && !getSelectedRoleCheckboxes().isEmpty()) {
             Client client = ClientSession.getInstance(editorKit).getActiveClient();
-            try {
-                List<Role> roles = client.getRoles(selectedUser.getId(), selectedProject.getId(), GlobalPermissions.EXCLUDED);
-                for(Role r : getSelectedRoles()) {
-                    if(roles.contains(r)) {
-                        return true;
-                    }
-                }
-            } catch (AuthorizationException | ClientRequestException e) {
-                return false;
-            }
+            List<Role> roles = client.getConfig().getRoles(selectedUser.getId(), selectedProject.getId(), GlobalPermissions.EXCLUDED);
+			for(Role r : getSelectedRoles()) {
+			    if(roles.contains(r)) {
+			        return true;
+			    }
+			}
         }
         return false;
     }
@@ -243,7 +231,7 @@ public class PolicyAssignmentDialogPanel extends JPanel implements VerifiedInput
         Client client = ClientSession.getInstance(editorKit).getActiveClient();
         try {
             for(Role r : roles) {
-                client.assignRole(selectedUser.getId(), project.getId(), r.getId());
+                client.getConfig().assignRole(selectedUser.getId(), project.getId(), r.getId());
             }
         } catch (AuthorizationException | ClientRequestException e) {
             ErrorLogPanel.showErrorDialog(e);

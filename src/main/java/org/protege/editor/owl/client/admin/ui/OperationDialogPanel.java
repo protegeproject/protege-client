@@ -15,6 +15,7 @@ import org.protege.editor.owl.client.api.Client;
 import org.protege.editor.owl.client.api.exception.AuthorizationException;
 import org.protege.editor.owl.client.api.exception.ClientRequestException;
 import org.protege.editor.owl.client.diff.ui.GuiUtils;
+import org.protege.editor.owl.client.util.Config;
 import org.protege.editor.owl.ui.UIHelper;
 
 import javax.swing.*;
@@ -177,18 +178,18 @@ public class OperationDialogPanel extends JPanel implements VerifiedInputEditor 
     }
 
     private void addOperation(Operation operation) {
-        Client client = ClientSession.getInstance(editorKit).getActiveClient();
+        Config config = ClientSession.getInstance(editorKit).getActiveClient().getConfig();
         try {
-            client.createOperation(operation);
+            config.createOperation(operation);
         } catch (AuthorizationException | ClientRequestException e) {
             ErrorLogPanel.showErrorDialog(e);
         }
     }
 
     private void update(Operation operation) {
-        Client client = ClientSession.getInstance(editorKit).getActiveClient();
+        Config config = ClientSession.getInstance(editorKit).getActiveClient().getConfig();
         try {
-            client.updateOperation(selectedOperation.getId(), operation);
+            config.updateOperation(selectedOperation.getId(), operation);
         } catch (AuthorizationException | ClientRequestException e) {
             ErrorLogPanel.showErrorDialog(e);
         }

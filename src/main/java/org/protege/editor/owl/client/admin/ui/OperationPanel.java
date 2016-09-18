@@ -18,6 +18,7 @@ import org.protege.editor.owl.client.api.exception.AuthorizationException;
 import org.protege.editor.owl.client.api.exception.ClientRequestException;
 import org.protege.editor.owl.client.event.ClientSessionChangeEvent;
 import org.protege.editor.owl.client.event.ClientSessionListener;
+import org.protege.editor.owl.client.util.Config;
 
 import javax.swing.*;
 import javax.swing.border.EmptyBorder;
@@ -46,7 +47,7 @@ public class OperationPanel extends JPanel implements Disposable {
     private MList operationList;
     private Operation selectedOperation;
     private ClientSession session;
-    private Client client;
+    private Config config = null;
 
     /**
      * Constructor
@@ -54,13 +55,15 @@ public class OperationPanel extends JPanel implements Disposable {
      * @param editorKit OWL editor kit
      */
     public OperationPanel(OWLEditorKit editorKit) {
-        this.editorKit = checkNotNull(editorKit);
-        configManager = AdminTabManager.get(editorKit);
-        configManager.addListener(tabListener);
-        session = ClientSession.getInstance(editorKit);
-        session.addListener(sessionListener);
-        client = session.getActiveClient();
-        initUi();
+    	this.editorKit = checkNotNull(editorKit);
+    	configManager = AdminTabManager.get(editorKit);
+    	configManager.addListener(tabListener);
+    	session = ClientSession.getInstance(editorKit);
+    	session.addListener(sessionListener);
+    	if (session.getActiveClient() != null) {
+    		config = session.getActiveClient().getConfig();
+    	}
+    	initUi();
     }
 
     private AdminTabListener tabListener = event -> {
@@ -73,7 +76,11 @@ public class OperationPanel extends JPanel implements Disposable {
 
     private ClientSessionListener sessionListener = event -> {
         if(event.hasCategory(ClientSessionChangeEvent.EventCategory.USER_LOGIN) || event.hasCategory(ClientSessionChangeEvent.EventCategory.USER_LOGOUT)) {
-            client = session.getActiveClient();
+            if (session.getActiveClient() != null) {
+            	config = session.getActiveClient().getConfig();            
+            } else {
+            	config = null;
+            }
             removeAll();
             initUi();
         }
@@ -151,20 +158,16 @@ public class OperationPanel extends JPanel implements Disposable {
     private void listOperations() {
         ArrayList<Object> data = new ArrayList<>();
         data.add(new OperationListHeaderItem());
-        try {
-            if(client != null) {
-                List<Operation> operations = client.getAllOperations();
-                Collections.sort(operations);
-                data.addAll(operations.stream().map(OperationListItem::new).collect(Collectors.toList()));
-            }
-        } catch (ClientRequestException | AuthorizationException e) {
-            ErrorLogPanel.showErrorDialog(e);
-        }
+        if(config != null) {
+		    List<Operation> operations = config.getAllOperations();
+		    Collections.sort(operations);
+		    data.addAll(operations.stream().map(OperationListItem::new).collect(Collectors.toList()));
+		}
         operationList.setListData(data.toArray());
     }
 
     private void addOperation() {
-        if(client != null && client.canCreateOperation()) {
+        if(config != null && config.canCreateOperation()) {
             Optional<Operation> operation = OperationDialogPanel.showDialog(editorKit);
             if (operation.isPresent()) {
                 configManager.statusChanged(AdminTabEvent.CONFIGURATION_CHANGED);
@@ -175,7 +178,7 @@ public class OperationPanel extends JPanel implements Disposable {
     }
 
     private void editOperation() {
-        if(client != null && client.canUpdateOperation() && !selectedOperation.isSystemOperation()) {
+        if(config != null && config.canUpdateOperation() && !selectedOperation.isSystemOperation()) {
             Optional<Operation> operation = OperationDialogPanel.showDialog(editorKit, selectedOperation);
             if (operation.isPresent()) {
                 configManager.statusChanged(AdminTabEvent.CONFIGURATION_CHANGED);
@@ -186,7 +189,7 @@ public class OperationPanel extends JPanel implements Disposable {
     }
 
     private void deleteOperation() {
-        if(client != null && client.canDeleteOperation()) {
+        if(config != null && config.canDeleteOperation()) {
             Object selectedObj = operationList.getSelectedValue();
             if (selectedObj instanceof OperationListItem) {
                 Operation operation = ((OperationListItem) selectedObj).getOperation();
@@ -198,7 +201,7 @@ public class OperationPanel extends JPanel implements Disposable {
                     return;
                 }
                 try {
-                    client.deleteOperation(operation.getId());
+                    config.deleteOperation(operation.getId());
                 } catch (AuthorizationException | ClientRequestException e) {
                     ErrorLogPanel.showErrorDialog(e);
                 }
@@ -221,7 +224,7 @@ public class OperationPanel extends JPanel implements Disposable {
 
         @Override
         public boolean canAdd() {
-            return (client != null && client.canCreateOperation());
+            return (config != null && config.canCreateOperation());
         }
     }
 
@@ -246,7 +249,7 @@ public class OperationPanel extends JPanel implements Disposable {
 
         @Override
         public boolean isEditable() {
-            return (!operation.isSystemOperation() && client != null && client.canUpdateOperation());
+            return (!operation.isSystemOperation() && config != null && config.canUpdateOperation());
         }
 
         @Override
@@ -256,7 +259,7 @@ public class OperationPanel extends JPanel implements Disposable {
 
         @Override
         public boolean isDeleteable() {
-            return (!operation.isSystemOperation() && client != null && client.canDeleteOperation());
+            return (!operation.isSystemOperation() && config != null && config.canDeleteOperation());
         }
 
         @Override

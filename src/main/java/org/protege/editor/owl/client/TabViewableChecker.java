@@ -46,7 +46,7 @@ public class TabViewableChecker implements TabViewable {
 	public boolean checkViewable(ViewComponentPlugin plugin) {
 		Set<String> categories = plugin.getCategorisations();
 		for (String category : categories) {
-			if (checkStringAgainstClient(category)) {
+			if (checkStringAgainstClient(category, true)) {
 				return true;
 			}
 			
@@ -54,7 +54,8 @@ public class TabViewableChecker implements TabViewable {
 		return false;
 	}
 	
-	private boolean checkStringAgainstClient(String cat) {
+	private boolean checkStringAgainstClient(String cat, boolean view_p) {
+		// TODO: deal with diff between views and tabs and how categories are produced
 		if (isSysAdmin()) {
 			return admin_tabs.contains(cat);
 		} else if (isWorkFlowModeler()) {
@@ -100,7 +101,7 @@ public class TabViewableChecker implements TabViewable {
 
 	@Override
 	public boolean checkViewable(WorkspaceTabPlugin plugin) {
-		return checkStringAgainstClient(plugin.getLabel());
+		return checkStringAgainstClient(plugin.getLabel(), false);
 	}
 
 }

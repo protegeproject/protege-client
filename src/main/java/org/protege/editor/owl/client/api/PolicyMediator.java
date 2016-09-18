@@ -1,6 +1,8 @@
 package org.protege.editor.owl.client.api;
 
 import edu.stanford.protege.metaproject.api.OperationId;
+import edu.stanford.protege.metaproject.api.ProjectId;
+import edu.stanford.protege.metaproject.api.UserId;
 
 /**
  * Represents the utility methods that will check the user's permission to
@@ -177,7 +179,10 @@ public interface PolicyMediator {
      * @return Returns <code>true</code> if the user has the permission, or
      *         <code>false</code> otherwise.
      */
-    boolean canPerformProjectOperation(OperationId operationId);
+    boolean canPerformProjectOperation(OperationId operationId); 
+    
+    boolean queryProjectPolicy(UserId userId, ProjectId id, OperationId id2);
+    
 
     /**
      * Checks if the user has the permission to perform an admin-related operation.

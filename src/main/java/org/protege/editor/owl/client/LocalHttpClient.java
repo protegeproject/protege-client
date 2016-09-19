@@ -626,6 +626,7 @@ public class LocalHttpClient implements Client, ClientSessionListener {
 		try {
 			serverConfiguration = new ConfigurationBuilder(serverConfiguration)
 					.removeRole(serverConfiguration.getRole(roleId))
+					.removePolicy(roleId)
 					.createServerConfiguration();
 			putConfig();
 		} catch (UnknownRoleIdException e) {
@@ -692,6 +693,7 @@ public class LocalHttpClient implements Client, ClientSessionListener {
 		try {
 			serverConfiguration = new ConfigurationBuilder(serverConfiguration)
 					.removeOperation(serverConfiguration.getOperation(operationId))
+					.removePolicy(operationId)
 					.createServerConfiguration();
 			putConfig();
 		} catch (UnknownOperationIdException e) {

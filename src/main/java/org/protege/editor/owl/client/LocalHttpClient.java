@@ -199,6 +199,8 @@ public class LocalHttpClient implements Client, ClientSessionListener {
 		try {
 			serverConfiguration = new ConfigurationBuilder(serverConfiguration)
 					.removeUser(serverConfiguration.getUser(userId))
+					.removePolicy(userId)
+					.unregisterUser(userId)
 					.createServerConfiguration();
 			putConfig();
 		} catch (UnknownUserIdException e) {

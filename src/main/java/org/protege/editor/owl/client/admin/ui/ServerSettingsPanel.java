@@ -314,33 +314,39 @@ public class ServerSettingsPanel extends JPanel implements Disposable {
     }
 
     private void listHost() {
-        ArrayList<Object> data = new ArrayList<>();
-        data.add(new HostListHeaderItem());
-        if(config != null) {
-		    data.add(new HostListItem(config.getHost()));
-		}
-        hostList.setListData(data.toArray());
+    	ArrayList<Object> data = new ArrayList<>();
+    	data.add(new HostListHeaderItem());
+    	if(config != null) {
+    		if (config.canUpdateServerConfig()) {
+    			data.add(new HostListItem(config.getHost()));
+    		}
+    	}
+    	hostList.setListData(data.toArray());
     }
 
     private void listRoot() {
-        ArrayList<Object> data = new ArrayList<>();
-        data.add(new RootListHeaderItem());
-        if(config != null) {
-		    data.add(new RootListItem(config.getRootDirectory()));
-		}
-        rootList.setListData(data.toArray());
+    	ArrayList<Object> data = new ArrayList<>();
+    	data.add(new RootListHeaderItem());
+    	if(config != null) {
+    		if (config.canUpdateServerConfig()) {
+    			data.add(new RootListItem(config.getRootDirectory()));
+    		}
+    	}
+    	rootList.setListData(data.toArray());
     }
 
     private void listProperties() {
-        ArrayList<Object> data = new ArrayList<>();
-        data.add(new PropertyListHeaderItem());
-        if(config != null) {
-		    Map<String, String> propertiesMap = config.getServerProperties();
-		    List<String> keyset = new ArrayList<>(propertiesMap.keySet());
-		    Collections.sort(keyset);
-		    data.addAll(keyset.stream().map(key -> new PropertyListItem(key, propertiesMap.get(key))).collect(Collectors.toList()));
-		}
-        settingsList.setListData(data.toArray());
+    	ArrayList<Object> data = new ArrayList<>();
+    	data.add(new PropertyListHeaderItem());
+    	if(config != null) {
+    		if (config.canUpdateServerConfig()) {
+    			Map<String, String> propertiesMap = config.getServerProperties();
+    			List<String> keyset = new ArrayList<>(propertiesMap.keySet());
+    			Collections.sort(keyset);
+    			data.addAll(keyset.stream().map(key -> new PropertyListItem(key, propertiesMap.get(key))).collect(Collectors.toList()));
+    		}
+    	}
+    	settingsList.setListData(data.toArray());
     }
 
     private void refresh() {

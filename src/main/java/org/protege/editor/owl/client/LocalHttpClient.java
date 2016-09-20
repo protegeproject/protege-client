@@ -326,6 +326,7 @@ public class LocalHttpClient implements Client, ClientSessionListener {
 	private void setCurrentProject(ProjectId pid) throws ClientRequestException {
 		try {
 			projectId = pid;
+			config.setActiveProject(pid);
 			project = config.getCurrentConfig().getProject(pid);
 		} catch (UnknownProjectIdException e) {
 			logger.error(e.getMessage());

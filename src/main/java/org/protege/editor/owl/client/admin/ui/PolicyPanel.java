@@ -51,7 +51,7 @@ public class PolicyPanel extends JPanel implements Disposable {
     private MList projectList, roleList;
     private Project selectedProject;
     private ClientSession session;
-    private Config config;
+    private Config config = null;
 
     /**
      * Constructor
@@ -59,13 +59,15 @@ public class PolicyPanel extends JPanel implements Disposable {
      * @param editorKit    OWL editor kit
      */
     public PolicyPanel(OWLEditorKit editorKit) {
-        this.editorKit = checkNotNull(editorKit);
-        configManager = AdminTabManager.get(editorKit);
-        configManager.addListener(tabListener);
-        session = ClientSession.getInstance(editorKit);
-        session.addListener(sessionListener);
-        config = session.getActiveClient().getConfig();
-        initUi();
+    	this.editorKit = checkNotNull(editorKit);
+    	configManager = AdminTabManager.get(editorKit);
+    	configManager.addListener(tabListener);
+    	session = ClientSession.getInstance(editorKit);
+    	session.addListener(sessionListener);
+    	if ( session.getActiveClient() != null) {
+    		config = session.getActiveClient().getConfig();
+    	}
+    	initUi();
     }
 
     private AdminTabListener tabListener = event -> {

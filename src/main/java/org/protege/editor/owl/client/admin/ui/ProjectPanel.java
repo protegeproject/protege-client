@@ -54,7 +54,7 @@ public class ProjectPanel extends JPanel implements Disposable {
     private Project selectedProject;
     private ClientSession session;
     private Client client;
-    private Config config;
+    private Config config = null;
     private UserId userId;
 
     /**
@@ -63,15 +63,17 @@ public class ProjectPanel extends JPanel implements Disposable {
      * @param editorKit    OWL editor kit
      */
     public ProjectPanel(OWLEditorKit editorKit) {
-        this.editorKit = checkNotNull(editorKit);
-        configManager = AdminTabManager.get(editorKit);
-        configManager.addListener(tabListener);
-        session = ClientSession.getInstance(editorKit);
-        session.addListener(sessionListener);
-        client = session.getActiveClient();
-        config = client.getConfig();
-        userId = (client != null ? f.getUserId(client.getUserInfo().getId()) : null);
-        initUi();
+    	this.editorKit = checkNotNull(editorKit);
+    	configManager = AdminTabManager.get(editorKit);
+    	configManager.addListener(tabListener);
+    	session = ClientSession.getInstance(editorKit);
+    	session.addListener(sessionListener);
+    	client = session.getActiveClient();
+    	if (client != null) {
+    		config = client.getConfig();
+    	}
+    	userId = (client != null ? f.getUserId(client.getUserInfo().getId()) : null);
+    	initUi();
     }
 
     private AdminTabListener tabListener = event -> {

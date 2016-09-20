@@ -55,13 +55,15 @@ public class UserPanel extends JPanel implements Disposable {
      * @param editorKit OWL editor kit
      */
     public UserPanel(OWLEditorKit editorKit) {
-        this.editorKit = checkNotNull(editorKit);
-        configManager = AdminTabManager.get(editorKit);
-        configManager.addListener(tabListener);
-        session = ClientSession.getInstance(editorKit);
-        session.addListener(sessionListener);
-        config = session.getActiveClient().getConfig();
-        initUi();
+    	this.editorKit = checkNotNull(editorKit);
+    	configManager = AdminTabManager.get(editorKit);
+    	configManager.addListener(tabListener);
+    	session = ClientSession.getInstance(editorKit);
+    	session.addListener(sessionListener);
+    	if (session.getActiveClient() != null) {
+    		config = session.getActiveClient().getConfig();
+    	}
+    	initUi();
     }
 
     private AdminTabListener tabListener = event -> {

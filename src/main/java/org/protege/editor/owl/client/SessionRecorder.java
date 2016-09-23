@@ -102,6 +102,7 @@ public class SessionRecorder extends OWLEditorKitHook implements OWLOntologyChan
 
 	@Override
 	public void initialise() throws Exception {
+		getEditorKit().getOWLModelManager().setHistoryManager(this);
 		getEditorKit().getOWLModelManager().addOntologyChangeListener(this);
 		getEditorKit().getOWLModelManager().addListener(changeActiveProject);
 		this.manager = getEditorKit().getOWLModelManager().getOWLOntologyManager();

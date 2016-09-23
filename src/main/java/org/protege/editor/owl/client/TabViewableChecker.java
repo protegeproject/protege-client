@@ -27,6 +27,7 @@ public class TabViewableChecker implements TabViewable {
 		
 		wf_man_tabs.add("Revision History");
 		wf_man_tabs.add("Annotation Properties");
+		wf_man_tabs.add("Entities");
 		wf_man_tabs.add("Object Properties");
 		wf_man_tabs.add("NCI Edit Tab");
 		wf_man_tabs.add("Lucene Search Tab");
@@ -35,6 +36,13 @@ public class TabViewableChecker implements TabViewable {
 		wf_mod_tabs.add("Lucene Search Tab");
 		
 		admin_tabs.add("Server Administration");
+		/**
+		admin_tabs.add("Annotation Properties");
+		admin_tabs.add("Object Properties");
+		admin_tabs.add("NCI Edit Tab");
+		admin_tabs.add("Lucene Search Tab");
+		admin_tabs.add("Entities");
+		**/
 	}
 	
 	public TabViewableChecker(Client c) {
@@ -96,6 +104,7 @@ public class TabViewableChecker implements TabViewable {
 	}
 
 	private boolean isSysAdmin() {
+		
 		return (((LocalHttpClient) client).getClientType() == UserType.ADMIN);
 	}
 

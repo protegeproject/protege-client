@@ -58,8 +58,12 @@ public class GuiUtils {
     /* methods */
 
     public static Icon getIcon(String filename, int width, int height) {
-        BufferedImage icon = null;
         ClassLoader classLoader = GuiUtils.class.getClassLoader();
+        return getIcon(classLoader, filename, width, height);
+    }
+
+    public static Icon getIcon(ClassLoader classLoader, String filename, int width, int height) {
+        BufferedImage icon = null;
         try {
             URL url = classLoader.getResource(checkNotNull(filename));
             if(url != null) {

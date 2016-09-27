@@ -34,7 +34,7 @@ import org.slf4j.LoggerFactory;
  * matthew.horridge@cs.man.ac.uk<br>
  * www.cs.man.ac.uk/~horridgm<br><br>
  */
-public class SessionRecorder extends OWLEditorKitHook implements OWLOntologyChangeListener, HistoryManager {
+public class SessionRecorder extends OWLEditorKitHook implements HistoryManager {
 
 	public static String SRID = "org.protege.editor.owl.client.SessionRecorder";
 
@@ -103,7 +103,7 @@ public class SessionRecorder extends OWLEditorKitHook implements OWLOntologyChan
 	@Override
 	public void initialise() throws Exception {
 		getEditorKit().getOWLModelManager().setHistoryManager(this);
-		getEditorKit().getOWLModelManager().addOntologyChangeListener(this);
+		//getEditorKit().getOWLModelManager().addOntologyChangeListener(this);
 		getEditorKit().getOWLModelManager().addListener(changeActiveProject);
 		this.manager = getEditorKit().getOWLModelManager().getOWLOntologyManager();
 		listeners = new ArrayList<>();
@@ -134,27 +134,29 @@ public class SessionRecorder extends OWLEditorKitHook implements OWLOntologyChan
 
 
 	public void logChanges(List<? extends OWLOntologyChange> changes) {
-		switch (typeOfChangeInProgress) {
-		case NORMAL:
-			// Clear the redo stack, because we can
-			// no longer redo
-			redoStack.clear();
-			// no break;
-		case REDOING:
-			// Push the changes onto the stack
-			undoStack.push(new ArrayList<>(changes));
-			break;
-		case UNDOING:
-			// In undo mode, so handleSave changes for redo.
-			// Push the changes onto the redo stack.  Since these will
-			// be undo changes, we need to get hold of the reverse changes
-			// (The stacks, both undo and redo, should always hold the forward
-			// changes).
+		if (enabled) {
+			switch (typeOfChangeInProgress) {
+			case NORMAL:
+				// Clear the redo stack, because we can
+				// no longer redo
+				redoStack.clear();
+				// no break;
+			case REDOING:
+				// Push the changes onto the stack
+				undoStack.push(new ArrayList<>(changes));
+				break;
+			case UNDOING:
+				// In undo mode, so handleSave changes for redo.
+				// Push the changes onto the redo stack.  Since these will
+				// be undo changes, we need to get hold of the reverse changes
+				// (The stacks, both undo and redo, should always hold the forward
+				// changes).
 
-			redoStack.push(reverseChanges(changes));
-			break;
+				redoStack.push(reverseChanges(changes));
+				break;
+			}
+			fireStateChanged();
 		}
-		fireStateChanged();
 	}
 
 
@@ -238,18 +240,9 @@ public class SessionRecorder extends OWLEditorKitHook implements OWLOntologyChan
 
 	@Override
 	public void dispose() throws Exception {
-		getEditorKit().getOWLModelManager().removeOntologyChangeListener(this);
+		//getEditorKit().getOWLModelManager().removeOntologyChangeListener(this);
 		getEditorKit().getModelManager().removeListener(changeActiveProject);
 
-
-	}
-
-	@Override
-	public void ontologiesChanged(List<? extends OWLOntologyChange> changes) throws OWLException {
-
-		if (enabled) {
-			logChanges(changes);
-		}
 
 	}
 

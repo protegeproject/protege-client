@@ -368,8 +368,6 @@ public class ProjectDialogPanel extends JPanel implements VerifiedInputEditor {
         id.setText(project.getId().get());
         name.setText(project.getName().get());
         description.setText(project.getDescription().get());
-        file = project.getFile();
-        fileSelectionLbl.setText(file.getName());
         for (int i = 0; i < ownerComboBox.getModel().getSize(); i++) {
             User user = ownerComboBox.getModel().getElementAt(i);
             if (user.getId().equals(project.getOwner())) {
@@ -434,13 +432,13 @@ public class ProjectDialogPanel extends JPanel implements VerifiedInputEditor {
     private Project createProject() {
         PolicyFactory f = ConfigurationManager.getFactory();
         return f.getProject(f.getProjectId(id.getText()), f.getName(name.getText()), f.getDescription(description.getText()),
-                file, ownerId, Optional.ofNullable(f.getProjectOptions(projectOptions)));
+                ownerId, Optional.ofNullable(f.getProjectOptions(projectOptions)));
     }
 
     private void addProject(Project project) {
         Client client = ClientSession.getInstance(editorKit).getActiveClient();
         try {
-            ((LocalHttpClient) client).createProject(project);
+            ((LocalHttpClient) client).createProject(project, this.file);
         } catch (AuthorizationException | ClientRequestException e) {
             ErrorLogPanel.showErrorDialog(e);
         }

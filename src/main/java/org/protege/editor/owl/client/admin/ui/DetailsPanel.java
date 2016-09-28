@@ -144,10 +144,10 @@ public class DetailsPanel extends JPanel implements Disposable {
         Detail description = new Detail("Description", project.getDescription().get());
         description.setIsTextArea(true);
         details.add(description);
-        details.add(new Detail("Owner", project.getOwner().get()));
-        Detail file = new Detail("File", project.getFile().getPath());
-        file.setIsLast(true);
-        details.add(file);
+        Detail ownd = new Detail("Owner", project.getOwner().get());
+        ownd.setIsLast(true);
+        details.add(ownd);
+        
         return getDetails("Project details", details);
     }
 

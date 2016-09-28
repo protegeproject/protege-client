@@ -171,11 +171,11 @@ public class LocalHttpClient implements Client, ClientSessionListener {
 	}
 
 	
-	public ServerDocument createProject(Project project)
+	public ServerDocument createProject(Project project, File font)
 			throws LoginTimeoutException, AuthorizationException, ClientRequestException {
 		try {
 			ServerDocument sdoc = postProjectToServer(project);
-			postProjectSnapShotToServer(project); // send snapshot to server
+			postProjectSnapShotToServer(project, font); // send snapshot to server
 			initConfig();
 			return sdoc;
 		} catch (IOException e) {
@@ -345,10 +345,9 @@ public class LocalHttpClient implements Client, ClientSessionListener {
 		}
 	}
 
-	private void postProjectSnapShotToServer(Project project) throws LoginTimeoutException,
+	private void postProjectSnapShotToServer(Project project, File font) throws LoginTimeoutException,
 			AuthorizationException, ClientRequestException {
 		try {
-			File font = project.getFile(); // TODO: The getFile() should return project file (.history) not .owl
 			OWLOntology ont = OWLManager.createOWLOntologyManager().loadOntologyFromOntologyDocument(font);
 			ByteArrayOutputStream b = writeRequestArgumentsIntoByteStream(project.getId(), new SnapShot(ont));
 			post(PROJECT_SNAPSHOT,

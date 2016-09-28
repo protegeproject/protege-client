@@ -46,32 +46,7 @@ public interface Client {
     List<Project> getProjects() throws ClientRequestException;
     
 
-    /**
-     * Creating a new project to the server.
-     * 
-     * @param projectId
-     *            The project identifier object
-     * @param projectName
-     *            The name of the project
-     * @param description
-     *            The description of the project
-     * @param owner
-     *            The owner of the project
-     * @param options
-     *            An optional of project options
-     * @param initialCommit
-     *            An optional initial commit bundle when creating this project
-     * @return A server document that provide the link information to remote resources
-     * @throws AuthorizationException
-     *             If the user doesn't have the permission to request this
-     *             service.
-     * @throws ClientRequestException
-     *             If the server failed to fulfill the user request.
-     */
-    ServerDocument createProject(ProjectId projectId, Name projectName, Description description, UserId owner,
-            Optional<ProjectOptions> options, Optional<CommitBundle> initialCommit)
-                    throws AuthorizationException, ClientRequestException;
-
+   
     /**
      * Deleting an existing project from the server.
      *

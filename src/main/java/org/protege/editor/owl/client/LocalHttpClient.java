@@ -171,13 +171,6 @@ public class LocalHttpClient implements Client, ClientSessionListener {
 	}
 
 	
-	@Override
-	public ServerDocument createProject(ProjectId projectId, Name projectName, Description description,
-			UserId owner, Optional<ProjectOptions> options, Optional<CommitBundle> initialCommit)
-			throws AuthorizationException, ClientRequestException {
-		throw new RuntimeException("Use method createProject(Project) instead");
-	}
-
 	public ServerDocument createProject(Project project)
 			throws LoginTimeoutException, AuthorizationException, ClientRequestException {
 		try {

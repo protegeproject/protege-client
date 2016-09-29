@@ -9,7 +9,9 @@ import java.util.Set;
 import java.util.TreeMap;
 
 import org.protege.editor.core.ui.util.JOptionPaneEx;
+import org.protege.editor.core.ui.workspace.WorkspaceTab;
 import org.protege.editor.owl.OWLEditorKit;
+import org.protege.editor.owl.client.LocalHttpClient.UserType;
 import org.protege.editor.owl.client.api.Client;
 import org.protege.editor.owl.client.api.UserInfo;
 import org.protege.editor.owl.client.event.ClientSessionChangeEvent;
@@ -22,6 +24,7 @@ import org.protege.editor.owl.model.event.EventType;
 import org.protege.editor.owl.model.event.OWLModelManagerChangeEvent;
 import org.protege.editor.owl.model.event.OWLModelManagerListener;
 import org.protege.editor.owl.server.versioning.api.VersionedOWLOntology;
+import org.protege.editor.owl.ui.OWLWorkspaceViewsTab;
 import org.protege.editor.owl.ui.ontology.OntologyPreferences;
 import org.semanticweb.owlapi.model.IRI;
 import org.semanticweb.owlapi.model.OWLOntology;
@@ -73,9 +76,7 @@ public class ClientSession extends OWLEditorKitHook {
 
     private void fireChangeEvent(EventCategory category) {
         ClientSessionChangeEvent event = new ClientSessionChangeEvent(this, category);
-        //Set<ClientSessionListener> copy = new HashSet<ClientSessionListener>();
-        //copy.addAll(this.clientSessionListeners);
-        
+                
         for (ClientSessionListener listener : clientSessionListeners) {
             listener.handleChange(event);
         }
@@ -108,6 +109,11 @@ public class ClientSession extends OWLEditorKitHook {
             activeClient = client;            
             getEditorKit().getWorkspace().setCheckLevel(new TabViewableChecker(client));
             getEditorKit().getWorkspace().recheckPlugins();
+            if (((LocalHttpClient) client).getClientType() == UserType.ADMIN) {
+            	WorkspaceTab admin = getEditorKit().getOWLWorkspace().getWorkspaceTab("org.protege.editor.owl.client.AdminTab");
+        		
+        		((OWLWorkspaceViewsTab) admin).fireUpViews();
+            }
             fireChangeEvent(EventCategory.USER_LOGIN);
         }
         else {
@@ -162,8 +168,7 @@ public class ClientSession extends OWLEditorKitHook {
         closeOpenVersionedOntologies();
         unregisterAllProjects();
         unregisterAllVersionOntologies();
-        fireChangeEvent(EventCategory.USER_LOGOUT);        
-        //getEditorKit().getWorkspace().setCheckLevel(null);
+        fireChangeEvent(EventCategory.USER_LOGOUT); 
         getEditorKit().getWorkspace().recheckPlugins();
     }
 

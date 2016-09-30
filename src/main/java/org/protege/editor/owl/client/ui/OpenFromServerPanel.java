@@ -12,7 +12,8 @@ import org.protege.editor.owl.client.api.exception.LoginTimeoutException;
 import org.protege.editor.owl.client.api.exception.OWLClientException;
 import org.protege.editor.owl.server.versioning.api.ServerDocument;
 import org.protege.editor.owl.server.versioning.api.VersionedOWLOntology;
-import org.semanticweb.owlapi.model.OWLOntologyManager;
+import org.semanticweb.owlapi.model.*;
+import org.semanticweb.owlapi.model.parameters.OntologyCopy;
 
 import javax.swing.*;
 import java.awt.*;
@@ -31,7 +32,6 @@ public class OpenFromServerPanel extends JPanel {
     private ClientSession clientSession;
 
     private OWLEditorKit editorKit;
-    private OWLOntologyManager owlManager;
 
     private JButton btnOpenProject;
     private JButton btnCancel;
@@ -42,7 +42,6 @@ public class OpenFromServerPanel extends JPanel {
     public OpenFromServerPanel(ClientSession clientSession, OWLEditorKit editorKit) {
         this.clientSession = clientSession;
         this.editorKit = editorKit;
-        owlManager = editorKit.getOWLModelManager().getOWLOntologyManager();
 
         addFocusListener(new FocusListener() {
             @Override
@@ -139,16 +138,29 @@ public class OpenFromServerPanel extends JPanel {
     }
 
     protected void openOntologyDocument(int row) {
-        ProjectId pid = remoteProjectModel.getValueAt(row);
+        ProjectId selectedProjectId = remoteProjectModel.getValueAt(row);
+        LocalHttpClient httpClient = (LocalHttpClient) clientSession.getActiveClient();
         try {
-            LocalHttpClient httpClient = (LocalHttpClient) clientSession.getActiveClient();
-            ServerDocument serverDocument = httpClient.openProject(pid);
-            
             SessionRecorder.getInstance(this.editorKit).stopRecording();
-            VersionedOWLOntology vont = httpClient.buildVersionedOntology(serverDocument, owlManager, pid);
+            ServerDocument serverDocument = httpClient.openProject(selectedProjectId);
+            VersionedOWLOntology versionedOntology = httpClient.buildVersionedOntology(
+                    serverDocument,
+                    selectedProjectId);
             SessionRecorder.getInstance(this.editorKit).startRecording();
             
-            clientSession.setActiveProject(pid, vont);
+            /*
+             * The resulting ontology from opening the remote project needs to be "moved"
+             * from the mock ontology manager to the Protege ontology manager, such that
+             * Protege will always receive the final output of the ontology creation.
+             */
+            OWLOntology projectOntology = versionedOntology.getOntology();
+            OWLOntologyManager protegeOntologyManager = editorKit.getOWLModelManager().getOWLOntologyManager();
+            protegeOntologyManager.copyOntology(projectOntology, OntologyCopy.MOVE);
+            
+            /*
+             * The final ontology can now be passed to Protege safely.
+             */
+            clientSession.setActiveProject(selectedProjectId, versionedOntology);
             closeDialog();
         }
         catch (LoginTimeoutException e) {

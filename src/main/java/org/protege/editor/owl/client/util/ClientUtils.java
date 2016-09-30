@@ -1,7 +1,5 @@
 package org.protege.editor.owl.client.util;
 
-
-import java.util.ArrayList;
 import java.util.List;
 import java.util.Set;
 import java.util.TreeSet;
@@ -10,7 +8,6 @@ import org.protege.editor.owl.client.ClientSession;
 import org.protege.editor.owl.client.SessionRecorder;
 import org.protege.editor.owl.client.api.Client;
 import org.protege.editor.owl.client.event.ClientSessionListener;
-import org.protege.editor.owl.model.ChangeListMinimizer;
 import org.protege.editor.owl.model.history.HistoryManager;
 import org.protege.editor.owl.server.versioning.ChangeHistoryUtils;
 import org.protege.editor.owl.server.versioning.Commit;
@@ -75,21 +72,11 @@ public class ClientUtils {
         return new Commit(metadata, changes);
     }
 
-    
-    
-   
-    /*
-     * Private utility methods
-     */
-
-    public static void updateOntology(OWLOntology placeholder, ChangeHistory changeHistory, OWLOntologyManager manager) {
-    	
-    	System.out.println("Loaded ontology, now updating from server");
-
-        List<OWLOntologyChange> changes = ChangeHistoryUtils.getOntologyChanges(changeHistory, placeholder);
-        
-        manager.applyChanges(changes);
-        fixMissingImports(placeholder, changes, manager);
+    public static void updateOntology(OWLOntology targetOntology, ChangeHistory changeHistory) {
+        final OWLOntologyManager ontologyManager = targetOntology.getOWLOntologyManager();
+        List<OWLOntologyChange> ontologyChanges = ChangeHistoryUtils.getOntologyChanges(changeHistory, targetOntology);
+        ontologyManager.applyChanges(ontologyChanges);
+        fixMissingImports(targetOntology, ontologyChanges, ontologyManager);
     }
 
     private static void fixMissingImports(OWLOntology ontology, List<OWLOntologyChange> changes, OWLOntologyManager manager) {

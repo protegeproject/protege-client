@@ -365,17 +365,20 @@ public class LocalHttpClient implements Client, ClientSessionListener {
 		
 	}
 
-	public VersionedOWLOntology buildVersionedOntology(ServerDocument sdoc, OWLOntologyManager owlManager,
-			ProjectId pid) throws LoginTimeoutException, AuthorizationException, ClientRequestException {
-		setCurrentProject(pid);
-		if (!getSnapShotFile(sdoc).exists()) {
-			SnapShot snapshot = getSnapShot(pid);
-			createLocalSnapShot(snapshot.getOntology(), sdoc);
+	public VersionedOWLOntology buildVersionedOntology(ServerDocument serverDocument, ProjectId projectId)
+			throws LoginTimeoutException, AuthorizationException, ClientRequestException {
+		setCurrentProject(projectId);
+		File snapShotFile = getSnapShotFile(serverDocument);
+		if (!snapShotFile.exists()) {
+			SnapShot snapshot = getSnapShot(projectId);
+			createLocalSnapShot(snapshot.getOntology(), serverDocument);
 		}
-		OWLOntology targetOntology = loadSnapShot(owlManager, sdoc);
-		ChangeHistory remoteChangeHistory = getLatestChanges(sdoc, DocumentRevision.START_REVISION);
-		ClientUtils.updateOntology(targetOntology, remoteChangeHistory, owlManager);
-		return new VersionedOWLOntologyImpl(sdoc, targetOntology, remoteChangeHistory);
+		BinaryOWLOntologyDocumentSerializer serializer = new BinaryOWLOntologyDocumentSerializer();
+		OWLOntology targetOntology = loadSnapShot(snapShotFile, serializer);
+		ChangeHistory latestChanges = getLatestChanges(serverDocument, DocumentRevision.START_REVISION);
+		
+		ClientUtils.updateOntology(targetOntology, latestChanges);
+		return new VersionedOWLOntologyImpl(serverDocument, targetOntology, latestChanges);
 	}
 
 	private void setCurrentProject(ProjectId pid) throws ClientRequestException {
@@ -388,18 +391,21 @@ public class LocalHttpClient implements Client, ClientSessionListener {
 		}
 	}
 
-	private static File getSnapShotFile(ServerDocument sdoc) {
-		String fname = sdoc.getHistoryFile().getName() + "-snapshot";
-		return new File(fname);
+	private File getSnapShotFile(ServerDocument serverDocument) {
+		String filename = serverDocument.getHistoryFile().getName() + "-snapshot";
+		return new File(filename);
 	}
 
-	public OWLOntology loadSnapShot(OWLOntologyManager manIn, ServerDocument sdoc) throws ClientRequestException {
+	public OWLOntology loadSnapShot(File snapShotFile, BinaryOWLOntologyDocumentSerializer serializer)
+			throws ClientRequestException {
+		OWLOntologyManager mockOntologyManager = OWLManager.createOWLOntologyManager();
 		try {
-			BinaryOWLOntologyDocumentSerializer serializer = new BinaryOWLOntologyDocumentSerializer();
-			OWLOntology ontIn = manIn.createOntology();
-			BufferedInputStream inputStream = new BufferedInputStream(new FileInputStream(getSnapShotFile(sdoc)));
-			serializer.read(inputStream, new BinaryOWLOntologyBuildingHandler(ontIn), manIn.getOWLDataFactory());
-			return ontIn;
+			OWLOntology projectOntology = mockOntologyManager.createOntology();
+			serializer.read(
+					new BufferedInputStream(new FileInputStream(snapShotFile)),
+					new BinaryOWLOntologyBuildingHandler(projectOntology),
+					mockOntologyManager.getOWLDataFactory());
+			return projectOntology;
 		} catch (IOException | OWLOntologyCreationException e) {
 			logger.error(e.getMessage(), e);
 			throw new ClientRequestException("Unable to load the ontology snapshot (see error log for details)", e);

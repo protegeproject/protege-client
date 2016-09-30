@@ -398,13 +398,13 @@ public class LocalHttpClient implements Client, ClientSessionListener {
 
 	public OWLOntology loadSnapShot(File snapShotFile, BinaryOWLOntologyDocumentSerializer serializer)
 			throws ClientRequestException {
-		OWLOntologyManager mockOntologyManager = OWLManager.createOWLOntologyManager();
+		OWLOntologyManager loadingOntologyManager = OWLManager.createOWLOntologyManager();
 		try {
-			OWLOntology projectOntology = mockOntologyManager.createOntology();
+			OWLOntology projectOntology = loadingOntologyManager.createOntology();
 			serializer.read(
 					new BufferedInputStream(new FileInputStream(snapShotFile)),
 					new BinaryOWLOntologyBuildingHandler(projectOntology),
-					mockOntologyManager.getOWLDataFactory());
+					loadingOntologyManager.getOWLDataFactory());
 			return projectOntology;
 		} catch (IOException | OWLOntologyCreationException e) {
 			logger.error(e.getMessage(), e);

@@ -75,9 +75,6 @@ public class LocalHttpClient implements Client, ClientSessionListener {
 	
 	private Serializer serl = new DefaultJsonSerializer();
 
-	private boolean saveCancelSemantics = true;
-	private boolean configStateChanged = false;
-
 	private static LocalHttpClient currentHttpClient;
 
 	/**
@@ -112,7 +109,6 @@ public class LocalHttpClient implements Client, ClientSessionListener {
 
 	public void initConfig() throws LoginTimeoutException, AuthorizationException, ClientRequestException {
 		ServerConfiguration serverConfiguration = getServerConfig();
-		configStateChanged = false;
 		config = new Config(serverConfiguration, userId);
 	}
 
@@ -633,10 +629,7 @@ public class LocalHttpClient implements Client, ClientSessionListener {
 		return retrieveCodesFromServerResponse(get(GEN_CODE + "?count=" + no));		
 	}	
  
-	public boolean configStateChanged() {
-		return configStateChanged;
-	}
-
+	
 	public void saveConfig() throws LoginTimeoutException, AuthorizationException, ClientRequestException {
 		post(METAPROJECT,
 				RequestBody.create(JsonContentType, serl.write(config.getCurrentConfig(), ServerConfiguration.class)),

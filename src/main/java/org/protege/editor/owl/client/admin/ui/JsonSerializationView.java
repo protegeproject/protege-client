@@ -49,13 +49,6 @@ public class JsonSerializationView extends AbstractOWLViewComponent implements A
     	add(createJButtonPanel(), BorderLayout.SOUTH);
     	manager = AdminTabManager.get(getOWLEditorKit());
     	manager.addListener(this);
-    	// listener is not added until view initialized and changes may have already
-    	// occurred
-    	if (LocalHttpClient.current_user() != null) {
-    		if (LocalHttpClient.current_user().configStateChanged()) {
-    			setButtons(true);
-    		}
-    	}
     }
 
     private ClientSession getClientSession() {

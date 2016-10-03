@@ -64,6 +64,7 @@ public class TabViewableChecker implements TabViewable {
 	
 	private boolean checkStringAgainstClient(String cat, boolean view_p) {
 		// TODO: deal with diff between views and tabs and how categories are produced
+		
 		if (isSysAdmin()) {
 			return admin_tabs.contains(cat);
 		} else if (isWorkFlowModeler()) {
@@ -73,6 +74,7 @@ public class TabViewableChecker implements TabViewable {
 		} else {
 			return false;
 		}
+		
 		
 	}
 	

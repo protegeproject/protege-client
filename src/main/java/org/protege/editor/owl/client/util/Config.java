@@ -417,7 +417,7 @@ public class Config implements PolicyMediator, ClientRequests {
 	public void setRootDirectory(String rootDirectory)
 			throws LoginTimeoutException, AuthorizationException, ClientRequestException {
 		config = new ConfigurationBuilder(config)
-				.setServerRoot(new File(rootDirectory))
+				.setServerRoot(rootDirectory)
 				.createServerConfiguration();
 		
 	}

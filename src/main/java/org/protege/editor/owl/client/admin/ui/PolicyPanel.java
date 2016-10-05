@@ -73,6 +73,7 @@ public class PolicyPanel extends JPanel implements Disposable {
     private AdminTabListener tabListener = event -> {
         if (event.equals(AdminTabEvent.SELECTION_CHANGED) ||
         		(event.equals(AdminTabEvent.CONFIGURATION_CHANGED))) {
+        	config = session.getActiveClient().getConfig();
             projectList.clearSelection();
             roleList.clearSelection();
             clearList(roleList, projectList);

@@ -71,6 +71,8 @@ public class RolePanel extends JPanel implements Disposable {
         if (event.equals(AdminTabEvent.SELECTION_CHANGED)) {
             if(configManager.hasSelection() && !configManager.getSelection().isRole()) {
                 roleList.clearSelection();
+                config = session.getActiveClient().getConfig();
+                
             }
         }
     };

@@ -65,6 +65,7 @@ public class ServerSettingsPanel extends JPanel implements Disposable {
 
     private AdminTabListener tabListener = event -> {
         if (event.equals(AdminTabEvent.CONFIGURATION_CHANGED)) {
+        	config = session.getActiveClient().getConfig();
             removeAll();
             initUi();
         }

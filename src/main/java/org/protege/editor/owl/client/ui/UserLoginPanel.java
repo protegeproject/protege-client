@@ -9,6 +9,7 @@ import org.protege.editor.owl.OWLEditorKit;
 import org.protege.editor.owl.client.ClientPreferences;
 import org.protege.editor.owl.client.ClientSession;
 import org.protege.editor.owl.client.LocalHttpClient;
+import org.slf4j.*;
 
 import javax.swing.*;
 import javax.swing.event.DocumentEvent;
@@ -28,6 +29,7 @@ import static com.google.common.base.Preconditions.checkNotNull;
  */
 public class UserLoginPanel extends JPanel implements VerifiedInputEditor {
     private static final long serialVersionUID = 7096961238522927373L;
+    private static final Logger logger = LoggerFactory.getLogger(UserLoginPanel.class);
     private static final int FIELD_WIDTH = 20;
     private ClientSession clientSession;
     private final JTextArea errorArea = new JTextArea(1, FIELD_WIDTH*2);
@@ -223,6 +225,7 @@ public class UserLoginPanel extends JPanel implements VerifiedInputEditor {
                 JOptionPaneEx.showConfirmDialog(parent, "Error connecting to server",
                         new JLabel("Connection failed: " + msg),
                         JOptionPane.ERROR_MESSAGE, JOptionPane.DEFAULT_OPTION, null);
+                logger.error(msg, e);
             }
         }
         return Optional.empty();

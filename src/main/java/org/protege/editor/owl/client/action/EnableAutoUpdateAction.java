@@ -144,6 +144,7 @@ public class EnableAutoUpdateAction extends AbstractClientAction implements Clie
         private void performUpdate(List<OWLOntologyChange> updates) {
         	getSessionRecorder().stopRecording();       	
             ontology.getOWLOntologyManager().applyChanges(updates);
+            getOWLEditorKit().getSearchManager().updateIndex(updates);
             getSessionRecorder().startRecording();
         	
             adjustImports(updates);

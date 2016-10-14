@@ -89,6 +89,7 @@ public class ClientUtils {
         List<OWLOntologyChange> changes = ChangeHistoryUtils.getOntologyChanges(changeHistory, placeholder);
         
         manager.applyChanges(changes);
+       
         fixMissingImports(placeholder, changes, manager);
     }
 

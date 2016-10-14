@@ -12,12 +12,14 @@ import org.protege.editor.owl.client.api.exception.LoginTimeoutException;
 import org.protege.editor.owl.client.api.exception.OWLClientException;
 import org.protege.editor.owl.server.versioning.api.ServerDocument;
 import org.protege.editor.owl.server.versioning.api.VersionedOWLOntology;
+import org.semanticweb.owlapi.model.OWLOntologyChange;
 import org.semanticweb.owlapi.model.OWLOntologyManager;
 
 import javax.swing.*;
 import java.awt.*;
 import java.awt.event.*;
-import java.util.Optional;
+import java.util.*;
+import java.util.List;
 
 /**
  * @author Josef Hardi <johardi@stanford.edu> <br>
@@ -149,6 +151,13 @@ public class OpenFromServerPanel extends JPanel {
             SessionRecorder.getInstance(this.editorKit).startRecording();
             
             clientSession.setActiveProject(pid, vont);
+            
+            // update index with possibly new changes from other modelers
+            
+            for (List<OWLOntologyChange> c : vont.getChangeHistory().getRevisions().values()) {
+            	editorKit.getSearchManager().updateIndex(c);            	
+            }
+            
             closeDialog();
         }
         catch (LoginTimeoutException e) {

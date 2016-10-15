@@ -47,7 +47,15 @@ public class SessionRecorder extends OWLEditorKitHook implements HistoryManager 
 	private OWLOntologyManager manager;
 
 	private boolean enabled = true;
+	
+	// There are times, .eg. when running lengthy batch processes, that we don't want the
+	// session recorder to fire events on each edit. This enables programs to supress them
+	// temporarily
+	private boolean quietMode = false;	
+	public void stopTalking() { quietMode = true; }
+	public void startTalking() { quietMode = false; }
 
+	// Session Recorder supports ontology switching and maintains separate undo/redo stacks for each ontology
 	private Map<OWLOntologyID, List<Stack<List<OWLOntologyChange>>>> stash = new HashMap<>();
 
 
@@ -100,8 +108,8 @@ public class SessionRecorder extends OWLEditorKitHook implements HistoryManager 
 
 	@Override
 	public void initialise() throws Exception {
+		// When initialized, replace the owl manager's history manager with this session recorder
 		getEditorKit().getOWLModelManager().setHistoryManager(this);
-		//getEditorKit().getOWLModelManager().addOntologyChangeListener(this);
 		getEditorKit().getOWLModelManager().addListener(changeActiveProject);
 		this.manager = getEditorKit().getOWLModelManager().getOWLOntologyManager();
 		listeners = new ArrayList<>();
@@ -218,8 +226,10 @@ public class SessionRecorder extends OWLEditorKitHook implements HistoryManager 
 
 
 	public void fireStateChanged() {
-		for (UndoManagerListener listener : new ArrayList<>(listeners)) {
-			listener.stateChanged(this);
+		if (!quietMode) {
+			for (UndoManagerListener listener : new ArrayList<>(listeners)) {
+				listener.stateChanged(this);
+			}
 		}
 	}
 
@@ -238,10 +248,7 @@ public class SessionRecorder extends OWLEditorKitHook implements HistoryManager 
 
 	@Override
 	public void dispose() throws Exception {
-		//getEditorKit().getOWLModelManager().removeOntologyChangeListener(this);
 		getEditorKit().getModelManager().removeListener(changeActiveProject);
-
-
 	}
 
 	public void stopRecording() {

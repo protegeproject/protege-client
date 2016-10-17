@@ -128,9 +128,6 @@ public class PropertyDialogPanel extends JPanel implements VerifiedInputEditor {
         if (name.getText().trim().isEmpty()) {
             allValid = false;
         }
-        if (value.getText().trim().isEmpty()) {
-            allValid = false;
-        }
         if ((!isEditing && exists(name.getText())) || (isEditing && !name.getText().equals(selectedPropertyName) && exists(name.getText()))) {
             throw new PropertyAlreadyExistsException("A property with the given property name already exists");
         }

@@ -45,12 +45,17 @@ EXPORT_PLUGIN=$WORKSPACE/csv-export-plugin
 #################################################################
 
 # function to clone a repository. Takes as arguments: [repository-name] [git-branch-name]
-clone() { 
+clone() {
 	echo
-	echo "cloning repository '$GITHUB_ACCOUNT/$1'"
+	if [ -d $WORKSPACE/$1 ]; then
+		echo "repository already exists. updating '$GITHUB_ACCOUNT/$1'"
+		cd $WORKSPACE/$1 && git pull
+	else
+		echo "cloning repository '$GITHUB_ACCOUNT/$1'"
+		git clone $GITHUB_ACCOUNT/$1.git $WORKSPACE/$1
+	fi
 	echo
-	git clone $GITHUB_ACCOUNT/$1.git $WORKSPACE/$1
-	
+
 	# checkout the given branch
 	if [ ! -z $2 ]; then
 		echo "changing to branch '$2'"
@@ -70,12 +75,11 @@ build() {
 }
 
 
-# function that takes a path to a repository, runs build() with it, 
+# function that takes a path to a repository, runs build() with it,
 # and copies the resulting JAR to Protege's plugins folder
 buildPlugin() {
 	build $1
 	cp target/*.jar ${PROTEGE}/plugins
-	rm -rf $1
 }
 
 
@@ -96,7 +100,7 @@ if [ -z "$1" ]; then
 	clone lucene-search-plugin
 	clone lucene-search-tab
 	clone csv-export-plugin
-	
+
 	echo "done cloning repositories"
 fi
 
@@ -140,7 +144,6 @@ echo "done building repositories"
 #################################################################
 
 mv $PROTEGE $WORKSPACE
-rm -rf $PROTEGE_REPO
 
 echo "running Protege..."
 echo

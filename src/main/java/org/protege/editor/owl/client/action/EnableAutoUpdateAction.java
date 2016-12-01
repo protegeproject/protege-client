@@ -57,7 +57,7 @@ public class EnableAutoUpdateAction extends AbstractClientAction implements Clie
     @Override
     public void initialise() throws Exception {
         super.initialise();
-        setEnabled(false); // initially the menu item is disabled
+        setEnabled(false); // initially the menu item is enabled
         getClientSession().addListener(this);
     }
 
@@ -71,20 +71,34 @@ public class EnableAutoUpdateAction extends AbstractClientAction implements Clie
         if (event.hasCategory(EventCategory.SWITCH_ONTOLOGY)) {
             activeVersionOntology = Optional.ofNullable(event.getSource().getActiveVersionOntology());
             setEnabled(activeVersionOntology.isPresent());
+            // handle case where it's enabled by default
+            possiblyStartAutoUpdater();
         }
     }
 
     public void setMenuItem(JMenuItem menu) {
         checkBoxMenuItem = (JCheckBoxMenuItem) menu;
+        checkBoxMenuItem.setSelected(true);
+    }
+    
+    private void possiblyStartAutoUpdater() {
+    	if (checkBoxMenuItem.isSelected()) {
+    		final VersionedOWLOntology vont = activeVersionOntology.get();
+    		String int_s = getClientSession().getActiveClient().getConfig().getServerProperties().get("autoupdate_interval");
+    		
+    		long interval = 60;
+    		if (int_s != null) {
+    			interval = Long.parseLong(int_s);    			
+    		}
+    		autoUpdate = submitPeriodic(new AutoUpdate(getOWLModelManager(), vont), interval);
+    	}
     }
 
     @Override
     public void actionPerformed(ActionEvent event) {
         killAutoUpdate();
-        if (checkBoxMenuItem.isSelected()) {
-            final VersionedOWLOntology vont = activeVersionOntology.get();
-            autoUpdate = submitPeriodic(new AutoUpdate(getOWLModelManager(), vont), 15); // TODO Make the auto-update timing adjustable
-        }
+        possiblyStartAutoUpdater();
+        
     }
 
     private void killAutoUpdate() {
@@ -111,6 +125,7 @@ public class EnableAutoUpdateAction extends AbstractClientAction implements Clie
     	@Override
     	public void run() {
     		try {
+    			System.out.println("Checking for updates");
     			if (!isUpdated()) {
     				List<OWLOntologyChange> localChanges = getLatestChangesFromClient();
     				//List<OWLOntologyChange> remoteChanges = getLatestChangesFromServer();

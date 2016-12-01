@@ -36,6 +36,22 @@ public class LogDiffManager implements Disposable {
     private OWLModelManager modelManager;
     private OWLEditorKit editorKit;
     private String selectedAuthor;
+    
+    private HashMap<String, Integer> user_cnts = new HashMap<String, Integer>();
+    
+    public void setUserCounts(HashMap<String, Integer> cnts) { user_cnts = cnts; }
+    
+    public Integer getCount(String user) { 
+    	if (user.equals(ALL_AUTHORS)) {
+    		Integer count = 0;
+    		for (String us : user_cnts.keySet()) {
+    			count += user_cnts.get(us);    			
+    		}
+    		return count;
+    	} else {
+    		return user_cnts.get(user); }
+    	}
+    
     private CommitMetadata selectedCommit;
     private LogDiff diff;
 
@@ -46,11 +62,16 @@ public class LogDiffManager implements Disposable {
      * @param editorKit Protege OWL editor kit
      * @return Log diff manager
      */
+    
+    private static LogDiffManager diff_man = null;
+    public static LogDiffManager currentMan() {return diff_man;}
+    
     public static LogDiffManager get(OWLModelManager modelManager, OWLEditorKit editorKit) {
         LogDiffManager diffManager = modelManager.get(LogDiffManager.class);
         if(diffManager == null) {
             diffManager = new LogDiffManager(modelManager, editorKit);
             modelManager.put(LogDiffManager.class, diffManager);
+            diff_man = diffManager;
         }
         return diffManager;
     }

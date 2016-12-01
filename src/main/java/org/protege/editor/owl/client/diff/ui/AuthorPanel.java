@@ -16,6 +16,7 @@ import javax.swing.event.ListSelectionListener;
 import java.awt.*;
 import java.util.ArrayList;
 import java.util.Collections;
+import java.util.HashMap;
 import java.util.List;
 
 /**
@@ -78,18 +79,27 @@ public class AuthorPanel extends JPanel implements Disposable {
                 String user = metaData.getAuthorId();
                 if (!users.contains(user)) {
                     users.add(user);
+                    user_cnts.put(user, 1);
+                } else {
+                	Integer c_cnt = user_cnts.get(user);
+                	user_cnts.put(user, c_cnt + 1);
                 }
             }
             Collections.sort(users);
             if(!users.isEmpty()) {
                 users.add(0, LogDiffManager.ALL_AUTHORS);
             }
+            
+            diffManager.setUserCounts(user_cnts);
+            
             authorsList.setListData(users.toArray(new String[users.size()]));
         }
         else {
             authorsList.setListData(new String[0]);
         }
     }
+    
+    private HashMap<String, Integer> user_cnts = new HashMap<String, Integer>();
 
     @Override
     public void dispose() {

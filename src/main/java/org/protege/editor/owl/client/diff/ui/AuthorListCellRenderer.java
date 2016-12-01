@@ -20,13 +20,15 @@ public class AuthorListCellRenderer extends DefaultListCellRenderer {
     public Component getListCellRendererComponent(JList list, Object value, int index, boolean isSelected, boolean cellHasFocus) {
         JLabel label = (JLabel) super.getListCellRendererComponent(list, value, index, isSelected, cellHasFocus);
         String user = (String) value;
+        Integer count = LogDiffManager.currentMan().getCount(user);
         if(user.equals(LogDiffManager.ALL_AUTHORS)) {
             label.setIcon(GuiUtils.getIcon(GuiUtils.USERS_ICON_FILENAME, 20, 20));
             label.setFont(getFont().deriveFont(Font.BOLD));
         }
-        else {
+        else {        	
             label.setIcon(GuiUtils.getIcon(GuiUtils.USER_ICON_FILENAME, 20, 20));
         }
+        label.setText(user + "(" +  count + ")");
         label.setBorder(new EmptyBorder(0, 7, 0, 0));
         label.setIconTextGap(7);
         return label;

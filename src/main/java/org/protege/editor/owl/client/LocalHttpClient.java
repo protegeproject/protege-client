@@ -22,7 +22,7 @@ import org.protege.editor.owl.client.event.ClientSessionListener;
 import org.protege.editor.owl.client.util.ClientUtils;
 import org.protege.editor.owl.client.util.Config;
 import org.protege.editor.owl.server.api.CommitBundle;
-import org.protege.editor.owl.server.http.messages.EVSHistory;
+import org.protege.editor.owl.server.http.messages.History;
 import org.protege.editor.owl.server.http.messages.HttpAuthResponse;
 import org.protege.editor.owl.server.http.messages.LoginCreds;
 import org.protege.editor.owl.server.util.SnapShot;
@@ -649,7 +649,7 @@ public class LocalHttpClient implements Client, ClientSessionListener {
 	public void putEVSHistory(String code, String name, String operation, String reference)
 			throws LoginTimeoutException, AuthorizationException, ClientRequestException {
 		try {
-			EVSHistory evsHistory = new EVSHistory(code, name, operation, reference);
+			History evsHistory = new History(userId.get(), code, name, operation, reference);
 			ByteArrayOutputStream b = writeRequestArgumentsIntoByteStream(evsHistory);
 			post(EVS_REC,
 					RequestBody.create(ApplicationContentType, b.toByteArray()),
@@ -659,8 +659,22 @@ public class LocalHttpClient implements Client, ClientSessionListener {
 			throw new ClientRequestException("Failed to send data (see error log for details)", e);
 		}
 	}
+	
+	public void putConceptHistory(String code, String operation, String reference)
+			throws LoginTimeoutException, AuthorizationException, ClientRequestException {
+		try {
+			History evsHistory = new History(code, operation, reference);
+			ByteArrayOutputStream b = writeRequestArgumentsIntoByteStream(evsHistory);
+			post(CON_HISTORY_REC,
+					RequestBody.create(ApplicationContentType, b.toByteArray()),
+					true); // send request to server
+		} catch (IOException e) {
+			logger.error(e.getMessage(), e);
+			throw new ClientRequestException("Failed to send data (see error log for details)", e);
+		}
+	}
 
-	private ByteArrayOutputStream writeRequestArgumentsIntoByteStream(EVSHistory hist)
+	private ByteArrayOutputStream writeRequestArgumentsIntoByteStream(History hist)
 			throws IOException {
 		ByteArrayOutputStream b = new ByteArrayOutputStream();
 		ObjectOutputStream os = new ObjectOutputStream(b);

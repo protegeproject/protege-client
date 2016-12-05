@@ -17,6 +17,7 @@ import org.protege.editor.owl.server.api.CommitBundle;
 import org.protege.editor.owl.server.policy.CommitBundleImpl;
 import org.protege.editor.owl.server.versioning.Commit;
 import org.protege.editor.owl.server.versioning.api.ChangeHistory;
+import org.protege.editor.owl.server.versioning.api.DocumentRevision;
 import org.protege.editor.owl.server.versioning.api.RevisionMetadata;
 import org.protege.editor.owl.server.versioning.api.VersionedOWLOntology;
 import org.semanticweb.owlapi.model.OWLOntologyChange;
@@ -25,6 +26,8 @@ import javax.swing.*;
 import java.awt.*;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
+import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
 import java.util.Optional;
 
@@ -39,7 +42,7 @@ public class ReviewButtonsPanel extends JPanel implements Disposable {
     private LogDiffManager diffManager;
     private ReviewManager reviewManager;
     private OWLEditorKit editorKit;
-    private JButton rejectBtn, clearBtn, acceptBtn, commitBtn, downloadBtn;
+    private JButton rejectBtn, clearBtn, acceptBtn, commitBtn, downloadBtn, conceptHistoryBtn;
 
     /**
      * Constructor
@@ -70,13 +73,18 @@ public class ReviewButtonsPanel extends JPanel implements Disposable {
 
         downloadBtn = getButton("Download", downloadBtnListener);
         downloadBtn.setToolTipText("Download the ontology without custom Protégé annotations");
+        
+        conceptHistoryBtn = getButton("History", conceptHistoryBtnListener);
+        conceptHistoryBtn.setToolTipText("Push the concept history to the server");
 
         JSeparator separator = new JSeparator(SwingConstants.HORIZONTAL);
         separator.setPreferredSize(new Dimension(20, 0));
 
         add(rejectBtn); add(clearBtn); add(acceptBtn); add(separator); add(commitBtn); add(downloadBtn);
+        add(conceptHistoryBtn);
         diffManager.addListener(changeSelectionListener);
         enable(true, downloadBtn);
+        enable(true, conceptHistoryBtn);
     }
 
     private LogDiffListener changeSelectionListener = new LogDiffListener() {
@@ -143,6 +151,31 @@ public class ReviewButtonsPanel extends JPanel implements Disposable {
             diffManager.addCustomAnnotations(changes);
         }
     };
+    
+    private ActionListener conceptHistoryBtnListener = new ActionListener() {
+        @Override
+        public void actionPerformed(ActionEvent e) {  
+        	for (String comment : getCommitComments()) {
+        		System.out.println(comment);
+        		
+        	}
+        	 
+        }
+    };
+    
+    public List<String> getCommitComments() {
+        VersionedOWLOntology vont = ClientSession.getInstance(editorKit).getActiveVersionOntology();
+        ChangeHistory changes = vont.getChangeHistory();
+        DocumentRevision base = changes.getBaseRevision();
+        DocumentRevision head = changes.getHeadRevision();
+        List<String> comments = new ArrayList<String>();
+        for (DocumentRevision rev = base.next(); rev.behindOrSameAs(head); rev = rev.next()) {
+            RevisionMetadata metaData = changes.getMetadataForRevision(rev);
+            comments.add(metaData.getComment());
+        }
+       
+        return comments;
+    }
 
     private ActionListener commitBtnListener = e -> {
         Container owner = SwingUtilities.getAncestorOfClass(Frame.class, editorKit.getOWLWorkspace());

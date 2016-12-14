@@ -1,5 +1,6 @@
 package org.protege.editor.owl.client.diff.ui;
 
+import org.protege.editor.core.ui.workspace.TabbedWorkspace;
 import org.protege.editor.owl.ui.view.AbstractOWLViewComponent;
 
 import java.awt.*;
@@ -17,7 +18,8 @@ public class ChangesView extends AbstractOWLViewComponent {
     protected void initialiseOWLView() throws Exception {
         setLayout(new BorderLayout());
         changesPanel = new ChangesPanel(getOWLModelManager(), getOWLEditorKit());
-        reviewButtonsPanel = new ReviewButtonsPanel(getOWLModelManager(), getOWLEditorKit());
+        boolean read_only = ((TabbedWorkspace) getWorkspace()).isReadOnly(this.getView().getPlugin());
+        reviewButtonsPanel = new ReviewButtonsPanel(getOWLModelManager(), getOWLEditorKit(), read_only);
         add(changesPanel, BorderLayout.CENTER);
         add(reviewButtonsPanel, BorderLayout.SOUTH);
     }

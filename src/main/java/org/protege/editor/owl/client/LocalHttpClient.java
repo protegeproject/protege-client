@@ -44,6 +44,9 @@ import java.util.*;
 import java.util.concurrent.TimeUnit;
 
 import static org.protege.editor.owl.server.http.ServerEndpoints.*;
+import static org.protege.editor.owl.server.http.ServerProperties.CODEGEN_DELIMETER;
+import static org.protege.editor.owl.server.http.ServerProperties.CODEGEN_PREFIX;
+import static org.protege.editor.owl.server.http.ServerProperties.CODEGEN_SUFFIX;
 
 public class LocalHttpClient implements Client, ClientSessionListener {
 
@@ -713,5 +716,37 @@ public class LocalHttpClient implements Client, ClientSessionListener {
 
 	public Optional<ProjectId> getRemoteProject() {
 		return Optional.ofNullable(projectId);
+	}
+	
+	public boolean codeIsLessThan(String lower, String upper) {
+	
+	String p = config.getCurrentConfig().getProperty(CODEGEN_PREFIX);
+	String s = config.getCurrentConfig().getProperty(CODEGEN_SUFFIX);
+	String d = config.getCurrentConfig().getProperty(CODEGEN_DELIMETER);
+	
+	int lowNum = 0;
+	int upNum = 0;
+	
+	if (d != null) {
+		String[] lowSplit = lower.split(d);
+		String[] upSplit = upper.split(d);
+		lowNum = Integer.parseInt(lowSplit[1]);
+		upNum = Integer.parseInt(upSplit[1]);
+		
+	} else {
+		String lowRem = lower.substring(p.length());
+		String upRem = upper.substring(p.length());
+		if (s != null) {
+			lowNum = Integer.parseInt(lowRem.substring(0, lowRem.length() - s.length()));
+			upNum = Integer.parseInt(upRem.substring(0, upRem.length() - s.length()));
+		} else {
+			lowNum = Integer.parseInt(lowRem);
+			upNum = Integer.parseInt(upRem);
+			
+		}
+	}
+	return lowNum < upNum;
+	
+	
 	}
 }

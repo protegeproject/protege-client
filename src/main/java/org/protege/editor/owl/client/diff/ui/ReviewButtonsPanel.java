@@ -43,6 +43,7 @@ public class ReviewButtonsPanel extends JPanel implements Disposable {
     private ReviewManager reviewManager;
     private OWLEditorKit editorKit;
     private JButton rejectBtn, clearBtn, acceptBtn, commitBtn, downloadBtn, conceptHistoryBtn;
+    private boolean read_only = false;
 
     /**
      * Constructor
@@ -50,10 +51,11 @@ public class ReviewButtonsPanel extends JPanel implements Disposable {
      * @param modelManager  OWL model manager
      * @param editorKit OWL editor kit
      */
-    public ReviewButtonsPanel(OWLModelManager modelManager, OWLEditorKit editorKit) {
+    public ReviewButtonsPanel(OWLModelManager modelManager, OWLEditorKit editorKit, boolean read_only) {
         this.editorKit = checkNotNull(editorKit);
         this.diffManager = LogDiffManager.get(modelManager, editorKit);
         this.reviewManager = diffManager.getReviewManager();
+        this.read_only = read_only;
         setLayout(new FlowLayout(FlowLayout.CENTER, 2, 3));
         addButtons();
     }
@@ -244,9 +246,13 @@ public class ReviewButtonsPanel extends JPanel implements Disposable {
     }
 
     private void enable(boolean enable, JComponent... components) {
-        for(JComponent c : components) {
-            c.setEnabled(enable);
-        }
+    	for(JComponent c : components) {
+    		if (read_only) {
+    			c.setEnabled(false);
+    		} else {
+    			c.setEnabled(enable);
+    		}
+    	}
     }
 
     @Override

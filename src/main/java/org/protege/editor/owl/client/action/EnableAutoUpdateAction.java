@@ -149,7 +149,11 @@ public class EnableAutoUpdateAction extends AbstractClientAction implements Clie
     			showErrorDialog("AutoUpdate error:", udae.getMessage(), udae);
     		}
     		catch (Throwable t) {
-    			// TODO: should set something false here
+    			autoUpdate.cancel(false);
+    			autoUpdate = null;
+    			checkBoxMenuItem.setSelected(false);
+    			getSessionRecorder().startRecording();
+    			
     		}
 
     	}

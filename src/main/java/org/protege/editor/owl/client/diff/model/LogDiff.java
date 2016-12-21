@@ -371,6 +371,7 @@ public class LogDiff {
                 if (matches.size() == 1) {
                     Change c2 = matches.iterator().next();
                     if (((c.isOfType(BuiltInChangeType.ANNOTATION) || c.isOfType(BuiltInChangeType.ONTOLOGY_ANNOTATION))
+                            && c2.getDetails().getProperty().isPresent()
                             && c2.getDetails().getProperty().get().equals(c.getDetails().getProperty().get())) ||
                             c.isOfType(BuiltInChangeType.LOGICAL)) {
                         c.setBaselineChange(c2.getChanges().iterator().next()); // non-custom changes have 1 OWL ontology change

@@ -6,6 +6,7 @@ import edu.stanford.protege.metaproject.api.exception.*;
 import edu.stanford.protege.metaproject.impl.AuthorizedUserToken;
 import edu.stanford.protege.metaproject.impl.ConfigurationBuilder;
 import edu.stanford.protege.metaproject.impl.Operations;
+import edu.stanford.protege.metaproject.impl.RoleIdImpl;
 import edu.stanford.protege.metaproject.serialization.DefaultJsonSerializer;
 import io.undertow.util.StatusCodes;
 import okhttp3.*;
@@ -663,17 +664,15 @@ public class LocalHttpClient implements Client, ClientSessionListener {
 		}
 	}
 	
-	public void putConceptHistory(String code, String operation, String reference)
+	public void genConceptHistory()
 			throws LoginTimeoutException, AuthorizationException, ClientRequestException {
 		try {
-			History evsHistory = new History(code, operation, reference);
-			ByteArrayOutputStream b = writeRequestArgumentsIntoByteStream(evsHistory);
-			post(CON_HISTORY_REC,
-					RequestBody.create(ApplicationContentType, b.toByteArray()),
-					true); // send request to server
-		} catch (IOException e) {
+			
+			get(GEN_CON_HIST);
+			
+		} catch (Exception e) {
 			logger.error(e.getMessage(), e);
-			throw new ClientRequestException("Failed to send data (see error log for details)", e);
+			throw new ClientRequestException("Failed to successfuly generate concept history.", e);
 		}
 	}
 
@@ -749,4 +748,16 @@ public class LocalHttpClient implements Client, ClientSessionListener {
 	
 	
 	}
+	
+	public boolean isWorkFlowManager() { 
+    	
+    		try {
+    			Role wfm = getRole(new RoleIdImpl("mp-project-manager"));
+    			return getActiveRoles().contains(wfm);
+    		} catch (ClientRequestException e) {
+    			e.printStackTrace();
+    			return false;
+    		}
+    	
+    }
 }

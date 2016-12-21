@@ -374,6 +374,7 @@ public class LogDiff {
                             && c2.getDetails().getProperty().isPresent()
                             && c2.getDetails().getProperty().get().equals(c.getDetails().getProperty().get())) ||
                             c.isOfType(BuiltInChangeType.LOGICAL)) {
+                    	//System.out.println("the changes: " + c2.getDetails());
                         c.setBaselineChange(c2.getChanges().iterator().next()); // non-custom changes have 1 OWL ontology change
                         c.setMode(ChangeMode.ALIGNED);
                         toRemove.add(c2);

@@ -5,6 +5,7 @@ import org.protege.editor.core.Disposable;
 import org.protege.editor.core.ui.error.ErrorLogPanel;
 import org.protege.editor.owl.OWLEditorKit;
 import org.protege.editor.owl.client.ClientSession;
+import org.protege.editor.owl.client.LocalHttpClient;
 import org.protege.editor.owl.client.api.Client;
 import org.protege.editor.owl.client.api.exception.AuthorizationException;
 import org.protege.editor.owl.client.api.exception.ClientRequestException;
@@ -87,6 +88,7 @@ public class ReviewButtonsPanel extends JPanel implements Disposable {
         diffManager.addListener(changeSelectionListener);
         enable(true, downloadBtn);
         enable(true, conceptHistoryBtn);
+        
     }
 
     private LogDiffListener changeSelectionListener = new LogDiffListener() {
@@ -154,13 +156,38 @@ public class ReviewButtonsPanel extends JPanel implements Disposable {
         }
     };
     
+    private void warn(String msg) {
+		JOptionPane.showMessageDialog(this, 
+				msg, "Warning", JOptionPane.WARNING_MESSAGE);
+	}
+    
+    private void info(String msg) {
+		JOptionPane.showMessageDialog(this, 
+				msg, "Info", JOptionPane.INFORMATION_MESSAGE);
+	}
+    
     private ActionListener conceptHistoryBtnListener = new ActionListener() {
         @Override
-        public void actionPerformed(ActionEvent e) {  
-        	for (String comment : getCommitComments()) {
-        		System.out.println(comment);
-        		
-        	}
+        public void actionPerformed(ActionEvent e) { 
+        	try {
+        		if (((LocalHttpClient) ClientSession.getInstance(editorKit).getActiveClient()).isWorkFlowManager()) {
+        			((LocalHttpClient) ClientSession.getInstance(editorKit).getActiveClient()).genConceptHistory();
+        			info("Concept history recorded on server.");
+                } else {
+                	warn("Only Workflow Managers can generate history.");
+                }
+				
+			} catch (LoginTimeoutException e1) {
+				// TODO Auto-generated catch block
+				e1.printStackTrace();
+			} catch (AuthorizationException e1) {
+				// TODO Auto-generated catch block
+				e1.printStackTrace();
+			} catch (ClientRequestException e1) {
+				// TODO Auto-generated catch block
+				e1.printStackTrace();
+			}
+        	
         	 
         }
     };

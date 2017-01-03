@@ -37,6 +37,7 @@ import edu.stanford.protege.metaproject.api.exception.UnknownRoleIdException;
 import edu.stanford.protege.metaproject.api.exception.UnknownUserIdException;
 import edu.stanford.protege.metaproject.impl.ConfigurationBuilder;
 import edu.stanford.protege.metaproject.impl.Operations;
+import edu.stanford.protege.metaproject.impl.RoleIdImpl;
 
 public class Config implements PolicyMediator, ClientRequests {
 	

@@ -104,7 +104,7 @@ public class LocalHttpClient implements Client, ClientSessionListener {
 	public ServerConfiguration getCurrentConfig() {
 		return config.getCurrentConfig();
 	}
-
+	
 	public UserType getClientType() {
 		int adminPort = config.getHost().getSecondaryPort().get().get();
 		int serverAddressPort = URI.create(serverAddress).getPort();
@@ -641,6 +641,16 @@ public class LocalHttpClient implements Client, ClientSessionListener {
 		sleep(1000); // give the server some time to reboot
 		initConfig();
 	}
+	
+	public void pauseServer() throws LoginTimeoutException, AuthorizationException, ClientRequestException {
+		get(SERVER_PAUSE);		
+		
+	}
+	
+	public void resumeServer() throws LoginTimeoutException, AuthorizationException, ClientRequestException {
+		get(SERVER_RESUME);		
+		
+	}
 
 	private static void sleep(int period) {
 		try {
@@ -701,6 +711,9 @@ public class LocalHttpClient implements Client, ClientSessionListener {
 		 */
 		else if (response.code() == 440) {
 			throw new LoginTimeoutException(originalMessage);
+		}
+		else if (response.code() == StatusCodes.SERVICE_UNAVAILABLE) {
+			throw new ClientRequestException(originalMessage);
 		}
 		else {
 			String msg = String.format("%s (contact server admin for further assistance)", originalMessage);

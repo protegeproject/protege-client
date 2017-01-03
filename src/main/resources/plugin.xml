@@ -225,7 +225,17 @@
       	<editorKitId value="OWLEditorKit"/>
       	<class value="org.protege.editor.owl.client.action.EnableAutoUpdateAction"/>
       	<checkbox value="true"/>
-	</extension>	
+	</extension>
+	
+	<extension id="PauseServer"
+               name="Pause Server"
+               point="org.protege.editor.core.application.EditorKitMenuAction">
+		<name value="Pause-server"/>
+      	<path value="org.protege.editor.owl.client.Server/SlotD-F"/>
+      	<editorKitId value="OWLEditorKit"/>
+      	<class value="org.protege.editor.owl.client.action.PauseServerAction"/>
+      	<checkbox value="true"/>
+	</extension>		
 
 	<!-- Editor Hook -->
 

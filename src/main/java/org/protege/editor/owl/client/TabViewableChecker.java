@@ -36,6 +36,8 @@ public class TabViewableChecker implements TabViewable {
 		wf_man_tabs.add("Active Ontology");
 		wf_man_tabs.add("Object Properties");
 		wf_man_tabs.add("Classification results");
+		wf_man_tabs.add("Superclass hierarchy (inferred)");
+		wf_man_tabs.add("Superclass hierarchy");
 		
 		// currently modelers can see all the same tabs, but only in read only mode
 		

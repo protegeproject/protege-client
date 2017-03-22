@@ -49,6 +49,9 @@ public class TabViewableChecker implements TabViewable {
 		wf_mod_tabs.add("Entities");
 		wf_mod_tabs.add("Active Ontology");
 		wf_mod_tabs.add("Object Properties");
+		wf_mod_tabs.add("Classification results");
+		wf_mod_tabs.add("Superclass hierarchy (inferred)");
+		wf_mod_tabs.add("Superclass hierarchy");
 		
 		admin_tabs.add("Server Administration");
 		req_admin_tabs.add("Server Administration");

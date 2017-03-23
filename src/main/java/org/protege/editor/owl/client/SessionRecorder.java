@@ -126,7 +126,7 @@ public class SessionRecorder extends OWLEditorKitHook implements HistoryManager 
 
 		//listeners = new ArrayList<>();
 		typeOfChangeInProgress = ChangeType.NORMAL;
-		//fireStateChanged();
+		fireStateChanged();
 	}
 
 	public boolean canRedo() {

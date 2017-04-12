@@ -630,7 +630,7 @@ public class LocalHttpClient implements Client, ClientSessionListener {
 	}
 
 	public List<String> getCodes(int no) throws LoginTimeoutException, AuthorizationException, ClientRequestException {
-		return retrieveCodesFromServerResponse(get(GEN_CODE + "?count=" + no));		
+		return retrieveCodesFromServerResponse(get(GEN_CODE + "?count=" + no + "&projectid=" + projectId.get()));
 	}	
  
 	
@@ -665,7 +665,7 @@ public class LocalHttpClient implements Client, ClientSessionListener {
 		try {
 			History evsHistory = new History(userId.get(), code, name, operation, reference);
 			ByteArrayOutputStream b = writeRequestArgumentsIntoByteStream(evsHistory);
-			post(EVS_REC,
+			post(EVS_REC + "?projectid=" + projectId.get(),
 					RequestBody.create(ApplicationContentType, b.toByteArray()),
 					true); // send request to server
 		} catch (IOException e) {
@@ -678,7 +678,7 @@ public class LocalHttpClient implements Client, ClientSessionListener {
 			throws LoginTimeoutException, AuthorizationException, ClientRequestException {
 		try {
 			
-			get(GEN_CON_HIST);
+			get(GEN_CON_HIST + "?projectid=" + projectId.get());
 			
 		} catch (Exception e) {
 			logger.error(e.getMessage(), e);

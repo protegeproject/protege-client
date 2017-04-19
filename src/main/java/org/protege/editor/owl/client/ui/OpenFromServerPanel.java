@@ -153,10 +153,15 @@ public class OpenFromServerPanel extends JPanel {
             clientSession.setActiveProject(pid, vont);
             
             // update index with possibly new changes from other modelers
+            List<OWLOntologyChange> changes = new ArrayList<OWLOntologyChange>();
             
             for (List<OWLOntologyChange> c : vont.getChangeHistory().getRevisions().values()) {
-            	editorKit.getSearchManager().updateIndex(c);            	
+            	for (OWLOntologyChange oc : c) {
+            		changes.add(oc);
+            	}            	            	
             }
+            
+            editorKit.getSearchManager().updateIndex(changes);
             
             closeDialog();
         }

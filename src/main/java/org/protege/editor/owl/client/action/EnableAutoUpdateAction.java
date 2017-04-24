@@ -57,7 +57,6 @@ public class EnableAutoUpdateAction extends AbstractClientAction implements Clie
     @Override
     public void initialise() throws Exception {
         super.initialise();
-        setEnabled(false); // initially the menu item is enabled
         getClientSession().addListener(this);
     }
 
@@ -72,7 +71,12 @@ public class EnableAutoUpdateAction extends AbstractClientAction implements Clie
             activeVersionOntology = Optional.ofNullable(event.getSource().getActiveVersionOntology());
             setEnabled(activeVersionOntology.isPresent());
             // handle case where it's enabled by default
+            killAutoUpdate();
             possiblyStartAutoUpdater();
+        } else if (event.hasCategory(EventCategory.USER_LOGOUT)) {
+        	setEnabled(false);
+        	killAutoUpdate();
+        	
         }
     }
 
@@ -83,14 +87,18 @@ public class EnableAutoUpdateAction extends AbstractClientAction implements Clie
     
     private void possiblyStartAutoUpdater() {
     	if (checkBoxMenuItem.isSelected()) {
-    		final VersionedOWLOntology vont = activeVersionOntology.get();
-    		String int_s = getClientSession().getActiveClient().getConfig().getServerProperties().get("autoupdate_interval");
-    		
-    		long interval = 60;
-    		if (int_s != null) {
-    			interval = Long.parseLong(int_s);    			
+    		if (activeVersionOntology.isPresent()) {
+    			// need to check ontology present as sometimes SWITCH_ONTOLOGY event gets here quicker than
+    			// the USER_LOGOUT event and the ontolgoy is already gone
+    			final VersionedOWLOntology vont = activeVersionOntology.get();
+    			String int_s = getClientSession().getActiveClient().getConfig().getServerProperties().get("autoupdate_interval");
+
+    			long interval = 60;
+    			if (int_s != null) {
+    				interval = Long.parseLong(int_s);    			
+    			}
+    			autoUpdate = submitPeriodic(new AutoUpdate(getOWLModelManager(), vont), interval);
     		}
-    		autoUpdate = submitPeriodic(new AutoUpdate(getOWLModelManager(), vont), interval);
     	}
     }
 

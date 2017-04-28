@@ -51,7 +51,18 @@ public class ClientUtils {
 
     public static List<OWLOntologyChange> getUncommittedChanges(HistoryManager man, OWLOntology ontology, ChangeHistory baseline) {
     	
-    	return ((SessionRecorder) man).getUncommittedChanges();    	
+    	if (man instanceof SessionRecorder) {
+    		return ((SessionRecorder) man).getUncommittedChanges();    	
+    	} else {
+    		// This case is here to support the client/server integration tests
+    		// SessionRecorder should be refactored to be independent of OWLEditorKit
+    		List<List<OWLOntologyChange>> changes = man.getLoggedChanges();
+    		List<OWLOntologyChange> result = new ArrayList<OWLOntologyChange>();
+    		for (List<OWLOntologyChange> c : changes) {
+    			result.addAll(c);
+    		}
+    		return result;
+    	}
     	
     }
 

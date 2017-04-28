@@ -698,7 +698,7 @@ public class LocalHttpClient implements Client, ClientSessionListener {
 			throws LoginTimeoutException, AuthorizationException, ClientRequestException {
 		String originalMessage = response.header("Error-Message");
 		if (originalMessage == null) {
-			originalMessage = "Unknown server error";
+			originalMessage = String.format("Unknown server error (code: %d)", response.code());
 		}
 		if (response.code() == StatusCodes.UNAUTHORIZED) {
 			throw new AuthorizationException(originalMessage);

@@ -1,7 +1,6 @@
-package org.protege.editor.owl.client.diff.ui;
+package org.protege.editor.owl.client.util;
 
 import org.protege.editor.core.ui.error.ErrorLogPanel;
-import org.protege.editor.owl.client.diff.model.ChangeMode;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 

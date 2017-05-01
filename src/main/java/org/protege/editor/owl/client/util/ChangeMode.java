@@ -1,4 +1,4 @@
-package org.protege.editor.owl.client.diff.model;
+package org.protege.editor.owl.client.util;
 
 import static com.google.common.base.Preconditions.checkNotNull;
 

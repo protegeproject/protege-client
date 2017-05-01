@@ -107,7 +107,7 @@ public class ClientSession extends OWLEditorKitHook {
             getEditorKit().getWorkspace().setCheckLevel(new TabViewableChecker(client));
             getEditorKit().getWorkspace().recheckPlugins();
             if (((LocalHttpClient) client).getClientType() == UserType.ADMIN) {
-            	WorkspaceTab admin = getEditorKit().getOWLWorkspace().getWorkspaceTab("org.protege.editor.owl.client.AdminTab");
+            	WorkspaceTab admin = getEditorKit().getOWLWorkspace().getWorkspaceTab("metaproject-admin.AdminTab");
         		
         		((OWLWorkspaceViewsTab) admin).fireUpViews();
             }

@@ -2,10 +2,10 @@ package org.protege.editor.owl.client;
 
 import edu.stanford.protege.metaproject.ConfigurationManager;
 import edu.stanford.protege.metaproject.api.*;
-import edu.stanford.protege.metaproject.api.exception.*;
+import edu.stanford.protege.metaproject.api.exception.ObjectConversionException;
+import edu.stanford.protege.metaproject.api.exception.UnknownProjectIdException;
+import edu.stanford.protege.metaproject.api.exception.UnknownUserIdException;
 import edu.stanford.protege.metaproject.impl.AuthorizedUserToken;
-import edu.stanford.protege.metaproject.impl.ConfigurationBuilder;
-import edu.stanford.protege.metaproject.impl.Operations;
 import edu.stanford.protege.metaproject.impl.RoleIdImpl;
 import edu.stanford.protege.metaproject.serialization.DefaultJsonSerializer;
 import io.undertow.util.StatusCodes;
@@ -41,13 +41,14 @@ import org.slf4j.LoggerFactory;
 
 import java.io.*;
 import java.net.URI;
-import java.util.*;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Optional;
 import java.util.concurrent.TimeUnit;
+import java.util.zip.ZipInputStream;
 
 import static org.protege.editor.owl.server.http.ServerEndpoints.*;
-import static org.protege.editor.owl.server.http.ServerProperties.CODEGEN_DELIMETER;
-import static org.protege.editor.owl.server.http.ServerProperties.CODEGEN_PREFIX;
-import static org.protege.editor.owl.server.http.ServerProperties.CODEGEN_SUFFIX;
+import static org.protege.editor.owl.server.http.ServerProperties.*;
 
 public class LocalHttpClient implements Client, ClientSessionListener {
 
@@ -170,7 +171,6 @@ public class LocalHttpClient implements Client, ClientSessionListener {
 		return authToken;
 	}
 
-	
 	public ServerDocument createProject(Project project, File font)
 			throws LoginTimeoutException, AuthorizationException, ClientRequestException {
 		try {
@@ -348,7 +348,13 @@ public class LocalHttpClient implements Client, ClientSessionListener {
 	private void postProjectSnapShotToServer(Project project, File font) throws LoginTimeoutException,
 			AuthorizationException, ClientRequestException {
 		try {
-			OWLOntology ont = OWLManager.createOWLOntologyManager().loadOntologyFromOntologyDocument(font);
+			OWLOntology ont;
+			if (font.getName().endsWith(".zip")) {
+				ZipInputStream zi = new ZipInputStream(new FileInputStream(font));
+				ont = OWLManager.createConcurrentOWLOntologyManager().loadOntologyFromOntologyDocument(zi);
+			} else {
+				ont = OWLManager.createOWLOntologyManager().loadOntologyFromOntologyDocument(font);
+			}
 			ByteArrayOutputStream b = writeRequestArgumentsIntoByteStream(project.getId(), new SnapShot(ont));
 			post(PROJECT_SNAPSHOT,
 					RequestBody.create(ApplicationContentType, b.toByteArray()),

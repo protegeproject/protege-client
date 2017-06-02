@@ -257,6 +257,24 @@ public class LocalHttpClient implements Client, ClientSessionListener {
 		}
 	}
 
+	@Override
+	public List<Project> classifiableProjects() {
+		try {
+			Response response = get(PROJECTS_UNCLASSIFIED);
+			ObjectInputStream ois = new ObjectInputStream(response.body().byteStream());
+			List<Project> projects = (List<Project>) ois.readObject();
+			return projects;
+		} catch (AuthorizationException e) {
+			throw new RuntimeException(e);
+		} catch (ClientRequestException e) {
+			throw new RuntimeException(e);
+		} catch (IOException e) {
+			throw new RuntimeException(e);
+		} catch (ClassNotFoundException e) {
+			throw new RuntimeException(e);
+		}
+	}
+
 	private ByteArrayOutputStream writeRequestArgumentsIntoByteStream(ProjectId projectId,
 			CommitBundle commitBundle) throws IOException {
 		ByteArrayOutputStream b = new ByteArrayOutputStream();

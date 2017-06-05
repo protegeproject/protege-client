@@ -797,4 +797,9 @@ public class LocalHttpClient implements Client, ClientSessionListener {
     		}
     	
     }
+
+	public void setProjectId(ProjectId projectId) {
+		this.projectId = projectId;
+	}
+
 }

@@ -1,5 +1,6 @@
 package org.protege.editor.owl.client.api;
 
+import edu.stanford.protege.metaproject.api.*;
 import org.protege.editor.owl.client.api.exception.AuthorizationException;
 import org.protege.editor.owl.client.api.exception.ClientRequestException;
 import org.protege.editor.owl.client.api.exception.SynchronizationException;
@@ -9,18 +10,6 @@ import org.protege.editor.owl.server.versioning.api.ChangeHistory;
 import org.protege.editor.owl.server.versioning.api.ServerDocument;
 
 import java.util.List;
-import java.util.Optional;
-
-import edu.stanford.protege.metaproject.api.AuthToken;
-import edu.stanford.protege.metaproject.api.Description;
-import edu.stanford.protege.metaproject.api.Name;
-import edu.stanford.protege.metaproject.api.Operation;
-import edu.stanford.protege.metaproject.api.OperationId;
-import edu.stanford.protege.metaproject.api.Project;
-import edu.stanford.protege.metaproject.api.ProjectId;
-import edu.stanford.protege.metaproject.api.ProjectOptions;
-import edu.stanford.protege.metaproject.api.Role;
-import edu.stanford.protege.metaproject.api.UserId;
 
 /**
  * @author Josef Hardi <johardi@stanford.edu> <br>
@@ -84,12 +73,12 @@ public interface Client {
     /**
      * Gets a list of role assigned to the user of this client, considering the current active project
      */
-    List<Role> getActiveRoles() throws ClientRequestException;
+    List<Role> getActiveRoles(ProjectId projectId) throws ClientRequestException;
 
     /**
      * Gets a list of operation assigned to the use of this client, considering the current active project
      */
-    List<Operation> getActiveOperations() throws ClientRequestException;
+    List<Operation> getActiveOperations(ProjectId projectId) throws ClientRequestException;
 
 	
 	

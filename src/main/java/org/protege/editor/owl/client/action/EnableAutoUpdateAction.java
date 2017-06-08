@@ -13,7 +13,9 @@ import java.util.concurrent.ScheduledFuture;
 import javax.swing.JCheckBoxMenuItem;
 import javax.swing.JMenuItem;
 
+import edu.stanford.protege.metaproject.api.ProjectId;
 import org.protege.editor.owl.client.LocalHttpClient;
+import org.protege.editor.owl.client.api.exception.ServiceUnavailableException;
 import org.protege.editor.owl.client.api.exception.SynchronizationException;
 import org.protege.editor.owl.client.event.ClientSessionChangeEvent;
 import org.protege.editor.owl.client.event.ClientSessionChangeEvent.EventCategory;
@@ -21,6 +23,9 @@ import org.protege.editor.owl.client.event.ClientSessionListener;
 import org.protege.editor.owl.client.util.ClientUtils;
 import org.protege.editor.owl.model.OWLModelManager;
 import org.protege.editor.owl.model.OWLModelManagerImpl;
+import org.protege.editor.owl.model.event.EventType;
+import org.protege.editor.owl.model.event.OWLModelManagerChangeEvent;
+import org.protege.editor.owl.model.event.OWLModelManagerListener;
 import org.protege.editor.owl.server.versioning.ChangeHistoryUtils;
 import org.protege.editor.owl.server.versioning.CollectingChangeVisitor;
 import org.protege.editor.owl.server.versioning.api.ChangeHistory;
@@ -54,15 +59,32 @@ public class EnableAutoUpdateAction extends AbstractClientAction implements Clie
     private ScheduledFuture<?> autoUpdate;
     private JCheckBoxMenuItem checkBoxMenuItem;
 
+    private OWLModelManagerListener pauseListener = new OWLModelManagerListener() {
+        @Override
+        public void handleChange(OWLModelManagerChangeEvent event) {
+            if (event.isType(EventType.SERVER_PAUSED)) {
+                setEnabled(false);
+                killAutoUpdate();
+            }
+            else if (event.isType(EventType.SERVER_RESUMED)) {
+                setEnabled(activeVersionOntology.isPresent());
+                killAutoUpdate();
+                possiblyStartAutoUpdater();
+            }
+        }
+    };
+
     @Override
     public void initialise() throws Exception {
         super.initialise();
         getClientSession().addListener(this);
+        getOWLModelManager().addListener(pauseListener);
     }
 
     @Override
     public void dispose() throws Exception {
         super.dispose();
+        getOWLModelManager().removeListener(pauseListener);
     }
 
     @Override
@@ -74,9 +96,8 @@ public class EnableAutoUpdateAction extends AbstractClientAction implements Clie
             killAutoUpdate();
             possiblyStartAutoUpdater();
         } else if (event.hasCategory(EventCategory.USER_LOGOUT)) {
-        	setEnabled(false);
-        	killAutoUpdate();
-        	
+            setEnabled(false);
+            killAutoUpdate();
         }
     }
 
@@ -93,7 +114,7 @@ public class EnableAutoUpdateAction extends AbstractClientAction implements Clie
     			final VersionedOWLOntology vont = activeVersionOntology.get();
     			String int_s = getClientSession().getActiveClient().getConfig().getServerProperties().get("autoupdate_interval");
 
-    			long interval = 60;
+    			long interval = 1;
     			if (int_s != null) {
     				interval = Long.parseLong(int_s);    			
     			}
@@ -136,7 +157,6 @@ public class EnableAutoUpdateAction extends AbstractClientAction implements Clie
     			System.out.println("Checking for updates");
     			if (!isUpdated()) {
     				List<OWLOntologyChange> localChanges = getLatestChangesFromClient();
-    				//List<OWLOntologyChange> remoteChanges = getLatestChangesFromServer();
     				ChangeHistory remoteChangeHistory = getLatestChangesFromServer();
                     List<OWLOntologyChange> remoteChanges = ChangeHistoryUtils.getOntologyChanges(remoteChangeHistory, ontology);
     				List<OWLOntologyChange> conflictChanges = getConflicts(localChanges, remoteChanges);
@@ -149,7 +169,6 @@ public class EnableAutoUpdateAction extends AbstractClientAction implements Clie
     				}
     			}
     		}
-
     		catch (SynchronizationException udae) {
     			autoUpdate.cancel(false);
     			autoUpdate = null;
@@ -161,12 +180,8 @@ public class EnableAutoUpdateAction extends AbstractClientAction implements Clie
     			autoUpdate = null;
     			checkBoxMenuItem.setSelected(false);
     			getSessionRecorder().startRecording();
-    			
     		}
-
     	}
-
-        
 
         private void performUpdate(List<OWLOntologyChange> updates) {
         	getSessionRecorder().stopRecording();       	
@@ -179,9 +194,14 @@ public class EnableAutoUpdateAction extends AbstractClientAction implements Clie
 
         private boolean isUpdated() {
             try {
-                DocumentRevision remoteHead = LocalHttpClient.current_user().getRemoteHeadRevision(vont);
+            	ProjectId projectId = getClientSession().getActiveProject();
+                DocumentRevision remoteHead = LocalHttpClient.current_user().getRemoteHeadRevision(vont, projectId);
                 DocumentRevision localHead = vont.getHeadRevision();
                 return localHead.sameAs(remoteHead);
+            }
+            catch (ServiceUnavailableException e) {
+                // TODO: add non-blocking indicator / disable auto-update here ?
+                return true;
             }
             catch (Exception e) {
                 showErrorDialog("Update error", "Error while fetching the remote head revision", e);
@@ -197,8 +217,12 @@ public class EnableAutoUpdateAction extends AbstractClientAction implements Clie
             //List<OWLOntologyChange> changes = new ArrayList<>();
         	ChangeHistory remoteChangeHistory = null;
             try {
-                remoteChangeHistory = LocalHttpClient.current_user().getLatestChanges(vont);
+            	ProjectId projectId = getClientSession().getActiveProject();
+                remoteChangeHistory = LocalHttpClient.current_user().getLatestChanges(vont, projectId);
                 //changes = ChangeHistoryUtils.getOntologyChanges(remoteChangeHistory, ontology);
+            }
+            catch (ServiceUnavailableException e) {
+                // TODO: add non-blocking indicator here
             }
             catch (Exception e) {
                 showErrorDialog("Update error", "Error while fetching the latest changes from server", e);

@@ -14,8 +14,11 @@ import java.util.concurrent.Future;
 
 import edu.stanford.protege.metaproject.api.AuthToken;
 
+import edu.stanford.protege.metaproject.api.ProjectId;
 import org.protege.editor.owl.client.LocalHttpClient;
+import org.protege.editor.owl.client.api.exception.ClientRequestException;
 import org.protege.editor.owl.client.api.exception.LoginTimeoutException;
+import org.protege.editor.owl.client.api.exception.ServiceUnavailableException;
 import org.protege.editor.owl.client.api.exception.SynchronizationException;
 import org.protege.editor.owl.client.event.ClientSessionChangeEvent;
 import org.protege.editor.owl.client.event.ClientSessionListener;
@@ -41,6 +44,8 @@ import org.semanticweb.owlapi.model.OWLOntologyChange;
 import org.semanticweb.owlapi.model.OWLOntologyLoaderConfiguration;
 import org.semanticweb.owlapi.model.OWLOntologyLoaderConfiguration.MissingOntologyHeaderStrategy;
 import org.semanticweb.owlapi.model.UnloadableImportException;
+
+import javax.xml.ws.Service;
 
 /**
  * @author Josef Hardi <johardi@stanford.edu> <br>
@@ -91,12 +96,15 @@ public class UpdateAction extends AbstractClientAction implements ClientSessionL
                 }
             }
         }
+        catch (ServiceUnavailableException e) {
+            showInfoDialog("Unable to Update", "Server is paused or unavailable");
+        }
         catch (InterruptedException e) {
             showErrorDialog("Update error", "Internal error: " + e.getMessage(), e);
         }
     }
 
-    private Optional<List<OWLOntologyChange>> update() throws InterruptedException {
+    private Optional<List<OWLOntologyChange>> update() throws InterruptedException, ServiceUnavailableException {
         Optional<List<OWLOntologyChange>> incomingChanges = Optional.empty();
         try {
             Future<?> task = submit(new DoUpdate(getOWLModelManager(), activeVersionOntology.get()));
@@ -112,6 +120,9 @@ public class UpdateAction extends AbstractClientAction implements ClientSessionL
                     incomingChanges = reupdate();
                 }
             }
+            else if (t instanceof ServiceUnavailableException) {
+                throw (ServiceUnavailableException) t;
+            }
             else {
                 showErrorDialog("Update error", originalMessage, t);
             }
@@ -120,7 +131,7 @@ public class UpdateAction extends AbstractClientAction implements ClientSessionL
     }
 
 
-    private Optional<List<OWLOntologyChange>> reupdate() throws InterruptedException {
+    private Optional<List<OWLOntologyChange>> reupdate() throws InterruptedException, ServiceUnavailableException {
        return update();
     }
 
@@ -138,19 +149,18 @@ public class UpdateAction extends AbstractClientAction implements ClientSessionL
         }
 
         @Override
-        public List<OWLOntologyChange> call() throws SynchronizationException {
+        public List<OWLOntologyChange> call() throws SynchronizationException, ServiceUnavailableException{
             List<OWLOntologyChange> incomingChanges = new ArrayList<>();
             if (!isUpdated()) {
                 List<OWLOntologyChange> localChanges = getLatestChangesFromClient();
                 ChangeHistory remoteChangeHistory = getLatestChangesFromServer();
                 List<OWLOntologyChange> remoteChanges = ChangeHistoryUtils.getOntologyChanges(remoteChangeHistory, ontology);
-                
+
                 List<OWLOntologyChange> conflictChanges = getConflicts(localChanges, remoteChanges);
                 if (conflictChanges.isEmpty()) {
-                	performUpdate(remoteChanges);
+                    performUpdate(remoteChanges);
                     incomingChanges = remoteChanges;
                     vont.update(remoteChangeHistory);
-                    
                 }
                 else {
                     throw new SynchronizationException("Conflict was detected and unable to merge changes from the server");
@@ -168,11 +178,15 @@ public class UpdateAction extends AbstractClientAction implements ClientSessionL
             adjustImports(updates);
         }
 
-        private boolean isUpdated() {
+        private boolean isUpdated() throws ServiceUnavailableException {
             try {
-                DocumentRevision remoteHead = LocalHttpClient.current_user().getRemoteHeadRevision(vont);
+                ProjectId projectId = getClientSession().getActiveProject();
+                DocumentRevision remoteHead = LocalHttpClient.current_user().getRemoteHeadRevision(vont, projectId);
                 DocumentRevision localHead = vont.getHeadRevision();
                 return localHead.sameAs(remoteHead);
+            }
+            catch (ServiceUnavailableException e) {
+                throw e;
             }
             catch (Exception e) {
                 showErrorDialog("Update error", "Error while fetching the remote head revision", e);
@@ -185,15 +199,10 @@ public class UpdateAction extends AbstractClientAction implements ClientSessionL
         }
 
         private ChangeHistory getLatestChangesFromServer() {
-            //List<OWLOntologyChange> changes = new ArrayList<>();
         	ChangeHistory remoteChangeHistory = null;
             try {
-                remoteChangeHistory = LocalHttpClient.current_user().getLatestChanges(vont);
-                //changes = ChangeHistoryUtils.getOntologyChanges(remoteChangeHistory, ontology);
-            }
-            catch (LoginTimeoutException e) {
-                showErrorDialog("Update error", e.getMessage(), e);
-                UserLoginPanel.showDialog(getOWLEditorKit(), getEditorKit().getWorkspace());
+                ProjectId projectId = getClientSession().getActiveProject();
+                remoteChangeHistory = LocalHttpClient.current_user().getLatestChanges(vont, projectId);
             }
             catch (Exception e) {
                 showErrorDialog("Update error", e.getMessage(), e);

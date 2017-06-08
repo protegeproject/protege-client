@@ -31,7 +31,9 @@ import javax.swing.table.TableColumnModel;
 import javax.swing.table.TableModel;
 import javax.swing.table.TableRowSorter;
 
+import edu.stanford.protege.metaproject.api.ProjectId;
 import org.protege.editor.owl.OWLEditorKit;
+import org.protege.editor.owl.client.ClientSession;
 import org.protege.editor.owl.client.LocalHttpClient;
 import org.protege.editor.owl.client.api.exception.AuthorizationException;
 import org.protege.editor.owl.client.api.exception.ClientRequestException;
@@ -111,7 +113,8 @@ public class ChangeHistoryPanel extends JPanel {
     }
 
     private JComponent getHistoryComponent() throws LoginTimeoutException, AuthorizationException, ClientRequestException {
-        ChangeHistory remoteChanges = LocalHttpClient.current_user().getAllChanges(vont.getServerDocument());
+        ProjectId projectId = ClientSession.getInstance(editorKit).getActiveProject();
+        ChangeHistory remoteChanges = LocalHttpClient.current_user().getAllChanges(vont.getServerDocument(), projectId);
         HistoryTableModel model = new HistoryTableModel(remoteChanges);
         final JTable table = new JTable(model);
         table.getSelectionModel().addListSelectionListener(new ListSelectionListener() {

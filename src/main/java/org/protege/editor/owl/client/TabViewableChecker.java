@@ -3,8 +3,9 @@ package org.protege.editor.owl.client;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Set;
+import java.util.logging.Logger;
 
-import org.protege.editor.core.ui.view.ViewComponent;
+import edu.stanford.protege.metaproject.api.ProjectId;
 import org.protege.editor.core.ui.view.ViewComponentPlugin;
 import org.protege.editor.core.ui.workspace.TabViewable;
 import org.protege.editor.core.ui.workspace.WorkspaceTabPlugin;
@@ -16,7 +17,8 @@ import edu.stanford.protege.metaproject.api.Role;
 import edu.stanford.protege.metaproject.impl.RoleIdImpl;
 
 public class TabViewableChecker implements TabViewable {
-	
+
+	private ClientSession clientSession;
 	private Client client;
 	
 	private List<String> wf_man_tabs = new ArrayList<String>();
@@ -61,7 +63,8 @@ public class TabViewableChecker implements TabViewable {
 		
 	}
 	
-	public TabViewableChecker(Client c) {
+	public TabViewableChecker(ClientSession clientSession, Client c) {
+		this.clientSession = clientSession;
 		client = c;
 		initTabs();
 	}
@@ -85,7 +88,7 @@ public class TabViewableChecker implements TabViewable {
 	
 	@Override
 	public boolean isReadOnly(ViewComponentPlugin view) {
-		if (this.isWorkFlowModeler()) {
+		if (this.isWorkFlowModeler(clientSession.getActiveProject())) {
 			return true;
 		}
 		return false;
@@ -98,9 +101,9 @@ public class TabViewableChecker implements TabViewable {
 		
 		if (isSysAdmin()) {
 			return admin_tabs.contains(cat);
-		} else if (isWorkFlowModeler()) {
+		} else if (isWorkFlowModeler(clientSession.getActiveProject())) {
 			return wf_mod_tabs.contains(cat);
-		} else if (isWorkFlowManager()) {
+		} else if (isWorkFlowManager(clientSession.getActiveProject())) {
 			return wf_man_tabs.contains(cat);			
 		} else {
 			return false;
@@ -109,30 +112,29 @@ public class TabViewableChecker implements TabViewable {
 		
 	}
 	
-	private boolean isWorkFlowManager() {
-		// check if project loaded first
-		if (((LocalHttpClient) client).getRemoteProject().isPresent()) {
-			try {
-				Role wfm = ((LocalHttpClient) client).getRole(new RoleIdImpl("mp-project-manager"));
-				return client.getActiveRoles().contains(wfm);
-			} catch (ClientRequestException e) {
-				e.printStackTrace();
-			}
+	private boolean isWorkFlowManager(ProjectId projectId) {
+		if (projectId == null) {
+			return false;
 		}
-		return false;		
+		try {
+			Role wfm = ((LocalHttpClient) client).getRole(new RoleIdImpl("mp-project-manager"));
+			return client.getActiveRoles(projectId).contains(wfm);
+		} catch (ClientRequestException e) {
+			Logger.getLogger(this.getClass().getName()).warning("isWorkFlowManager raised " + e.getMessage());
+			return false;
+		}
 	}
 	
-	private boolean isWorkFlowModeler() {
-		if (((LocalHttpClient) client).getRemoteProject().isPresent()) {
-			try {
-				Role wfm = ((LocalHttpClient) client).getRole(new RoleIdImpl("mp-workflow-modeler"));
-				return client.getActiveRoles().contains(wfm);
-			} catch (ClientRequestException e) {
-				e.printStackTrace();
-				return false;
-			}
-		} else {
+	private boolean isWorkFlowModeler(ProjectId projectId) {
+		if (projectId == null) {
 			return !isSysAdmin();
+		}
+		try {
+			Role wfm = ((LocalHttpClient) client).getRole(new RoleIdImpl("mp-workflow-modeler"));
+			return client.getActiveRoles(projectId).contains(wfm);
+		} catch (ClientRequestException e) {
+			Logger.getLogger(this.getClass().getName()).warning("isWorkFlowRaised raised " + e.getMessage());
+			return false;
 		}
 	}
 
@@ -146,7 +148,7 @@ public class TabViewableChecker implements TabViewable {
 		if (this.isSysAdmin()) {
 			return this.req_admin_tabs.contains(label);
 		} 
-		if (this.isWorkFlowManager() || this.isWorkFlowModeler()) {
+		if (this.isWorkFlowManager(clientSession.getActiveProject()) || this.isWorkFlowModeler(clientSession.getActiveProject())) {
 			return this.req_editing_tabs.contains(label);
 		}
 		return false;

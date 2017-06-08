@@ -103,8 +103,8 @@ public class ClientSession extends OWLEditorKitHook {
 
     public void setActiveClient(Client client) {
         if (!hasActiveClient()) {
-            activeClient = client;            
-            getEditorKit().getWorkspace().setCheckLevel(new TabViewableChecker(client));
+            activeClient = client;
+            getEditorKit().getWorkspace().setCheckLevel(new TabViewableChecker(this, client));
             getEditorKit().getWorkspace().recheckPlugins();
             if (((LocalHttpClient) client).getClientType() == UserType.ADMIN) {
             	WorkspaceTab admin = getEditorKit().getOWLWorkspace().getWorkspaceTab("metaproject-admin.AdminTab");

@@ -1,46 +1,20 @@
 package org.protege.editor.owl.client.action;
 
 import java.awt.event.ActionEvent;
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Map;
-import java.util.Map.Entry;
 import java.util.Optional;
-import java.util.Set;
-import java.util.TreeSet;
-import java.util.concurrent.ScheduledFuture;
 
 import javax.swing.JCheckBoxMenuItem;
 import javax.swing.JMenuItem;
 
+import edu.stanford.protege.metaproject.impl.ServerStatus;
 import org.protege.editor.owl.client.LocalHttpClient;
 import org.protege.editor.owl.client.api.exception.AuthorizationException;
 import org.protege.editor.owl.client.api.exception.ClientRequestException;
-import org.protege.editor.owl.client.api.exception.SynchronizationException;
 import org.protege.editor.owl.client.event.ClientSessionChangeEvent;
 import org.protege.editor.owl.client.event.ClientSessionChangeEvent.EventCategory;
 import org.protege.editor.owl.client.event.ClientSessionListener;
-import org.protege.editor.owl.client.util.ClientUtils;
-import org.protege.editor.owl.model.OWLModelManager;
-import org.protege.editor.owl.model.OWLModelManagerImpl;
-import org.protege.editor.owl.server.versioning.ChangeHistoryUtils;
-import org.protege.editor.owl.server.versioning.CollectingChangeVisitor;
-import org.protege.editor.owl.server.versioning.api.ChangeHistory;
-import org.protege.editor.owl.server.versioning.api.DocumentRevision;
+import org.protege.editor.owl.model.event.EventType;
 import org.protege.editor.owl.server.versioning.api.VersionedOWLOntology;
-import org.semanticweb.owlapi.model.AddImport;
-import org.semanticweb.owlapi.model.AnnotationChange;
-import org.semanticweb.owlapi.model.ImportChange;
-import org.semanticweb.owlapi.model.MissingImportHandlingStrategy;
-import org.semanticweb.owlapi.model.OWLAnnotation;
-import org.semanticweb.owlapi.model.OWLAxiom;
-import org.semanticweb.owlapi.model.OWLAxiomChange;
-import org.semanticweb.owlapi.model.OWLImportsDeclaration;
-import org.semanticweb.owlapi.model.OWLOntology;
-import org.semanticweb.owlapi.model.OWLOntologyChange;
-import org.semanticweb.owlapi.model.OWLOntologyLoaderConfiguration;
-import org.semanticweb.owlapi.model.OWLOntologyLoaderConfiguration.MissingOntologyHeaderStrategy;
-import org.semanticweb.owlapi.model.UnloadableImportException;
 
 /**
  * @author Josef Hardi <johardi@stanford.edu> <br>
@@ -73,11 +47,27 @@ public class PauseServerAction extends AbstractClientAction implements ClientSes
         if (event.hasCategory(EventCategory.SWITCH_ONTOLOGY)) {
             activeVersionOntology = Optional.ofNullable(event.getSource().getActiveVersionOntology());
             if (activeVersionOntology.isPresent()) {
-            	if (((LocalHttpClient) getClientSession().getActiveClient()).isWorkFlowManager()) {
-            		setEnabled(true);
-            	} else {
-            		setEnabled(false);
-            	}
+                LocalHttpClient client = (LocalHttpClient) getClientSession().getActiveClient();
+                if (client.isWorkFlowManager(getClientSession().getActiveProject())) {
+                    try {
+                        ServerStatus status = client.getServerStatus();
+                        if (status.pausingUser.isPresent()) {
+                            String clientName = client.getUserInfo().getName();
+                            String serverName = status.pausingUser.get().getName().get();
+                            setEnabled(serverName.equals(clientName));
+                            checkBoxMenuItem.setSelected(true);
+                        }
+                        else {
+                            setEnabled(true);
+                            checkBoxMenuItem.setSelected(false);
+                        }
+                    }
+                    catch (ClientRequestException e) {
+                        setEnabled(false);
+                    }
+                } else {
+                    setEnabled(false);
+                }
             }
             
         }
@@ -87,35 +77,25 @@ public class PauseServerAction extends AbstractClientAction implements ClientSes
         checkBoxMenuItem = (JCheckBoxMenuItem) menu;
         checkBoxMenuItem.setSelected(false);
     }
-    
-   
 
     @Override
     public void actionPerformed(ActionEvent event) {
-    	if (checkBoxMenuItem.isSelected()) {
-    		try {
-				((LocalHttpClient) getClientSession().getActiveClient()).pauseServer();
-			} catch (AuthorizationException | ClientRequestException e) {
-				// TODO Auto-generated catch block
-				e.printStackTrace();
-			}
-    	} else {
-    		try {
-				((LocalHttpClient) getClientSession().getActiveClient()).resumeServer();
-			} catch (AuthorizationException | ClientRequestException e) {
-				// TODO Auto-generated catch block
-				e.printStackTrace();
-			}
-    	}
+        if (checkBoxMenuItem.isSelected()) {
+            try {
+                ((LocalHttpClient) getClientSession().getActiveClient()).pauseServer();
+                getOWLModelManager().fireEvent(EventType.SERVER_PAUSED);
+            } catch (AuthorizationException | ClientRequestException e) {
+                // TODO Auto-generated catch block
+                e.printStackTrace();
+            }
+        } else {
+            try {
+                ((LocalHttpClient) getClientSession().getActiveClient()).resumeServer();
+                getOWLModelManager().fireEvent(EventType.SERVER_RESUMED);
+            } catch (AuthorizationException | ClientRequestException e) {
+                // TODO Auto-generated catch block
+                e.printStackTrace();
+            }
+        }
     }
-
-    
-
- 
-        
-     
-		
-    
-
-    
 }

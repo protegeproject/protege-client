@@ -1,6 +1,7 @@
 package org.protege.editor.owl.client;
 
 
+import com.google.common.base.Strings;
 import com.google.common.util.concurrent.ListenableFuture;
 import com.google.common.util.concurrent.ListeningExecutorService;
 import com.google.common.util.concurrent.MoreExecutors;

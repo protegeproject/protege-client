@@ -114,7 +114,7 @@ public class EnableAutoUpdateAction extends AbstractClientAction implements Clie
     			final VersionedOWLOntology vont = activeVersionOntology.get();
     			String int_s = getClientSession().getActiveClient().getConfig().getServerProperties().get("autoupdate_interval");
 
-    			long interval = 1;
+    			long interval = 60;
     			if (int_s != null) {
     				interval = Long.parseLong(int_s);    			
     			}

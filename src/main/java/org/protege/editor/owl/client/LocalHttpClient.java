@@ -18,10 +18,10 @@ import io.undertow.util.StatusCodes;
 import okhttp3.*;
 import org.apache.commons.codec.binary.Base64;
 import org.protege.editor.owl.client.api.Client;
+import org.protege.editor.owl.client.api.OpenProjectResult;
 import org.protege.editor.owl.client.api.UserInfo;
 import org.protege.editor.owl.client.api.exception.*;
 import org.protege.editor.owl.client.event.ClientSessionChangeEvent;
-import org.protege.editor.owl.client.event.ClientSessionChangeEvent.EventCategory;
 import org.protege.editor.owl.client.event.ClientSessionListener;
 import org.protege.editor.owl.client.util.ClientUtils;
 import org.protege.editor.owl.client.util.Config;
@@ -54,7 +54,6 @@ import java.nio.file.Paths;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
-import java.util.concurrent.ExecutionException;
 import java.util.concurrent.Executors;
 import java.util.concurrent.TimeUnit;
 import java.util.zip.ZipInputStream;
@@ -242,14 +241,16 @@ public class LocalHttpClient implements Client, ClientSessionListener {
 	}
 
 	@Override
-	public ServerDocument openProject(@Nonnull ProjectId projectId)
+	public OpenProjectResult openProject(@Nonnull ProjectId projectId)
 		throws AuthorizationException, LoginTimeoutException, ClientRequestException {
 		if (getClientType() == UserType.ADMIN) { // admin clients cannot edit/browse ontologies
 			throw new ClientRequestException("Admin clients cannot open projects");
 		}
 		String requestUrl = PROJECT + "?projectid=" + projectId.get();
 		Response response = get(requestUrl); // send request to server
-		return retrieveServerDocumentFromServerResponse(response);
+		ServerDocument sdoc = retrieveServerDocumentFromServerResponse(response);
+		String checksum = response.header(ServerProperties.SNAPSHOT_CHECKSUM_HEADER);
+		return new OpenProjectResult(sdoc, checksum);
 	}
 
 	@Override
@@ -374,7 +375,7 @@ public class LocalHttpClient implements Client, ClientSessionListener {
 		return Optional.of(new File(projectId.get() + File.separator + "history-snapshot"));
 	}
 
-	private static Optional<String> getSnapshotChecksum(@Nonnull ProjectId projectId) {
+	public Optional<String> getSnapshotChecksum(@Nonnull ProjectId projectId) {
 		if (projectId == null) throw new IllegalArgumentException("projectId is null");
 		Path path = Paths.get(getSnapShotFile(projectId).get().getAbsolutePath() + SNAPSHOT_CHECKSUM);
 		try {

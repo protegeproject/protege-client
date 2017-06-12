@@ -1,6 +1,7 @@
 package org.protege.editor.owl.client.api;
 
 import edu.stanford.protege.metaproject.api.*;
+import org.apache.commons.lang3.tuple.Pair;
 import org.protege.editor.owl.client.api.exception.AuthorizationException;
 import org.protege.editor.owl.client.api.exception.ClientRequestException;
 import org.protege.editor.owl.client.api.exception.SynchronizationException;
@@ -10,6 +11,7 @@ import org.protege.editor.owl.server.versioning.api.ChangeHistory;
 import org.protege.editor.owl.server.versioning.api.ServerDocument;
 
 import java.util.List;
+import java.util.Optional;
 
 /**
  * @author Josef Hardi <johardi@stanford.edu> <br>
@@ -67,7 +69,7 @@ public interface Client {
      * @throws ClientRequestException
      *             If the server failed to fulfill the user request.
      */
-    ServerDocument openProject(ProjectId projectId)
+    OpenProjectResult openProject(ProjectId projectId)
             throws AuthorizationException, ClientRequestException;
 
     /**

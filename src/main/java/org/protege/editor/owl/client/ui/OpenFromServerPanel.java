@@ -8,8 +8,10 @@ import org.protege.editor.owl.client.ClientSession;
 import org.protege.editor.owl.client.LocalHttpClient;
 import org.protege.editor.owl.client.SessionRecorder;
 import org.protege.editor.owl.client.api.Client;
+import org.protege.editor.owl.client.api.OpenProjectResult;
 import org.protege.editor.owl.client.api.exception.LoginTimeoutException;
 import org.protege.editor.owl.client.api.exception.OWLClientException;
+import org.protege.editor.owl.server.util.SnapShot;
 import org.protege.editor.owl.server.versioning.api.ServerDocument;
 import org.protege.editor.owl.server.versioning.api.VersionedOWLOntology;
 import org.semanticweb.owlapi.model.OWLOntologyChange;
@@ -144,7 +146,16 @@ public class OpenFromServerPanel extends JPanel {
         ProjectId pid = remoteProjectModel.getValueAt(row);
         try {
             LocalHttpClient httpClient = (LocalHttpClient) clientSession.getActiveClient();
-            ServerDocument serverDocument = httpClient.openProject(pid);
+            OpenProjectResult openProjectResult = httpClient.openProject(pid);
+            ServerDocument serverDocument = openProjectResult.serverDocument;
+
+            Optional<String> clientChecksum = httpClient.getSnapshotChecksum(pid);
+            if (clientChecksum.isPresent() &&
+                openProjectResult.snapshotChecksum.isPresent() &&
+                !clientChecksum.get().equals(openProjectResult.snapshotChecksum.get())) {
+                SnapShot snapshot = httpClient.getSnapShot(pid);
+                httpClient.createLocalSnapShot(snapshot.getOntology(), pid);
+            }
             
             SessionRecorder.getInstance(this.editorKit).stopRecording();
             VersionedOWLOntology vont = httpClient.buildVersionedOntology(serverDocument, owlManager, pid);

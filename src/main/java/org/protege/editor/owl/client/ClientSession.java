@@ -168,6 +168,12 @@ public class ClientSession extends OWLEditorKitHook {
         fireChangeEvent(EventCategory.USER_LOGOUT); 
         getEditorKit().getWorkspace().recheckPlugins();
     }
+    
+    public void reset() {
+        closeOpenVersionedOntologies();
+        unregisterAllProjects();
+        unregisterAllVersionOntologies();
+    }
 
     private void closeOpenVersionedOntologies() {
         try {

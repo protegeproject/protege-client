@@ -210,9 +210,7 @@ public class LocalHttpClient implements Client, ClientSessionListener {
 		os.writeObject(proj.getName());
 		os.writeObject(proj.getDescription());
 		os.writeObject(proj.getOwner());
-		Optional<ProjectOptions> options = proj.getOptions();
-		ProjectOptions popts = (options.isPresent()) ? options.get() : null;
-		os.writeObject(popts);
+		os.writeObject(proj.getOptions().orNull());
 		return b;
 	}
 

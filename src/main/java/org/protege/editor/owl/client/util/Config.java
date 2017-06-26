@@ -340,7 +340,7 @@ public class Config implements ClientRequests {
 
 	@Override
 	public void setHostAddress(URI hostAddress) {
-		Host host = ConfigurationManager.getFactory().getHost(hostAddress, Optional.empty());
+		Host host = ConfigurationManager.getFactory().getHost(hostAddress, com.google.common.base.Optional.absent());
 		config = new ConfigurationBuilder(config)
 				.setHost(host)
 				.createServerConfiguration();
@@ -350,7 +350,7 @@ public class Config implements ClientRequests {
 	public void setSecondaryPort(int portNumber) {
 		Host h = config.getHost();
 		Port p = ConfigurationManager.getFactory().getPort(portNumber);
-		Host nh = ConfigurationManager.getFactory().getHost(h.getUri(), Optional.of(p));
+		Host nh = ConfigurationManager.getFactory().getHost(h.getUri(), com.google.common.base.Optional.of(p));
 		config = new ConfigurationBuilder(config)
 				.setHost(nh)
 				.createServerConfiguration();

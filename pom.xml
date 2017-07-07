@@ -54,6 +54,8 @@
     </scm>
 
     <properties>
+			<maven.compiler.source>1.8</maven.compiler.source>
+			<maven.compiler.target>1.8</maven.compiler.target>
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
         <protege.version>5.1.1-SNAPSHOT</protege.version>
         <protege-server.version>3.0.0-SNAPSHOT</protege-server.version>

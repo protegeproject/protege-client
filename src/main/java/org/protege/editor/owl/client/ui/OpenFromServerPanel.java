@@ -144,6 +144,7 @@ public class OpenFromServerPanel extends JPanel {
 
     protected void openOntologyDocument(int row) {
         ProjectId pid = remoteProjectModel.getValueAt(row);
+        Object pobj = remoteProjectModel.getValueAt(row, 0);
         try {
             LocalHttpClient httpClient = (LocalHttpClient) clientSession.getActiveClient();
             OpenProjectResult openProjectResult = httpClient.openProject(pid);
@@ -155,6 +156,13 @@ public class OpenFromServerPanel extends JPanel {
                 !clientChecksum.get().equals(openProjectResult.snapshotChecksum.get())) {
                 SnapShot snapshot = httpClient.getSnapShot(pid);
                 httpClient.createLocalSnapShot(snapshot.getOntology(), pid);
+            }
+            
+            if (serverDocument != null && pobj != null) {
+            	String serverConnection = "Server: " + serverDocument.getServerAddress().toString() + " | User: " + httpClient.getUserInfo().getId() 
+            			+ " | Project: " + pobj.toString();
+            
+            	editorKit.getOWLModelManager().setServerConnectionData(serverConnection);
             }
             
             SessionRecorder.getInstance(this.editorKit).stopRecording();

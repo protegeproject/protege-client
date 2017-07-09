@@ -2,66 +2,7 @@
 <?eclipse version="3.0"?>
 <plugin>
 
-	<!-- Tabs -->
-
-	<extension id="RevisionLogDiffTab"
-			   point="org.protege.editor.core.application.WorkspaceTab">
-		<label value="Revision Log diff"/>
-		<class value="org.protege.editor.owl.ui.OWLWorkspaceViewsTab"/>
-		<index value="X"/>
-		<editorKitId value="OWLEditorKit"/>
-		<defaultViewConfigFileName value="viewconfig.xml"/>
-	</extension>
-
-	<!-- Views -->
-
-	<extension id="ChangesView"
-			   point="org.protege.editor.core.application.ViewComponent">
-		<label value="Changes"/>
-		<class value="org.protege.editor.owl.client.diff.ui.ChangesView"/>
-		<headerColor value="@org.protege.ontologycolor"/>
-		<category value="@org.protege.differencecategory"/>
-	</extension>
-
-	<extension id="ChangeDetailsView"
-			   point="org.protege.editor.core.application.ViewComponent">
-		<label value="Details"/>
-		<class value="org.protege.editor.owl.client.diff.ui.ChangeDetailsView"/>
-		<headerColor value="@org.protege.ontologycolor"/>
-		<category value="@org.protege.differencecategory"/>
-	</extension>
-
-	<extension id="ConflictsGridView"
-			   point="org.protege.editor.core.application.ViewComponent">
-		<label value="Conflicts (grid)"/>
-		<class value="org.protege.editor.owl.client.diff.ui.ConflictsGridView"/>
-		<headerColor value="@org.protege.ontologycolor"/>
-		<category value="@org.protege.differencecategory"/>
-	</extension>
-
-	<extension id="ConflictsListView"
-			   point="org.protege.editor.core.application.ViewComponent">
-		<label value="Conflicts (list)"/>
-		<class value="org.protege.editor.owl.client.diff.ui.ConflictsListView"/>
-		<headerColor value="@org.protege.ontologycolor"/>
-		<category value="@org.protege.differencecategory"/>
-	</extension>
-
-	<extension id="AuthorView"
-			   point="org.protege.editor.core.application.ViewComponent">
-		<label value="Authors"/>
-		<class value="org.protege.editor.owl.client.diff.ui.AuthorView"/>
-		<headerColor value="@org.protege.ontologycolor"/>
-		<category value="@org.protege.differencecategory"/>
-	</extension>
-
-	<extension id="CommitView"
-			   point="org.protege.editor.core.application.ViewComponent">
-		<label value="Commits"/>
-		<class value="org.protege.editor.owl.client.diff.ui.CommitView"/>
-		<headerColor value="@org.protege.ontologycolor"/>
-		<category value="@org.protege.differencecategory"/>
-	</extension>
+	
 
 	<!-- Menu items -->
 	
@@ -86,11 +27,30 @@
       	<editorKitId value="OWLEditorKit"/>
    	</extension>
    
+   	<extension id="Login"
+               name="Login Menu"
+               point="org.protege.editor.core.application.EditorKitMenuAction">
+		<name value="Login"/>
+      	<path value="org.protege.editor.owl.client.Server/SlotA-G"/>
+      	<editorKitId value="OWLEditorKit"/>
+      	<class value="org.protege.editor.owl.client.action.LoginAction"/>
+	</extension>
+
+	<extension id="Logout"
+               name="Logout Menu"
+               point="org.protege.editor.core.application.EditorKitMenuAction">
+		<name value="Logout"/>
+      	<path value="org.protege.editor.owl.client.Server/SlotA-I"/>
+      	<editorKitId value="OWLEditorKit"/>
+      	<class value="org.protege.editor.owl.client.action.LogoutAction"/>
+	</extension>
+
+	
 	<extension id="Commit"
                name="Commit Menu"
                point="org.protege.editor.core.application.EditorKitMenuAction">
 		<name value="Commit"/>
-      	<path value="org.protege.editor.owl.client.Server/SlotA-G"/>
+      	<path value="org.protege.editor.owl.client.Server/SlotB-G"/>
       	<editorKitId value="OWLEditorKit"/>
       	<class value="org.protege.editor.owl.client.action.CommitAction"/>
 	</extension>
@@ -99,7 +59,7 @@
                name="Update Menu"
                point="org.protege.editor.core.application.EditorKitMenuAction">
 		<name value="Update"/>
-      	<path value="org.protege.editor.owl.client.Server/SlotA-I"/>
+      	<path value="org.protege.editor.owl.client.Server/SlotB-I"/>
       	<editorKitId value="OWLEditorKit"/>
       	<class value="org.protege.editor.owl.client.action.UpdateAction"/>
 	</extension>
@@ -108,7 +68,7 @@
                name="Show Uncommitted Changes"
                point="org.protege.editor.core.application.EditorKitMenuAction">
 		<name value="Show uncommitted changes"/>
-       	<path value="org.protege.editor.owl.client.Server/SlotB-W"/>
+       	<path value="org.protege.editor.owl.client.Server/SlotC-W"/>
        	<editorKitId value="OWLEditorKit"/>
        	<class value="org.protege.editor.owl.client.action.ShowUncommittedChangesAction"/>
 	</extension>
@@ -117,37 +77,46 @@
                name="Show History"
                point="org.protege.editor.core.application.EditorKitMenuAction">
 		<name value="Show change history"/>
-       	<path value="org.protege.editor.owl.client.Server/SlotB-V"/>
+       	<path value="org.protege.editor.owl.client.Server/SlotC-V"/>
        	<editorKitId value="OWLEditorKit"/>
        	<class value="org.protege.editor.owl.client.action.ShowHistoryAction"/>
 	</extension>
 	
-    <!--
-   <extension id="ShowStatus"
-               name="Show Client Status"
-               point="org.protege.editor.core.application.EditorKitMenuAction">
-		<name value="Show client status"/>
-       	<path value="org.protege.editor.owl.client.Server/SlotB-X"/>
-       	<editorKitId value="OWLEditorKit"/>
-       	<class value="org.protege.editor.owl.client.action.ShowStatusAction"/>
-	</extension>
-      -->
-      
 	<extension id="EnableAutoUpdate"
                name="Auto Update Menu"
                point="org.protege.editor.core.application.EditorKitMenuAction">
 		<name value="Auto-update"/>
-      	<path value="org.protege.editor.owl.client.Server/SlotC-E"/>
+      	<path value="org.protege.editor.owl.client.Server/SlotD-E"/>
       	<editorKitId value="OWLEditorKit"/>
       	<class value="org.protege.editor.owl.client.action.EnableAutoUpdateAction"/>
       	<checkbox value="true"/>
 	</extension>
-   
-	<extension id="ServerConnectionManager"
-               name="Server Connection Manager"
-               point="org.protege.editor.core.application.EditorKitHook">
-		<class value="org.protege.editor.owl.client.connect.ServerConnectionManager"/>
-        <editorKitId value="OWLEditorKit"/>
+	
+	<extension id="PauseServer"
+               name="Pause Server"
+               point="org.protege.editor.core.application.EditorKitMenuAction">
+		<name value="Pause-server"/>
+      	<path value="org.protege.editor.owl.client.Server/SlotD-F"/>
+      	<editorKitId value="OWLEditorKit"/>
+      	<class value="org.protege.editor.owl.client.action.PauseServerAction"/>
+      	<checkbox value="true"/>
+	</extension>		
+
+	<!-- Editor Hook -->
+
+	<extension id="ClientSession"
+			   name="Client Session"
+			   point="org.protege.editor.core.application.EditorKitHook">
+		<class value="org.protege.editor.owl.client.ClientSession"/>
+		<editorKitId value="OWLEditorKit"/>
+	</extension>
+	<extension id="SessionRecorder"
+			   name="Session Recorder"
+			   point="org.protege.editor.core.application.EditorKitHook">
+		<class value="org.protege.editor.owl.client.SessionRecorder"/>
+		<editorKitId value="OWLEditorKit"/>
 	</extension>
 	
+	
+
 </plugin>

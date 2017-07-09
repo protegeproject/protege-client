@@ -32,6 +32,16 @@
 
     <developers>
         <developer>
+            <id>rsgoncalves</id>
+            <name>Rafael Gonçalves</name>
+            <email>rafael.goncalves@stanford.edu</email>
+        </developer>
+        <developer>
+            <id>johardi</id>
+            <name>Josef Hardi</name>
+            <email>josef.hardi@stanford.edu</email>
+        </developer>
+        <developer>
             <name>Timothy Redmond</name>
             <email>tredmond@stanford.edu</email>
         </developer>
@@ -44,9 +54,12 @@
     </scm>
 
     <properties>
+			<maven.compiler.source>1.8</maven.compiler.source>
+			<maven.compiler.target>1.8</maven.compiler.target>
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
-        <protege.version>5.0.0-beta-21</protege.version>
+        <protege.version>5.1.1-SNAPSHOT</protege.version>
         <protege-server.version>3.0.0-SNAPSHOT</protege-server.version>
+        <fasterxml-uuid.version>3.1.3</fasterxml-uuid.version>
     </properties>
 
     <dependencies>
@@ -55,24 +68,26 @@
             <artifactId>protege-editor-core</artifactId>
             <version>${protege.version}</version>
         </dependency>
-
         <dependency>
             <groupId>edu.stanford.protege</groupId>
             <artifactId>protege-editor-owl</artifactId>
             <version>${protege.version}</version>
         </dependency>
-
         <dependency>
             <groupId>edu.stanford.protege</groupId>
             <artifactId>protege-server</artifactId>
             <version>${protege-server.version}</version>
         </dependency>
-
         <dependency>
             <groupId>com.fasterxml.uuid</groupId>
             <artifactId>java-uuid-generator</artifactId>
-            <version>3.1.3</version>
+            <version>${fasterxml-uuid.version}</version>
         </dependency>
+        <dependency>
+			<groupId>com.squareup.okhttp3</groupId>
+			<artifactId>okhttp</artifactId>
+			<version>3.6.0</version>
+		</dependency>
     </dependencies>
 
     <build>
@@ -86,7 +101,6 @@
                     <target>1.8</target>
                 </configuration>
             </plugin>
-
             <plugin>
                 <groupId>org.apache.felix</groupId>
                 <artifactId>maven-bundle-plugin</artifactId>
@@ -99,14 +113,17 @@
                         <Bundle-Version>${project.version}</Bundle-Version>
                         <Bundle-Vendor>The Protege Development Team</Bundle-Vendor>
                         <Export-Package>
-                            org.protege.editor.owl.client*;version=${project.version},
-                            com.fasterxml.uuid.*
+                            org.protege.editor.owl.client.*,
+                            com.fasterxml.uuid.*,
+                            okhttp3.*,
+                            okio                       
                         </Export-Package>
                         <Import-Package>
-                            org.protege.editor.core.*;version="5.0", <!-- equivalent to [5.0,infinity) -->
-                            org.protege.editor.owl.client.*;version=${project.version},
-                            org.protege.editor.owl.*;version="5.0",
-                            com.fasterxml.uuid.*,
+                            org.protege.editor.core.*;
+                            org.protege.editor.owl.ui.*;
+                            org.protege.editor.owl.model.*;
+                            org.protege.editor.owl.server.*;resolution:=optional,
+                            android.util,                        
                             *
                         </Import-Package>
                         <Include-Resource>{maven-resources}</Include-Resource>
@@ -122,37 +139,64 @@
                     </execution>
                 </executions>
             </plugin>
-
-            <plugin>
-                <groupId>org.apache.maven.plugins</groupId>
-                <artifactId>maven-source-plugin</artifactId>
-                <version>2.4</version>
-                <executions>
-                    <execution>
-                        <id>attach-sources</id>
-                        <goals>
-                            <goal>jar</goal>
-                        </goals>
-                    </execution>
-                </executions>
-            </plugin>
-
-            <plugin>
-                <groupId>org.apache.maven.plugins</groupId>
-                <artifactId>maven-javadoc-plugin</artifactId>
-                <version>2.10.3</version>
-                <executions>
-                    <execution>
-                        <id>attach-javadocs</id>
-                        <goals>
-                            <goal>jar</goal>
-                        </goals>
-                        <configuration>
-                            <additionalparam>-Xdoclint:none</additionalparam>
-                        </configuration>
-                    </execution>
-                </executions>
-            </plugin>
         </plugins>
     </build>
+
+   <!-- Generate source and Javadoc JAR files, and sign artifacts. Required by Sonatype OSSRH for deployment. -->
+    <profiles>
+        <profile>
+            <id>release</id>
+            <activation>
+                <activeByDefault>false</activeByDefault>
+            </activation>
+            <build>
+                <plugins>
+                    <plugin>
+                        <groupId>org.apache.maven.plugins</groupId>
+                        <artifactId>maven-source-plugin</artifactId>
+                        <version>2.4</version>
+                        <executions>
+                            <execution>
+                                <id>attach-sources</id>
+                                <goals>
+                                    <goal>jar</goal>
+                                </goals>
+                            </execution>
+                        </executions>
+                    </plugin>
+                    <plugin>
+                        <groupId>org.apache.maven.plugins</groupId>
+                        <artifactId>maven-javadoc-plugin</artifactId>
+                        <version>2.10.3</version>
+                        <executions>
+                            <execution>
+                                <id>attach-javadocs</id>
+                                <goals>
+                                    <goal>jar</goal>
+                                </goals>
+                                <configuration>
+                                    <failOnError>false</failOnError>
+                                    <quiet>true</quiet>
+                                </configuration>
+                            </execution>
+                        </executions>
+                    </plugin>
+                    <plugin>
+                        <groupId>org.apache.maven.plugins</groupId>
+                        <artifactId>maven-gpg-plugin</artifactId>
+                        <version>1.6</version>
+                        <executions>
+                            <execution>
+                                <id>sign-artifacts</id>
+                                <phase>verify</phase>
+                                <goals>
+                                    <goal>sign</goal>
+                                </goals>
+                            </execution>
+                        </executions>
+                    </plugin>
+                </plugins>
+            </build>
+        </profile>
+    </profiles>
 </project>

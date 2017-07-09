@@ -1,86 +1,114 @@
 package org.protege.editor.owl.client.action;
 
-import org.protege.editor.core.ui.error.ErrorLogPanel;
-import org.protege.editor.owl.client.connect.ServerConnectionManager;
-import org.protege.editor.owl.client.panel.ChangeListTableModel;
-import org.protege.editor.owl.ui.action.ProtegeOWLAction;
-import org.protege.editor.owl.ui.renderer.OWLCellRenderer;
-import org.protege.owl.server.api.client.Client;
-import org.protege.owl.server.api.client.VersionedOntologyDocument;
-import org.protege.owl.server.api.exception.UserDeclinedAuthenticationException;
-import org.protege.owl.server.util.ClientUtilities;
-import org.semanticweb.owlapi.model.OWLObject;
+import java.awt.Dialog;
+import java.awt.event.ActionEvent;
+import java.awt.event.KeyEvent;
+import java.awt.event.WindowAdapter;
+import java.awt.event.WindowEvent;
+import java.util.List;
+import java.util.Optional;
+
+import javax.swing.AbstractAction;
+import javax.swing.JComponent;
+import javax.swing.JDialog;
+import javax.swing.JLabel;
+import javax.swing.JOptionPane;
+import javax.swing.KeyStroke;
+
+import org.protege.editor.core.ui.util.JOptionPaneEx;
+import org.protege.editor.owl.client.api.exception.SynchronizationException;
+import org.protege.editor.owl.client.event.ClientSessionChangeEvent;
+import org.protege.editor.owl.client.event.ClientSessionListener;
+import org.protege.editor.owl.client.event.ClientSessionChangeEvent.EventCategory;
+import org.protege.editor.owl.client.ui.UncommittedChangesPanel;
+import org.protege.editor.owl.client.util.ClientUtils;
+import org.protege.editor.owl.model.OWLWorkspace;
 import org.semanticweb.owlapi.model.OWLOntology;
 import org.semanticweb.owlapi.model.OWLOntologyChange;
-import org.semanticweb.owlapi.model.OWLOntologyID;
+import org.protege.editor.owl.server.versioning.api.ChangeHistory;
+import org.protege.editor.owl.server.versioning.api.VersionedOWLOntology;
 
-import javax.swing.*;
-import java.awt.*;
-import java.awt.event.ActionEvent;
-import java.util.List;
+/**
+ * @author Josef Hardi <johardi@stanford.edu> <br>
+ * @author Timothy Redmond <tredmond@stanford.edu> <br>
+ * Stanford Center for Biomedical Informatics Research
+ */
+public class ShowUncommittedChangesAction extends AbstractClientAction implements ClientSessionListener {
 
-public class ShowUncommittedChangesAction extends ProtegeOWLAction {
     private static final long serialVersionUID = -7628375950917155764L;
+
+    private Optional<VersionedOWLOntology> activeVersionOntology = Optional.empty();
 
     @Override
     public void initialise() throws Exception {
-
+        super.initialise();
+        setEnabled(false); // initially the menu item is disabled
+        getClientSession().addListener(this);
     }
 
     @Override
     public void dispose() throws Exception {
+        super.dispose();
+    }
 
+    @Override
+    public void handleChange(ClientSessionChangeEvent event) {
+        if (event.hasCategory(EventCategory.SWITCH_ONTOLOGY)) {
+            activeVersionOntology = Optional.ofNullable(event.getSource().getActiveVersionOntology());
+            setEnabled(activeVersionOntology.isPresent());
+        }
     }
 
     @Override
     public void actionPerformed(ActionEvent arg0) {
+        final OWLWorkspace editorWindow = getOWLEditorKit().getOWLWorkspace();
         try {
-            ServerConnectionManager connectionManager = ServerConnectionManager.get(getOWLEditorKit());
-            OWLOntology ontology = getOWLModelManager().getActiveOntology();
+            OWLOntology activeOntology = getOWLEditorKit().getOWLModelManager().getActiveOntology();
+            ChangeHistory baseline = activeVersionOntology.get().getChangeHistory();
             
-            VersionedOntologyDocument vont = connectionManager.getVersionedOntology(ontology);
-            if (vont != null) {
-                Client client = connectionManager.createClient(ontology);
-                List<OWLOntologyChange> uncommitted = ClientUtilities.getUncommittedChanges(client, vont);
-                connectionManager.saveHistoryInBackground(vont);
-                if (uncommitted.isEmpty()) {
-                	JOptionPane.showMessageDialog(getOWLWorkspace(), "No uncommitted changes");
-                } else {
-                	displayUncommittedChanges(ontology, uncommitted);
-                }
+            List<OWLOntologyChange> uncommittedChanges = ClientUtils.getUncommittedChanges(getSessionRecorder(), activeOntology, baseline);
+            if (uncommittedChanges.isEmpty()) {
+                JOptionPaneEx.showConfirmDialog(editorWindow, "Message", new JLabel("No uncommitted changes"),
+                        JOptionPane.INFORMATION_MESSAGE, JOptionPane.DEFAULT_OPTION, null);
+                return;
             }
             else {
-                JOptionPane.showMessageDialog(getOWLWorkspace(), "Active ontology is not connected to a server.");
+                JDialog dialog = createDialog(uncommittedChanges);
+                dialog.setLocationRelativeTo(editorWindow);
+                dialog.setVisible(true);
             }
         }
-        catch (UserDeclinedAuthenticationException udae) {
-            ; // ignore this because the user knows that he didn't authenticate.
+        catch (SynchronizationException e) {
+            showErrorDialog("Unable to show uncommitted changes", e.getMessage(), e);
         }
-        catch (Exception e) {
-            ErrorLogPanel.showErrorDialog(e);
-        }
-    }
-    
-    private void displayUncommittedChanges(OWLOntology ontology, List<OWLOntologyChange> uncommitted) {
-		String shortOntologyName = "";
-		OWLOntologyID ontologyId = ontology.getOntologyID();
-		if (!ontologyId.isAnonymous()) {
-		    shortOntologyName = ontology.getOntologyID().getOntologyIRI().get().getRemainder().get();
-		}
-		if (shortOntologyName.isEmpty()) {
-		    shortOntologyName = ontologyId.toString();
-		}
-        ChangeListTableModel tableModel = new ChangeListTableModel(uncommitted);
-        JTable table = new JTable(tableModel);
-        table.setDefaultRenderer(OWLObject.class, new OWLCellRenderer(getOWLEditorKit()));
-        JScrollPane pane = new JScrollPane(table);
-        JDialog dialog = new JDialog((Frame) SwingUtilities.getAncestorOfClass(Frame.class, getOWLWorkspace()));
-        dialog.setTitle("Uncommitted changes for " + shortOntologyName);
-        dialog.getContentPane().add(pane);
-        dialog.setResizable(true);
-        dialog.setModal(true);
-        dialog.pack();
-        dialog.setVisible(true);
     }
 
+    private JDialog createDialog(List<OWLOntologyChange> uncommittedChanges) throws SynchronizationException {
+        final JDialog dialog = new JDialog(null, "Browse Uncommitted Changes", Dialog.ModalityType.MODELESS);
+        UncommittedChangesPanel uncommittedChangesPanel = new UncommittedChangesPanel(uncommittedChanges, getOWLEditorKit());
+        uncommittedChangesPanel.getInputMap(JComponent.WHEN_ANCESTOR_OF_FOCUSED_COMPONENT).put(KeyStroke.getKeyStroke(KeyEvent.VK_ESCAPE, 0), "CLOSE_DIALOG");
+        uncommittedChangesPanel.getActionMap().put("CLOSE_DIALOG", new AbstractAction()
+        {
+           private static final long serialVersionUID = 1L;
+           @Override
+           public void actionPerformed(ActionEvent e)
+           {
+               dialog.setVisible(false);
+               dialog.dispose();
+           }
+        });
+        dialog.addWindowListener(new WindowAdapter()
+        {
+           @Override
+           public void windowClosing(WindowEvent e)
+           {
+               dialog.setVisible(false);
+               dialog.dispose();
+           }
+        });
+        dialog.setContentPane(uncommittedChangesPanel);
+        dialog.setSize(800, 600);
+        dialog.setResizable(true);
+        return dialog;
+    }
 }

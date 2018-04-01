@@ -1,18 +1,5 @@
 package org.protege.editor.owl.client.action;
 
-import java.awt.event.ActionEvent;
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Map;
-import java.util.Map.Entry;
-import java.util.Optional;
-import java.util.Set;
-import java.util.TreeSet;
-import java.util.concurrent.ScheduledFuture;
-
-import javax.swing.JCheckBoxMenuItem;
-import javax.swing.JMenuItem;
-
 import org.protege.editor.owl.client.LocalHttpClient;
 import org.protege.editor.owl.client.api.exception.SynchronizationException;
 import org.protege.editor.owl.client.event.ClientSessionChangeEvent;
@@ -26,19 +13,14 @@ import org.protege.editor.owl.server.versioning.CollectingChangeVisitor;
 import org.protege.editor.owl.server.versioning.api.ChangeHistory;
 import org.protege.editor.owl.server.versioning.api.DocumentRevision;
 import org.protege.editor.owl.server.versioning.api.VersionedOWLOntology;
-import org.semanticweb.owlapi.model.AddImport;
-import org.semanticweb.owlapi.model.AnnotationChange;
-import org.semanticweb.owlapi.model.ImportChange;
-import org.semanticweb.owlapi.model.MissingImportHandlingStrategy;
-import org.semanticweb.owlapi.model.OWLAnnotation;
-import org.semanticweb.owlapi.model.OWLAxiom;
-import org.semanticweb.owlapi.model.OWLAxiomChange;
-import org.semanticweb.owlapi.model.OWLImportsDeclaration;
-import org.semanticweb.owlapi.model.OWLOntology;
-import org.semanticweb.owlapi.model.OWLOntologyChange;
-import org.semanticweb.owlapi.model.OWLOntologyLoaderConfiguration;
+import org.semanticweb.owlapi.model.*;
 import org.semanticweb.owlapi.model.OWLOntologyLoaderConfiguration.MissingOntologyHeaderStrategy;
-import org.semanticweb.owlapi.model.UnloadableImportException;
+
+import javax.swing.*;
+import java.awt.event.ActionEvent;
+import java.util.*;
+import java.util.Map.Entry;
+import java.util.concurrent.ScheduledFuture;
 
 /**
  * @author Josef Hardi <johardi@stanford.edu> <br>
@@ -142,8 +124,8 @@ public class EnableAutoUpdateAction extends AbstractClientAction implements Clie
         
 
         private void performUpdate(List<OWLOntologyChange> updates) {
-        	getSessionRecorder().stopRecording();       	
-            ontology.getOWLOntologyManager().applyChanges(updates);
+        	  getSessionRecorder().stopRecording();
+            SwingUtilities.invokeLater(() -> ontology.getOWLOntologyManager().applyChanges(updates));
             getSessionRecorder().startRecording();
         	
             adjustImports(updates);
